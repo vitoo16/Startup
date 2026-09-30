@@ -72,6 +72,7 @@ $privateKeyPattern = '-----BEGIN ' + '(RSA |EC |OPENSSH )?PRIVATE KEY-----'
 $keyHits = @(& git -C $repositoryRoot grep -I -n -E -- $privateKeyPattern)
 $grepExit = $LASTEXITCODE
 if ($grepExit -gt 1) { throw "git grep private-key scan failed with exit code $grepExit" }
+if ($grepExit -eq 1) { $global:LASTEXITCODE = 0 }
 Add-Check 'no private-key PEM blocks in tracked text' ($keyHits.Count -eq 0) ($(if ($keyHits.Count -eq 0) { 'clean' } else { $keyHits -join '; ' }))
 
 $workflowDirectory = Join-Path $repositoryRoot '.github/workflows'
