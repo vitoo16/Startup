@@ -2,6 +2,7 @@
 param(
     [Parameter(Mandatory)][string]$Profile,
     [Parameter(Mandatory)][string]$OutputPath,
+    [string]$EvidenceDirectory,
     [string]$UnityCliPath,
     [int]$TimeoutSeconds = 1800,
     [switch]$AllowEditorInstall
@@ -45,10 +46,13 @@ $cli = Resolve-UnityCli $UnityCliPath
 $resolvedOutput = [IO.Path]::GetFullPath($OutputPath)
 $outputParent = Split-Path -Parent $resolvedOutput
 if ($outputParent) { New-Item -ItemType Directory -Force -Path $outputParent | Out-Null }
-$evidenceDirectory = Join-Path ([IO.Path]::GetTempPath()) 'StartupLife/unity-build'
-New-Item -ItemType Directory -Force -Path $evidenceDirectory | Out-Null
-$provenancePath = Join-Path $evidenceDirectory 'build-provenance.json'
-$logPath = Join-Path $evidenceDirectory 'unity-build.log'
+if (-not $EvidenceDirectory) {
+    $EvidenceDirectory = Join-Path ([IO.Path]::GetTempPath()) 'StartupLife/unity-build'
+}
+$EvidenceDirectory = [IO.Path]::GetFullPath($EvidenceDirectory)
+New-Item -ItemType Directory -Force -Path $EvidenceDirectory | Out-Null
+$provenancePath = Join-Path $EvidenceDirectory 'build-provenance.json'
+$logPath = Join-Path $EvidenceDirectory 'unity-build.log'
 
 $arguments = [System.Collections.Generic.List[string]]::new()
 foreach ($value in @(
@@ -68,7 +72,7 @@ $exitCode = $LASTEXITCODE
 $outputExists = Test-Path -LiteralPath $resolvedOutput
 $provenanceExists = Test-Path -LiteralPath $provenancePath -PathType Leaf
 
-$summaryPath = Join-Path $evidenceDirectory 'unity-build-summary.json'
+$summaryPath = Join-Path $EvidenceDirectory 'unity-build-summary.json'
 [ordered]@{
     suite = 'Startup Life Unity build profile'
     editorVersion = $editorVersion
