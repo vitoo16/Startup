@@ -421,9 +421,21 @@ internal static class Program
             }
             else Equal("save.recovery_required", result.Reason);
             var clean = new AtomicFileSaveStore(path, serializer);
-            True(GameSession.TryRestore(catalog, serializer, clean, out var recovered, out _, Owners("abc")));
+            if (phase != "before-replace")
+            {
+                var primaryBeforeRead = File.ReadAllBytes(path);
+                var backupBeforeRead = File.ReadAllBytes(path + ".backup");
+                Equal(BatchReceiptIdentity.BackupRepairReason, clean.Read().Reason);
+                Bytes(primaryBeforeRead, File.ReadAllBytes(path));
+                Bytes(backupBeforeRead, File.ReadAllBytes(path + ".backup"));
+            }
+            True(GameSession.TryRestore(catalog, serializer, clean, out var recovered, out _, phase == "before-replace" ? Owners("abc") : null));
             var before = recovered!.ExportCheckpoint();
-            var retry = recovered.AdvanceDay(new CommandEnvelope("run", "abc", 2, new GameCommand(CommandKind.AdvanceBoundary)));
+            Bytes(before, File.ReadAllBytes(path + ".backup"));
+            File.WriteAllText(path, "corrupt after reconciled import");
+            True(GameSession.TryRestore(catalog, serializer, new AtomicFileSaveStore(path, serializer), out recovered, out var backupLoad));
+            Equal(LoadStatus.RecoveredBackup, backupLoad.Status);
+            var retry = recovered!.AdvanceDay(new CommandEnvelope("run", "abc", 2, new GameCommand(CommandKind.AdvanceBoundary)));
             Equal("TargetReached", retry.StopReason);
             True(retry.Boundaries.All(x => x.Status == CommandStatus.AlreadyCommitted));
             Bytes(before, recovered.ExportCheckpoint());
@@ -457,6 +469,13 @@ internal static class Program
         Bytes(durable, File.ReadAllBytes(path));
         Equal(WriteStatus.Failed, store.Commit(serializer.Serialize(competitor), competitor.Revision));
         Bytes(durable, File.ReadAllBytes(path));
+        var differentBackup = serializer.DeserializeAndValidate(expected).State!;
+        differentBackup.Cash++;
+        var differentBytes = serializer.Serialize(differentBackup);
+        File.WriteAllBytes(path + ".backup", differentBytes);
+        Equal("", store.Read().Reason); // Different gameplay data is never a pending ownership mirror.
+        True(GameSession.TryRestore(catalog, serializer, store, out _, out _));
+        Bytes(differentBytes, File.ReadAllBytes(path + ".backup"));
     }
 
     private static void CrossFieldCorruptionRemainsCorrupt()

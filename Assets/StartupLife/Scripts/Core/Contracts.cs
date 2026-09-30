@@ -78,6 +78,7 @@ namespace StartupLife.Core
     public static class BatchReceiptIdentity
     {
         public static readonly string InternalPrefix = new string('$', 257) + "batch/";
+        public const string BackupRepairReason = "save.receipt_compatibility_pending";
         public static bool IsLegacyReplacement(CommandReceipt previous, string nextId)
         {
             if (previous.ParentPayload.Length == 0 || previous.CommandId.StartsWith(InternalPrefix, StringComparison.Ordinal) ||

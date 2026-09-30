@@ -51,10 +51,11 @@ namespace StartupLife.Application
             result = store.Read();
             if (result.Status != LoadStatus.Valid && result.Status != LoadStatus.RecoveredBackup) return false;
             var restored = new GameSession(result.State!, catalog, serializer, store, legacyBatchOwners);
-            var ownershipFailure = restored.PrepareReceiptOwnership();
+            var ownershipFailure = restored.PrepareReceiptOwnership(result.Reason == BatchReceiptIdentity.BackupRepairReason);
             if (ownershipFailure.Length > 0)
             { result = new LoadResult(LoadStatus.RecoveryRequired, reason: ownershipFailure); return false; }
-            result = new LoadResult(result.Status, restored.Clone(restored.state), result.Reason);
+            result = new LoadResult(result.Status, restored.Clone(restored.state),
+                result.Reason == BatchReceiptIdentity.BackupRepairReason ? "" : result.Reason);
             session = restored;
             return true;
         }
@@ -129,9 +130,10 @@ namespace StartupLife.Application
                         this.legacyBatchOwners.Clear();
                         foreach (var binding in bindings) this.legacyBatchOwners.Add(binding.Key, binding.Value);
                     }
-                    var ownershipFailure = PrepareReceiptOwnership();
+                    var ownershipFailure = PrepareReceiptOwnership(restored.Reason == BatchReceiptIdentity.BackupRepairReason);
                     if (ownershipFailure.Length > 0) return new LoadResult(LoadStatus.RecoveryRequired, reason: ownershipFailure);
-                    return new LoadResult(restored.Status, Clone(state), restored.Reason);
+                    return new LoadResult(restored.Status, Clone(state),
+                        restored.Reason == BatchReceiptIdentity.BackupRepairReason ? "" : restored.Reason);
                 }
                 return restored;
             }
@@ -204,11 +206,11 @@ namespace StartupLife.Application
         private static string BatchChildCommandId(string rootCommandId, int index) => BatchChildPrefix(rootCommandId) + index.ToString(CultureInfo.InvariantCulture);
         private bool HasUnresolvedBatchOwners() => state.Receipts.Any(receipt =>
             !string.IsNullOrEmpty(receipt.ParentPayload) && !TryGetBatchOwner(receipt, out _, out _));
-        private string PrepareReceiptOwnership()
+        private string PrepareReceiptOwnership(bool repairBackup = false)
         {
             if (recoveryRequired) return "save.recovery_required";
             if (HasUnresolvedBatchOwners()) return "save.batch_owner_required";
-            if (!state.Receipts.Any(receipt => receipt.ParentPayload.Length > 0 &&
+            if (!repairBackup && !state.Receipts.Any(receipt => receipt.ParentPayload.Length > 0 &&
                 !receipt.CommandId.StartsWith(InternalBatchPrefix, StringComparison.Ordinal))) return "";
             if (!(store is ISaveCompatibilityStore compatibilityStore)) return "save.compatibility_store_required";
             var expected = serializer.Serialize(state);

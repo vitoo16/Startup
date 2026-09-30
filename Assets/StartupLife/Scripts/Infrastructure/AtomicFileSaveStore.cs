@@ -22,7 +22,18 @@ namespace StartupLife.Infrastructure
             lock (gate)
             {
                 var first = ReadFile(primary);
-                if (first.Status == LoadStatus.Valid || first.Status == LoadStatus.Unreadable || first.Status == LoadStatus.FutureVersion || first.Status == LoadStatus.UnsupportedContent) return first;
+                if (first.Status == LoadStatus.Valid)
+                {
+                    var prior = ReadFile(primary + ".backup");
+                    // A crash may have promoted ownership in primary before mirroring it in backup.
+                    // Only a provably identical generation with historical child IDs qualifies for repair.
+                    if (prior.Status == LoadStatus.Valid && prior.State!.Revision == first.State!.Revision &&
+                        !prior.State.Receipts.Select(x => x.CommandId).SequenceEqual(first.State.Receipts.Select(x => x.CommandId)) &&
+                        IdentityOnlyChange(prior.State, first.State))
+                        return new LoadResult(LoadStatus.Valid, first.State, BatchReceiptIdentity.BackupRepairReason);
+                    return first;
+                }
+                if (first.Status == LoadStatus.Unreadable || first.Status == LoadStatus.FutureVersion || first.Status == LoadStatus.UnsupportedContent) return first;
                 var backup = ReadFile(primary + ".backup");
                 if (backup.Status == LoadStatus.Valid) return new LoadResult(LoadStatus.RecoveredBackup, backup.State, "save.recovered_backup");
                 if (backup.Status == LoadStatus.Unreadable || backup.Status == LoadStatus.FutureVersion || backup.Status == LoadStatus.UnsupportedContent) return backup;
