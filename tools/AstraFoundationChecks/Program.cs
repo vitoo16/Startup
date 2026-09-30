@@ -16,7 +16,11 @@ internal static class Program
     {
         Check("H1 direct command and advance batch cannot share caller CommandId", DirectAndBatchIdentityConflict);
         Check("H1 completed batch retry replays persisted receipts after restore", BatchRetryReplaysPersistedReceiptsAfterRestore);
+        Check("H1 legacy reserved-prefix caller and batch identities remain disjoint", LegacyReservedPrefixCompatibility);
         Check("H2 unsupported career revision does not fall back to backup or overwrite primary", UnsupportedCareerRevisionIsPreserved);
+        Check("H2 missing saved skill is unsupported content", MissingSavedSkillIsUnsupported);
+        Check("H2 missing scheduled scene is unsupported while wrong-career scene is corrupt", MissingSceneClassificationIsPrecise);
+        Check("H2 malformed persisted fields remain corrupt before compatibility resolution", MalformedFieldsRemainCorrupt);
 
         var reportPath = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.Combine(Path.GetTempPath(), "startup-life-astra-foundation-highs.json");
         Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
@@ -75,6 +79,50 @@ internal static class Program
         Bytes(checkpoint, restored.Session.ExportCheckpoint());
     }
 
+    private static void LegacyReservedPrefixCompatibility()
+    {
+        const string legacyRoot = "$batch/3:abc";
+        const string legacyDirectId = "$batch/3:abc/0";
+
+        var direct = new Fixture();
+        var createCommand = new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female");
+        Equal(CommandStatus.Committed, direct.Execute(legacyDirectId, createCommand).Status);
+        var directCheckpoint = direct.Session.ExportCheckpoint();
+        var directRestored = new Fixture(direct.Catalog, direct.Serializer.DeserializeAndValidate(directCheckpoint).State!, directCheckpoint);
+        var directRetry = directRestored.Session.Execute(new CommandEnvelope("run", legacyDirectId, 0, createCommand));
+        Equal(CommandStatus.AlreadyCommitted, directRetry.Status);
+        Bytes(directCheckpoint, directRestored.Session.ExportCheckpoint());
+        var directThenBatch = directRestored.Session.AdvanceDay(new CommandEnvelope("run", "abc", directRestored.Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary)));
+        Equal("TargetReached", directThenBatch.StopReason);
+        True(directThenBatch.Boundaries.Any(x => x.Status == CommandStatus.Committed));
+
+        var legacyBatch = new Fixture();
+        Equal(CommandStatus.Committed, legacyBatch.Execute("create", createCommand).Status);
+        var originalRequest = new CommandEnvelope("run", legacyRoot, legacyBatch.Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary));
+        var generated = legacyBatch.Session.AdvanceDay(originalRequest);
+        Equal("TargetReached", generated.StopReason);
+        True(generated.Boundaries.Count > 0);
+
+        var legacyState = legacyBatch.Serializer.DeserializeAndValidate(legacyBatch.Session.ExportCheckpoint()).State!;
+        var legacyReceipts = legacyState.Receipts.Where(x => !string.IsNullOrEmpty(x.ParentPayload)).OrderBy(x => x.Revision).ToArray();
+        Equal(generated.Boundaries.Count, legacyReceipts.Length);
+        for (var index = 0; index < legacyReceipts.Length; index++) legacyReceipts[index].CommandId = legacyRoot + "/" + index;
+        var prePrCheckpoint = legacyBatch.Serializer.Serialize(legacyState);
+
+        var restored = new Fixture(legacyBatch.Catalog, legacyState, prePrCheckpoint);
+        var retry = restored.Session.AdvanceDay(originalRequest);
+        Equal("TargetReached", retry.StopReason);
+        Equal(legacyReceipts.Length, retry.Boundaries.Count);
+        True(retry.Boundaries.All(x => x.Status == CommandStatus.AlreadyCommitted));
+        Bytes(prePrCheckpoint, restored.Session.ExportCheckpoint());
+
+        var beforeAlias = restored.Session.Snapshot().Instant.Date;
+        var alias = restored.Session.AdvanceDay(new CommandEnvelope("run", "abc", restored.Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary)));
+        Equal("TargetReached", alias.StopReason);
+        True(alias.Boundaries.Any(x => x.Status == CommandStatus.Committed));
+        True(restored.Session.Snapshot().Instant.Date != beforeAlias);
+    }
+
     private static void UnsupportedCareerRevisionIsPreserved()
     {
         var oldCatalog = Catalog("v1");
@@ -92,36 +140,150 @@ internal static class Program
         Equal(LoadStatus.UnsupportedContent, direct.Status);
         Equal("save.content_revision", direct.Reason);
 
-        var backupState = GameSession.NewState(newCatalog, "run", 12345, new SimDate(2026, 9, 7));
-        var backupStore = new MemoryStore(newSerializer, null);
-        var backupSession = new GameSession(backupState, newCatalog, newSerializer, backupStore);
-        Equal(CommandStatus.Committed, backupSession.Execute(new CommandEnvelope("run", "create-backup", 0, new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female"))).Status);
-        var validBackup = backupSession.ExportCheckpoint();
+        var validBackup = CreateCharacterCheckpoint(newCatalog);
+        AssertUnsupportedPrimaryPreserved(newSerializer, unsupportedPrimary, validBackup, "save.content_revision");
+    }
 
+    private static void MissingSavedSkillIsUnsupported()
+    {
+        var oldCatalog = Catalog();
+        var unsupportedPrimary = CreateCharacterCheckpoint(oldCatalog);
+        var newCatalog = CatalogWithoutSkills();
+        var serializer = new JsonSaveSerializer(newCatalog);
+        var result = serializer.DeserializeAndValidate(unsupportedPrimary);
+        Equal(LoadStatus.UnsupportedContent, result.Status);
+        Equal("save.content_id", result.Reason);
+    }
+
+    private static void MissingSceneClassificationIsPrecise()
+    {
+        var oldCatalog = Catalog(sceneId: "coding");
+        var unsupportedPrimary = CreateCheckpointWithConsumedCareerScene(oldCatalog);
+
+        var missingSceneCatalog = Catalog(sceneId: "meeting");
+        var missingSerializer = new JsonSaveSerializer(missingSceneCatalog);
+        var missing = missingSerializer.DeserializeAndValidate(unsupportedPrimary);
+        Equal(LoadStatus.UnsupportedContent, missing.Status);
+        Equal("save.content_id", missing.Reason);
+
+        var validBackup = CreateCharacterCheckpoint(missingSceneCatalog);
+        AssertUnsupportedPrimaryPreserved(missingSerializer, unsupportedPrimary, validBackup, "save.content_id");
+
+        var foreignSceneSerializer = new JsonSaveSerializer(CatalogWithForeignCoding());
+        var wrongCareer = foreignSceneSerializer.DeserializeAndValidate(unsupportedPrimary);
+        Equal(LoadStatus.Corrupt, wrongCareer.Status);
+    }
+
+    private static void MalformedFieldsRemainCorrupt()
+    {
+        var oldCatalog = Catalog("v1");
+        var checkpoint = CreateEmployedCheckpoint(oldCatalog);
+        var state = new JsonSaveSerializer(oldCatalog).DeserializeAndValidate(checkpoint).State!;
+        var newSerializer = new JsonSaveSerializer(Catalog("v2"));
+
+        var emptyCareer = CloneState(state);
+        emptyCareer.Employment!.CareerId = "";
+        Equal(LoadStatus.Corrupt, DeserializeRaw(newSerializer, emptyCareer).Status);
+
+        var emptyRevision = CloneState(state);
+        emptyRevision.Employment!.DefinitionRevision = "";
+        Equal(LoadStatus.Corrupt, DeserializeRaw(newSerializer, emptyRevision).Status);
+
+        var negativeXpUnsupportedRevision = CloneState(state);
+        negativeXpUnsupportedRevision.Employment!.Xp = -1;
+        negativeXpUnsupportedRevision.Employment.DefinitionRevision = "v0";
+        Equal(LoadStatus.Corrupt, DeserializeRaw(newSerializer, negativeXpUnsupportedRevision).Status);
+
+        var malformedSkill = CloneState(state);
+        malformedSkill.Skills[0].Id = "";
+        Equal(LoadStatus.Corrupt, DeserializeRaw(newSerializer, malformedSkill).Status);
+
+        var malformedScene = CloneState(state);
+        malformedScene.Scheduler.Deck.Add("");
+        Equal(LoadStatus.Corrupt, DeserializeRaw(newSerializer, malformedScene).Status);
+    }
+
+    private static byte[] CreateCharacterCheckpoint(ContentCatalog catalog)
+    {
+        var serializer = new JsonSaveSerializer(catalog);
+        var initial = GameSession.NewState(catalog, "run", 12345, new SimDate(2026, 9, 7));
+        var session = new GameSession(initial, catalog, serializer, new MemoryStore(serializer, null));
+        Equal(CommandStatus.Committed, session.Execute(new CommandEnvelope("run", "create", 0, new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female"))).Status);
+        return session.ExportCheckpoint();
+    }
+
+    private static byte[] CreateEmployedCheckpoint(ContentCatalog catalog)
+    {
+        var serializer = new JsonSaveSerializer(catalog);
+        var initial = GameSession.NewState(catalog, "run", 12345, new SimDate(2026, 9, 7));
+        var session = new GameSession(initial, catalog, serializer, new MemoryStore(serializer, null));
+        Equal(CommandStatus.Committed, session.Execute(new CommandEnvelope("run", "create", 0, new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female"))).Status);
+        Equal(CommandStatus.Committed, session.Execute(new CommandEnvelope("run", "job", session.Snapshot().Revision, new GameCommand(CommandKind.AcceptJob, "developer"))).Status);
+        return session.ExportCheckpoint();
+    }
+
+    private static byte[] CreateCheckpointWithConsumedCareerScene(ContentCatalog catalog)
+    {
+        var serializer = new JsonSaveSerializer(catalog);
+        var initial = GameSession.NewState(catalog, "run", 12345, new SimDate(2026, 9, 7));
+        var session = new GameSession(initial, catalog, serializer, new MemoryStore(serializer, null));
+        Equal(CommandStatus.Committed, session.Execute(new CommandEnvelope("run", "create", 0, new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female"))).Status);
+        Equal(CommandStatus.Committed, session.Execute(new CommandEnvelope("run", "job", session.Snapshot().Revision, new GameCommand(CommandKind.AcceptJob, "developer"))).Status);
+        for (var i = 0; i < 3; i++)
+            Equal(CommandStatus.Committed, session.Execute(new CommandEnvelope("run", "advance-" + i, session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary))).Status);
+        True(serializer.DeserializeAndValidate(session.ExportCheckpoint()).State!.Scheduler.Deck.Contains("coding"));
+        return session.ExportCheckpoint();
+    }
+
+    private static LoadResult DeserializeRaw(JsonSaveSerializer serializer, GameState state) =>
+        serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision));
+
+    private static GameState CloneState(GameState state) => JsonSaveSerializer.ReadObject<GameState>(JsonSaveSerializer.WriteObject(state));
+
+    private static void AssertUnsupportedPrimaryPreserved(JsonSaveSerializer serializer, byte[] unsupportedPrimary, byte[] validBackup, string reason)
+    {
         var directory = Path.Combine(Path.GetTempPath(), "StartupLifeAstraChecks", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         var path = Path.Combine(directory, "save.json");
         File.WriteAllBytes(path, unsupportedPrimary);
         File.WriteAllBytes(path + ".backup", validBackup);
-        var store = new AtomicFileSaveStore(path, newSerializer);
-
+        var store = new AtomicFileSaveStore(path, serializer);
         var read = store.Read();
         Equal(LoadStatus.UnsupportedContent, read.Status);
-        Equal("save.content_revision", read.Reason);
+        Equal(reason, read.Reason);
         Bytes(unsupportedPrimary, File.ReadAllBytes(path));
         Equal(WriteStatus.Failed, store.Commit(validBackup, 0));
         Bytes(unsupportedPrimary, File.ReadAllBytes(path));
     }
 
-    private static ContentCatalog Catalog(string revision = "v1")
+    private static ContentCatalog Catalog(string revision = "v1", string sceneId = "coding")
     {
         var skill = new SkillDefinition("communication", "skill.communication", 100, 300, 600, 1000, 1500);
-        var scene = new CareerSceneDefinition("coding", "scene.coding", 100, 10, "communication", 1);
+        var scene = new CareerSceneDefinition(sceneId, "scene." + sceneId, 100, 10, "communication", 1);
         var rank = new CareerRankDefinition("junior", 0, 0, 10000000, "communication", 0);
         var career = new CareerDefinition("developer", revision, "career.developer", 540, 1020, 4, 20,
             new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday },
             new[] { scene }, new[] { rank });
         return new ContentCatalog("fixture.v1", new[] { skill }, new[] { career }, Array.Empty<CourseDefinition>(),
+            new[] { new CharacterStartDefinition("fresh", 3000000, 10000, "base.female") },
+            new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
+    }
+
+    private static ContentCatalog CatalogWithoutSkills() =>
+        new ContentCatalog("fixture.v1", Array.Empty<SkillDefinition>(), Array.Empty<CareerDefinition>(), Array.Empty<CourseDefinition>(),
+            new[] { new CharacterStartDefinition("fresh", 3000000, 10000, "base.female") },
+            new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
+
+    private static ContentCatalog CatalogWithForeignCoding()
+    {
+        var skill = new SkillDefinition("communication", "skill.communication", 100, 300, 600, 1000, 1500);
+        var rank = new CareerRankDefinition("junior", 0, 0, 10000000, "communication", 0);
+        var days = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday };
+        var developer = new CareerDefinition("developer", "v1", "career.developer", 540, 1020, 4, 20, days,
+            new[] { new CareerSceneDefinition("meeting", "scene.meeting", 100, 10, "communication", 1) }, new[] { rank });
+        var designer = new CareerDefinition("designer", "v1", "career.designer", 540, 1020, 4, 20, days,
+            new[] { new CareerSceneDefinition("coding", "scene.coding", 100, 10, "communication", 1) }, new[] { rank });
+        return new ContentCatalog("fixture.v1", new[] { skill }, new[] { developer, designer }, Array.Empty<CourseDefinition>(),
             new[] { new CharacterStartDefinition("fresh", 3000000, 10000, "base.female") },
             new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
     }
