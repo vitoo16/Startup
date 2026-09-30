@@ -1,0 +1,119 @@
+name: Unity Runtime Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Provisioned runner route to exercise
+        required: true
+        type: choice
+        options:
+          - android
+          - ios
+      run_build:
+        description: Also build a committed Unity 6 Build Profile
+        required: true
+        default: false
+        type: boolean
+      build_profile:
+        description: Build Profile asset path or profile name; required when run_build=true
+        required: false
+        type: string
+      build_output:
+        description: Output leaf name; defaults to StartupLife.apk (Android) or iOS (iOS)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unity-runtime-${{ inputs.platform }}
+  cancel-in-progress: false
+
+jobs:
+  android:
+    name: Unity Android smoke
+    if: ${{ inputs.platform == 'android' }}
+    runs-on: [self-hosted, startup-life, windows, unity-6000-3, android]
+    timeout-minutes: 60
+    env:
+      BUILD_PROFILE: ${{ inputs.build_profile }}
+      BUILD_OUTPUT: ${{ inputs.build_output }}
+    steps:
+      - name: Checkout repository with LFS
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: true
+
+      - name: Validate static foundation
+        shell: pwsh
+        run: ./scripts/Test-UnityFoundationStatic.ps1 -ReportPath (Join-Path $env:RUNNER_TEMP 'startup-life/static-foundation.json')
+
+      - name: Run Unity EditMode and PlayMode tests
+        shell: pwsh
+        run: ./scripts/Test-UnityHeadless.ps1 -Mode All -OutputDirectory (Join-Path $env:RUNNER_TEMP 'startup-life/unity-tests')
+
+      - name: Build Android profile
+        if: ${{ inputs.run_build }}
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:BUILD_PROFILE)) {
+            throw 'run_build=true requires build_profile.'
+          }
+          $leaf = if ([string]::IsNullOrWhiteSpace($env:BUILD_OUTPUT)) { 'StartupLife.apk' } else { $env:BUILD_OUTPUT }
+          $output = Join-Path $env:RUNNER_TEMP "startup-life/build/$leaf"
+          $evidence = Join-Path $env:RUNNER_TEMP 'startup-life/unity-build'
+          ./scripts/Invoke-UnityBuild.ps1 -Profile $env:BUILD_PROFILE -OutputPath $output -EvidenceDirectory $evidence
+
+      - name: Upload Android Unity evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: unity-android-smoke
+          path: ${{ runner.temp }}/startup-life/**
+          if-no-files-found: warn
+          retention-days: 14
+
+  ios:
+    name: Unity iOS export smoke
+    if: ${{ inputs.platform == 'ios' }}
+    runs-on: [self-hosted, startup-life, macos, unity-6000-3, ios]
+    timeout-minutes: 60
+    env:
+      BUILD_PROFILE: ${{ inputs.build_profile }}
+      BUILD_OUTPUT: ${{ inputs.build_output }}
+    steps:
+      - name: Checkout repository with LFS
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: true
+
+      - name: Validate static foundation
+        shell: pwsh
+        run: ./scripts/Test-UnityFoundationStatic.ps1 -ReportPath (Join-Path $env:RUNNER_TEMP 'startup-life/static-foundation.json')
+
+      - name: Run Unity EditMode and PlayMode tests
+        shell: pwsh
+        run: ./scripts/Test-UnityHeadless.ps1 -Mode All -OutputDirectory (Join-Path $env:RUNNER_TEMP 'startup-life/unity-tests')
+
+      - name: Export iOS Xcode project from profile
+        if: ${{ inputs.run_build }}
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:BUILD_PROFILE)) {
+            throw 'run_build=true requires build_profile.'
+          }
+          $leaf = if ([string]::IsNullOrWhiteSpace($env:BUILD_OUTPUT)) { 'iOS' } else { $env:BUILD_OUTPUT }
+          $output = Join-Path $env:RUNNER_TEMP "startup-life/build/$leaf"
+          $evidence = Join-Path $env:RUNNER_TEMP 'startup-life/unity-build'
+          ./scripts/Invoke-UnityBuild.ps1 -Profile $env:BUILD_PROFILE -OutputPath $output -EvidenceDirectory $evidence
+
+      - name: Upload iOS Unity evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: unity-ios-smoke
+          path: ${{ runner.temp }}/startup-life/**
+          if-no-files-found: warn
+          retention-days: 14
