@@ -35,14 +35,39 @@ Added `.github/workflows/engine-free-ci.yml` with these gates:
 5. fail if verification dirties the checkout;
 6. upload `engine-free-simulation-report` for 14 days.
 
+The workflow pins the current verified action releases by commit SHA:
+
+- `actions/checkout` v7.0.1 → `3d3c42e5aac5ba805825da76410c181273ba90b1`
+- `actions/setup-dotnet` v6.0.0 → `a98b56852c35b8e3190ac28c8c2271da59106c68`
+- `actions/upload-artifact` v7.0.1 → `043fb46d1a93c77aae656e7c1c64a875d1fc6a0a`
+
+The first CI run passed but exposed GitHub's Node 20 deprecation warning from older `@v4` actions. The pins above were then upgraded to the current Node 24-compatible releases and verified in a second clean run.
+
 The workflow deliberately does not invoke `scripts/Test-Unity.ps1`: that script targets the locally installed Unity CLI/Editor and requires a real ready Editor. A future M0-T04 slice must add licensed Windows/macOS Unity runners only after runner labels, licenses, platform modules, and Mac/Xcode provisioning are known.
 
 ## Acceptance / tests
 
-- Workflow syntax and GitHub execution: **pending PR run at initial commit**.
-- Documentation validation: **must be proven by the PR workflow; no local pass claimed here**.
-- Engine-free simulation: existing suite currently contains the provisional regression checks, but this session does not reuse a historical report as proof of the new CI path; the PR workflow must produce a fresh artifact.
-- Repository-clean check: enforced by the new workflow after both verification commands.
+Fresh GitHub Actions verification on PR #1, run `36666827469`:
+
+- Workflow/job conclusion: **success**.
+- Authoritative documentation validation: **passed**.
+  - canonical source parity: **4/4**;
+  - task ledger: **49 unique expected IDs**;
+  - only `M0-T01` remains marked complete;
+  - exact approved dependencies/expanded skill requirements passed;
+  - Markdown links checked: **25 files**.
+- Engine-free .NET build: **succeeded with 0 warnings / 0 errors**.
+- Simulation regression suite: **35/35 passed**.
+- Repository-clean guard after verification: **passed**.
+- Artifact upload: **passed**.
+  - artifact: `engine-free-simulation-report`;
+  - artifact ID: `11076412510`;
+  - size: 1334 bytes;
+  - digest: `sha256:324872c3b432ccb846c4e3a01f82f8d9f8b3e7872274d815c2762b3009d7b463`;
+  - expires: 2026-10-14.
+- The second run contains no Node 20 action deprecation warning after the action upgrade.
+
+Because this evidence file is itself a follow-up commit, the PR head must still receive a final CI pass before merge. The retained run above proves the workflow implementation and pinned action set; it does not replace the final-head check.
 
 ## Visual evidence
 
@@ -69,4 +94,7 @@ None. No runtime schema, migration, serializer, or save fixture changed.
 
 ## Commit / PR
 
-Record the final PR and green workflow evidence after GitHub Actions completes. Do not mark the task complete from file creation alone.
+- Branch: `feat/m0-t04-engine-free-ci`
+- PR: #1 — `ci: add M0-T04 engine-free verification gate`
+- Verified implementation run: `36666827469`
+- Final PR-head run: record/confirm before merge; do not mark M0-T04 complete from this slice alone.
