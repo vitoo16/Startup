@@ -49,7 +49,9 @@ namespace StartupLife.Core
             var schedulerEmployment = s.Employment ?? (s.PreviousEmployment.Count == 0 ? null : s.PreviousEmployment[s.PreviousEmployment.Count - 1]);
             if (s.Scheduler.Deck.Count > 0 && schedulerEmployment == null)
                 throw new ArgumentException("Scheduler has no owning employment.");
-            if (schedulerEmployment != null && c.Careers.TryGetValue(schedulerEmployment.CareerId, out var schedulerCareer) &&
+            var schedulerReferencesAvailable = s.Scheduler.Deck.All(id => c.Careers.Values.Any(career => career.Scenes.Any(scene => scene.Id == id))) &&
+                (s.Scheduler.LastScene.Length == 0 || c.Careers.Values.Any(career => career.Scenes.Any(scene => scene.Id == s.Scheduler.LastScene)));
+            if (schedulerEmployment != null && schedulerReferencesAvailable && c.Careers.TryGetValue(schedulerEmployment.CareerId, out var schedulerCareer) &&
                 schedulerCareer.Revision == schedulerEmployment.DefinitionRevision)
                 ValidateSchedulerContent(s, schedulerEmployment, schedulerCareer, activities);
 
