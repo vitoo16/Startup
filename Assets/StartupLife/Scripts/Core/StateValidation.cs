@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
@@ -10,7 +11,7 @@ namespace StartupLife.Core
     {
         public static void Validate(GameState s, ContentCatalog c)
         {
-            ValidateStructure(s);
+            var activities = ValidateStructure(s);
             if (s.ContentVersion != c.Version)
                 throw new ContentCompatibilityException("save.content_version", "Save content version is unsupported by the active catalog.");
 
@@ -42,6 +43,18 @@ namespace StartupLife.Core
             foreach (var id in s.Scheduler.Deck)
                 if (!c.Careers.Values.Any(career => career.Scenes.Any(scene => scene.Id == id)))
                     Unsupported("save.content_id", "Scheduled scene is unavailable in the active catalog.");
+            if (s.Scheduler.LastScene.Length > 0 && !c.Careers.Values.Any(career => career.Scenes.Any(scene => scene.Id == s.Scheduler.LastScene)))
+                Unsupported("save.content_id", "Last scheduled scene is unavailable in the active catalog.");
+
+            var schedulerEmployment = s.Employment ?? (s.PreviousEmployment.Count == 0 ? null : s.PreviousEmployment[s.PreviousEmployment.Count - 1]);
+            if (s.Scheduler.Deck.Count > 0 && schedulerEmployment == null)
+                throw new ArgumentException("Scheduler has no owning employment.");
+            var schedulerReferencesAvailable = s.Scheduler.Deck.All(id => c.Careers.Values.Any(career => career.Scenes.Any(scene => scene.Id == id))) &&
+                (s.Scheduler.LastScene.Length == 0 || c.Careers.Values.Any(career => career.Scenes.Any(scene => scene.Id == s.Scheduler.LastScene)));
+            if (schedulerEmployment != null && schedulerReferencesAvailable && c.Careers.TryGetValue(schedulerEmployment.CareerId, out var schedulerCareer) &&
+                schedulerCareer.Revision == schedulerEmployment.DefinitionRevision)
+                ValidateSchedulerContent(s, schedulerEmployment, schedulerCareer, activities);
+
             if (s.Employment != null && c.Careers.TryGetValue(s.Employment.CareerId, out var career) &&
                 career.Revision == s.Employment.DefinitionRevision)
             {
@@ -60,11 +73,14 @@ namespace StartupLife.Core
                 }
                 if (e.ScenesToday != expectedScenes || (expectedScenes > 0 ? e.WorkDateIso != s.DateIso : e.WorkDateIso.Length != 0))
                     throw new ArgumentException("Work cursor/reward state is inconsistent.");
+                var committedToday = CountCareerActivities(activities, career, ParseDate(e.FirstShiftIso), s.Date);
+                if (committedToday.Today != expectedScenes)
+                    throw new ArgumentException("Committed work activities do not match today's work cursor.");
             }
             if (incompatibility != null) throw incompatibility;
         }
 
-        private static void ValidateStructure(GameState s)
+        private static IReadOnlyList<ActivityStamp> ValidateStructure(GameState s)
         {
             if (s.SaveVersion != 1 || string.IsNullOrWhiteSpace(s.RunId) ||
                 s.Revision < 0 || s.NextEntity < 1 || s.NextOperation < 1 || s.Minute < 0 || s.Minute >= 1440 ||
@@ -88,36 +104,190 @@ namespace StartupLife.Core
                 if (!ContentId.IsValid(skill.Id) || skill.Exposure < 0 || skill.GrantedLevel < 0 || skill.GrantedLevel > 5)
                     throw new ArgumentException("Invalid skill.");
 
-            if (s.Scheduler.Cursor < 0 || s.Scheduler.Cursor > s.Scheduler.Deck.Count || s.Scheduler.Cycle < 0 || s.Scheduler.Generation < 0 ||
-                s.Scheduler.Deck.Any(id => !ContentId.IsValid(id)))
-                throw new ArgumentException("Invalid scheduler.");
-
+            ValidateSchedulerStructure(s.Scheduler);
             ValidateEmploymentStructure(s.Employment);
             foreach (var employment in s.PreviousEmployment) ValidateEmploymentStructure(employment);
             ValidateCourseStructure(s.Course);
             foreach (var course in s.CompletedCourses) ValidateCourseStructure(course);
+
+            long maxOperation = 0;
+            var operationIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var r in s.Receipts)
+            {
+                if (r.Revision <= 0 || r.Revision > s.Revision || r.MinutesConsumed < 0 || string.IsNullOrEmpty(r.Payload) ||
+                    !TryParseRunSequence(s.RunId, "op", r.OperationId, out var sequence))
+                    throw new ArgumentException("Invalid receipt.");
+                maxOperation = Math.Max(maxOperation, sequence);
+                operationIds.Add(r.OperationId);
+            }
+            if (s.NextOperation <= maxOperation)
+                throw new ArgumentException("Operation counter would reuse an issued identity.");
+
+            var activities = new List<ActivityStamp>(s.ConsumedActivities.Count);
+            foreach (var activity in s.ConsumedActivities)
+            {
+                if (!TryParseActivity(s.RunId, activity, out var stamp))
+                    throw new ArgumentException("Invalid consumed activity identity.");
+                if (stamp.Date > s.Date || (stamp.Date == s.Date && stamp.Minute >= s.Minute))
+                    throw new ArgumentException("Consumed activity is ahead of the simulation cursor.");
+                activities.Add(stamp);
+            }
+            if (s.CurrentActivity.Length > 0 && !operationIds.Contains(s.CurrentActivity) && !s.ConsumedActivities.Contains(s.CurrentActivity))
+                throw new ArgumentException("Current activity was never committed.");
+
+            var entityIds = new HashSet<string>(StringComparer.Ordinal);
+            long maxEntity = 0;
+            void Issued(string id, string kind)
+            {
+                if (!TryParseRunSequence(s.RunId, kind, id, out var sequence) || !entityIds.Add(id))
+                    throw new ArgumentException("Invalid or reused entity identity.");
+                maxEntity = Math.Max(maxEntity, sequence);
+            }
+            var employmentIds = new HashSet<string>(StringComparer.Ordinal);
+            void Employment(EmploymentState? employment)
+            {
+                if (employment == null) return;
+                Issued(employment.InstanceId, "employment");
+                Issued(employment.EmployerId, "employer");
+                employmentIds.Add(employment.InstanceId);
+            }
+            Employment(s.Employment);
+            foreach (var employment in s.PreviousEmployment) Employment(employment);
+            if (s.Course != null) Issued(s.Course.InstanceId, "course");
+            foreach (var course in s.CompletedCourses) Issued(course.InstanceId, "course");
+            foreach (var claim in s.Claims) Issued(claim.Id, "claim");
+            foreach (var arrear in s.Arrears) Issued(arrear.Id, "arrear");
+            foreach (var ledger in s.Ledger) Issued(ledger.Id, "transaction");
+            if (s.NextEntity <= maxEntity)
+                throw new ArgumentException("Entity counter would reuse an issued identity.");
 
             var earned = RationalAmount.Zero;
             foreach (var claim in s.Claims)
             {
                 var numerator = BigInteger.Parse(claim.Numerator, CultureInfo.InvariantCulture);
                 var denominator = BigInteger.Parse(claim.Denominator, CultureInfo.InvariantCulture);
-                if (numerator < 0 || denominator <= 0) throw new ArgumentException("Invalid salary fraction.");
+                if (numerator < 0 || denominator <= 0 || !employmentIds.Contains(claim.EmploymentId))
+                    throw new ArgumentException("Invalid salary fraction.");
                 _ = DateTime.ParseExact(claim.EarnedIso, "yyyy-MM-dd", CultureInfo.InvariantCulture);
                 earned += new RationalAmount(numerator, denominator);
             }
             _ = earned.FloorToInt64();
-            long arrears = 0; foreach (var a in s.Arrears)
+            long arrears = 0;
+            foreach (var a in s.Arrears)
             {
                 if (a.Amount <= 0) throw new ArgumentException("Invalid arrears.");
-                _ = DateTime.ParseExact(a.DueIso, "yyyy-MM-dd", CultureInfo.InvariantCulture); arrears = checked(arrears + a.Amount);
+                _ = DateTime.ParseExact(a.DueIso, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                arrears = checked(arrears + a.Amount);
             }
-            foreach (var l in s.Ledger) if (l.Amount < 0 || string.IsNullOrEmpty(l.OperationId)) throw new ArgumentException("Invalid ledger.");
-            foreach (var r in s.Receipts)
-                if (r.Revision <= 0 || r.Revision > s.Revision || r.MinutesConsumed < 0 || string.IsNullOrEmpty(r.Payload)) throw new ArgumentException("Invalid receipt.");
+            foreach (var l in s.Ledger)
+                if (l.Amount < 0 || string.IsNullOrEmpty(l.OperationId) || !operationIds.Contains(l.OperationId))
+                    throw new ArgumentException("Invalid ledger.");
+            return activities.AsReadOnly();
         }
 
-        private static void Unique(System.Collections.Generic.IEnumerable<string> values)
+        private static void ValidateSchedulerStructure(SchedulerState scheduler)
+        {
+            if (scheduler.Cursor < 0 || scheduler.Cursor > scheduler.Deck.Count || scheduler.Cycle < 0 || scheduler.Generation < 0 ||
+                scheduler.Deck.Any(id => !ContentId.IsValid(id)) ||
+                (scheduler.LastScene.Length > 0 && !ContentId.IsValid(scheduler.LastScene)))
+                throw new ArgumentException("Invalid scheduler.");
+            if (scheduler.Deck.Count == 0)
+            {
+                if (scheduler.Cursor != 0 || scheduler.Cycle != 0 || scheduler.Generation != 0 || scheduler.Signature.Length != 0)
+                    throw new ArgumentException("Empty scheduler retains generated-cycle state.");
+                return;
+            }
+            if (scheduler.Cursor == 0 || scheduler.Cycle == 0 || scheduler.Generation < scheduler.Cycle ||
+                string.IsNullOrWhiteSpace(scheduler.Signature) || string.IsNullOrWhiteSpace(scheduler.LastScene) ||
+                scheduler.LastScene != scheduler.Deck[scheduler.Cursor - 1])
+                throw new ArgumentException("Scheduler prefix is not a committed runtime state.");
+        }
+
+        private static void ValidateSchedulerContent(GameState state, EmploymentState employment, CareerDefinition career,
+            IReadOnlyList<ActivityStamp> activities)
+        {
+            if (state.Scheduler.Deck.Count == 0)
+            {
+                var committed = CountCareerActivities(activities, career, ParseDate(employment.FirstShiftIso), EndDate(state, employment));
+                if (committed.Total != 0) throw new ArgumentException("Scheduler lost committed career scenes.");
+                return;
+            }
+            if (state.Scheduler.Deck.Count != career.QuotaSlots || !career.Scenes.Any(scene => scene.Id == state.Scheduler.LastScene))
+                throw new ArgumentException("Scheduler cycle does not match its career definition.");
+            if (state.Scheduler.Deck.Any(id => !career.Scenes.Any(scene => scene.Id == id)))
+                throw new ArgumentException("Deck belongs to another career.");
+
+            var signatureMatches = false;
+            for (var rank = 0; rank <= employment.Rank && rank < career.Ranks.Count; rank++)
+            {
+                var expected = career.Id + "/" + career.Revision + "/" + rank.ToString(CultureInfo.InvariantCulture);
+                if (state.Scheduler.Signature == expected) { signatureMatches = true; break; }
+            }
+            if (!signatureMatches) throw new ArgumentException("Scheduler signature cannot belong to the current employment transition.");
+
+            var counts = CountCareerActivities(activities, career, ParseDate(employment.FirstShiftIso), EndDate(state, employment));
+            if (counts.Total <= 0) throw new ArgumentException("Generated scheduler has no committed career scene.");
+            var expectedCycle = checked((counts.Total - 1) / career.QuotaSlots + 1);
+            var expectedCursor = checked((counts.Total - 1) % career.QuotaSlots + 1);
+            if (state.Scheduler.Cycle != expectedCycle || state.Scheduler.Cursor != expectedCursor)
+                throw new ArgumentException("Scheduler cursor/cycle does not match committed career activities.");
+        }
+
+        private static ActivityCounts CountCareerActivities(IReadOnlyList<ActivityStamp> activities, CareerDefinition career,
+            SimDate firstShift, SimDate endDate)
+        {
+            var total = 0;
+            var today = 0;
+            var slot = (career.EndMinute - career.StartMinute) / career.ScenesPerShift;
+            foreach (var activity in activities)
+            {
+                if (activity.Date < firstShift || activity.Date > endDate || !career.WorksOn(activity.Date) ||
+                    activity.Minute < career.StartMinute || activity.Minute >= career.EndMinute ||
+                    (activity.Minute - career.StartMinute) % slot != 0)
+                    continue;
+                total++;
+                if (activity.Date == endDate) today++;
+            }
+            return new ActivityCounts(total, today);
+        }
+
+        private static SimDate EndDate(GameState state, EmploymentState employment) =>
+            employment.EndedIso.Length > 0 ? ParseDate(employment.EndedIso) : state.Date;
+
+        private static SimDate ParseDate(string value)
+        {
+            var date = DateTime.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            return new SimDate(date.Year, date.Month, date.Day);
+        }
+
+        private static bool TryParseRunSequence(string runId, string kind, string value, out long sequence)
+        {
+            sequence = 0;
+            var prefix = runId + "/" + kind + "/";
+            if (!value.StartsWith(prefix, StringComparison.Ordinal)) return false;
+            var suffix = value.Substring(prefix.Length);
+            return suffix.Length > 0 && long.TryParse(suffix, NumberStyles.None, CultureInfo.InvariantCulture, out sequence) &&
+                sequence > 0 && suffix == sequence.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static bool TryParseActivity(string runId, string value, out ActivityStamp activity)
+        {
+            activity = default;
+            var prefix = runId + "/activity/";
+            if (!value.StartsWith(prefix, StringComparison.Ordinal)) return false;
+            var suffix = value.Substring(prefix.Length);
+            var separator = suffix.LastIndexOf('/');
+            if (separator <= 0 || separator == suffix.Length - 1) return false;
+            var dateText = suffix.Substring(0, separator);
+            var minuteText = suffix.Substring(separator + 1);
+            if (!DateTime.TryParseExact(dateText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ||
+                !int.TryParse(minuteText, NumberStyles.None, CultureInfo.InvariantCulture, out var minute) || minute < 0 || minute >= 1440 ||
+                minuteText != minute.ToString(CultureInfo.InvariantCulture)) return false;
+            activity = new ActivityStamp(new SimDate(date.Year, date.Month, date.Day), minute);
+            return true;
+        }
+
+        private static void Unique(IEnumerable<string> values)
         {
             var items = values.ToArray();
             if (items.Any(string.IsNullOrWhiteSpace) || items.Distinct(StringComparer.Ordinal).Count() != items.Length)
@@ -134,6 +304,7 @@ namespace StartupLife.Core
             _ = DateTime.ParseExact(e.FirstShiftIso, "yyyy-MM-dd", CultureInfo.InvariantCulture);
             if (e.EndedIso.Length > 0) _ = DateTime.ParseExact(e.EndedIso, "yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
+
         private static void ValidateEmploymentContent(EmploymentState? e, ContentCatalog c)
         {
             if (e == null) return;
@@ -151,6 +322,7 @@ namespace StartupLife.Core
             if (!ContentId.IsValid(course.DefinitionId) || course.ProgressUnits < 0 || string.IsNullOrWhiteSpace(course.InstanceId))
                 throw new ArgumentException("Invalid course state.");
         }
+
         private static void ValidateCourseContent(CourseState? course, ContentCatalog c)
         {
             if (course == null) return;
@@ -158,6 +330,20 @@ namespace StartupLife.Core
                 throw new ContentCompatibilityException("save.content_id", "Course definition is unavailable in the active catalog.");
             if (course.ProgressUnits > checked((long)definition.BaseMinutes * 10000))
                 throw new ArgumentException("Invalid course state.");
+        }
+
+        private readonly struct ActivityStamp
+        {
+            public SimDate Date { get; }
+            public int Minute { get; }
+            public ActivityStamp(SimDate date, int minute) { Date = date; Minute = minute; }
+        }
+
+        private readonly struct ActivityCounts
+        {
+            public int Total { get; }
+            public int Today { get; }
+            public ActivityCounts(int total, int today) { Total = total; Today = today; }
         }
     }
 }
