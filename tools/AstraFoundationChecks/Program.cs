@@ -23,11 +23,16 @@ internal static class Program
         Check("H1 ordinary root/index day/month continuations need no provenance", OrdinaryLegacyContinuation);
         Check("H1 failed normalization preserves checkpoint and owner bindings are defensive", HistoricalOwnershipFailureSafety);
         Check("H1 internal IDs exclude historical callers including delimiter and maximum-length roots", InternalNamespaceIsDisjoint);
+        Check("H1 trusted recovery persists completed/partial day/month owners before retry", DurableHistoricalRestore);
+        Check("H1 compatibility recovery failures and replacement ambiguity preserve exactly-once results", HistoricalRestoreFaults);
+        Check("H1 compatibility writes reject gameplay changes and competing owner resolutions", CompatibilityWriteRestrictions);
+        Check("H1 malformed ownership groups fail closed without rewriting the checkpoint", InvalidHistoricalOwnershipFailsClosed);
         Check("H2 unsupported career revision does not fall back to backup or overwrite primary", UnsupportedCareerRevisionIsPreserved);
         Check("H2 missing saved skill is unsupported content", MissingSavedSkillIsUnsupported);
         Check("H2 missing scheduled scene is unsupported while wrong-career scene is corrupt", MissingSceneClassificationIsPrecise);
         Check("H2 malformed persisted fields remain corrupt before compatibility resolution", MalformedFieldsRemainCorrupt);
         Check("R2 truncated skill state is corrupt and recovers the valid backup", TruncatedSkillsRemainCorrupt);
+        Check("R2 cross-field corruption wins over missing content and unavailable revisions", CrossFieldCorruptionRemainsCorrupt);
 
         var reportPath = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.Combine(Path.GetTempPath(), "startup-life-astra-foundation-highs.json");
         Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
@@ -121,7 +126,7 @@ internal static class Program
         Equal("TargetReached", retry.StopReason);
         Equal(legacyReceipts.Length, retry.Boundaries.Count);
         True(retry.Boundaries.All(x => x.Status == CommandStatus.AlreadyCommitted));
-        Bytes(prePrCheckpoint, restored.Session.ExportCheckpoint());
+        SameStateExceptReceiptIds(prePrCheckpoint, restored.Session.ExportCheckpoint());
 
         var beforeAlias = restored.Session.Snapshot().Instant.Date;
         var alias = restored.Session.AdvanceDay(new CommandEnvelope("run", "abc", restored.Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary)));
@@ -156,6 +161,7 @@ internal static class Program
             Bytes(checkpoint, f.Session.ExportCheckpoint());
             Bytes(checkpoint, f.Store.Bytes!);
             Equal(0, f.Store.CommitAttempts);
+            Equal(0, f.Store.CompatibilityAttempts);
         }
     }
 
@@ -178,9 +184,10 @@ internal static class Program
             Equal("InvalidState", Advance(f, request, !month).StopReason);
             Equal("InvalidState", Advance(f, new CommandEnvelope("run", owner, 2, new GameCommand(CommandKind.AdvanceBoundary, amount: 1)), month).StopReason);
             Equal("InvalidRequest", Advance(f, new CommandEnvelope("run", "stale", 2, new GameCommand(CommandKind.AdvanceBoundary)), month).StopReason);
-            Bytes(checkpoint, f.Session.ExportCheckpoint());
-            Bytes(checkpoint, f.Store.Bytes!);
+            SameStateExceptReceiptIds(checkpoint, f.Session.ExportCheckpoint());
+            Bytes(f.Session.ExportCheckpoint(), f.Store.Bytes!);
             Equal(0, f.Store.CommitAttempts);
+            Equal(1, f.Store.CompatibilityAttempts);
         }
     }
 
@@ -231,9 +238,8 @@ internal static class Program
         f.Store.Allowed = 0;
         var request = new CommandEnvelope("run", "abc", 2, new GameCommand(CommandKind.AdvanceBoundary));
         var failed = f.Session.AdvanceDay(request);
-        Equal("PersistenceOrRuleFailure", failed.StopReason);
-        Equal(2, failed.Boundaries.Count(x => x.Status == CommandStatus.AlreadyCommitted));
-        Equal(CommandStatus.PersistenceFailed, failed.Boundaries.Last().Status);
+        Equal("RecoveryRequired", failed.StopReason);
+        Equal(0, failed.Boundaries.Count);
         Bytes(checkpoint, f.Session.ExportCheckpoint());
         Bytes(checkpoint, f.Store.Bytes!);
         f.Store.Allowed = int.MaxValue;
@@ -289,7 +295,7 @@ internal static class Program
                 var pr6Retry = pr6Restored.Session.AdvanceDay(request);
                 Equal("TargetReached", pr6Retry.StopReason);
                 True(pr6Retry.Boundaries.Count > 0 && pr6Retry.Boundaries.All(x => x.Status == CommandStatus.AlreadyCommitted));
-                Bytes(pr6Bytes, pr6Restored.Session.ExportCheckpoint());
+                SameStateExceptReceiptIds(pr6Bytes, pr6Restored.Session.ExportCheckpoint());
             }
         }
         var internalId = f.Serializer.DeserializeAndValidate(f.Session.ExportCheckpoint()).State!.Receipts.First(x => x.ParentPayload.Length > 0).CommandId;
@@ -317,6 +323,213 @@ internal static class Program
         var session = new GameSession(store.Read().State!, catalog, serializer, store);
         Equal(CommandStatus.Committed, session.Execute(new CommandEnvelope("run", "job", truncated.Revision, new GameCommand(CommandKind.AcceptJob, "developer"))).Status);
         Equal(LoadStatus.Valid, store.Read().Status);
+    }
+
+    private static string SavePath(byte[] checkpoint)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "StartupLifeAstraChecks", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "save.json");
+        File.WriteAllBytes(path, checkpoint);
+        return path;
+    }
+
+    private static void DurableHistoricalRestore()
+    {
+        foreach (var owner in new[] { "abc", "$batch/3:abc" }) foreach (var month in new[] { false, true })
+            foreach (var partial in new[] { false, true })
+            {
+                var catalog = Catalog();
+                var serializer = new JsonSaveSerializer(catalog);
+                var checkpoint = HistoricalCheckpoint(month, partial);
+                var path = SavePath(checkpoint);
+                var original = serializer.DeserializeAndValidate(checkpoint).State!;
+                var store = new AtomicFileSaveStore(path, serializer);
+                True(!GameSession.TryRestore(catalog, serializer, store, out var unresolved, out var diagnosis));
+                Equal<GameSession?>(null, unresolved);
+                Equal(LoadStatus.RecoveryRequired, diagnosis.Status);
+                Equal("save.batch_owner_required", diagnosis.Reason);
+                Bytes(checkpoint, File.ReadAllBytes(path));
+
+                True(GameSession.TryRestore(catalog, serializer, store, out var imported, out var resolved, Owners(owner)));
+                Equal(LoadStatus.Valid, resolved.Status);
+                Equal(original.Revision, imported!.Snapshot().Revision);
+                var bound = File.ReadAllBytes(path);
+                SameStateExceptReceiptIds(checkpoint, bound);
+                Bytes(bound, File.ReadAllBytes(path + ".backup"));
+                Equal(1, serializer.DeserializeAndValidate(bound).State!.SaveVersion);
+
+                // New process/store/session, before ANY gameplay command or retry, with no in-memory bindings.
+                True(GameSession.TryRestore(catalog, serializer, new AtomicFileSaveStore(path, serializer), out var cold, out var coldLoad));
+                Equal(LoadStatus.Valid, coldLoad.Status);
+                Bytes(bound, cold!.ExportCheckpoint());
+                // Ownership also survives validated-backup recovery.
+                File.WriteAllText(path, "broken primary");
+                True(GameSession.TryRestore(catalog, serializer, new AtomicFileSaveStore(path, serializer), out cold, out coldLoad));
+                Equal(LoadStatus.RecoveredBackup, coldLoad.Status);
+                Bytes(bound, cold!.ExportCheckpoint());
+                var request = new CommandEnvelope("run", owner, 2, new GameCommand(CommandKind.AdvanceBoundary));
+                var retry = month ? cold.AdvanceMonth(request) : cold.AdvanceDay(request);
+                Equal("TargetReached", retry.StopReason);
+                if (!partial)
+                {
+                    True(retry.Boundaries.All(x => x.Status == CommandStatus.AlreadyCommitted));
+                    Equal(original.Receipts.Count(x => x.ParentPayload.Length > 0), retry.Boundaries.Count);
+                    True(original.Receipts.Where(x => x.ParentPayload.Length > 0).Select(x => (x.OperationId, x.Revision, x.MinutesConsumed)).SequenceEqual(
+                        retry.Boundaries.Select(x => (x.OperationId, x.Revision, x.MinutesConsumed))));
+                    Bytes(bound, cold.ExportCheckpoint());
+                }
+                else
+                {
+                    True(retry.Boundaries.Take(2).All(x => x.Status == CommandStatus.AlreadyCommitted));
+                    var control = new Fixture();
+                    control.Execute("create", new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female"));
+                    control.Execute("job", new GameCommand(CommandKind.AcceptJob, "developer"));
+                    Equal("TargetReached", Advance(control, request, month).StopReason);
+                    Bytes(control.Session.ExportCheckpoint(), cold.ExportCheckpoint());
+                }
+                Equal("command.id_conflict", cold.Execute(new CommandEnvelope("run", owner, cold.Snapshot().Revision, new GameCommand(CommandKind.Resign))).ReasonKey);
+                Equal("InvalidState", (month ? cold.AdvanceDay(request) : cold.AdvanceMonth(request)).StopReason);
+                if (owner == "$batch/3:abc")
+                {
+                    var separate = cold.AdvanceDay(new CommandEnvelope("run", "abc", cold.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary)));
+                    Equal("TargetReached", separate.StopReason);
+                    True(separate.Boundaries.Count > 0 && separate.Boundaries.All(x => x.Status == CommandStatus.Committed));
+                }
+            }
+    }
+
+    private static void HistoricalRestoreFaults()
+    {
+        foreach (var phase in new[] { "before-replace", "after-replace", "before-compatibility-backup" })
+        {
+            var catalog = Catalog();
+            var serializer = new JsonSaveSerializer(catalog);
+            var checkpoint = HistoricalCheckpoint(false, false);
+            var path = SavePath(checkpoint);
+            File.WriteAllBytes(path + ".backup", checkpoint);
+            var store = new AtomicFileSaveStore(path, serializer, current => current == phase);
+            True(!GameSession.TryRestore(catalog, serializer, store, out var failed, out var result, Owners("abc")));
+            Equal<GameSession?>(null, failed);
+            Equal(LoadStatus.RecoveryRequired, result.Status);
+            SameStateExceptReceiptIds(checkpoint, File.ReadAllBytes(path));
+            if (phase == "before-replace")
+            {
+                Bytes(checkpoint, File.ReadAllBytes(path));
+                Bytes(checkpoint, File.ReadAllBytes(path + ".backup"));
+                Equal("save.compatibility_write_failed", result.Reason);
+            }
+            else Equal("save.recovery_required", result.Reason);
+            var clean = new AtomicFileSaveStore(path, serializer);
+            if (phase != "before-replace")
+            {
+                var primaryBeforeRead = File.ReadAllBytes(path);
+                var backupBeforeRead = File.ReadAllBytes(path + ".backup");
+                Equal(BatchReceiptIdentity.BackupRepairReason, clean.Read().Reason);
+                Bytes(primaryBeforeRead, File.ReadAllBytes(path));
+                Bytes(backupBeforeRead, File.ReadAllBytes(path + ".backup"));
+            }
+            True(GameSession.TryRestore(catalog, serializer, clean, out var recovered, out _, phase == "before-replace" ? Owners("abc") : null));
+            var before = recovered!.ExportCheckpoint();
+            Bytes(before, File.ReadAllBytes(path + ".backup"));
+            File.WriteAllText(path, "corrupt after reconciled import");
+            True(GameSession.TryRestore(catalog, serializer, new AtomicFileSaveStore(path, serializer), out recovered, out var backupLoad));
+            Equal(LoadStatus.RecoveredBackup, backupLoad.Status);
+            var retry = recovered!.AdvanceDay(new CommandEnvelope("run", "abc", 2, new GameCommand(CommandKind.AdvanceBoundary)));
+            Equal("TargetReached", retry.StopReason);
+            True(retry.Boundaries.All(x => x.Status == CommandStatus.AlreadyCommitted));
+            Bytes(before, recovered.ExportCheckpoint());
+        }
+    }
+
+    private static void CompatibilityWriteRestrictions()
+    {
+        var catalog = Catalog();
+        var serializer = new JsonSaveSerializer(catalog);
+        var expected = HistoricalCheckpoint(false, false);
+        var path = SavePath(expected);
+        var store = new AtomicFileSaveStore(path, serializer);
+        var changed = serializer.DeserializeAndValidate(expected).State!;
+        changed.Cash++;
+        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, serializer.Serialize(changed)));
+        Bytes(expected, File.ReadAllBytes(path));
+        changed = serializer.DeserializeAndValidate(expected).State!;
+        changed.Receipts.Single(x => x.CommandId == "job").CommandId = "renamed-direct";
+        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, serializer.Serialize(changed)));
+        Bytes(expected, File.ReadAllBytes(path));
+
+        True(GameSession.TryRestore(catalog, serializer, store, out var imported, out _, Owners("abc")));
+        var durable = imported!.ExportCheckpoint();
+        var competitor = serializer.DeserializeAndValidate(expected).State!;
+        var index = 0;
+        foreach (var receipt in competitor.Receipts.Where(x => x.ParentPayload.Length > 0))
+            receipt.CommandId = BatchReceiptIdentity.InternalPrefix + "12:$batch/3:abc/" + index++;
+        // Same revision, different proposed owner: full-checkpoint comparison must reject the stale import.
+        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, serializer.Serialize(competitor)));
+        Bytes(durable, File.ReadAllBytes(path));
+        Equal(WriteStatus.Failed, store.Commit(serializer.Serialize(competitor), competitor.Revision));
+        Bytes(durable, File.ReadAllBytes(path));
+        var differentBackup = serializer.DeserializeAndValidate(expected).State!;
+        differentBackup.Cash++;
+        var differentBytes = serializer.Serialize(differentBackup);
+        File.WriteAllBytes(path + ".backup", differentBytes);
+        Equal("", store.Read().Reason); // Different gameplay data is never a pending ownership mirror.
+        True(GameSession.TryRestore(catalog, serializer, store, out _, out _));
+        Bytes(differentBytes, File.ReadAllBytes(path + ".backup"));
+    }
+
+    private static void CrossFieldCorruptionRemainsCorrupt()
+    {
+        var catalog = Catalog();
+        var original = new JsonSaveSerializer(catalog).DeserializeAndValidate(HistoricalCheckpoint(false, true)).State!;
+        var mutations = new Action<GameState>[]
+        {
+            s => { s.Employment!.Xp = -1; s.Employment.DefinitionRevision = "unavailable"; },
+            s => s.Employment!.CareerId = "",
+            s => s.Employment!.CareerId = "INVALID ID",
+            s => s.Employment!.DefinitionRevision = " ",
+            s => s.Scheduler.Cursor = -1,
+            s => s.Receipts[0].MinutesConsumed = -1,
+            s => s.Ledger.Add(new LedgerEntry { Id = "invalid-ledger", OperationId = "old-operation", Amount = -1 }),
+            s => s.PreviousEmployment.Add(new EmploymentState { CareerId = "developer", Xp = -1 }),
+            s => s.CompletedCourses.Add(new CourseState { DefinitionId = "missing-course", InstanceId = "old", ProgressUnits = -1 })
+        };
+        foreach (var mutation in mutations)
+            foreach (var serializer in new[] { new JsonSaveSerializer(CatalogWithoutSkills()), new JsonSaveSerializer(Catalog("v2")) })
+            {
+                var state = CloneState(original);
+                mutation(state);
+                Equal(LoadStatus.Corrupt, DeserializeRaw(serializer, state).Status);
+                state.ContentVersion = "unavailable.catalog";
+                Equal(LoadStatus.Corrupt, DeserializeRaw(serializer, state).Status);
+            }
+        // Missing scene content must not hide a malformed receipt later in the DTO.
+        var sceneState = CloneState(original);
+        sceneState.Scheduler.Deck.Add("missing-scene");
+        sceneState.Receipts[0].MinutesConsumed = -1;
+        Equal(LoadStatus.Corrupt, DeserializeRaw(new JsonSaveSerializer(catalog), sceneState).Status);
+        var corrupt = CloneState(original);
+        corrupt.Employment!.Xp = -1;
+        var missing = new JsonSaveSerializer(CatalogWithoutSkills());
+        var path = SavePath(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(corrupt), 1, corrupt.Revision));
+        var backup = GameSession.NewState(CatalogWithoutSkills(), "backup", 54321, new SimDate(2026, 9, 7));
+        File.WriteAllBytes(path + ".backup", missing.Serialize(backup));
+        Equal(LoadStatus.RecoveredBackup, new AtomicFileSaveStore(path, missing).Read().Status);
+    }
+
+    private static void InvalidHistoricalOwnershipFailsClosed()
+    {
+        var catalog = Catalog();
+        var serializer = new JsonSaveSerializer(catalog);
+        var state = serializer.DeserializeAndValidate(HistoricalCheckpoint(false, true)).State!;
+        state.Receipts.Last().CommandId = "abc/0";
+        var checkpoint = serializer.Serialize(state);
+        var path = SavePath(checkpoint);
+        True(!GameSession.TryRestore(catalog, serializer, new AtomicFileSaveStore(path, serializer), out var failed, out var result, Owners("abc")));
+        Equal<GameSession?>(null, failed);
+        Equal(LoadStatus.RecoveryRequired, result.Status);
+        Equal("save.batch_identity_invalid", result.Reason);
+        Bytes(checkpoint, File.ReadAllBytes(path));
     }
 
     private static void UnsupportedCareerRevisionIsPreserved()
@@ -450,6 +663,11 @@ internal static class Program
         Bytes(unsupportedPrimary, File.ReadAllBytes(path));
         Equal(WriteStatus.Failed, store.Commit(validBackup, 0));
         Bytes(unsupportedPrimary, File.ReadAllBytes(path));
+        True(!GameSession.TryRestore(Catalog(), serializer, store, out var session, out var blocked, Owners("abc")));
+        Equal<GameSession?>(null, session);
+        Equal(LoadStatus.UnsupportedContent, blocked.Status);
+        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(validBackup, validBackup));
+        Bytes(unsupportedPrimary, File.ReadAllBytes(path));
     }
 
     private static ContentCatalog Catalog(string revision = "v1", string sceneId = "coding")
@@ -501,13 +719,14 @@ internal static class Program
         public CommandResult Execute(string id, GameCommand command) => Session.Execute(new CommandEnvelope("run", id, Session.Snapshot().Revision, command));
     }
 
-    private sealed class MemoryStore : ISaveStore
+    private sealed class MemoryStore : ISaveCompatibilityStore
     {
         private readonly ISaveSerializer serializer;
         private byte[]? bytes;
         public byte[]? Bytes => bytes == null ? null : (byte[])bytes.Clone();
         public int Allowed { get; set; } = int.MaxValue;
         public int CommitAttempts { get; private set; }
+        public int CompatibilityAttempts { get; private set; }
         public MemoryStore(ISaveSerializer serializer, byte[]? initial) { this.serializer = serializer; bytes = initial == null ? null : (byte[])initial.Clone(); }
         public LoadResult Read() => bytes == null ? new LoadResult(LoadStatus.Missing) : serializer.DeserializeAndValidate(bytes);
         public WriteStatus Commit(byte[] candidate, long expectedRevision)
@@ -523,6 +742,20 @@ internal static class Program
             bytes = (byte[])candidate.Clone();
             return WriteStatus.Committed;
         }
+        public WriteStatus CommitReceiptCompatibility(byte[] expectedCheckpoint, byte[] normalizedCheckpoint)
+        {
+            CompatibilityAttempts++;
+            if (Allowed == 0) return WriteStatus.Failed;
+            Allowed--;
+            var previous = Read();
+            var expected = serializer.DeserializeAndValidate(expectedCheckpoint);
+            var candidate = serializer.DeserializeAndValidate(normalizedCheckpoint);
+            if (previous.Status != LoadStatus.Valid || expected.Status != LoadStatus.Valid || candidate.Status != LoadStatus.Valid ||
+                !serializer.Serialize(previous.State!).SequenceEqual(serializer.Serialize(expected.State!)) ||
+                candidate.State!.Revision != previous.State!.Revision) return WriteStatus.Failed;
+            bytes = (byte[])normalizedCheckpoint.Clone();
+            return WriteStatus.Committed;
+        }
     }
 
     private static void Check(string name, Action action)
@@ -533,4 +766,13 @@ internal static class Program
     private static void Equal<T>(T expected, T actual) { if (!EqualityComparer<T>.Default.Equals(expected, actual)) throw new Exception($"Expected {expected}; got {actual}"); }
     private static void True(bool value) { if (!value) throw new Exception("Assertion failed"); }
     private static void Bytes(byte[] expected, byte[] actual) => True(expected.SequenceEqual(actual));
+    private static void SameStateExceptReceiptIds(byte[] expected, byte[] actual)
+    {
+        var serializer = new JsonSaveSerializer(Catalog());
+        var oldState = serializer.DeserializeAndValidate(expected).State!;
+        var newState = serializer.DeserializeAndValidate(actual).State!;
+        Equal(oldState.Receipts.Count, newState.Receipts.Count);
+        for (var i = 0; i < oldState.Receipts.Count; i++) newState.Receipts[i].CommandId = oldState.Receipts[i].CommandId;
+        Bytes(JsonSaveSerializer.WriteObject(oldState), JsonSaveSerializer.WriteObject(newState));
+    }
 }

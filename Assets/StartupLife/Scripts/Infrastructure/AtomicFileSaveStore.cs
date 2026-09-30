@@ -1,11 +1,12 @@
 #nullable enable
 using System;
 using System.IO;
+using System.Linq;
 using StartupLife.Core;
 
 namespace StartupLife.Infrastructure
 {
-    public sealed class AtomicFileSaveStore : ISaveStore
+    public sealed class AtomicFileSaveStore : ISaveCompatibilityStore
     {
         private readonly string primary;
         private readonly ISaveSerializer serializer;
@@ -21,7 +22,18 @@ namespace StartupLife.Infrastructure
             lock (gate)
             {
                 var first = ReadFile(primary);
-                if (first.Status == LoadStatus.Valid || first.Status == LoadStatus.Unreadable || first.Status == LoadStatus.FutureVersion || first.Status == LoadStatus.UnsupportedContent) return first;
+                if (first.Status == LoadStatus.Valid)
+                {
+                    var prior = ReadFile(primary + ".backup");
+                    // A crash may have promoted ownership in primary before mirroring it in backup.
+                    // Only a provably identical generation with historical child IDs qualifies for repair.
+                    if (prior.Status == LoadStatus.Valid && prior.State!.Revision == first.State!.Revision &&
+                        !prior.State.Receipts.Select(x => x.CommandId).SequenceEqual(first.State.Receipts.Select(x => x.CommandId)) &&
+                        IdentityOnlyChange(prior.State, first.State))
+                        return new LoadResult(LoadStatus.Valid, first.State, BatchReceiptIdentity.BackupRepairReason);
+                    return first;
+                }
+                if (first.Status == LoadStatus.Unreadable || first.Status == LoadStatus.FutureVersion || first.Status == LoadStatus.UnsupportedContent) return first;
                 var backup = ReadFile(primary + ".backup");
                 if (backup.Status == LoadStatus.Valid) return new LoadResult(LoadStatus.RecoveredBackup, backup.State, "save.recovered_backup");
                 if (backup.Status == LoadStatus.Unreadable || backup.Status == LoadStatus.FutureVersion || backup.Status == LoadStatus.UnsupportedContent) return backup;
@@ -37,6 +49,29 @@ namespace StartupLife.Infrastructure
             catch (UnauthorizedAccessException) { return new LoadResult(LoadStatus.Unreadable, reason: "save.read_failed"); }
         }
         public WriteStatus Commit(byte[] validatedBytes, long expectedRevision)
+            => CommitCore(validatedBytes, expectedRevision, null);
+        public WriteStatus CommitReceiptCompatibility(byte[] expectedCheckpoint, byte[] normalizedCheckpoint)
+        {
+            var expected = serializer.DeserializeAndValidate(expectedCheckpoint);
+            if (expected.Status != LoadStatus.Valid) return WriteStatus.Failed;
+            return CommitCore(normalizedCheckpoint, expected.State!.Revision, expectedCheckpoint);
+        }
+        private bool IdentityOnlyChange(GameState expected, GameState candidate)
+        {
+            if (expected.Receipts.Count != candidate.Receipts.Count) return false;
+            var ids = candidate.Receipts.Select(x => x.CommandId).ToArray();
+            try
+            {
+                for (var i = 0; i < ids.Length; i++)
+                {
+                    if (ids[i] != expected.Receipts[i].CommandId && !BatchReceiptIdentity.IsLegacyReplacement(expected.Receipts[i], ids[i])) return false;
+                    candidate.Receipts[i].CommandId = expected.Receipts[i].CommandId;
+                }
+                return serializer.Serialize(expected).SequenceEqual(serializer.Serialize(candidate));
+            }
+            finally { for (var i = 0; i < ids.Length; i++) candidate.Receipts[i].CommandId = ids[i]; }
+        }
+        private WriteStatus CommitCore(byte[] validatedBytes, long expectedRevision, byte[]? expectedCheckpoint)
         {
             lock (gate)
             {
@@ -49,10 +84,18 @@ namespace StartupLife.Infrastructure
                     using (var fileGate = new FileStream(primary + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
                     {
                         var candidate = serializer.DeserializeAndValidate(validatedBytes);
-                        if (candidate.Status != LoadStatus.Valid || candidate.State!.Revision != checked(expectedRevision + 1)) return WriteStatus.Failed;
+                        if (candidate.Status != LoadStatus.Valid || candidate.State!.Revision !=
+                            (expectedCheckpoint == null ? checked(expectedRevision + 1) : expectedRevision)) return WriteStatus.Failed;
                         var previous = Read();
                         if (previous.Status != LoadStatus.Valid && previous.Status != LoadStatus.RecoveredBackup && !(previous.Status == LoadStatus.Missing && expectedRevision == 0)) return WriteStatus.Failed;
                         if (previous.State != null && previous.State.Revision != expectedRevision) return WriteStatus.Failed;
+                        if (expectedCheckpoint != null)
+                        {
+                            var expected = serializer.DeserializeAndValidate(expectedCheckpoint);
+                            if (previous.State == null || expected.Status != LoadStatus.Valid ||
+                                !serializer.Serialize(previous.State).SequenceEqual(serializer.Serialize(expected.State!)) ||
+                                !IdentityOnlyChange(expected.State!, candidate.State)) return WriteStatus.Failed;
+                        }
                         using (var file = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
                         { file.Write(validatedBytes, 0, validatedBytes.Length); file.Flush(true); }
                         if (ReadFile(temporary).Status != LoadStatus.Valid) return WriteStatus.Failed;
@@ -70,11 +113,22 @@ namespace StartupLife.Infrastructure
                         else File.Move(temporary, primary);
                         promoted = true;
                         if (fault?.Invoke("after-replace") == true) throw new IOException("Injected after replacement.");
+                        if (expectedCheckpoint != null)
+                        {
+                            // The prior primary is the same logical generation. Keep its recovered ownership in backup too.
+                            using (var file = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
+                            { file.Write(validatedBytes, 0, validatedBytes.Length); file.Flush(true); }
+                            if (ReadFile(temporary).Status != LoadStatus.Valid) return WriteStatus.Ambiguous;
+                            if (fault?.Invoke("before-compatibility-backup") == true) throw new IOException("Injected before compatibility backup.");
+                            if (File.Exists(primary + ".backup")) File.Replace(temporary, primary + ".backup", null);
+                            else File.Move(temporary, primary + ".backup");
+                        }
                         var written = ReadFile(primary);
                         return written.Status == LoadStatus.Valid && written.State!.Revision == candidate.State.Revision ? WriteStatus.Committed : WriteStatus.Ambiguous;
                     }
                 }
-                catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is PlatformNotSupportedException || e is OverflowException)
+                catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is PlatformNotSupportedException ||
+                    e is OverflowException || e is ArgumentException)
                 { return promoted ? WriteStatus.Ambiguous : WriteStatus.Failed; }
                 finally
                 {
