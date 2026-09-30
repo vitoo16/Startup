@@ -17,10 +17,17 @@ internal static class Program
         Check("H1 direct command and advance batch cannot share caller CommandId", DirectAndBatchIdentityConflict);
         Check("H1 completed batch retry replays persisted receipts after restore", BatchRetryReplaysPersistedReceiptsAfterRestore);
         Check("H1 legacy reserved-prefix caller and batch identities remain disjoint", LegacyReservedPrefixCompatibility);
+        Check("H1 unknown historical receipt ownership blocks writes without guessing", HistoricalOwnersRequireProvenance);
+        Check("H1 PR6 and pre-PR6 completed day/month receipts replay with their original owner", HistoricalCompletedRetry);
+        Check("H1 historical partial day/month continuation persists ownership atomically", HistoricalPartialContinuation);
+        Check("H1 ordinary root/index day/month continuations need no provenance", OrdinaryLegacyContinuation);
+        Check("H1 failed normalization preserves checkpoint and owner bindings are defensive", HistoricalOwnershipFailureSafety);
+        Check("H1 internal IDs exclude historical callers including delimiter and maximum-length roots", InternalNamespaceIsDisjoint);
         Check("H2 unsupported career revision does not fall back to backup or overwrite primary", UnsupportedCareerRevisionIsPreserved);
         Check("H2 missing saved skill is unsupported content", MissingSavedSkillIsUnsupported);
         Check("H2 missing scheduled scene is unsupported while wrong-career scene is corrupt", MissingSceneClassificationIsPrecise);
         Check("H2 malformed persisted fields remain corrupt before compatibility resolution", MalformedFieldsRemainCorrupt);
+        Check("R2 truncated skill state is corrupt and recovers the valid backup", TruncatedSkillsRemainCorrupt);
 
         var reportPath = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.Combine(Path.GetTempPath(), "startup-life-astra-foundation-highs.json");
         Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
@@ -109,7 +116,7 @@ internal static class Program
         for (var index = 0; index < legacyReceipts.Length; index++) legacyReceipts[index].CommandId = legacyRoot + "/" + index;
         var prePrCheckpoint = legacyBatch.Serializer.Serialize(legacyState);
 
-        var restored = new Fixture(legacyBatch.Catalog, legacyState, prePrCheckpoint);
+        var restored = new Fixture(legacyBatch.Catalog, legacyState, prePrCheckpoint, Owners(legacyRoot));
         var retry = restored.Session.AdvanceDay(originalRequest);
         Equal("TargetReached", retry.StopReason);
         Equal(legacyReceipts.Length, retry.Boundaries.Count);
@@ -121,6 +128,195 @@ internal static class Program
         Equal("TargetReached", alias.StopReason);
         True(alias.Boundaries.Any(x => x.Status == CommandStatus.Committed));
         True(restored.Session.Snapshot().Instant.Date != beforeAlias);
+    }
+
+    private static Dictionary<string, string> Owners(string root) => new(StringComparer.Ordinal) { ["$batch/3:abc/"] = root };
+
+    private static byte[] HistoricalCheckpoint(bool month, bool partial) => File.ReadAllBytes(Path.Combine(
+        AppContext.BaseDirectory, "Fixtures", "pr6-" + (month ? "month" : "day") + "-" + (partial ? "partial" : "completed") + ".json"));
+
+    private static AdvanceResult Advance(Fixture fixture, CommandEnvelope request, bool month) =>
+        month ? fixture.Session.AdvanceMonth(request) : fixture.Session.AdvanceDay(request);
+
+    private static void HistoricalOwnersRequireProvenance()
+    {
+        foreach (var month in new[] { false, true }) foreach (var partial in new[] { false, true })
+        {
+            var checkpoint = HistoricalCheckpoint(month, partial);
+            var serializer = new JsonSaveSerializer(Catalog());
+            Equal(LoadStatus.Valid, serializer.DeserializeAndValidate(checkpoint).Status);
+            var f = new Fixture(state: serializer.DeserializeAndValidate(checkpoint).State!, persisted: checkpoint);
+            foreach (var root in new[] { "abc", "$batch/3:abc", "fresh" })
+                foreach (var revision in new[] { 2L, f.Session.Snapshot().Revision })
+                    Equal("RecoveryRequired", Advance(f, new CommandEnvelope("run", root, revision, new GameCommand(CommandKind.AdvanceBoundary)), month).StopReason);
+            var direct = f.Execute("abc", new GameCommand(CommandKind.Resign));
+            Equal(CommandStatus.RecoveryRequired, direct.Status);
+            Equal("save.batch_owner_required", direct.ReasonKey);
+            Equal(CommandStatus.RecoveryRequired, f.Execute("fresh-direct", new GameCommand(CommandKind.Resign)).Status);
+            Bytes(checkpoint, f.Session.ExportCheckpoint());
+            Bytes(checkpoint, f.Store.Bytes!);
+            Equal(0, f.Store.CommitAttempts);
+        }
+    }
+
+    private static void HistoricalCompletedRetry()
+    {
+        foreach (var owner in new[] { "abc", "$batch/3:abc" }) foreach (var month in new[] { false, true })
+        {
+            var checkpoint = HistoricalCheckpoint(month, false);
+            var state = new JsonSaveSerializer(Catalog()).DeserializeAndValidate(checkpoint).State!;
+            var expected = state.Receipts.Where(x => x.ParentPayload.Length > 0).OrderBy(x => x.Revision).ToArray();
+            var f = new Fixture(state: state, persisted: checkpoint, owners: Owners(owner));
+            var request = new CommandEnvelope("run", owner, 2, new GameCommand(CommandKind.AdvanceBoundary));
+            var retry = Advance(f, request, month);
+            Equal("TargetReached", retry.StopReason);
+            Equal(expected.Length, retry.Boundaries.Count);
+            True(retry.Boundaries.All(x => x.Status == CommandStatus.AlreadyCommitted));
+            True(expected.Select(x => (x.OperationId, x.Revision, x.MinutesConsumed)).SequenceEqual(
+                retry.Boundaries.Select(x => (x.OperationId, x.Revision, x.MinutesConsumed))));
+            Equal("command.id_conflict", f.Execute(owner, new GameCommand(CommandKind.Resign)).ReasonKey);
+            Equal("InvalidState", Advance(f, request, !month).StopReason);
+            Equal("InvalidState", Advance(f, new CommandEnvelope("run", owner, 2, new GameCommand(CommandKind.AdvanceBoundary, amount: 1)), month).StopReason);
+            Equal("InvalidRequest", Advance(f, new CommandEnvelope("run", "stale", 2, new GameCommand(CommandKind.AdvanceBoundary)), month).StopReason);
+            Bytes(checkpoint, f.Session.ExportCheckpoint());
+            Bytes(checkpoint, f.Store.Bytes!);
+            Equal(0, f.Store.CommitAttempts);
+        }
+    }
+
+    private static void HistoricalPartialContinuation()
+    {
+        // These bytes were produced independently by both PR6 abc and pre-PR6 $batch/3:abc.
+        foreach (var owner in new[] { "abc", "$batch/3:abc" }) foreach (var month in new[] { false, true })
+        {
+            var checkpoint = HistoricalCheckpoint(month, true);
+            var state = new JsonSaveSerializer(Catalog()).DeserializeAndValidate(checkpoint).State!;
+            var f = new Fixture(state: state, persisted: checkpoint, owners: Owners(owner));
+            var request = new CommandEnvelope("run", owner, 2, new GameCommand(CommandKind.AdvanceBoundary));
+            var resumed = Advance(f, request, month);
+            Equal("TargetReached", resumed.StopReason);
+            True(resumed.Boundaries.Take(2).All(x => x.Status == CommandStatus.AlreadyCommitted));
+            True(resumed.Boundaries.Skip(2).All(x => x.Status == CommandStatus.Committed));
+
+            var control = new Fixture();
+            Equal(CommandStatus.Committed, control.Execute("create", new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female")).Status);
+            Equal(CommandStatus.Committed, control.Execute("job", new GameCommand(CommandKind.AcceptJob, "developer")).Status);
+            Equal("TargetReached", Advance(control, request, month).StopReason);
+            // Compare the entire state: receipts, cash, salary, ledger, RNG, skills, time and operation counters.
+            Bytes(control.Session.ExportCheckpoint(), f.Session.ExportCheckpoint());
+            var durable = f.Store.Bytes!;
+            var restored = new Fixture(state: f.Serializer.DeserializeAndValidate(durable).State!, persisted: durable);
+            var retry = Advance(restored, request, month);
+            Equal("TargetReached", retry.StopReason);
+            Equal(resumed.Boundaries.Count, retry.Boundaries.Count);
+            True(retry.Boundaries.All(x => x.Status == CommandStatus.AlreadyCommitted));
+            Bytes(durable, restored.Session.ExportCheckpoint());
+            Equal("command.id_conflict", restored.Execute(owner, new GameCommand(CommandKind.Resign)).ReasonKey);
+            if (owner == "$batch/3:abc")
+            {
+                var independent = restored.Session.AdvanceDay(new CommandEnvelope("run", "abc", restored.Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary)));
+                Equal("TargetReached", independent.StopReason);
+                True(independent.Boundaries.All(x => x.Status == CommandStatus.Committed));
+            }
+        }
+    }
+
+    private static void HistoricalOwnershipFailureSafety()
+    {
+        var checkpoint = HistoricalCheckpoint(false, true);
+        var state = new JsonSaveSerializer(Catalog()).DeserializeAndValidate(checkpoint).State!;
+        var bindings = Owners("abc");
+        var f = new Fixture(state: state, persisted: checkpoint, owners: bindings);
+        bindings["$batch/3:abc/"] = "$batch/3:abc";
+        f.Store.Allowed = 0;
+        var request = new CommandEnvelope("run", "abc", 2, new GameCommand(CommandKind.AdvanceBoundary));
+        var failed = f.Session.AdvanceDay(request);
+        Equal("PersistenceOrRuleFailure", failed.StopReason);
+        Equal(2, failed.Boundaries.Count(x => x.Status == CommandStatus.AlreadyCommitted));
+        Equal(CommandStatus.PersistenceFailed, failed.Boundaries.Last().Status);
+        Bytes(checkpoint, f.Session.ExportCheckpoint());
+        Bytes(checkpoint, f.Store.Bytes!);
+        f.Store.Allowed = int.MaxValue;
+        Equal("TargetReached", f.Session.AdvanceDay(request).StopReason);
+        try
+        {
+            _ = new Fixture(state: state, persisted: checkpoint, owners: Owners("unrelated"));
+            throw new Exception("Invalid binding accepted");
+        }
+        catch (ArgumentException) { }
+    }
+
+    private static void OrdinaryLegacyContinuation()
+    {
+        foreach (var month in new[] { false, true })
+        {
+            var state = new JsonSaveSerializer(Catalog()).DeserializeAndValidate(HistoricalCheckpoint(month, true)).State!;
+            foreach (var receipt in state.Receipts.Where(x => x.ParentPayload.Length > 0))
+                receipt.CommandId = "legacy/" + receipt.CommandId.Substring(receipt.CommandId.LastIndexOf('/') + 1);
+            var checkpoint = new JsonSaveSerializer(Catalog()).Serialize(state);
+            var f = new Fixture(state: state, persisted: checkpoint);
+            var request = new CommandEnvelope("run", "legacy", 2, new GameCommand(CommandKind.AdvanceBoundary));
+            var resumed = Advance(f, request, month);
+            Equal("TargetReached", resumed.StopReason);
+            True(resumed.Boundaries.Take(2).All(x => x.Status == CommandStatus.AlreadyCommitted));
+            var durable = f.Session.ExportCheckpoint();
+            var restored = new Fixture(state: f.Serializer.DeserializeAndValidate(durable).State!, persisted: durable);
+            True(Advance(restored, request, month).Boundaries.All(x => x.Status == CommandStatus.AlreadyCommitted));
+            Bytes(durable, restored.Session.ExportCheckpoint());
+        }
+    }
+
+    private static void InternalNamespaceIsDisjoint()
+    {
+        var f = new Fixture();
+        Equal(CommandStatus.Committed, f.Execute("create", new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female")).Status);
+        foreach (var root in new[] { "a/0", "3:abc/", "Việt/1", new string('z', 256) })
+        {
+            var request = new CommandEnvelope("run", root, f.Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary));
+            Equal("TargetReached", f.Session.AdvanceDay(request).StopReason);
+            var bytes = f.Session.ExportCheckpoint();
+            var restored = new Fixture(state: f.Serializer.DeserializeAndValidate(bytes).State!, persisted: bytes);
+            True(restored.Session.AdvanceDay(request).Boundaries.All(x => x.Status == CommandStatus.AlreadyCommitted));
+            Bytes(bytes, restored.Session.ExportCheckpoint());
+            if (root.Length == 256)
+            {
+                var pr6State = f.Serializer.DeserializeAndValidate(bytes).State!;
+                foreach (var receipt in pr6State.Receipts.Where(x => x.ParentPayload.Length > 0 &&
+                    x.CommandId.StartsWith(new string('$', 257) + "batch/256:", StringComparison.Ordinal)))
+                    receipt.CommandId = "$batch/256:" + root + "/" + receipt.CommandId.Substring(receipt.CommandId.LastIndexOf('/') + 1);
+                var pr6Bytes = f.Serializer.Serialize(pr6State);
+                var pr6Restored = new Fixture(state: pr6State, persisted: pr6Bytes);
+                var pr6Retry = pr6Restored.Session.AdvanceDay(request);
+                Equal("TargetReached", pr6Retry.StopReason);
+                True(pr6Retry.Boundaries.Count > 0 && pr6Retry.Boundaries.All(x => x.Status == CommandStatus.AlreadyCommitted));
+                Bytes(pr6Bytes, pr6Restored.Session.ExportCheckpoint());
+            }
+        }
+        var internalId = f.Serializer.DeserializeAndValidate(f.Session.ExportCheckpoint()).State!.Receipts.First(x => x.ParentPayload.Length > 0).CommandId;
+        True(internalId.Length > 256);
+        Equal("command.invalid_id", f.Execute(internalId, new GameCommand(CommandKind.Resign)).ReasonKey);
+        Equal("InvalidRequest", f.Session.AdvanceDay(new CommandEnvelope("run", internalId, f.Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary))).StopReason);
+    }
+
+    private static void TruncatedSkillsRemainCorrupt()
+    {
+        var catalog = Catalog();
+        var serializer = new JsonSaveSerializer(catalog);
+        var backup = CreateCharacterCheckpoint(catalog);
+        var truncated = serializer.DeserializeAndValidate(backup).State!;
+        truncated.Skills.Clear();
+        var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(truncated), 1, truncated.Revision);
+        Equal(LoadStatus.Corrupt, serializer.DeserializeAndValidate(bytes).Status);
+        var directory = Path.Combine(Path.GetTempPath(), "StartupLifeAstraChecks", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "save.json");
+        File.WriteAllBytes(path, bytes);
+        File.WriteAllBytes(path + ".backup", backup);
+        var store = new AtomicFileSaveStore(path, serializer);
+        Equal(LoadStatus.RecoveredBackup, store.Read().Status);
+        var session = new GameSession(store.Read().State!, catalog, serializer, store);
+        Equal(CommandStatus.Committed, session.Execute(new CommandEnvelope("run", "job", truncated.Revision, new GameCommand(CommandKind.AcceptJob, "developer"))).Status);
+        Equal(LoadStatus.Valid, store.Read().Status);
     }
 
     private static void UnsupportedCareerRevisionIsPreserved()
@@ -293,12 +489,14 @@ internal static class Program
         public ContentCatalog Catalog { get; }
         public JsonSaveSerializer Serializer { get; }
         public GameSession Session { get; }
-        public Fixture(ContentCatalog? catalog = null, GameState? state = null, byte[]? persisted = null)
+        public MemoryStore Store { get; }
+        public Fixture(ContentCatalog? catalog = null, GameState? state = null, byte[]? persisted = null, IReadOnlyDictionary<string, string>? owners = null)
         {
             Catalog = catalog ?? Program.Catalog();
             Serializer = new JsonSaveSerializer(Catalog);
             var initial = state ?? GameSession.NewState(Catalog, "run", 12345, new SimDate(2026, 9, 7));
-            Session = new GameSession(initial, Catalog, Serializer, new MemoryStore(Serializer, persisted));
+            Store = new MemoryStore(Serializer, persisted);
+            Session = new GameSession(initial, Catalog, Serializer, Store, owners);
         }
         public CommandResult Execute(string id, GameCommand command) => Session.Execute(new CommandEnvelope("run", id, Session.Snapshot().Revision, command));
     }
@@ -307,10 +505,16 @@ internal static class Program
     {
         private readonly ISaveSerializer serializer;
         private byte[]? bytes;
+        public byte[]? Bytes => bytes == null ? null : (byte[])bytes.Clone();
+        public int Allowed { get; set; } = int.MaxValue;
+        public int CommitAttempts { get; private set; }
         public MemoryStore(ISaveSerializer serializer, byte[]? initial) { this.serializer = serializer; bytes = initial == null ? null : (byte[])initial.Clone(); }
         public LoadResult Read() => bytes == null ? new LoadResult(LoadStatus.Missing) : serializer.DeserializeAndValidate(bytes);
         public WriteStatus Commit(byte[] candidate, long expectedRevision)
         {
+            CommitAttempts++;
+            if (Allowed == 0) return WriteStatus.Failed;
+            Allowed--;
             var next = serializer.DeserializeAndValidate(candidate);
             var previous = Read();
             if (next.Status != LoadStatus.Valid || next.State!.Revision != expectedRevision + 1) return WriteStatus.Failed;

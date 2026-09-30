@@ -41,7 +41,7 @@ namespace StartupLife.Core
                 if (!c.Skills.ContainsKey(skill.Id))
                     throw new ContentCompatibilityException("save.content_id", "Skill definition is unavailable in the active catalog.");
             if (s.Name.Length > 0 && s.Skills.Count != c.Skills.Count)
-                throw new ContentCompatibilityException("save.content_set", "Character skill set is incompatible with the active catalog.");
+                throw new ArgumentException("Character skill set is incomplete.");
 
             if (s.Scheduler.Cursor < 0 || s.Scheduler.Cursor > s.Scheduler.Deck.Count || s.Scheduler.Cycle < 0 || s.Scheduler.Generation < 0 ||
                 s.Scheduler.Deck.Any(id => !ContentId.IsValid(id)))
