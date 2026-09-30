@@ -9,7 +9,7 @@ namespace StartupLife.Core
 {
     public static class StateValidation
     {
-        public static void Validate(GameState s, ContentCatalog c)
+        public static void Validate(GameState s, ContentCatalog c, IRestoreStateValidator? restoreValidator = null)
         {
             var activities = ValidateStructure(s);
             if (s.ContentVersion != c.Version)
@@ -77,6 +77,7 @@ namespace StartupLife.Core
                 if (committedToday.Today != expectedScenes)
                     throw new ArgumentException("Committed work activities do not match today's work cursor.");
             }
+            if (restoreValidator != null) CheckContent(() => restoreValidator.Validate(s, c));
             if (incompatibility != null) throw incompatibility;
         }
 
@@ -134,14 +135,25 @@ namespace StartupLife.Core
             }
             if (s.CurrentActivity.Length > 0 && !operationIds.Contains(s.CurrentActivity) && !s.ConsumedActivities.Contains(s.CurrentActivity))
                 throw new ArgumentException("Current activity was never committed.");
+            ValidateReceiptTimeline(s);
+            if (s.Scheduler.Generation > s.ConsumedActivities.Count || s.Scheduler.Cycle > s.ConsumedActivities.Count)
+                throw new ArgumentException("Scheduler generated more cycles/rebuilds than committed activities.");
 
             var entityIds = new HashSet<string>(StringComparer.Ordinal);
+            var entitySequences = new Dictionary<long, string>();
             long maxEntity = 0;
+            void Reference(string id, string kind)
+            {
+                if (!TryParseRunSequence(s.RunId, kind, id, out var sequence) ||
+                    (entitySequences.TryGetValue(sequence, out var previous) && previous != id))
+                    throw new ArgumentException("Invalid or reused entity sequence.");
+                entitySequences[sequence] = id; maxEntity = Math.Max(maxEntity, sequence);
+            }
             void Issued(string id, string kind)
             {
-                if (!TryParseRunSequence(s.RunId, kind, id, out var sequence) || !entityIds.Add(id))
+                if (!entityIds.Add(id))
                     throw new ArgumentException("Invalid or reused entity identity.");
-                maxEntity = Math.Max(maxEntity, sequence);
+                Reference(id, kind);
             }
             var employmentIds = new HashSet<string>(StringComparer.Ordinal);
             void Employment(EmploymentState? employment)
@@ -158,6 +170,26 @@ namespace StartupLife.Core
             foreach (var claim in s.Claims) Issued(claim.Id, "claim");
             foreach (var arrear in s.Arrears) Issued(arrear.Id, "arrear");
             foreach (var ledger in s.Ledger) Issued(ledger.Id, "transaction");
+            foreach (var ledger in s.Ledger)
+            {
+                if (ledger.Category == "arrear.settlement") Reference(ledger.AttributionId, "arrear");
+                if (ledger.Category == "salary.accrual" && !employmentIds.Contains(ledger.AttributionId))
+                    throw new ArgumentException("Salary ledger has no owning employment.");
+                foreach (var kind in new[] { "employment", "employer", "course", "claim", "arrear", "transaction" })
+                    if (ledger.AttributionId.StartsWith(s.RunId + "/" + kind + "/", StringComparison.Ordinal)) Reference(ledger.AttributionId, kind);
+            }
+            foreach (var grant in s.Grants)
+                if (grant.StartsWith("course/", StringComparison.Ordinal)) Reference(grant.Substring("course/".Length), "course");
+            foreach (var entry in s.History)
+                if (entry.StartsWith("career.resigned:", StringComparison.Ordinal))
+                {
+                    var dateSeparator = entry.LastIndexOf(':');
+                    if (dateSeparator <= "career.resigned:".Length) throw new ArgumentException("Invalid historical employment identity.");
+                    var id = entry.Substring("career.resigned:".Length, dateSeparator - "career.resigned:".Length);
+                    Reference(id, "employment");
+                    if (!employmentIds.Contains(id)) throw new ArgumentException("Historical resignation has no owning employment.");
+                    _ = ParseDate(entry.Substring(dateSeparator + 1));
+                }
             if (s.NextEntity <= maxEntity)
                 throw new ArgumentException("Entity counter would reuse an issued identity.");
 
@@ -183,6 +215,51 @@ namespace StartupLife.Core
                 if (l.Amount < 0 || string.IsNullOrEmpty(l.OperationId) || !operationIds.Contains(l.OperationId))
                     throw new ArgumentException("Invalid ledger.");
             return activities.AsReadOnly();
+        }
+
+        public static SimDate ReceiptOrigin(GameState state)
+        {
+            if (state.Receipts.Count == 0) return state.Date;
+            const string prefix = "character.created:";
+            var origins = state.History.Where(x => x.StartsWith(prefix, StringComparison.Ordinal)).ToArray();
+            if (origins.Length != 1) throw new ArgumentException("Missing or ambiguous receipt timeline origin.");
+            return ParseDate(origins[0].Substring(prefix.Length));
+        }
+
+        private static void ValidateReceiptTimeline(GameState state)
+        {
+            if (state.Receipts.Count != state.Revision) throw new ArgumentException("Committed receipt history is incomplete.");
+            var date = ReceiptOrigin(state); var minute = 0; var activityIndex = 0; var currentActivity = "";
+            for (var i = 0; i < state.Receipts.Count; i++)
+            {
+                var receipt = state.Receipts[i];
+                if (receipt.Revision != i + 1L) throw new ArgumentException("Receipt revisions are not a committed sequence.");
+                var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
+                if ((i == 0) != (command.Kind == CommandKind.CreateCharacter))
+                    throw new ArgumentException("Character creation does not own the timeline origin.");
+                if (command.Kind == CommandKind.AdvanceBoundary)
+                {
+                    var activity = state.RunId + "/activity/" + date + "/" + minute.ToString(CultureInfo.InvariantCulture);
+                    if (receipt.MinutesConsumed <= 0 || receipt.MinutesConsumed > 1440 || activityIndex >= state.ConsumedActivities.Count ||
+                        state.ConsumedActivities[activityIndex++] != activity)
+                        throw new ArgumentException("Consumed activity does not belong to its committed receipt.");
+                    currentActivity = activity;
+                }
+                else
+                {
+                    if (command.Kind == CommandKind.Study)
+                    {
+                        if (receipt.MinutesConsumed <= 0 || receipt.MinutesConsumed > command.Amount)
+                            throw new ArgumentException("Invalid committed study duration.");
+                    }
+                    else if (receipt.MinutesConsumed != 0) throw new ArgumentException("Non-time command advanced the timeline.");
+                    if (command.Kind != CommandKind.AcknowledgePlayback) currentActivity = receipt.OperationId;
+                }
+                var nextMinute = checked(minute + receipt.MinutesConsumed);
+                date = date.AddDays(nextMinute / 1440); minute = nextMinute % 1440;
+            }
+            if (activityIndex != state.ConsumedActivities.Count || date != state.Date || minute != state.Minute || currentActivity != state.CurrentActivity)
+                throw new ArgumentException("Simulation cursor/activity history differs from committed receipts.");
         }
 
         private static void ValidateSchedulerStructure(SchedulerState scheduler)
