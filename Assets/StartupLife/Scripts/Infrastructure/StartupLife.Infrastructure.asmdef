@@ -1,0 +1,14 @@
+{
+  "name": "StartupLife.Infrastructure",
+  "rootNamespace": "StartupLife.Infrastructure",
+  "references": ["StartupLife.Core"],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}

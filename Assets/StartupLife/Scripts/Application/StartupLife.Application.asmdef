@@ -1,0 +1,14 @@
+{
+  "name": "StartupLife.Application",
+  "rootNamespace": "StartupLife.Application",
+  "references": ["StartupLife.Core", "StartupLife.Simulation"],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}

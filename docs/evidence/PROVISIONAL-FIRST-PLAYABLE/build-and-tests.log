@@ -1,0 +1,57 @@
+  Determining projects to restore...
+  Restored C:\Users\viett\OneDrive\Desktop\Startup\tools\SimulationChecks\StartupLife.Infrastructure.csproj (in 133 ms).
+  Restored C:\Users\viett\OneDrive\Desktop\Startup\tools\SimulationChecks\StartupLife.Core.csproj (in 128 ms).
+  Restored C:\Users\viett\OneDrive\Desktop\Startup\tools\SimulationChecks\StartupLife.Application.csproj (in 133 ms).
+  Restored C:\Users\viett\OneDrive\Desktop\Startup\tools\SimulationChecks\SimulationChecks.csproj (in 133 ms).
+  Restored C:\Users\viett\OneDrive\Desktop\Startup\tools\SimulationChecks\StartupLife.Simulation.csproj (in 133 ms).
+  Restored C:\Users\viett\OneDrive\Desktop\Startup\tools\SimulationChecks\StartupLife.Provisional.csproj (in 133 ms).
+  StartupLife.Core -> C:\Users\viett\OneDrive\Desktop\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  StartupLife.Infrastructure -> C:\Users\viett\OneDrive\Desktop\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Infrastructure.dll
+  StartupLife.Simulation -> C:\Users\viett\OneDrive\Desktop\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Simulation.dll
+  StartupLife.Application -> C:\Users\viett\OneDrive\Desktop\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Application.dll
+  StartupLife.Provisional -> C:\Users\viett\OneDrive\Desktop\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Provisional.dll
+  SimulationChecks -> C:\Users\viett\OneDrive\Desktop\Startup\tools\SimulationChecks\bin\Release\net8.0\SimulationChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:07.57
+PASS xorshift32-v1 reference vector
+PASS independent event stream leaves scheduler unchanged
+PASS Developer 20-slot quota exact across cycles
+PASS largest remainder stable ties and <1 slot error
+PASS content rejects invalid quota, duplicate IDs and missing references
+PASS character boundaries and rejected commands are byte identical
+PASS Vietnamese name and course save round trip
+PASS salary accrues without spendable cash and retry grants once
+PASS course charge once, study time and completion floor
+PASS LearningSpeed changes duration and study never overlaps work/sleep
+PASS career XP remains separate from skills; promotion milestone idempotent
+PASS course target met by career completes without refund/second grant
+PASS mid-cycle/course restore and next outcomes deterministic
+PASS suspension/real elapsed time never advances simulation
+PASS full month salary, expenses, payday and batch retry
+PASS partial-month resignation preserves exact earned pay and biography
+PASS oldest arrears settle before spending and employment recovers
+PASS insufficient funds and stale revision reject without mutation
+PASS overflow rejects entire boundary including RNG/rewards
+PASS leap years, month end and hospitality weekends
+PASS payday clamp and payday work excluded from current payment
+PASS rank changes preserve committed deck prefix/history
+PASS pending required choice stops month advancement
+PASS playback acknowledgement cannot add rewards
+PASS synthetic v0 migration and current continuation
+PASS future/content-incompatible saves preserved without backup fallback
+PASS atomic storage before-replace failure retains state and backup
+PASS post-replace ambiguity blocks commands then reconciles retry
+PASS corrupt primary recovers prior generation and preserves backup
+PASS malformed save checksum, duplicate identity and invalid RNG rejected
+PASS transient read lock does not roll back to backup
+PASS competing writer cannot delete active writer temp
+PASS invalid restored work cursor and reward coherence rejected
+PASS snapshot collections cannot mutate authoritative state
+PASS ledger cash reconciliation over multi-month employed study scenario
+35/35 passed. Report: C:\Users\viett\OneDrive\Desktop\Startup\docs\evidence\PROVISIONAL-FIRST-PLAYABLE\test-report.json
+Temporary fixtures retained for diagnosis: C:\Users\viett\AppData\Local\Temp\StartupLifeChecks\afedbfbbfb0646ceb5dcf33593a3af4c
+This report verifies .NET behavior only. Unity EditMode, PlayMode, IL2CPP, and devices remain separate gates.

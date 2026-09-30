@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: FoundationUI_vi
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: vi
+  m_SharedData: {fileID: 11400000, guid: 922fee23e8e439642885ff07ba76f36f, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 2520010752
+    m_Localized: STARTUP LIFE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2645839872
+    m_Localized: "M\u1ED9t kh\u1EDFi \u0111\u1EA7u, nhi\u1EC1u l\u1EF1a ch\u1ECDn"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2658422784
+    m_Localized: "Khu ph\u1ED1 An B\xECnh \xB7 Th\xE0nh ph\u1ED1 h\u01B0 c\u1EA5u"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2658422785
+    m_Localized: "H\xF4m nay c\u1EE7a b\u1EA1n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2662617088
+    m_Localized: "\u0110i l\xE0m, h\u1ECDc th\xEAm, d\xE0nh th\u1EDDi gian cho \xFD
+      t\u01B0\u1EDFng c\u1EE7a m\xECnh."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2662617089
+    m_Localized: "\u0103 \xE2 \u0111 \xEA \xF4 \u01A1 \u01B0 \xC1 \xC0 \u1EA2 \xC3
+      \u1EA0 \u1EA5 \u1EC1 \u1ED9 \u1EDB \u1EF1 Nguy\u1EC5n Ph\u01B0\u01A1ng Kh\u1EDFi
+      nghi\u1EC7p Th\xE0nh ph\u1ED1 H\u1ED3 Ch\xED Minh"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2662617090
+    m_Localized: "B\u1EA3n ki\u1EC3m tra giao di\u1EC7n \xB7 Ch\u01B0a c\xF3 v\xF2ng
+      ch\u01A1i"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

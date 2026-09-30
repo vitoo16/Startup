@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: FoundationUI Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: FoundationUI
+  m_TableCollectionNameGuidString: 922fee23e8e439642885ff07ba76f36f
+  m_Entries:
+  - m_Id: 2520010752
+    m_Key: foundation.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2645839872
+    m_Key: foundation.subtitle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2658422784
+    m_Key: foundation.district
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2658422785
+    m_Key: foundation.header
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2662617088
+    m_Key: foundation.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2662617089
+    m_Key: foundation.glyphs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2662617090
+    m_Key: foundation.status
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 8859748830650302488
+  references:
+    version: 2
+    RefIds:
+    - rid: 8859748830650302488
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1790737035633

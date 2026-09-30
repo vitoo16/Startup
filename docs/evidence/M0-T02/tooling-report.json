@@ -1,0 +1,213 @@
+{
+  "reportVersion": 1,
+  "date": "2026-09-30",
+  "basicToolingPassed": true,
+  "requireEditor": true,
+  "selectedEditor": "6000.3.25f1",
+  "pinnedEditorInstalled": true,
+  "licenseActive": true,
+  "installedEditorVersions": [
+    "6000.3.25f1"
+  ],
+  "unity63CompatibilityVerified": false,
+  "unityCompileVerified": false,
+  "macAvailable": false,
+  "milestonePassed": false,
+  "checks": [
+    {
+      "name": "Unity CLI",
+      "passed": true,
+      "detail": "1.0.0-beta.11"
+    },
+    {
+      "name": "Python",
+      "passed": true,
+      "detail": "Python 3.12.14"
+    },
+    {
+      "name": "uv",
+      "passed": true,
+      "detail": "uv 0.12.21 (7af826859 2026-09-29 x86_64-pc-windows-msvc)"
+    },
+    {
+      "name": ".NET SDK",
+      "passed": true,
+      "detail": "8.0.425"
+    },
+    {
+      "name": "Git",
+      "passed": true,
+      "detail": "git version 2.55.0.windows.3"
+    },
+    {
+      "name": "Git LFS",
+      "passed": true,
+      "detail": "git-lfs/3.7.1 (GitHub; windows amd64; go 1.25.1; git b84b3384)"
+    },
+    {
+      "name": "Skill unity-animation",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill startup-life-session-orchestrator",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill startup-life-gameplay-guardian",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill startup-life-asset-quality-gate",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-package-management",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-cli",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill ui-ugui",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill ui",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill sprite-editor",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill optimize-audio",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill new-unity-project",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill manage-sprite-atlas",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill localization",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill audio-setup-mixers",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill vietnam-art-direction",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-ui-designer",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-qa-release",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-project-setup",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-mcp-skill",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-mcp-bridge",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-localization",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-image-generator",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-gameplay-systems",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-game-economy",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-game-director",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-debug-profiler",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-asset-pipeline",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-asset-designer",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-art-direction",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill unity-scene-composition",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Skill skill-installer",
+      "passed": true,
+      "detail": "Installed bytes match lock"
+    },
+    {
+      "name": "Pinned Unity 6.3 Editor",
+      "passed": true,
+      "detail": "Requires installed 6000.3.25f1; other releases do not satisfy this gate"
+    },
+    {
+      "name": "Unity license",
+      "passed": true,
+      "detail": "Only active status retained; account and machine details excluded"
+    }
+  ]
+}
