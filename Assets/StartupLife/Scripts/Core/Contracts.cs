@@ -56,7 +56,7 @@ namespace StartupLife.Core
         byte[] Serialize(GameState state);
         LoadResult DeserializeAndValidate(byte[] bytes);
     }
-    public enum LoadStatus { Valid, Missing, Corrupt, Unreadable, FutureVersion, UnsupportedContent, RecoveredBackup }
+    public enum LoadStatus { Valid, Missing, Corrupt, Unreadable, FutureVersion, UnsupportedContent, RecoveredBackup, RecoveryRequired }
     public sealed class LoadResult
     {
         public LoadStatus Status { get; }
@@ -69,6 +69,32 @@ namespace StartupLife.Core
     {
         LoadResult Read();
         WriteStatus Commit(byte[] validatedBytes, long expectedRevision);
+    }
+    public interface ISaveCompatibilityStore : ISaveStore
+    {
+        // Compare the entire expected checkpoint and preserve its revision. Only historical child IDs may change.
+        WriteStatus CommitReceiptCompatibility(byte[] expectedCheckpoint, byte[] normalizedCheckpoint);
+    }
+    public static class BatchReceiptIdentity
+    {
+        public static readonly string InternalPrefix = new string('$', 257) + "batch/";
+        public static bool IsLegacyReplacement(CommandReceipt previous, string nextId)
+        {
+            if (previous.ParentPayload.Length == 0 || previous.CommandId.StartsWith(InternalPrefix, StringComparison.Ordinal) ||
+                !nextId.StartsWith(InternalPrefix, StringComparison.Ordinal)) return false;
+            var colon = nextId.IndexOf(':', InternalPrefix.Length);
+            if (colon < 0 || !int.TryParse(nextId.Substring(InternalPrefix.Length, colon - InternalPrefix.Length),
+                System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var length) ||
+                length < 1 || length > 256 || colon + 1 + length >= nextId.Length || nextId[colon + 1 + length] != '/') return false;
+            var owner = nextId.Substring(colon + 1, length);
+            var suffix = nextId.Substring(colon + 2 + length);
+            if (string.IsNullOrWhiteSpace(owner) || !int.TryParse(suffix, System.Globalization.NumberStyles.None,
+                System.Globalization.CultureInfo.InvariantCulture, out var index) || index < 0 ||
+                suffix != index.ToString(System.Globalization.CultureInfo.InvariantCulture)) return false;
+            var encodedRoot = length.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":" + owner + "/" + suffix;
+            return nextId == InternalPrefix + encodedRoot &&
+                (previous.CommandId == owner + "/" + suffix || previous.CommandId == "$batch/" + encodedRoot);
+        }
     }
     public interface ISaveMigration
     {

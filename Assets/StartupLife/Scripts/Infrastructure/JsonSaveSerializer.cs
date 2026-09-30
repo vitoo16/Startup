@@ -49,7 +49,6 @@ namespace StartupLife.Infrastructure
                     if (ReadObject<GameState>(payload).SaveVersion != version) return new LoadResult(LoadStatus.Corrupt, reason: "save.migration_invalid");
                 }
                 var state = ReadObject<GameState>(payload);
-                if (state.ContentVersion != content.Version) return new LoadResult(LoadStatus.UnsupportedContent, reason: "save.content_version");
                 if (state.SaveVersion != version || state.Revision != envelope.Generation) return new LoadResult(LoadStatus.Corrupt, reason: "save.generation");
                 StateValidation.Validate(state, content); return new LoadResult(LoadStatus.Valid, state);
             }

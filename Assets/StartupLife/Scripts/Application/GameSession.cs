@@ -12,7 +12,7 @@ namespace StartupLife.Application
     {
         // Historical callers and pre-PR6 children were capped at 256 characters. PR6 children began "$batch/".
         // Starting with 257 '$' characters excludes both namespaces, including PR6 children longer than 256.
-        private static readonly string InternalBatchPrefix = new string('$', 257) + "batch/";
+        private static readonly string InternalBatchPrefix = BatchReceiptIdentity.InternalPrefix;
         private GameState state;
         private readonly ContentCatalog content;
         private readonly ISaveSerializer serializer;
@@ -27,17 +27,36 @@ namespace StartupLife.Application
             IReadOnlyDictionary<string, string>? legacyBatchOwners = null)
         {
             content = catalog; serializer = saveSerializer; store = saveStore; simulation = new SimulationEngine(catalog);
-            this.legacyBatchOwners = new Dictionary<string, string>(StringComparer.Ordinal);
-            if (legacyBatchOwners != null)
-                foreach (var binding in legacyBatchOwners)
+            this.legacyBatchOwners = CopyLegacyOwners(legacyBatchOwners);
+            state = Clone(initial);
+        }
+        private static Dictionary<string, string> CopyLegacyOwners(IReadOnlyDictionary<string, string>? bindings)
+        {
+            var copy = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (bindings != null)
+                foreach (var binding in bindings)
                 {
                     if (!TryParseEncodedChild(binding.Key + "0", "$batch/", out var encodedRoot, out _, out var prefix) ||
                         prefix != binding.Key || !ValidCallerCommandId(binding.Value) ||
                         (binding.Value != encodedRoot && binding.Value != prefix.Substring(0, prefix.Length - 1)))
-                        throw new ArgumentException("Invalid legacy batch owner binding.", nameof(legacyBatchOwners));
-                    this.legacyBatchOwners.Add(binding.Key, binding.Value);
+                        throw new ArgumentException("Invalid legacy batch owner binding.", nameof(bindings));
+                    copy.Add(binding.Key, binding.Value);
                 }
-            state = Clone(initial);
+            return copy;
+        }
+        public static bool TryRestore(ContentCatalog catalog, ISaveSerializer serializer, ISaveStore store,
+            out GameSession? session, out LoadResult result, IReadOnlyDictionary<string, string>? legacyBatchOwners = null)
+        {
+            session = null;
+            result = store.Read();
+            if (result.Status != LoadStatus.Valid && result.Status != LoadStatus.RecoveredBackup) return false;
+            var restored = new GameSession(result.State!, catalog, serializer, store, legacyBatchOwners);
+            var ownershipFailure = restored.PrepareReceiptOwnership();
+            if (ownershipFailure.Length > 0)
+            { result = new LoadResult(LoadStatus.RecoveryRequired, reason: ownershipFailure); return false; }
+            result = new LoadResult(result.Status, restored.Clone(restored.state), result.Reason);
+            session = restored;
+            return true;
         }
         public static GameState NewState(ContentCatalog catalog, string runId, ulong seed, SimDate start)
         {
@@ -52,7 +71,8 @@ namespace StartupLife.Application
             lock (gate)
             {
                 if (!ValidCallerCommandId(command.CommandId) || command.RunId != state.RunId) return Result(CommandStatus.Rejected, "command.invalid_id");
-                if (HasUnresolvedBatchOwners()) return Result(CommandStatus.RecoveryRequired, "save.batch_owner_required");
+                var ownershipFailure = PrepareReceiptOwnership();
+                if (ownershipFailure.Length > 0) return Result(CommandStatus.RecoveryRequired, ownershipFailure);
                 if (GetBatchReceipts(command.CommandId).Count > 0) return Result(CommandStatus.Rejected, "command.id_conflict");
                 return ExecuteInternal(command);
             }
@@ -94,13 +114,25 @@ namespace StartupLife.Application
             { recoveryRequired = true; return Result(CommandStatus.RecoveryRequired, "save.recovery_required"); }
             state = candidate; return new CommandResult(CommandStatus.Committed, "", state.Revision, receipt.OperationId, receipt.MinutesConsumed);
         }
-        public LoadResult Recover()
+        public LoadResult Recover(IReadOnlyDictionary<string, string>? legacyBatchOwners = null)
         {
             lock (gate)
             {
+                var bindings = legacyBatchOwners == null ? null : CopyLegacyOwners(legacyBatchOwners);
                 var restored = store.Read();
                 if (restored.Status == LoadStatus.Valid || restored.Status == LoadStatus.RecoveredBackup)
-                { state = Clone(restored.State!); recoveryRequired = false; }
+                {
+                    if (bindings == null && restored.State!.RunId != state.RunId) this.legacyBatchOwners.Clear();
+                    state = Clone(restored.State!); recoveryRequired = false;
+                    if (bindings != null)
+                    {
+                        this.legacyBatchOwners.Clear();
+                        foreach (var binding in bindings) this.legacyBatchOwners.Add(binding.Key, binding.Value);
+                    }
+                    var ownershipFailure = PrepareReceiptOwnership();
+                    if (ownershipFailure.Length > 0) return new LoadResult(LoadStatus.RecoveryRequired, reason: ownershipFailure);
+                    return new LoadResult(restored.Status, Clone(state), restored.Reason);
+                }
                 return restored;
             }
         }
@@ -113,7 +145,7 @@ namespace StartupLife.Application
                 var outcomes = new List<CommandResult>();
                 if (request.RunId != state.RunId || !ValidCallerCommandId(request.CommandId) || request.Command.Kind != CommandKind.AdvanceBoundary)
                     return new AdvanceResult(outcomes.AsReadOnly(), "InvalidRequest");
-                if (HasUnresolvedBatchOwners()) return new AdvanceResult(outcomes.AsReadOnly(), "RecoveryRequired");
+                if (PrepareReceiptOwnership().Length > 0) return new AdvanceResult(outcomes.AsReadOnly(), "RecoveryRequired");
                 var direct = state.Receipts.SingleOrDefault(x => x.CommandId == request.CommandId);
                 if (direct != null) return new AdvanceResult(outcomes.AsReadOnly(), "InvalidRequest");
 
@@ -172,6 +204,34 @@ namespace StartupLife.Application
         private static string BatchChildCommandId(string rootCommandId, int index) => BatchChildPrefix(rootCommandId) + index.ToString(CultureInfo.InvariantCulture);
         private bool HasUnresolvedBatchOwners() => state.Receipts.Any(receipt =>
             !string.IsNullOrEmpty(receipt.ParentPayload) && !TryGetBatchOwner(receipt, out _, out _));
+        private string PrepareReceiptOwnership()
+        {
+            if (recoveryRequired) return "save.recovery_required";
+            if (HasUnresolvedBatchOwners()) return "save.batch_owner_required";
+            if (!state.Receipts.Any(receipt => receipt.ParentPayload.Length > 0 &&
+                !receipt.CommandId.StartsWith(InternalBatchPrefix, StringComparison.Ordinal))) return "";
+            if (!(store is ISaveCompatibilityStore compatibilityStore)) return "save.compatibility_store_required";
+            var expected = serializer.Serialize(state);
+            GameState candidate;
+            byte[] normalized;
+            try
+            {
+                candidate = Clone(state);
+                NormalizeBatchReceipts(candidate);
+                normalized = serializer.Serialize(candidate);
+            }
+            catch (ArgumentException) { return "save.batch_identity_invalid"; }
+            var write = compatibilityStore.CommitReceiptCompatibility(expected, normalized);
+            if (write == WriteStatus.Failed) return "save.compatibility_write_failed";
+            if (write == WriteStatus.Ambiguous) { recoveryRequired = true; return "save.recovery_required"; }
+            var verified = store.Read();
+            if ((verified.Status != LoadStatus.Valid && verified.Status != LoadStatus.RecoveredBackup) ||
+                !normalized.SequenceEqual(serializer.Serialize(verified.State!)))
+            { recoveryRequired = true; return "save.recovery_required"; }
+            state = candidate;
+            legacyBatchOwners.Clear();
+            return "";
+        }
         private void NormalizeBatchReceipts(GameState candidate)
         {
             foreach (var receipt in candidate.Receipts)

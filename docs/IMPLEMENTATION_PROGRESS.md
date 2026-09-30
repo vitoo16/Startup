@@ -10,5 +10,6 @@ The [implementation ledger](IMPLEMENTATION_PLAN_MVP.md#active_status) is the aut
 - [Provisional Developer/work/study/save backend](evidence/PROVISIONAL-FIRST-PLAYABLE/SESSION.md): .NET build/test evidence only.
 - [Architecture review](evidence/PROVISIONAL-FIRST-PLAYABLE/ARCHITECTURE_REVIEW.md): three reproduced/reviewed findings and fix reconciliation.
 - [PR7 receipt compatibility and truncated-skill fix](evidence/M0-T04/RECEIPT-COMPATIBILITY-FIX.md): provenance-bound historical retries and corruption classification; engine-free evidence only.
+- [H1/R2 closure](evidence/M0-T04/H1-R2-CLOSURE.md): durable historical restore/import and cross-field corruption precedence, with fresh-session/backup/fault regression evidence.
 
 No playable Unity scene, mobile build, or released save schema has been verified. Existing baseline screenshots are development evidence only, not device acceptance. iOS requires external Mac/iPhone provisioning, which the user confirmed is unavailable on September 30, 2026.
