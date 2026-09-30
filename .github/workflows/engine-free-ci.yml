@@ -2,7 +2,7 @@ name: Engine-free CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, feat/m0-t04-engine-free-ci]
   push:
     branches: [main]
   workflow_dispatch:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Documentation and simulation
+    name: Documentation, Unity foundation, and simulation
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -33,6 +33,12 @@ jobs:
         shell: pwsh
         run: ./scripts/validate-documentation.ps1
 
+      - name: Validate static Unity foundation
+        shell: pwsh
+        run: |
+          $reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/unity-foundation-report.json'
+          ./scripts/Test-UnityFoundationStatic.ps1 -ReportPath $reportPath
+
       - name: Run engine-free simulation regression suite
         shell: pwsh
         run: |
@@ -47,11 +53,11 @@ jobs:
             Write-Error "Verification changed tracked/worktree files:`n$changes"
           }
 
-      - name: Upload simulation evidence
+      - name: Upload engine-free foundation evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: engine-free-simulation-report
-          path: ${{ runner.temp }}/startup-life/simulation-report.json
+          name: engine-free-foundation-reports
+          path: ${{ runner.temp }}/startup-life/*.json
           if-no-files-found: warn
           retention-days: 14
