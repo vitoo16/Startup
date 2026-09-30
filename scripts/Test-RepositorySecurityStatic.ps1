@@ -74,7 +74,10 @@ $grepExit = $LASTEXITCODE
 if ($grepExit -gt 1) { throw "git grep private-key scan failed with exit code $grepExit" }
 Add-Check 'no private-key PEM blocks in tracked text' ($keyHits.Count -eq 0) ($(if ($keyHits.Count -eq 0) { 'clean' } else { $keyHits -join '; ' }))
 
-$workflowFiles = @(Get-ChildItem -LiteralPath (Join-Path $repositoryRoot '.github/workflows') -File -Include '*.yml','*.yaml')
+$workflowDirectory = Join-Path $repositoryRoot '.github/workflows'
+$workflowFiles = @(Get-ChildItem -LiteralPath $workflowDirectory -File | Where-Object { $_.Extension -in @('.yml', '.yaml') })
+Add-Check 'GitHub workflows discovered for security scan' ($workflowFiles.Count -ge 2) "discovered $($workflowFiles.Count) workflow file(s)"
+
 $unpinnedActions = [System.Collections.Generic.List[string]]::new()
 $privilegedTriggers = [System.Collections.Generic.List[string]]::new()
 $writePermissions = [System.Collections.Generic.List[string]]::new()
