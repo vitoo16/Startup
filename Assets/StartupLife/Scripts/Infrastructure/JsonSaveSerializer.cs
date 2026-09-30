@@ -53,6 +53,8 @@ namespace StartupLife.Infrastructure
                 if (state.SaveVersion != version || state.Revision != envelope.Generation) return new LoadResult(LoadStatus.Corrupt, reason: "save.generation");
                 StateValidation.Validate(state, content); return new LoadResult(LoadStatus.Valid, state);
             }
+            catch (ContentCompatibilityException e)
+            { return new LoadResult(LoadStatus.UnsupportedContent, reason: e.ReasonKey); }
             catch (Exception e) when (e is SerializationException || e is ArgumentException || e is FormatException || e is OverflowException || e is NullReferenceException || e is InvalidOperationException)
             { return new LoadResult(LoadStatus.Corrupt, reason: "save.invalid"); }
         }
