@@ -37,7 +37,7 @@ Add-Check 'runner contract files exist' ($missing.Count -eq 0) ($(if ($missing.C
 foreach ($relativePath in @('scripts/Test-UnityHeadless.ps1', 'scripts/Invoke-UnityBuild.ps1')) {
     $tokens = $null
     $parseErrors = $null
-    [Management.Automation.Language.Parser]::ParseFile((Join-Path $repositoryRoot $relativePath), [ref]$tokens, [ref]$parseErrors) | Out-Null
+    [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $repositoryRoot $relativePath), [ref]$tokens, [ref]$parseErrors) | Out-Null
     $messages = @($parseErrors | ForEach-Object Message)
     Add-Check "PowerShell syntax: $relativePath" ($messages.Count -eq 0) ($(if ($messages.Count -eq 0) { 'clean' } else { $messages -join '; ' }))
 
@@ -47,14 +47,14 @@ foreach ($relativePath in @('scripts/Test-UnityHeadless.ps1', 'scripts/Invoke-Un
 }
 
 $testScript = Read-RepoText 'scripts/Test-UnityHeadless.ps1'
-Add-Check 'headless tests use official unity test command' ($testScript -match "'test',\s*\$repositoryRoot") 'expected Unity CLI test command'
+Add-Check 'headless tests use official unity test command' ($testScript -match "'test',\s*`\$repositoryRoot") 'expected Unity CLI test command'
 Add-Check 'headless tests require both EditMode and PlayMode in All mode' ($testScript -match "@\('EditMode', 'PlayMode'\)") 'All mode must cover EditMode and PlayMode'
 Add-Check 'headless tests retain NUnit and JUnit' (($testScript -match "'nunit,junit'") -and ($testScript -match "--junit-output")) 'both report formats must be retained'
 Add-Check 'headless tests distinguish test failure exit code' ($testScript -match "8 \{ 'Unity tests completed with one or more test failures\.' \}") 'exit 8 must remain an explicit test-failure result'
 Add-Check 'headless tests distinguish infrastructure exit code' ($testScript -match "6 \{ 'Unity did not produce a valid test verdict") 'exit 6 must remain an explicit infrastructure/no-verdict result'
 
 $buildScript = Read-RepoText 'scripts/Invoke-UnityBuild.ps1'
-Add-Check 'build wrapper uses Unity 6 Build Profile' ($buildScript -match "'--profile',\s*\$Profile") 'mobile build wrapper must not guess a non-desktop target build path'
+Add-Check 'build wrapper uses Unity 6 Build Profile' ($buildScript -match "'--profile',\s*`\$Profile") 'mobile build wrapper must not guess a non-desktop target build path'
 Add-Check 'build wrapper requires provenance' (($buildScript -match "'--provenance-path'") -and ($buildScript -match 'provenanceExists')) 'successful build must retain provenance evidence'
 Add-Check 'build wrapper documents iOS Xcode export boundary' ($buildScript -match 'Xcode project folder') 'iOS Unity export must not be described as signed IPA/TestFlight evidence'
 
