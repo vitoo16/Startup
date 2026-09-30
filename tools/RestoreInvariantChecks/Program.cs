@@ -42,11 +42,11 @@ internal static class Program
         Equal(LoadStatus.Valid, Raw(f.Serializer, valid).Status);
 
         var operation = f.State();
-        operation.NextOperation = 2;
+        operation.NextOperation = 1;
         Equal(LoadStatus.Corrupt, Raw(f.Serializer, operation).Status);
 
         var entity = f.State();
-        entity.NextEntity = 3;
+        entity.NextEntity = 1;
         Equal(LoadStatus.Corrupt, Raw(f.Serializer, entity).Status);
 
         var malformedOperation = f.State();
