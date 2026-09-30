@@ -10,7 +10,10 @@ namespace StartupLife.Application
 {
     public sealed class GameSession : IGameCommands
     {
-        private const string InternalBatchPrefix = "$batch/";
+        // Pre-PR callers and generated legacy child IDs were capped at 256 characters by ExecuteInternal.
+        // New internal child IDs deliberately begin beyond that historical namespace so persisted caller IDs
+        // such as "$batch/3:abc/0" can never alias a newly generated child ID.
+        private static readonly string InternalBatchPrefix = new string('$', 257) + "batch/";
         private GameState state;
         private readonly ContentCatalog content;
         private readonly ISaveSerializer serializer;
@@ -152,7 +155,7 @@ namespace StartupLife.Application
             return result;
         }
         private static bool ValidCallerCommandId(string commandId) =>
-            !string.IsNullOrWhiteSpace(commandId) && commandId.Length <= 256 && !commandId.StartsWith(InternalBatchPrefix, StringComparison.Ordinal);
+            !string.IsNullOrWhiteSpace(commandId) && commandId.Length <= 256;
         private static string BatchChildPrefix(string rootCommandId) => InternalBatchPrefix + rootCommandId.Length.ToString(CultureInfo.InvariantCulture) + ":" + rootCommandId + "/";
         private static string BatchChildCommandId(string rootCommandId, int index) => BatchChildPrefix(rootCommandId) + index.ToString(CultureInfo.InvariantCulture);
         private static string LegacyBatchChildCommandId(string rootCommandId, int index) => rootCommandId + "/" + index.ToString(CultureInfo.InvariantCulture);
