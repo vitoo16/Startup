@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Documentation, Unity contracts, and simulation
+    name: Documentation, Unity contracts, security, and simulation
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -43,6 +43,12 @@ jobs:
         run: |
           $reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/unity-runner-contract-report.json'
           ./scripts/Test-UnityRunnerContractStatic.ps1 -ReportPath $reportPath
+
+      - name: Validate repository security and release hygiene
+        shell: pwsh
+        run: |
+          $reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/repository-security-report.json'
+          ./scripts/Test-RepositorySecurityStatic.ps1 -ReportPath $reportPath
 
       - name: Run engine-free simulation regression suite
         shell: pwsh
