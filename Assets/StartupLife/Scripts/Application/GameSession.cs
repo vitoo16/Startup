@@ -10,6 +10,7 @@ namespace StartupLife.Application
 {
     public sealed class GameSession : IGameCommands
     {
+        private const string InternalBatchPrefix = "$batch/";
         private GameState state;
         private readonly ContentCatalog content;
         private readonly ISaveSerializer serializer;
@@ -30,15 +31,23 @@ namespace StartupLife.Application
         }
         public GameSnapshot Snapshot() { lock (gate) return new GameSnapshot(state, content); }
         public byte[] ExportCheckpoint() { lock (gate) return serializer.Serialize(state); }
-        public CommandResult Execute(CommandEnvelope command) { lock (gate) return ExecuteInternal(command); }
+        public CommandResult Execute(CommandEnvelope command)
+        {
+            lock (gate)
+            {
+                if (!ValidCallerCommandId(command.CommandId) || command.RunId != state.RunId) return Result(CommandStatus.Rejected, "command.invalid_id");
+                if (GetBatchReceipts(command.CommandId).Count > 0) return Result(CommandStatus.Rejected, "command.id_conflict");
+                return ExecuteInternal(command);
+            }
+        }
         private CommandResult ExecuteInternal(CommandEnvelope envelope, string advanceTarget = "", string parentPayload = "")
         {
             if (recoveryRequired) return Result(CommandStatus.RecoveryRequired, "save.recovery_required");
-            if (string.IsNullOrWhiteSpace(envelope.CommandId) || envelope.CommandId.Length > 256 || envelope.RunId != state.RunId) return Result(CommandStatus.Rejected, "command.invalid_id");
+            if (string.IsNullOrWhiteSpace(envelope.CommandId) || envelope.RunId != state.RunId) return Result(CommandStatus.Rejected, "command.invalid_id");
             var prior = state.Receipts.SingleOrDefault(x => x.CommandId == envelope.CommandId);
             if (prior != null)
                 return prior.Payload == envelope.Command.CanonicalPayload && prior.ParentPayload == parentPayload
-                    ? new CommandResult(CommandStatus.AlreadyCommitted, "", prior.Revision, prior.OperationId, prior.MinutesConsumed)
+                    ? FromReceipt(prior)
                     : Result(CommandStatus.Rejected, "command.id_conflict");
             if (envelope.ExpectedRevision != state.Revision) return Result(CommandStatus.Rejected, "command.stale_state");
             GameState candidate;
@@ -83,30 +92,84 @@ namespace StartupLife.Application
             lock (gate)
             {
                 var outcomes = new List<CommandResult>();
-                var payload = (month ? "month:" : "day:") + request.Command.CanonicalPayload;
-                var first = state.Receipts.SingleOrDefault(x => x.CommandId == request.CommandId + "/0");
-                if (request.RunId != state.RunId || string.IsNullOrWhiteSpace(request.CommandId) || request.Command.Kind != CommandKind.AdvanceBoundary ||
-                    (first != null && first.ParentPayload != payload) || (first == null && request.ExpectedRevision != state.Revision))
+                if (request.RunId != state.RunId || !ValidCallerCommandId(request.CommandId) || request.Command.Kind != CommandKind.AdvanceBoundary)
                     return new AdvanceResult(outcomes.AsReadOnly(), "InvalidRequest");
+                var direct = state.Receipts.SingleOrDefault(x => x.CommandId == request.CommandId);
+                if (direct != null) return new AdvanceResult(outcomes.AsReadOnly(), "InvalidRequest");
+
+                var payload = (month ? "month:" : "day:") + request.Command.CanonicalPayload;
+                var existing = GetBatchReceipts(request.CommandId);
                 string target;
-                if (first != null) target = first.AdvanceTargetIso;
-                else if (month)
+                var legacy = false;
+                if (existing.Count > 0)
                 {
-                    var next = new DateTime(state.Date.Year, state.Date.Month, 1).AddMonths(1);
-                    target = next.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    if (existing.Select(x => x.Index).Distinct().Count() != existing.Count || existing.Select(x => x.Legacy).Distinct().Count() != 1 ||
+                        existing.Where((x, i) => x.Index != i).Any() || existing.Any(x => x.Receipt.ParentPayload != payload) ||
+                        existing.Any(x => string.IsNullOrWhiteSpace(x.Receipt.AdvanceTargetIso)) ||
+                        existing.Select(x => x.Receipt.AdvanceTargetIso).Distinct(StringComparer.Ordinal).Count() != 1)
+                        return new AdvanceResult(outcomes.AsReadOnly(), "InvalidState");
+                    target = existing[0].Receipt.AdvanceTargetIso;
+                    legacy = existing[0].Legacy;
+                    outcomes.AddRange(existing.Select(x => FromReceipt(x.Receipt)));
                 }
-                else target = state.Date.AddDays(1).ToString();
-                for (var index = 0; string.CompareOrdinal(state.DateIso, target) < 0; index++)
+                else
+                {
+                    if (request.ExpectedRevision != state.Revision) return new AdvanceResult(outcomes.AsReadOnly(), "InvalidRequest");
+                    if (month)
+                    {
+                        var next = new DateTime(state.Date.Year, state.Date.Month, 1).AddMonths(1);
+                        target = next.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    }
+                    else target = state.Date.AddDays(1).ToString();
+                }
+
+                for (var index = existing.Count; string.CompareOrdinal(state.DateIso, target) < 0; index++)
                 {
                     if (state.PendingChoiceId.Length > 0) return new AdvanceResult(outcomes.AsReadOnly(), "PlayerChoice");
                     if (index > 10000) return new AdvanceResult(outcomes.AsReadOnly(), "InvalidState");
-                    var result = ExecuteInternal(new CommandEnvelope(state.RunId, request.CommandId + "/" + index.ToString(CultureInfo.InvariantCulture), state.Revision,
+                    var childId = legacy ? LegacyBatchChildCommandId(request.CommandId, index) : BatchChildCommandId(request.CommandId, index);
+                    var result = ExecuteInternal(new CommandEnvelope(state.RunId, childId, state.Revision,
                         new GameCommand(CommandKind.AdvanceBoundary)), target, payload);
                     outcomes.Add(result);
                     if (result.Status != CommandStatus.Committed && result.Status != CommandStatus.AlreadyCommitted) return new AdvanceResult(outcomes.AsReadOnly(), "PersistenceOrRuleFailure");
                 }
                 return new AdvanceResult(outcomes.AsReadOnly(), "TargetReached");
             }
+        }
+        private List<BatchReceipt> GetBatchReceipts(string rootCommandId)
+        {
+            var result = new List<BatchReceipt>();
+            var internalPrefix = BatchChildPrefix(rootCommandId);
+            var legacyPrefix = rootCommandId + "/";
+            foreach (var receipt in state.Receipts)
+            {
+                if (string.IsNullOrEmpty(receipt.ParentPayload)) continue;
+                int index;
+                if (TryParseBatchIndex(receipt.CommandId, internalPrefix, out index)) result.Add(new BatchReceipt(index, receipt, false));
+                else if (TryParseBatchIndex(receipt.CommandId, legacyPrefix, out index)) result.Add(new BatchReceipt(index, receipt, true));
+            }
+            result.Sort((a, b) => a.Index.CompareTo(b.Index));
+            return result;
+        }
+        private static bool ValidCallerCommandId(string commandId) =>
+            !string.IsNullOrWhiteSpace(commandId) && commandId.Length <= 256 && !commandId.StartsWith(InternalBatchPrefix, StringComparison.Ordinal);
+        private static string BatchChildPrefix(string rootCommandId) => InternalBatchPrefix + rootCommandId.Length.ToString(CultureInfo.InvariantCulture) + ":" + rootCommandId + "/";
+        private static string BatchChildCommandId(string rootCommandId, int index) => BatchChildPrefix(rootCommandId) + index.ToString(CultureInfo.InvariantCulture);
+        private static string LegacyBatchChildCommandId(string rootCommandId, int index) => rootCommandId + "/" + index.ToString(CultureInfo.InvariantCulture);
+        private static bool TryParseBatchIndex(string commandId, string prefix, out int index)
+        {
+            index = -1;
+            if (!commandId.StartsWith(prefix, StringComparison.Ordinal)) return false;
+            var suffix = commandId.Substring(prefix.Length);
+            return suffix.Length > 0 && int.TryParse(suffix, NumberStyles.None, CultureInfo.InvariantCulture, out index) && index >= 0;
+        }
+        private static CommandResult FromReceipt(CommandReceipt receipt) => new CommandResult(CommandStatus.AlreadyCommitted, "", receipt.Revision, receipt.OperationId, receipt.MinutesConsumed);
+        private sealed class BatchReceipt
+        {
+            public int Index { get; }
+            public CommandReceipt Receipt { get; }
+            public bool Legacy { get; }
+            public BatchReceipt(int index, CommandReceipt receipt, bool legacy) { Index = index; Receipt = receipt; Legacy = legacy; }
         }
         private GameState Clone(GameState source)
         {

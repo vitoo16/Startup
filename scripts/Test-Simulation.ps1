@@ -7,8 +7,17 @@ if (-not $DotnetPath) {
     else { $DotnetPath = (Get-Command dotnet -ErrorAction Stop).Source }
 }
 if (-not [IO.Path]::IsPathRooted($ReportPath)) { $ReportPath = Join-Path $startupRoot $ReportPath }
+$reportDirectory = Split-Path -Parent $ReportPath
+$astraReportPath = Join-Path $reportDirectory 'astra-foundation-highs-report.json'
+
 & $DotnetPath build "$startupRoot/tools/SimulationChecks/SimulationChecks.csproj" --configuration Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Provisional .NET build failed.' }
 & $DotnetPath run --project "$startupRoot/tools/SimulationChecks/SimulationChecks.csproj" --configuration Release --no-build -- $ReportPath
 if ($LASTEXITCODE -ne 0) { throw 'Provisional simulation checks failed.' }
-Write-Output 'This report verifies .NET behavior only. Unity EditMode, PlayMode, IL2CPP, and devices remain separate gates.'
+
+& $DotnetPath build "$startupRoot/tools/AstraFoundationChecks/AstraFoundationChecks.csproj" --configuration Release --nologo
+if ($LASTEXITCODE -ne 0) { throw 'Astra foundation regression build failed.' }
+& $DotnetPath run --project "$startupRoot/tools/AstraFoundationChecks/AstraFoundationChecks.csproj" --configuration Release --no-build -- $astraReportPath
+if ($LASTEXITCODE -ne 0) { throw 'Astra foundation regression checks failed.' }
+
+Write-Output 'These reports verify .NET behavior only. Unity EditMode, PlayMode, IL2CPP, and devices remain separate gates.'

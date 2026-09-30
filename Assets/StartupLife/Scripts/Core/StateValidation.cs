@@ -17,17 +17,24 @@ namespace StartupLife.Core
             _ = s.Date;
             if (s.Name.Length > 0)
             {
-                if (s.StartingAge < 18 || s.StartingAge > 40 || s.LearningSpeed <= 0 || !c.Starts.ContainsKey(s.BackgroundId) ||
-                    !c.Starts[s.BackgroundId].AppearanceIds.Contains(s.AppearanceId) || s.Skills.Count != c.Skills.Count)
+                if (s.StartingAge < 18 || s.StartingAge > 40 || s.LearningSpeed <= 0 || s.Skills.Count != c.Skills.Count)
                     throw new ArgumentException("Invalid character.");
+                if (!c.Starts.TryGetValue(s.BackgroundId, out var start))
+                    throw new ContentCompatibilityException("save.content_id", "Character background is unavailable in the active catalog.");
+                if (!start.AppearanceIds.Contains(s.AppearanceId))
+                    throw new ContentCompatibilityException("save.content_id", "Character appearance is unavailable in the active catalog.");
                 _ = DateTime.ParseExact(s.BirthDateIso, "yyyy-MM-dd", CultureInfo.InvariantCulture);
             }
             Unique(s.Skills.Select(x => x.Id)); Unique(s.Grants); Unique(s.ConsumedActivities);
             Unique(s.Receipts.Select(x => x.CommandId)); Unique(s.Receipts.Select(x => x.OperationId));
             Unique(s.Ledger.Select(x => x.Id)); Unique(s.Claims.Select(x => x.Id)); Unique(s.Arrears.Select(x => x.Id));
             foreach (var skill in s.Skills)
-                if (!c.Skills.ContainsKey(skill.Id) || skill.Exposure < 0 || skill.GrantedLevel < 0 || skill.GrantedLevel > 5)
+            {
+                if (!c.Skills.ContainsKey(skill.Id))
+                    throw new ContentCompatibilityException("save.content_id", "Skill definition is unavailable in the active catalog.");
+                if (skill.Exposure < 0 || skill.GrantedLevel < 0 || skill.GrantedLevel > 5)
                     throw new ArgumentException("Invalid skill.");
+            }
             ValidateEmployment(s.Employment, c);
             if (s.Employment != null)
             {
@@ -48,8 +55,9 @@ namespace StartupLife.Core
             foreach (var employment in s.PreviousEmployment) ValidateEmployment(employment, c);
             ValidateCourse(s.Course, c);
             foreach (var course in s.CompletedCourses) ValidateCourse(course, c);
-            if (s.Scheduler.Cursor < 0 || s.Scheduler.Cursor > s.Scheduler.Deck.Count || s.Scheduler.Cycle < 0 || s.Scheduler.Generation < 0 ||
-                s.Scheduler.Deck.Any(id => !c.Careers.Values.Any(career => career.Scenes.Any(scene => scene.Id == id))))
+            if (s.Scheduler.Deck.Any(id => !c.Careers.Values.Any(career => career.Scenes.Any(scene => scene.Id == id))))
+                throw new ContentCompatibilityException("save.content_id", "Scheduled scene is unavailable in the active catalog.");
+            if (s.Scheduler.Cursor < 0 || s.Scheduler.Cursor > s.Scheduler.Deck.Count || s.Scheduler.Cycle < 0 || s.Scheduler.Generation < 0)
                 throw new ArgumentException("Invalid scheduler.");
             var earned = RationalAmount.Zero;
             foreach (var claim in s.Claims)
@@ -79,8 +87,11 @@ namespace StartupLife.Core
         private static void ValidateEmployment(EmploymentState? e, ContentCatalog c)
         {
             if (e == null) return;
-            if (!c.Careers.TryGetValue(e.CareerId, out var definition) || e.DefinitionRevision != definition.Revision || e.Rank < 0 ||
-                e.Rank >= definition.Ranks.Count || e.Xp < 0 || e.ScenesToday < 0 || e.ScenesToday > definition.ScenesPerShift ||
+            if (!c.Careers.TryGetValue(e.CareerId, out var definition))
+                throw new ContentCompatibilityException("save.content_id", "Career definition is unavailable in the active catalog.");
+            if (e.DefinitionRevision != definition.Revision)
+                throw new ContentCompatibilityException("save.content_revision", "Career revision is unsupported by the active catalog.");
+            if (e.Rank < 0 || e.Rank >= definition.Ranks.Count || e.Xp < 0 || e.ScenesToday < 0 || e.ScenesToday > definition.ScenesPerShift ||
                 string.IsNullOrWhiteSpace(e.InstanceId) || string.IsNullOrWhiteSpace(e.EmployerId)) throw new ArgumentException("Invalid employment.");
             _ = DateTime.ParseExact(e.StartedIso, "yyyy-MM-dd", CultureInfo.InvariantCulture);
             _ = DateTime.ParseExact(e.FirstShiftIso, "yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -89,8 +100,9 @@ namespace StartupLife.Core
         private static void ValidateCourse(CourseState? course, ContentCatalog c)
         {
             if (course == null) return;
-            if (!c.Courses.TryGetValue(course.DefinitionId, out var definition) || course.ProgressUnits < 0 ||
-                course.ProgressUnits > checked((long)definition.BaseMinutes * 10000) || string.IsNullOrWhiteSpace(course.InstanceId))
+            if (!c.Courses.TryGetValue(course.DefinitionId, out var definition))
+                throw new ContentCompatibilityException("save.content_id", "Course definition is unavailable in the active catalog.");
+            if (course.ProgressUnits < 0 || course.ProgressUnits > checked((long)definition.BaseMinutes * 10000) || string.IsNullOrWhiteSpace(course.InstanceId))
                 throw new ArgumentException("Invalid course state.");
         }
     }
