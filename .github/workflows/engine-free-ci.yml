@@ -2,7 +2,6 @@ name: Engine-free CI
 
 on:
   pull_request:
-    branches: [main, feat/m0-t04-engine-free-ci]
   push:
     branches: [main]
   workflow_dispatch:
@@ -16,7 +15,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Documentation, Unity foundation, and simulation
+    name: Documentation, Unity contracts, and simulation
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -38,6 +37,12 @@ jobs:
         run: |
           $reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/unity-foundation-report.json'
           ./scripts/Test-UnityFoundationStatic.ps1 -ReportPath $reportPath
+
+      - name: Validate Unity runner contract
+        shell: pwsh
+        run: |
+          $reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/unity-runner-contract-report.json'
+          ./scripts/Test-UnityRunnerContractStatic.ps1 -ReportPath $reportPath
 
       - name: Run engine-free simulation regression suite
         shell: pwsh
