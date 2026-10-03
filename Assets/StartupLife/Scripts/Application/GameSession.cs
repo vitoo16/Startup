@@ -92,6 +92,7 @@ namespace StartupLife.Application
             GameState candidate;
             CommandReceipt receipt;
             SimulationOutcome outcome;
+            byte[] candidateBytes;
             var baseline = CaptureOutcome(state);
             try
             {
@@ -106,11 +107,12 @@ namespace StartupLife.Application
                     Revision = candidate.Revision, Cue = candidate.CurrentCue, MinutesConsumed = minutes, AdvanceTargetIso = advanceTarget, ParentPayload = parentPayload };
                 candidate.Receipts.Add(receipt); StateValidation.Validate(candidate, content);
                 outcome = BuildOutcome(baseline, candidate, receipt);
+                candidateBytes = serializer.Serialize(candidate);
             }
             catch (RuleFailure e) { return Result(CommandStatus.Rejected, e.ReasonKey); }
             catch (OverflowException) { return Result(CommandStatus.Rejected, "arithmetic.overflow"); }
             catch (ArgumentException) { return Result(CommandStatus.Rejected, "state.invalid"); }
-            var write = store.Commit(serializer.Serialize(candidate), state.Revision);
+            var write = store.Commit(candidateBytes, state.Revision);
             if (write == WriteStatus.Failed) return Result(CommandStatus.PersistenceFailed, "save.write_failed");
             if (write == WriteStatus.Ambiguous) { recoveryRequired = true; return Result(CommandStatus.RecoveryRequired, "save.recovery_required"); }
             var verified = store.Read();
