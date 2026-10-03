@@ -451,7 +451,10 @@ internal static class Program
         var store = new AtomicFileSaveStore(path, serializer);
         var changed = serializer.DeserializeAndValidate(expected).State!;
         changed.Cash++;
-        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, serializer.Serialize(changed)));
+        // The public serializer now rejects forged cash before storage. Build an adversarial envelope
+        // directly so this H1 test still reaches the compatibility-store full-checkpoint guard.
+        var forgedCash = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(changed), 1, changed.Revision);
+        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, forgedCash));
         Bytes(expected, File.ReadAllBytes(path));
         changed = serializer.DeserializeAndValidate(expected).State!;
         changed.Receipts.Single(x => x.CommandId == "job").CommandId = "renamed-direct";
