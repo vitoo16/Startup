@@ -30,6 +30,24 @@ namespace StartupLife.Presentation
             if (!running) StartCoroutine(RunShiftRoutine());
         }
 
+        internal void SuspendForLifecycle()
+        {
+            if (running) StopAllCoroutines();
+            running = false;
+            refresh?.Invoke();
+        }
+
+        internal void RestoreFromSnapshot()
+        {
+            if (running || flow == null || content == null) return;
+            var snapshot = flow.Refresh();
+            if (!TryGetPendingWorkCue(snapshot, out var cue)) return;
+            StartCoroutine(ReplayPendingCueRoutine(
+                snapshot.CurrentActivityId,
+                snapshot.PlaybackCursor,
+                cue));
+        }
+
         private IEnumerator RunShiftRoutine()
         {
             if (flow == null || content == null) throw new InvalidOperationException("Work playback is not bound.");
@@ -63,18 +81,21 @@ namespace StartupLife.Presentation
                     refresh();
                     if (outcome != null && career.Scenes.Exists(scene => scene.Id == outcome.Cue))
                     {
-                        status?.SetKey("scene." + outcome.Cue);
+                        var expectedActivityId = outcome.ActivityId;
+                        var expectedCursor = outcome.PlaybackCursor;
+                        var expectedCue = outcome.Cue;
+                        status?.SetKey("scene." + expectedCue);
                         if (cueHoldSeconds > 0f) yield return new WaitForSecondsRealtime(cueHoldSeconds);
 
                         var snapshot = flow.Refresh();
-                        if (!string.IsNullOrEmpty(snapshot.CurrentActivityId))
+                        if (!MatchesPendingCue(snapshot, expectedActivityId, expectedCursor, expectedCue))
+                            yield break;
+
+                        var acknowledge = flow.AcknowledgePlayback(expectedCursor + 1).Command;
+                        if (acknowledge.Status != CommandStatus.Committed && acknowledge.Status != CommandStatus.AlreadyCommitted)
                         {
-                            var acknowledge = flow.AcknowledgePlayback(snapshot.PlaybackCursor + 1).Command;
-                            if (acknowledge.Status != CommandStatus.Committed && acknowledge.Status != CommandStatus.AlreadyCommitted)
-                            {
-                                status?.SetKey("reason." + acknowledge.ReasonKey);
-                                yield break;
-                            }
+                            status?.SetKey("reason." + acknowledge.ReasonKey);
+                            yield break;
                         }
                     }
                 }
@@ -87,6 +108,54 @@ namespace StartupLife.Presentation
                 refresh();
             }
         }
+
+        private IEnumerator ReplayPendingCueRoutine(string expectedActivityId, int expectedCursor, string expectedCue)
+        {
+            running = true;
+            refresh();
+            try
+            {
+                status?.SetKey("scene." + expectedCue);
+                if (cueHoldSeconds > 0f) yield return new WaitForSecondsRealtime(cueHoldSeconds);
+
+                var snapshot = flow.Refresh();
+                if (!MatchesPendingCue(snapshot, expectedActivityId, expectedCursor, expectedCue))
+                    yield break;
+
+                var acknowledge = flow.AcknowledgePlayback(expectedCursor + 1).Command;
+                if (acknowledge.Status != CommandStatus.Committed && acknowledge.Status != CommandStatus.AlreadyCommitted)
+                    status?.SetKey("reason." + acknowledge.ReasonKey);
+            }
+            finally
+            {
+                running = false;
+                refresh();
+            }
+        }
+
+        private bool TryGetPendingWorkCue(FirstPlayableState snapshot, out string cue)
+        {
+            cue = "";
+            if (snapshot.PlaybackCursor != 0 ||
+                string.IsNullOrEmpty(snapshot.CurrentActivityId) ||
+                string.IsNullOrEmpty(snapshot.CareerId) ||
+                !content.Careers.TryGetValue(snapshot.CareerId, out var career) ||
+                !career.Scenes.Exists(scene => scene.Id == snapshot.Cue))
+                return false;
+
+            cue = snapshot.Cue;
+            return true;
+        }
+
+        private static bool MatchesPendingCue(
+            FirstPlayableState snapshot,
+            string expectedActivityId,
+            int expectedCursor,
+            string expectedCue) =>
+            snapshot.CurrentActivityId == expectedActivityId &&
+            snapshot.PlaybackCursor == expectedCursor &&
+            snapshot.Cue == expectedCue;
+
     }
 
     internal static class CareerSceneListExtensions

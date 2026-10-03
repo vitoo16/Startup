@@ -24,6 +24,7 @@ namespace StartupLife.Presentation
         private ContentCatalog content;
         private GameSession session;
         private FirstPlayableFlow flow;
+        private FirstPlayableLifecycle lifecycle;
 
         public bool IsReady { get; private set; }
         public FirstPlayableFlow Flow => flow;
@@ -78,15 +79,33 @@ namespace StartupLife.Presentation
                 flow = new FirstPlayableFlow(session, new GuidCommandIdSource());
                 characterCreation.Bind(flow, RefreshMode);
                 lifeScreen.Bind(flow, content, workPlayback, daySummary);
+                lifecycle = new FirstPlayableLifecycle(flow, workPlayback, RefreshMode);
                 daySummary.Hide();
                 IsReady = true;
                 RefreshMode();
+                lifecycle.RestoreAfterBootstrap();
             }
             catch (Exception error)
             {
                 Debug.LogException(error);
                 Fail("fatal.bootstrap_failed");
             }
+        }
+
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            HandleApplicationPause(pauseStatus);
+        }
+
+        private void OnApplicationQuit()
+        {
+            if (IsReady) lifecycle?.Quit();
+        }
+
+        public void HandleApplicationPause(bool pauseStatus)
+        {
+            if (!IsReady || lifecycle == null) return;
+            lifecycle.SetPaused(pauseStatus);
         }
 
         public void RefreshMode()
