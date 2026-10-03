@@ -1,6 +1,6 @@
 {
   "name": "StartupLife.Tests.EditMode",
-  "references": ["StartupLife.Core", "StartupLife.Simulation", "StartupLife.Application", "StartupLife.Infrastructure", "StartupLife.Presentation"],
+  "references": ["StartupLife.Core", "StartupLife.Simulation", "StartupLife.Application", "StartupLife.Content", "StartupLife.Infrastructure", "StartupLife.Presentation"],
   "includePlatforms": ["Editor"],
   "optionalUnityReferences": ["TestAssemblies"],
   "autoReferenced": false
