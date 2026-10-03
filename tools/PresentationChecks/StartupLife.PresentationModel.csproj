@@ -6,6 +6,8 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <BaseIntermediateOutputPath>obj/PresentationModel/</BaseIntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>obj/PresentationModel/</MSBuildProjectExtensionsPath>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../SimulationChecks/StartupLife.Core.csproj" />
