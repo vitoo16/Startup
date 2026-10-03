@@ -291,6 +291,8 @@ namespace StartupLife.Simulation
             }
             Require(state.DateIso == replay.DateIso && state.Minute == replay.Minute && state.CurrentActivity == replay.CurrentActivity,
                 "activity cursor");
+            Require(state.CurrentCue == replay.CurrentCue && state.PlaybackCursor == replay.PlaybackCursor,
+                "playback provenance");
             Require(state.Name == replay.Name && state.StartingAge == replay.StartingAge && state.BirthDateIso == replay.BirthDateIso &&
                 state.BackgroundId == replay.BackgroundId && state.AppearanceId == replay.AppearanceId &&
                 state.LearningSpeed == replay.LearningSpeed, "character provenance");
