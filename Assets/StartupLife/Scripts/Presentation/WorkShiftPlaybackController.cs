@@ -156,14 +156,15 @@ namespace StartupLife.Presentation
             snapshot.PlaybackCursor == expectedCursor &&
             snapshot.Cue == expectedCue;
 
-        internal static class CareerSceneListExtensions
+    }
+
+    internal static class CareerSceneListExtensions
+    {
+        public static bool Exists(this System.Collections.Generic.IReadOnlyList<CareerSceneDefinition> scenes, Predicate<CareerSceneDefinition> predicate)
         {
-            public static bool Exists(this System.Collections.Generic.IReadOnlyList<CareerSceneDefinition> scenes, Predicate<CareerSceneDefinition> predicate)
-            {
-                for (var i = 0; i < scenes.Count; i++)
-                    if (predicate(scenes[i])) return true;
-                return false;
-            }
+            for (var i = 0; i < scenes.Count; i++)
+                if (predicate(scenes[i])) return true;
+            return false;
         }
     }
 }
