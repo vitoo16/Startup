@@ -19,7 +19,7 @@ function Read-Text([string]$RelativePath) {
 
 $presentationAsm = (Read-Text 'Assets/StartupLife/Scripts/Presentation/StartupLife.Presentation.asmdef') | ConvertFrom-Json
 $editorAsm = (Read-Text 'Assets/StartupLife/Scripts/Editor/StartupLife.Editor.asmdef') | ConvertFrom-Json
-$coordinator = Read-Text 'Assets/StartupLife/Scripts/Presentation/FirstPlayableFlowCoordinator.cs'
+$coordinator = Read-Text 'Assets/StartupLife/Scripts/Presentation/FirstPlayableFlow.cs'
 $bootstrap = Read-Text 'Assets/StartupLife/Scripts/Presentation/StartupLifeBootstrapper.cs'
 $work = Read-Text 'Assets/StartupLife/Scripts/Presentation/WorkShiftPlaybackController.cs'
 $builder = Read-Text 'Assets/StartupLife/Scripts/Editor/FirstPlayableShellBuilder.cs'
@@ -32,7 +32,11 @@ Add-Check 'Editor references Input System' ('Unity.InputSystem' -in @($editorAsm
 
 $forbiddenCoordinator = @('GameState', 'CommandReceipt', 'ExportCheckpoint', 'ISaveStore', 'JsonSaveSerializer', 'AtomicFileSaveStore')
 $coordinatorLeaks = @($forbiddenCoordinator | Where-Object { $coordinator.Contains($_, [StringComparison]::Ordinal) })
-Add-Check 'Coordinator uses only public command/read contracts' ($coordinatorLeaks.Count -eq 0) ($(if ($coordinatorLeaks.Count -eq 0) { 'clean' } else { $coordinatorLeaks -join ', ' }))
+Add-Check 'Canonical flow uses only public command/read contracts' ($coordinatorLeaks.Count -eq 0) ($(if ($coordinatorLeaks.Count -eq 0) { 'clean' } else { $coordinatorLeaks -join ', ' }))
+Add-Check 'Bootstrap binds the canonical flow' ($bootstrap -match 'new\s+FirstPlayableFlow\(session,\s*new\s+GuidCommandIdSource\(\)\)') 'same seam as engine-free consumers'
+Add-Check 'Canonical command ids fail closed' ($coordinator -match 'IsNullOrWhiteSpace\(commandId\)') 'invalid injected ids must not dispatch'
+Add-Check 'Duplicate command seam is removed' (-not (Test-Path (Join-Path $repositoryRoot 'Assets/StartupLife/Scripts/Presentation/FirstPlayableFlowCoordinator.cs'))) 'one authoritative FirstPlayableFlow'
+Add-Check 'Duplicate presentation harness is removed' (-not (Test-Path (Join-Path $repositoryRoot 'tools/PresentationFlowChecks/PresentationFlowChecks.csproj'))) 'unique assertions merged into PresentationChecks'
 
 Add-Check 'Bootstrap requires authored Content asset' ($bootstrap -match 'StartupLifeContentCatalogAsset\s+contentAsset') 'content asset must be serialized into composition root'
 Add-Check 'Bootstrap builds Json serializer' ($bootstrap -match 'new\s+JsonSaveSerializer') 'expected JsonSaveSerializer'
