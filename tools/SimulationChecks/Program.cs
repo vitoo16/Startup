@@ -93,6 +93,58 @@ internal static class Program
             f.Day(); f.Evening(); result = f.SendOk(new GameCommand(CommandKind.Study, amount: 300)); Equal(60, result.MinutesConsumed);
             Equal(1, f.Session.Snapshot().SkillLevels["communication"]); Equal(1080, f.Session.Snapshot().Instant.Minute); True(f.State().Course == null);
         });
+        Check("active course snapshot survives cold restore without checkpoint inspection", () =>
+        {
+            var f = new Fixture(); f.Create(); f.Accept(); var buy = f.Buy("course-read-model");
+            True(buy.Outcome?.CourseChange != null); var activated = buy.Outcome!.CourseChange!;
+            Equal(CourseChangeKind.Activated, activated.Kind); Equal(CourseCompletionReason.None, activated.CompletionReason);
+            Equal("communication-basics", activated.DefinitionId); Equal("communication", activated.SkillId);
+            Equal(0L, activated.PriorProgressUnits); Equal(0L, activated.NewProgressUnits);
+            Equal(3600000L, activated.TargetUnits); Equal(1, activated.TargetLevel);
+
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            var store = new MemoryStore(f.Serializer, f.Session.ExportCheckpoint());
+            True(GameSession.TryRestore(f.Content, f.Serializer, store, out var restored, out var load));
+            Equal(LoadStatus.Valid, load.Status); True(restored != null);
+            var snapshot = restored!.Snapshot(); True(snapshot.ActiveCourse != null); var active = snapshot.ActiveCourse!;
+            Equal(activated.InstanceId, active.InstanceId); Equal("communication-basics", active.DefinitionId);
+            Equal("communication", active.SkillId); Equal(0L, active.ProgressUnits);
+            Equal(3600000L, active.TargetUnits); Equal(1, active.TargetLevel);
+        });
+        Check("course outcome distinguishes progress and study completion", () =>
+        {
+            var f = new Fixture(Catalog(speed: 20000)); f.Create(); f.Accept(); f.Buy();
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            var progress = f.SendOk(new GameCommand(CommandKind.Study, amount: 60), "course-progress");
+            True(progress.Outcome?.CourseChange != null); var progressed = progress.Outcome!.CourseChange!;
+            Equal(CourseChangeKind.Progressed, progressed.Kind); Equal(CourseCompletionReason.None, progressed.CompletionReason);
+            Equal(0L, progressed.PriorProgressUnits); Equal(1200000L, progressed.NewProgressUnits);
+            Equal(3600000L, progressed.TargetUnits); Equal(1200000L, f.Session.Snapshot().ActiveCourse!.ProgressUnits);
+
+            f.Evening();
+            var complete = f.SendOk(new GameCommand(CommandKind.Study, amount: 500), "course-complete");
+            True(complete.Outcome?.CourseChange != null); var completed = complete.Outcome!.CourseChange!;
+            Equal(CourseChangeKind.Completed, completed.Kind); Equal(CourseCompletionReason.StudyTargetReached, completed.CompletionReason);
+            Equal(1200000L, completed.PriorProgressUnits); Equal(3600000L, completed.NewProgressUnits);
+            Equal("communication-basics", completed.DefinitionId); Equal("communication", completed.SkillId);
+            True(f.Session.Snapshot().ActiveCourse == null); Equal(1, f.Session.Snapshot().SkillLevels["communication"]);
+        });
+        Check("career grant course completion has explicit target-already-met reason", () =>
+        {
+            var f = new Fixture(Catalog(promotionXp: 40, promotionDays: 0)); f.Create(); f.Accept();
+            var purchase = f.SendOk(new GameCommand(CommandKind.PurchaseCourse, "problem-course"), "problem-read-model");
+            True(purchase.Outcome?.CourseChange != null); var courseId = purchase.Outcome!.CourseChange!.InstanceId;
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            CommandResult scene = null!;
+            for (var i = 0; i < 4; i++) scene = f.SendOk(new GameCommand(CommandKind.AdvanceBoundary), "promotion-scene-" + i);
+            True(scene.Outcome?.CourseChange != null); var completed = scene.Outcome!.CourseChange!;
+            Equal(CourseChangeKind.Completed, completed.Kind);
+            Equal(CourseCompletionReason.SkillTargetAlreadyMet, completed.CompletionReason);
+            Equal(courseId, completed.InstanceId); Equal("problem-course", completed.DefinitionId); Equal("problem-solving", completed.SkillId);
+            Equal(0L, completed.PriorProgressUnits); Equal(3600000L, completed.NewProgressUnits);
+            True(f.Session.Snapshot().ActiveCourse == null); Equal(2, f.Session.Snapshot().SkillLevels["problem-solving"]);
+        });
         Check("LearningSpeed changes duration and study never overlaps work/sleep", () =>
         {
             var f = new Fixture(Catalog(speed: 20000)); f.Create(); f.Accept(); f.Buy();
@@ -429,13 +481,20 @@ internal static class Program
         Equal(expected.PriorRevision, actual.PriorRevision); Equal(expected.Revision, actual.Revision); Equal(expected.Start, actual.Start); Equal(expected.End, actual.End);
         Equal(expected.MinutesConsumed, actual.MinutesConsumed); Equal(expected.Cue, actual.Cue); Equal(expected.PlaybackCursor, actual.PlaybackCursor);
         Equal(expected.CashDelta, actual.CashDelta); Equal(expected.EmploymentId, actual.EmploymentId); Equal(expected.CareerXpDelta, actual.CareerXpDelta);
-        Equal(expected.PriorRank, actual.PriorRank); Equal(expected.NewRank, actual.NewRank); Equal(expected.CourseInstanceId, actual.CourseInstanceId);
-        Equal(expected.StudyUnitsDelta, actual.StudyUnitsDelta);
+        Equal(expected.PriorRank, actual.PriorRank); Equal(expected.NewRank, actual.NewRank); SameCourseChange(expected.CourseChange, actual.CourseChange);
         True(expected.LedgerEntries.Select(x => (x.Id, x.Category, x.CashDelta, x.Amount, x.AttributionId))
             .SequenceEqual(actual.LedgerEntries.Select(x => (x.Id, x.Category, x.CashDelta, x.Amount, x.AttributionId))));
         True(expected.SkillDeltas.Select(x => (x.SkillId, x.ExposureDelta, x.PriorLevel, x.NewLevel, x.PriorGrantedLevel, x.NewGrantedLevel))
             .SequenceEqual(actual.SkillDeltas.Select(x => (x.SkillId, x.ExposureDelta, x.PriorLevel, x.NewLevel, x.PriorGrantedLevel, x.NewGrantedLevel))));
         True(expected.GrantedIds.SequenceEqual(actual.GrantedIds)); True(expected.HistoryEntries.SequenceEqual(actual.HistoryEntries));
+    }
+    private static void SameCourseChange(CourseChange? expected, CourseChange? actual)
+    {
+        if (expected == null || actual == null) { True(expected == actual); return; }
+        Equal(expected.Kind, actual.Kind); Equal(expected.CompletionReason, actual.CompletionReason);
+        Equal(expected.InstanceId, actual.InstanceId); Equal(expected.DefinitionId, actual.DefinitionId); Equal(expected.SkillId, actual.SkillId);
+        Equal(expected.PriorProgressUnits, actual.PriorProgressUnits); Equal(expected.NewProgressUnits, actual.NewProgressUnits);
+        Equal(expected.TargetUnits, actual.TargetUnits); Equal(expected.TargetLevel, actual.TargetLevel);
     }
     private static SkillDefinition Skill(string id) => new(id, "skill." + id, 100, 300, 600, 1000, 1500);
     private static CareerSceneDefinition Scene(string id, int weight, long xp = 10) => new(id, "scene." + id, weight, xp, "communication", 1);
