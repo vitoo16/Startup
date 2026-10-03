@@ -44,6 +44,18 @@ jobs:
           $reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/m1-api-freeze-report.json'
           ./scripts/Test-M1ApiContractStatic.ps1 -ReportPath $reportPath
 
+      - name: Validate Content bridge contract
+        shell: pwsh
+        run: |
+          $reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/content-bridge-static-report.json'
+          ./scripts/Test-ContentBridgeStatic.ps1 -ReportPath $reportPath
+
+      - name: Validate M7 first playable shell source
+        shell: pwsh
+        run: |
+          $reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/m7-first-playable-shell-static-report.json'
+          ./scripts/Test-FirstPlayableShellStatic.ps1 -ReportPath $reportPath
+
       - name: Validate Unity runner contract
         shell: pwsh
         run: |
