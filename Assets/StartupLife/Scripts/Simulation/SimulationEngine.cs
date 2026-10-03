@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
@@ -159,16 +160,22 @@ namespace StartupLife.Simulation
         {
             var e = state.Employment; if (e == null) return;
             var career = content.Careers[e.CareerId];
-            var started = DateTime.ParseExact(e.StartedIso, "yyyy-MM-dd", CultureInfo.InvariantCulture);
-            var today = DateTime.ParseExact(state.DateIso, "yyyy-MM-dd", CultureInfo.InvariantCulture);
-            var days = (today - started).Days;
-            for (var i = e.Rank; i < career.Ranks.Count; i++)
+            var limit = PromotionLimit(e, career, state.Date);
+            for (var i = e.Rank; i < limit; i++)
             {
-                var rank = career.Ranks[i]; if (e.Xp < rank.RequiredXp || days < rank.RequiredServiceDays) break;
+                var rank = career.Ranks[i];
                 if (i > e.Rank) { e.Rank = i; state.History.Add("career.promoted:" + rank.Id); }
                 Grant(state, "career/" + career.Id + "/" + rank.Id, rank.GrantSkillId, rank.GrantLevel);
             }
             CompleteObsoleteCourse(state);
+        }
+        internal static int PromotionLimit(EmploymentState employment, CareerDefinition career, SimDate date)
+        {
+            var started = DateTime.ParseExact(employment.StartedIso, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var today = DateTime.ParseExact(date.ToString(), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var days = (today - started).Days; var limit = employment.Rank;
+            while (limit < career.Ranks.Count && employment.Xp >= career.Ranks[limit].RequiredXp && days >= career.Ranks[limit].RequiredServiceDays) limit++;
+            return limit;
         }
         private void Grant(GameState state, string id, string skillId, int level)
         {
@@ -240,5 +247,158 @@ namespace StartupLife.Simulation
         private static void Entry(GameState state, string operation, string category, long cashDelta, long amount, string attribution) =>
             state.Ledger.Add(new LedgerEntry { Id = state.NewEntity("transaction"), OperationId = operation, Category = category, CashDelta = cashDelta, Amount = amount, AttributionId = attribution });
         private static void Fail(string key) => throw new RuleFailure(key);
+    }
+
+    // Reconstruct a detached candidate with the runtime rules. Never rebuild or publish the saved state.
+    public sealed class SimulationRestoreValidator : IRestoreStateValidator
+    {
+        public void Validate(GameState state, ContentCatalog content)
+        {
+            ValidateKnownScheduler(state, content);
+            // Unrelated unavailable definitions do not suppress the scheduler checks above.
+            if (!FullContentAvailable(state, content)) return;
+            var events = DeterministicRng.Seed(state.Seed, "events");
+            var scheduler = DeterministicRng.Seed(state.Seed, "scheduler");
+            if (events == scheduler) { events = unchecked(events + 1); if (events == 0) events = 1; }
+            var replay = new GameState { ContentVersion = content.Version, RunId = state.RunId, Seed = state.Seed,
+                DateIso = StateValidation.ReceiptOrigin(state).ToString(), SchedulerRng = scheduler, EventRng = events };
+            var engine = new SimulationEngine(content);
+            foreach (var receipt in state.Receipts)
+            {
+                var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
+                Require(replay.NewOperation() == receipt.OperationId, "operation identity");
+                if (command.Kind == CommandKind.AdvanceBoundary && replay.Employment != null)
+                {
+                    var employment = replay.Employment;
+                    var career = content.Careers[employment.CareerId];
+                    if (career.WorksOn(replay.Date) && string.CompareOrdinal(replay.DateIso, employment.FirstShiftIso) >= 0 &&
+                        replay.Minute >= career.StartMinute && replay.Minute < career.EndMinute)
+                    {
+                        if (!ContentId.IsValid(receipt.Cue)) throw new ArgumentException("Invalid committed scene identity.");
+                        if (!content.Careers.Values.Any(x => x.Scenes.Any(scene => scene.Id == receipt.Cue)))
+                            throw new ContentCompatibilityException("save.content_id", "Committed career scene is unavailable in the active catalog.");
+                        Require(career.Scenes.Any(scene => scene.Id == receipt.Cue), "committed scene career");
+                    }
+                }
+                int minutes;
+                try { minutes = engine.Evaluate(replay, command, receipt.OperationId); }
+                catch (RuleFailure error) { throw new ArgumentException("Receipt cannot represent a committed command: " + error.ReasonKey, error); }
+                Require(minutes == receipt.MinutesConsumed, "committed duration");
+                if (command.Kind == CommandKind.AdvanceBoundary) Require(receipt.Cue == replay.CurrentCue, "committed boundary cue");
+                if (command.Kind != CommandKind.AdvanceBoundary && command.Kind != CommandKind.AcknowledgePlayback)
+                { replay.CurrentActivity = receipt.OperationId; replay.PlaybackCursor = 0; }
+                replay.Revision = receipt.Revision;
+            }
+            Require(state.DateIso == replay.DateIso && state.Minute == replay.Minute && state.CurrentActivity == replay.CurrentActivity,
+                "activity cursor");
+            Require(state.NextOperation == replay.NextOperation && state.NextEntity == replay.NextEntity, "identity counters");
+            var actual = state.Scheduler; var expected = replay.Scheduler;
+            Require(actual.Deck.SequenceEqual(expected.Deck) && actual.Cursor == expected.Cursor && actual.Cycle == expected.Cycle &&
+                actual.Generation == expected.Generation && actual.Signature == expected.Signature && actual.LastScene == expected.LastScene &&
+                state.SchedulerRng == replay.SchedulerRng, "deterministic scheduler");
+            Require(EmploymentEquals(state.Employment, replay.Employment) && Same(state.PreviousEmployment, replay.PreviousEmployment, EmploymentEquals),
+                "employment provenance");
+            Require(Same(state.Skills, replay.Skills, (a, b) => a.Id == b.Id && a.Exposure == b.Exposure && a.GrantedLevel == b.GrantedLevel) &&
+                state.Grants.SequenceEqual(replay.Grants), "committed skill rewards");
+            Require(CourseEquals(state.Course, replay.Course) && Same(state.CompletedCourses, replay.CompletedCourses, CourseEquals), "course provenance");
+            Require(Same(state.Claims, replay.Claims, (a, b) => a.Id == b.Id && a.EmploymentId == b.EmploymentId && a.EarnedIso == b.EarnedIso &&
+                a.Numerator == b.Numerator && a.Denominator == b.Denominator), "salary provenance");
+            Require(Same(state.Arrears, replay.Arrears, (a, b) => a.Id == b.Id && a.DueIso == b.DueIso && a.Amount == b.Amount), "arrear provenance");
+            Require(Same(state.Ledger, replay.Ledger, (a, b) => a.Id == b.Id && a.OperationId == b.OperationId && a.Category == b.Category &&
+                a.AttributionId == b.AttributionId && a.Amount == b.Amount && a.CashDelta == b.CashDelta), "ledger provenance");
+            Require(state.History.SequenceEqual(replay.History), "committed history");
+            // PendingChoiceId, event RNG and presentation fields have separate contracts; no new M1 rules here.
+        }
+        private static bool FullContentAvailable(GameState state, ContentCatalog content) =>
+            (state.Name.Length == 0 || (content.Starts.TryGetValue(state.BackgroundId, out var start) && start.AppearanceIds.Contains(state.AppearanceId))) &&
+            state.Skills.All(x => content.Skills.ContainsKey(x.Id)) &&
+            state.PreviousEmployment.Concat(state.Employment == null ? Array.Empty<EmploymentState>() : new[] { state.Employment }).All(x =>
+                content.Careers.TryGetValue(x.CareerId, out var career) && career.Revision == x.DefinitionRevision) &&
+            state.CompletedCourses.Concat(state.Course == null ? Array.Empty<CourseState>() : new[] { state.Course }).All(x => content.Courses.ContainsKey(x.DefinitionId));
+
+        private static void ValidateKnownScheduler(GameState state, ContentCatalog content)
+        {
+            var jobs = state.PreviousEmployment.Concat(state.Employment == null ? Array.Empty<EmploymentState>() : new[] { state.Employment }).ToArray();
+            var trace = new GameState { RunId = state.RunId, DateIso = StateValidation.ReceiptOrigin(state).ToString(),
+                SchedulerRng = DeterministicRng.Seed(state.Seed, "scheduler") };
+            var jobIndex = 0;
+            var engine = new SimulationEngine(content);
+            foreach (var receipt in state.Receipts)
+            {
+                var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
+                if (command.Kind == CommandKind.AcceptJob)
+                {
+                    Require(trace.Employment == null && jobIndex < jobs.Length, "employment receipt sequence");
+                    var saved = jobs[jobIndex++];
+                    Require(saved.CareerId == command.ContentId && saved.StartedIso == trace.DateIso, "employment start");
+                    if (!content.Careers.TryGetValue(saved.CareerId, out var career) || career.Revision != saved.DefinitionRevision) return;
+                    var first = trace.Date;
+                    if (trace.Minute > career.StartMinute) first = first.AddDays(1);
+                    while (!career.WorksOn(first)) first = first.AddDays(1);
+                    trace.Employment = new EmploymentState { InstanceId = saved.InstanceId, EmployerId = saved.EmployerId,
+                        CareerId = career.Id, DefinitionRevision = career.Revision, StartedIso = trace.DateIso, FirstShiftIso = first.ToString() };
+                    trace.Scheduler = new SchedulerState { LastScene = trace.Scheduler.LastScene };
+                    PromoteTrace(trace, career);
+                }
+                else if (command.Kind == CommandKind.Resign)
+                {
+                    Require(trace.Employment != null, "resignation receipt");
+                    trace.Employment!.EndedIso = trace.DateIso; trace.PreviousEmployment.Add(trace.Employment); trace.Employment = null;
+                }
+                else if (command.Kind == CommandKind.AdvanceBoundary)
+                {
+                    var employment = trace.Employment;
+                    var career = employment == null ? null : content.Careers[employment.CareerId];
+                    var working = career != null && career.WorksOn(trace.Date) && string.CompareOrdinal(trace.DateIso, employment!.FirstShiftIso) >= 0;
+                    int duration;
+                    if (trace.Minute < content.Schedule.WakeMinute) duration = content.Schedule.WakeMinute - trace.Minute;
+                    else if (working && trace.Minute < career!.StartMinute) duration = career.StartMinute - trace.Minute;
+                    else if (working && trace.Minute < career!.EndMinute)
+                    {
+                        if (!ContentId.IsValid(receipt.Cue)) throw new ArgumentException("Invalid committed scene identity.");
+                        if (!content.Careers.Values.Any(x => x.Scenes.Any(scene => scene.Id == receipt.Cue)))
+                            throw new ContentCompatibilityException("save.content_id", "Committed scheduler content is unavailable.");
+                        Require(career.Scenes.Any(x => x.Id == receipt.Cue), "committed scene career");
+                        Require(QuotaScheduler.Consume(trace, career) == receipt.Cue, "deterministic committed scene");
+                        var scene = career.Scenes.Single(x => x.Id == receipt.Cue);
+                        employment!.Xp = checked(employment.Xp + scene.CareerXp); employment.ScenesToday++; employment.WorkDateIso = trace.DateIso;
+                        PromoteTrace(trace, career); duration = (career.EndMinute - career.StartMinute) / career.ScenesPerShift;
+                    }
+                    else duration = trace.Minute < content.Schedule.SleepMinute ? content.Schedule.SleepMinute - trace.Minute : 1440 - trace.Minute;
+                    Require(receipt.MinutesConsumed == duration, "committed work boundary");
+                }
+                else if (command.Kind == CommandKind.Study)
+                    Require(receipt.MinutesConsumed <= engine.FreeMinutes(trace), "eligible study time");
+
+                var next = checked(trace.Minute + receipt.MinutesConsumed);
+                trace.DateIso = trace.Date.AddDays(next / 1440).ToString(); trace.Minute = next % 1440;
+                if (next >= 1440 && trace.Employment != null)
+                {
+                    trace.Employment.ScenesToday = 0; trace.Employment.WorkDateIso = "";
+                    PromoteTrace(trace, content.Careers[trace.Employment.CareerId]);
+                }
+            }
+            Require(jobIndex == jobs.Length, "employment receipt history");
+            Require(EmploymentEquals(state.Employment, trace.Employment) && Same(state.PreviousEmployment, trace.PreviousEmployment, EmploymentEquals), "known employment history");
+            var actual = state.Scheduler; var expected = trace.Scheduler;
+            Require(actual.Deck.SequenceEqual(expected.Deck) && actual.Cursor == expected.Cursor && actual.Cycle == expected.Cycle &&
+                actual.Generation == expected.Generation && actual.Signature == expected.Signature && actual.LastScene == expected.LastScene &&
+                state.SchedulerRng == trace.SchedulerRng, "known deterministic scheduler");
+        }
+        private static void PromoteTrace(GameState trace, CareerDefinition career)
+        {
+            var employment = trace.Employment!;
+            employment.Rank = Math.Max(employment.Rank, SimulationEngine.PromotionLimit(employment, career, trace.Date) - 1);
+        }
+        private static void Require(bool value, string field)
+        { if (!value) throw new ArgumentException("Checkpoint differs from committed " + field + "."); }
+        private static bool Same<T>(IReadOnlyList<T> actual, IReadOnlyList<T> expected, Func<T, T, bool> equal)
+        { return actual.Count == expected.Count && actual.Zip(expected, equal).All(x => x); }
+        private static bool EmploymentEquals(EmploymentState? a, EmploymentState? b) =>
+            a == null || b == null ? a == b : a.InstanceId == b.InstanceId && a.EmployerId == b.EmployerId && a.CareerId == b.CareerId &&
+            a.DefinitionRevision == b.DefinitionRevision && a.StartedIso == b.StartedIso && a.EndedIso == b.EndedIso && a.FirstShiftIso == b.FirstShiftIso &&
+            a.Xp == b.Xp && a.Rank == b.Rank && a.ScenesToday == b.ScenesToday && a.WorkDateIso == b.WorkDateIso;
+        private static bool CourseEquals(CourseState? a, CourseState? b) =>
+            a == null || b == null ? a == b : a.InstanceId == b.InstanceId && a.DefinitionId == b.DefinitionId && a.ProgressUnits == b.ProgressUnits && a.Completed == b.Completed;
     }
 }

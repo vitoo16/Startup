@@ -23,14 +23,16 @@ namespace StartupLife.Infrastructure
     {
         private readonly ContentCatalog content;
         private readonly Dictionary<int, ISaveMigration> migrations;
-        public JsonSaveSerializer(ContentCatalog catalog, params ISaveMigration[] steps)
+        private readonly IRestoreStateValidator restoreValidator;
+        public JsonSaveSerializer(ContentCatalog catalog, IRestoreStateValidator validator, params ISaveMigration[] steps)
         {
-            content = catalog; migrations = steps.ToDictionary(x => x.FromVersion);
+            content = catalog; restoreValidator = validator ?? throw new ArgumentNullException(nameof(validator));
+            migrations = steps.ToDictionary(x => x.FromVersion);
             if (steps.Any(x => x.ToVersion != x.FromVersion + 1 || x.FromVersion < 0)) throw new ArgumentException("Migrations must be sequential.");
         }
         public byte[] Serialize(GameState state)
         {
-            StateValidation.Validate(state, content);
+            StateValidation.Validate(state, content, restoreValidator);
             return Wrap(WriteObject(state), state.SaveVersion, state.Revision);
         }
         public LoadResult DeserializeAndValidate(byte[] bytes)
@@ -50,7 +52,8 @@ namespace StartupLife.Infrastructure
                 }
                 var state = ReadObject<GameState>(payload);
                 if (state.SaveVersion != version || state.Revision != envelope.Generation) return new LoadResult(LoadStatus.Corrupt, reason: "save.generation");
-                StateValidation.Validate(state, content); return new LoadResult(LoadStatus.Valid, state);
+                StateValidation.Validate(state, content, restoreValidator);
+                return new LoadResult(LoadStatus.Valid, state);
             }
             catch (ContentCompatibilityException e)
             { return new LoadResult(LoadStatus.UnsupportedContent, reason: e.ReasonKey); }

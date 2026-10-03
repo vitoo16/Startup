@@ -167,9 +167,10 @@ internal static class Program
         });
         Check("overflow rejects entire boundary including RNG/rewards", () =>
         {
-            var f = new Fixture(); f.Create(); f.Accept(); var state = f.State(); state.Employment!.Xp = long.MaxValue;
-            var g = new Fixture(f.Content, state); g.SendOk(new GameCommand(CommandKind.AdvanceBoundary)); g.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
-            var before = g.Session.ExportCheckpoint(); Equal("arithmetic.overflow", g.Send(new GameCommand(CommandKind.AdvanceBoundary)).ReasonKey); Bytes(before, g.Session.ExportCheckpoint());
+            var f = new Fixture(Catalog(sceneXp: long.MaxValue)); f.Create(); f.Accept();
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary)); f.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary)); Equal(long.MaxValue, f.State().Employment!.Xp);
+            var before = f.Session.ExportCheckpoint(); Equal("arithmetic.overflow", f.Send(new GameCommand(CommandKind.AdvanceBoundary)).ReasonKey); Bytes(before, f.Session.ExportCheckpoint());
         });
         Check("leap years, month end and hospitality weekends", () =>
         {
@@ -318,14 +319,14 @@ internal static class Program
     private static void Bytes(byte[] expected, byte[] actual) => True(expected.SequenceEqual(actual));
     private static void Throws(Action action) { try { action(); } catch (ArgumentException) { return; } throw new Exception("Expected rejection"); }
     private static SkillDefinition Skill(string id) => new(id, "skill." + id, 100, 300, 600, 1000, 1500);
-    private static CareerSceneDefinition Scene(string id, int weight) => new(id, "scene." + id, weight, 10, "communication", 1);
+    private static CareerSceneDefinition Scene(string id, int weight, long xp = 10) => new(id, "scene." + id, weight, xp, "communication", 1);
     private static CareerDefinition Career(IEnumerable<CareerSceneDefinition> scenes, long promotionXp = 1000, int promotionDays = 30, DayOfWeek[]? days = null) =>
         new("developer", "v1", "career.developer", 540, 1020, 4, 20,
             days ?? new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday }, scenes,
             new[] { new CareerRankDefinition("junior", 0, 0, 10000000, "problem-solving", 0), new CareerRankDefinition("mid", promotionXp, promotionDays, 15000000, "problem-solving", 2) });
-    private static ContentCatalog Catalog(long cash = 3000000, int speed = 10000, long promotionXp = 1000, int promotionDays = 30, int payday = 1, long cost = 1000000) =>
+    private static ContentCatalog Catalog(long cash = 3000000, int speed = 10000, long promotionXp = 1000, int promotionDays = 30, int payday = 1, long cost = 1000000, long sceneXp = 10) =>
         new("fixture.v1", skillIds.Select(Skill),
-            new[] { Career(new[] { Scene("coding", 40), Scene("meeting", 20), Scene("bug-fixing", 15), Scene("client-discussion", 10), Scene("demo", 10), Scene("documentation", 5) }, promotionXp, promotionDays) },
+            new[] { Career(new[] { Scene("coding", 40, sceneXp), Scene("meeting", 20, sceneXp), Scene("bug-fixing", 15, sceneXp), Scene("client-discussion", 10, sceneXp), Scene("demo", 10, sceneXp), Scene("documentation", 5, sceneXp) }, promotionXp, promotionDays) },
             new[] { new CourseDefinition("communication-basics", "course.communication", "communication", 1, 0, 360, 200000), new CourseDefinition("problem-course", "course.problem", "problem-solving", 2, 0, 360, 200000) },
             new[] { new CharacterStartDefinition("fresh", cash, speed, "base.female", "base.male") }, new EconomyBalanceDefinition(payday, 1, cost), new DayScheduleDefinition(480, 1320));
     private sealed class Fixture
@@ -336,7 +337,7 @@ internal static class Program
         private int sequence;
         public Fixture(ContentCatalog? content = null, GameState? state = null, SimDate? start = null)
         {
-            Content = content ?? Catalog(); Serializer = new JsonSaveSerializer(Content, new SyntheticV0Migration());
+            Content = content ?? Catalog(); Serializer = new JsonSaveSerializer(Content, GameSession.CreateRestoreValidator(), new SyntheticV0Migration());
             var initial = state ?? GameSession.NewState(Content, "run", 12345, start ?? new SimDate(2026, 9, 1));
             sequence = checked((int)initial.NextOperation);
             var store = new MemoryStore(Serializer, state != null ? Serializer.Serialize(initial) : null);

@@ -1,0 +1,83 @@
+{
+  "suite": "Astra foundation HIGH regression \u2014 .NET, not Unity",
+  "passed": 19,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "H1 direct command and advance batch cannot share caller CommandId",
+      "status": "passed"
+    },
+    {
+      "name": "H1 completed batch retry replays persisted receipts after restore",
+      "status": "passed"
+    },
+    {
+      "name": "H1 legacy reserved-prefix caller and batch identities remain disjoint",
+      "status": "passed"
+    },
+    {
+      "name": "H1 unknown historical receipt ownership blocks writes without guessing",
+      "status": "passed"
+    },
+    {
+      "name": "H1 PR6 and pre-PR6 completed day/month receipts replay with their original owner",
+      "status": "passed"
+    },
+    {
+      "name": "H1 historical partial day/month continuation persists ownership atomically",
+      "status": "passed"
+    },
+    {
+      "name": "H1 ordinary root/index day/month continuations need no provenance",
+      "status": "passed"
+    },
+    {
+      "name": "H1 failed normalization preserves checkpoint and owner bindings are defensive",
+      "status": "passed"
+    },
+    {
+      "name": "H1 internal IDs exclude historical callers including delimiter and maximum-length roots",
+      "status": "passed"
+    },
+    {
+      "name": "H1 trusted recovery persists completed/partial day/month owners before retry",
+      "status": "passed"
+    },
+    {
+      "name": "H1 compatibility recovery failures and replacement ambiguity preserve exactly-once results",
+      "status": "passed"
+    },
+    {
+      "name": "H1 compatibility writes reject gameplay changes and competing owner resolutions",
+      "status": "passed"
+    },
+    {
+      "name": "H1 malformed ownership groups fail closed without rewriting the checkpoint",
+      "status": "passed"
+    },
+    {
+      "name": "H2 unsupported career revision does not fall back to backup or overwrite primary",
+      "status": "passed"
+    },
+    {
+      "name": "H2 missing saved skill is unsupported content",
+      "status": "passed"
+    },
+    {
+      "name": "H2 missing scheduled scene is unsupported while wrong-career scene is corrupt",
+      "status": "passed"
+    },
+    {
+      "name": "H2 malformed persisted fields remain corrupt before compatibility resolution",
+      "status": "passed"
+    },
+    {
+      "name": "R2 truncated skill state is corrupt and recovers the valid backup",
+      "status": "passed"
+    },
+    {
+      "name": "R2 cross-field corruption wins over missing content and unavailable revisions",
+      "status": "passed"
+    }
+  ]
+}

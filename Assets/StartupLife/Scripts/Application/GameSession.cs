@@ -65,6 +65,7 @@ namespace StartupLife.Application
             if (scheduler == events) { events = unchecked(events + 1); if (events == 0) events = 1; }
             return new GameState { ContentVersion = catalog.Version, RunId = runId, Seed = seed, DateIso = start.ToString(), SchedulerRng = scheduler, EventRng = events };
         }
+        public static IRestoreStateValidator CreateRestoreValidator() => new SimulationRestoreValidator();
         public GameSnapshot Snapshot() { lock (gate) return new GameSnapshot(state, content); }
         public byte[] ExportCheckpoint() { lock (gate) return serializer.Serialize(state); }
         public CommandResult Execute(CommandEnvelope command)

@@ -17,6 +17,31 @@ namespace StartupLife.Core
         { Kind = kind; ContentId = contentId; Amount = amount; Name = name; AppearanceId = appearanceId; }
         public string CanonicalPayload => ((int)Kind).ToString(CultureInfo.InvariantCulture) + ":" + Field(ContentId) + Field(Name) + Field(AppearanceId) + Amount.ToString(CultureInfo.InvariantCulture);
         private static string Field(string value) => value.Length.ToString(CultureInfo.InvariantCulture) + ":" + value;
+        public static GameCommand ParseCanonicalPayload(string payload)
+        {
+            var position = 0;
+            var separator = payload.IndexOf(':');
+            if (separator < 1 || !int.TryParse(payload.Substring(0, separator), NumberStyles.None, CultureInfo.InvariantCulture, out var kind) ||
+                !Enum.IsDefined(typeof(CommandKind), kind)) throw new ArgumentException("Invalid command payload.");
+            position = separator + 1;
+            var content = ReadField(payload, ref position);
+            var name = ReadField(payload, ref position);
+            var appearance = ReadField(payload, ref position);
+            if (!int.TryParse(payload.Substring(position), NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var amount))
+                throw new ArgumentException("Invalid command amount.");
+            var command = new GameCommand((CommandKind)kind, content, amount, name, appearance);
+            if (command.CanonicalPayload != payload) throw new ArgumentException("Noncanonical command payload.");
+            return command;
+        }
+        private static string ReadField(string payload, ref int position)
+        {
+            var separator = payload.IndexOf(':', position);
+            if (separator < position || !int.TryParse(payload.Substring(position, separator - position), NumberStyles.None,
+                CultureInfo.InvariantCulture, out var length) || length < 0 || length > payload.Length - separator - 1)
+                throw new ArgumentException("Invalid command field.");
+            position = separator + 1;
+            var value = payload.Substring(position, length); position += length; return value;
+        }
     }
     public sealed class CommandEnvelope
     {
@@ -55,6 +80,11 @@ namespace StartupLife.Core
     {
         byte[] Serialize(GameState state);
         LoadResult DeserializeAndValidate(byte[] bytes);
+    }
+    // Simulation supplies the verifier; storage depends only on this Core port.
+    public interface IRestoreStateValidator
+    {
+        void Validate(GameState state, ContentCatalog content);
     }
     public enum LoadStatus { Valid, Missing, Corrupt, Unreadable, FutureVersion, UnsupportedContent, RecoveredBackup, RecoveryRequired }
     public sealed class LoadResult

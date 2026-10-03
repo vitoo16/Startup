@@ -21,6 +21,30 @@ internal static class Program
         Check("M2 committed activity history cannot be removed or forged", ActivityHistoryMustBeCommitted);
         Check("M2 resigned employment keeps its persisted scheduler valid", ResignedSchedulerRemainsValid);
         Check("M2 valid mid-cycle restore continues byte-identically", ValidRestoreContinuationIsDeterministic);
+        Check("M2 rewinding cursor and history cannot replay XP or salary", RewindCannotReplaySalary);
+        Check("M2 same-career deck cannot violate quota", ImpossibleQuotaIsCorrupt);
+        Check("M2 correct quota cannot hide impossible deck ordering", ImpossibleOrderIsCorrupt);
+        Check("M2 generation overflow is rejected before publication", GenerationOverflowIsCorrupt);
+        Check("M2 stale signature after an already-consumed promotion is corrupt", StaleSignatureIsCorrupt);
+        Check("M2 non-career boundary history cannot be removed", NonCareerHistoryCannotBeRemoved);
+        Check("M2 canonical past activities cannot be invented", PastActivityCannotBeForged);
+        Check("M2 equal activity counts cannot hide forged provenance", EqualCountsCannotHideForgery);
+        Check("M2 global entity sequence cannot be shared by different kinds", EntitySequenceIsGlobal);
+        Check("M2 counter covers settled entity references retained in ledger", LedgerReferenceCannotExceedCounter);
+        Check("M2 committed receipt history cannot be removed or reordered", ReceiptHistoryIsComplete);
+        Check("M2 malformed canonical payloads remain structural corruption", MalformedPayloadIsCorrupt);
+        Check("M2 timeline corruption wins over unavailable content", TimelineCorruptionBeforeCompatibility);
+        Check("M2 known scheduler corruption wins over missing background", SchedulerCorruptionBeforeUnrelatedCompatibility);
+        Check("M2 valid missing background remains unsupported content", ValidMissingBackgroundIsUnsupported);
+        Check("M2 missing scheduler scenes remain unsupported content", MissingSchedulerSceneIsUnsupported);
+        Check("M2 multi-scene promotion and cycle-seam continuation are deterministic", MultiSceneTransitionsRemainDeterministic);
+        Check("M2 resignation and subsequent employment preserve scheduler provenance", SubsequentEmploymentRemainsValid);
+        Check("M2 missing historical scheduler scene is unsupported", MissingHistoricalSceneIsUnsupported);
+        Check("M2 historical scene belonging to another career is corrupt", ForeignHistoricalSceneIsCorrupt);
+        Check("M2 serializer requires an explicit restore verifier", SerializerRequiresVerifier);
+        Check("M2 coordinated receipt and cursor rewind cannot retain rewards", CoordinatedRewindIsCorrupt);
+        Check("M2 committed reward and salary provenance cannot be forged", ForgedRewardsAreCorrupt);
+        Check("M2 scheduler RNG and plausible generation must match its trace", SchedulerTraceFieldsAreCorrupt);
 
         var reportPath = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.Combine(Path.GetTempPath(), "startup-life-m2-restore-invariants.json");
         Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
@@ -170,13 +194,202 @@ internal static class Program
         return f;
     }
 
+    private static void RewindCannotReplaySalary()
+    {
+        var f = Ready(); f.ToEndOfWork(); var state = f.State();
+        Equal(40L, state.Employment!.Xp); Equal(1, state.Claims.Count); Equal(1, state.Ledger.Count(x => x.Category == "salary.accrual"));
+        state.Minute = 900; state.Employment.ScenesToday = 3;
+        True(state.ConsumedActivities.Remove("run/activity/2026-09-07/900"));
+        state.CurrentActivity = state.Receipts.Last().OperationId;
+        state.Scheduler.Cursor = 3; state.Scheduler.LastScene = state.Scheduler.Deck[2];
+        RejectBeforePublication(f, state);
+        var receipt = f.State().Receipts.Last(); var before = f.Session.ExportCheckpoint();
+        Equal(CommandStatus.AlreadyCommitted, f.Session.Execute(new CommandEnvelope("run", receipt.CommandId, 0, new GameCommand(CommandKind.AdvanceBoundary))).Status);
+        Bytes(before, f.Session.ExportCheckpoint());
+    }
+    private static void ImpossibleQuotaIsCorrupt()
+    {
+        var f = Ready(Catalog(multi: true)); f.FirstScene(); var state = f.State();
+        state.Scheduler.Deck = Enumerable.Repeat(state.Scheduler.LastScene, 4).ToList(); RejectBeforePublication(f, state);
+    }
+    private static void ImpossibleOrderIsCorrupt()
+    {
+        var f = Ready(Catalog(multi: true)); f.FirstScene(); var state = f.State();
+        var first = state.Scheduler.LastScene; var other = first == "coding" ? "meeting" : "coding";
+        state.Scheduler.Deck = new List<string> { first, first, other, other }; RejectBeforePublication(f, state);
+    }
+    private static void GenerationOverflowIsCorrupt()
+    {
+        var f = Ready(); f.ToEndOfWork(); var state = f.State(); state.Scheduler.Generation = long.MaxValue;
+        RejectBeforePublication(f, state);
+    }
+    private static void StaleSignatureIsCorrupt()
+    {
+        var f = Ready(Catalog(10, multi: true)); f.FirstScene(); Equal(CommandStatus.Committed, f.Step().Status);
+        var state = f.State(); Equal("developer/v1/1", state.Scheduler.Signature);
+        state.Scheduler.Signature = "developer/v1/0"; RejectBeforePublication(f, state);
+    }
+    private static void NonCareerHistoryCannotBeRemoved()
+    {
+        var f = Ready(); f.FirstScene(); var state = f.State();
+        True(state.ConsumedActivities.Remove("run/activity/2026-09-07/0")); RejectBeforePublication(f, state);
+    }
+    private static void PastActivityCannotBeForged()
+    {
+        var f = Ready(); f.FirstScene(); var state = f.State();
+        state.CurrentActivity = "run/activity/2026-09-07/479"; state.ConsumedActivities.Add(state.CurrentActivity);
+        RejectBeforePublication(f, state);
+    }
+    private static void EqualCountsCannotHideForgery()
+    {
+        var f = Ready(); f.FirstScene(); var state = f.State();
+        var index = state.ConsumedActivities.IndexOf("run/activity/2026-09-07/0"); True(index >= 0);
+        state.ConsumedActivities[index] = "run/activity/2026-09-07/479"; state.CurrentActivity = state.ConsumedActivities[index];
+        Equal(state.Receipts.Count(x => x.Payload == new GameCommand(CommandKind.AdvanceBoundary).CanonicalPayload), state.ConsumedActivities.Count);
+        RejectBeforePublication(f, state);
+    }
+    private static void EntitySequenceIsGlobal()
+    {
+        var f = Ready(); var state = f.State();
+        state.Employment!.EmployerId = "run/employer/" + state.Employment.InstanceId.Split('/').Last(); RejectBeforePublication(f, state);
+    }
+    private static void LedgerReferenceCannotExceedCounter()
+    {
+        var f = Ready(); f.ToEndOfWork();
+        foreach (var category in new[] { "arrear.settlement", "external.label" })
+        {
+            var state = f.State(); state.Ledger[0].Category = category; state.Ledger[0].AttributionId = "run/arrear/9999";
+            RejectBeforePublication(f, state);
+        }
+    }
+    private static void ReceiptHistoryIsComplete()
+    {
+        var f = Ready(); f.FirstScene(); var missing = f.State(); missing.Receipts.RemoveAt(2); RejectBeforePublication(f, missing);
+        var swapped = f.State(); (swapped.Receipts[2], swapped.Receipts[3]) = (swapped.Receipts[3], swapped.Receipts[2]);
+        RejectBeforePublication(f, swapped);
+    }
+    private static void MalformedPayloadIsCorrupt()
+    {
+        var f = Ready(); f.FirstScene(); var state = f.State(); state.Receipts.Last().Payload = "2:0:0:0:00";
+        RejectBeforePublication(f, state);
+    }
+    private static void TimelineCorruptionBeforeCompatibility()
+    {
+        var f = Ready(); f.FirstScene(); var state = f.State();
+        True(state.ConsumedActivities.Remove("run/activity/2026-09-07/0")); state.Employment!.DefinitionRevision = "unavailable";
+        RejectBeforePublication(f, state);
+        var missingBackground = new JsonSaveSerializer(Catalog(missingStart: true), GameSession.CreateRestoreValidator());
+        Equal(LoadStatus.Corrupt, Raw(missingBackground, state).Status);
+    }
+    private static void SchedulerCorruptionBeforeUnrelatedCompatibility()
+    {
+        var f = Ready(Catalog(multi: true)); f.FirstScene(); var state = f.State();
+        state.Scheduler.Deck = Enumerable.Repeat(state.Scheduler.LastScene, 4).ToList();
+        var serializer = new JsonSaveSerializer(Catalog(multi: true, missingStart: true), GameSession.CreateRestoreValidator());
+        Equal(LoadStatus.Corrupt, Raw(serializer, state).Status);
+    }
+    private static void ValidMissingBackgroundIsUnsupported()
+    {
+        var f = Ready(Catalog(multi: true)); f.FirstScene();
+        var serializer = new JsonSaveSerializer(Catalog(multi: true, missingStart: true), GameSession.CreateRestoreValidator());
+        Equal(LoadStatus.UnsupportedContent, Raw(serializer, f.State()).Status);
+    }
+    private static void MissingSchedulerSceneIsUnsupported()
+    {
+        var f = Ready(); f.FirstScene(); var state = f.State();
+        var serializer = new JsonSaveSerializer(Catalog(sceneId: "meeting"), GameSession.CreateRestoreValidator());
+        Equal(LoadStatus.UnsupportedContent, Raw(serializer, state).Status);
+    }
+    private static void MultiSceneTransitionsRemainDeterministic()
+    {
+        var f = Ready(Catalog(10, multi: true)); f.FirstScene(); Equal("developer/v1/0", f.State().Scheduler.Signature);
+        AssertContinuation(f); Equal(CommandStatus.Committed, f.Step().Status); Equal("developer/v1/1", f.State().Scheduler.Signature);
+        AssertContinuation(f); f.ToEndOfWork(); AssertContinuation(f); f.ToNextWorkdayFirstScene(); AssertContinuation(f);
+    }
+    private static Fixture SwitchedCareer()
+    {
+        var f = Ready(TwoCareers()); f.FirstScene();
+        Equal(CommandStatus.Committed, f.Execute("resign", new GameCommand(CommandKind.Resign)).Status);
+        Equal(CommandStatus.Committed, f.Execute("new-job", new GameCommand(CommandKind.AcceptJob, "designer")).Status);
+        AssertContinuation(f); f.ToNextWorkdayFirstScene(); return f;
+    }
+    private static void SubsequentEmploymentRemainsValid() { var f = SwitchedCareer(); AssertContinuation(f); }
+    private static void MissingHistoricalSceneIsUnsupported()
+    {
+        var f = SwitchedCareer(); var state = f.State(); True(!state.Scheduler.Deck.Contains("coding"));
+        var serializer = new JsonSaveSerializer(TwoCareers(removeCoding: true), GameSession.CreateRestoreValidator());
+        Equal(LoadStatus.UnsupportedContent, Raw(serializer, state).Status);
+    }
+    private static void ForeignHistoricalSceneIsCorrupt()
+    {
+        var f = SwitchedCareer(); var state = f.State();
+        var serializer = new JsonSaveSerializer(TwoCareers(removeCoding: true, foreignCoding: true), GameSession.CreateRestoreValidator());
+        Equal(LoadStatus.Corrupt, Raw(serializer, state).Status);
+    }
+    private static void SerializerRequiresVerifier()
+    {
+        try { _ = new JsonSaveSerializer(Catalog(), null!); }
+        catch (ArgumentNullException) { return; }
+        throw new Exception("Serializer accepted no restore verifier");
+    }
+    private static void CoordinatedRewindIsCorrupt()
+    {
+        var f = Ready(); f.ToEndOfWork(); var state = f.State();
+        state.Receipts.RemoveAt(state.Receipts.Count - 1); state.Revision--; state.NextOperation--;
+        True(state.ConsumedActivities.Remove("run/activity/2026-09-07/900"));
+        state.Minute = 900; state.Employment!.ScenesToday = 3;
+        state.CurrentActivity = state.ConsumedActivities.Last(); state.Scheduler.Cursor = 3; state.Scheduler.LastScene = state.Scheduler.Deck[2];
+        // The retained salary ledger points at a surviving operation, so structural receipt checks alone cannot catch this.
+        state.Ledger.Last().OperationId = state.Receipts.Last().OperationId;
+        RejectBeforePublication(f, state);
+    }
+    private static void ForgedRewardsAreCorrupt()
+    {
+        var f = Ready(); f.ToEndOfWork();
+        foreach (Action<GameState> forge in new Action<GameState>[] {
+            s => s.Employment!.Xp++, s => s.Skills[0].Exposure++,
+            s => s.Claims[0].Numerator = "99999999", s => s.Ledger.Last().Amount++ })
+        {
+            var state = f.State(); forge(state); RejectBeforePublication(f, state);
+        }
+    }
+    private static void SchedulerTraceFieldsAreCorrupt()
+    {
+        var f = Ready(Catalog(multi: true)); f.FirstScene();
+        var rng = f.State(); rng.SchedulerRng = rng.SchedulerRng == 1 ? 2u : 1u; RejectBeforePublication(f, rng);
+        var generation = f.State(); generation.Scheduler.Generation++;
+        True(generation.Scheduler.Generation <= generation.ConsumedActivities.Count); RejectBeforePublication(f, generation);
+    }
+    private static void RejectBeforePublication(Fixture fixture, GameState state)
+    {
+        var before = fixture.Session.ExportCheckpoint();
+        var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision);
+        Equal(LoadStatus.Corrupt, fixture.Serializer.DeserializeAndValidate(bytes).Status);
+        var store = new MemoryStore(fixture.Serializer, bytes);
+        True(!GameSession.TryRestore(fixture.Catalog, fixture.Serializer, store, out var restored, out var result));
+        True(restored == null); Equal(LoadStatus.Corrupt, result.Status); Bytes(before, fixture.Session.ExportCheckpoint());
+    }
+    private static void AssertContinuation(Fixture fixture)
+    {
+        var bytes = fixture.Session.ExportCheckpoint(); var state = fixture.State();
+        var aStore = new MemoryStore(fixture.Serializer, bytes); var bStore = new MemoryStore(fixture.Serializer, bytes);
+        True(GameSession.TryRestore(fixture.Catalog, fixture.Serializer, aStore, out var a, out _));
+        True(GameSession.TryRestore(fixture.Catalog, fixture.Serializer, bStore, out var b, out _));
+        var command = new CommandEnvelope("run", "restored-next", state.Revision, new GameCommand(CommandKind.AdvanceBoundary));
+        Equal(CommandStatus.Committed, a!.Execute(command).Status); Equal(CommandStatus.Committed, b!.Execute(command).Status);
+        Bytes(a.ExportCheckpoint(), b.ExportCheckpoint());
+        var checkpoint = a.ExportCheckpoint(); Equal(CommandStatus.AlreadyCommitted, a.Execute(command).Status); Bytes(checkpoint, a.ExportCheckpoint());
+    }
+
     private static LoadResult Raw(JsonSaveSerializer serializer, GameState state) =>
         serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision));
 
-    private static ContentCatalog Catalog(long promotionXp = 1000)
+    private static ContentCatalog Catalog(long promotionXp = 1000, bool multi = false, bool missingStart = false, string sceneId = "coding")
     {
         var skill = new SkillDefinition("communication", "skill.communication", 100, 300, 600, 1000, 1500);
-        var scene = new CareerSceneDefinition("coding", "scene.coding", 100, 10, "communication", 1);
+        var scenes = multi ? new[] { new CareerSceneDefinition("coding", "scene.coding", 50, 10, "communication", 1),
+            new CareerSceneDefinition("meeting", "scene.meeting", 50, 20, "communication", 4) } :
+            new[] { new CareerSceneDefinition(sceneId, "scene." + sceneId, 100, 10, "communication", 1) };
         var ranks = new[]
         {
             new CareerRankDefinition("junior", 0, 0, 10000000, "communication", 0),
@@ -184,10 +397,20 @@ internal static class Program
         };
         var career = new CareerDefinition("developer", "v1", "career.developer", 540, 1020, 4, 4,
             new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday },
-            new[] { scene }, ranks);
+            scenes, ranks);
         return new ContentCatalog("fixture.v1", new[] { skill }, new[] { career }, Array.Empty<CourseDefinition>(),
-            new[] { new CharacterStartDefinition("fresh", 3000000, 10000, "base.female") },
+            missingStart ? Array.Empty<CharacterStartDefinition>() : new[] { new CharacterStartDefinition("fresh", 3000000, 10000, "base.female") },
             new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
+    }
+    private static ContentCatalog TwoCareers(bool removeCoding = false, bool foreignCoding = false)
+    {
+        var basis = Catalog(sceneId: removeCoding ? "meeting" : "coding"); var developer = basis.Careers["developer"];
+        var designer = new CareerDefinition("designer", "v1", "career.designer", 540, 1020, 4, 4, developer.WorkDays,
+            new[] { new CareerSceneDefinition("design", "scene.design", 100, 10, "communication", 1) }, developer.Ranks);
+        var careers = new List<CareerDefinition> { developer, designer };
+        if (foreignCoding) careers.Add(new CareerDefinition("foreign", "v1", "career.foreign", 540, 1020, 4, 4, developer.WorkDays,
+            new[] { new CareerSceneDefinition("coding", "scene.coding", 100, 10, "communication", 1) }, developer.Ranks));
+        return new ContentCatalog(basis.Version, basis.Skills.Values, careers, basis.Courses.Values, basis.Starts.Values, basis.Economy, basis.Schedule);
     }
 
     private sealed class Fixture
@@ -200,7 +423,7 @@ internal static class Program
         public Fixture(ContentCatalog catalog, GameState? state = null, byte[]? persisted = null)
         {
             Catalog = catalog;
-            Serializer = new JsonSaveSerializer(catalog);
+            Serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator());
             var initial = state ?? GameSession.NewState(catalog, "run", 12345, new SimDate(2026, 9, 7));
             sequence = checked((int)initial.NextOperation);
             Session = new GameSession(initial, catalog, Serializer, new MemoryStore(Serializer, persisted));
@@ -218,6 +441,7 @@ internal static class Program
             while (Session.Snapshot().Instant.Minute < 1020)
                 Equal(CommandStatus.Committed, Step().Status);
         }
+        public void FirstScene() { while (Session.Snapshot().Instant.Minute < 660) Equal(CommandStatus.Committed, Step().Status); }
 
         public void ToNextWorkdayFirstScene()
         {
