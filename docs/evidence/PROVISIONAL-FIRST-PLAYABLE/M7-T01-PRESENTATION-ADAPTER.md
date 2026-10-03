@@ -1,10 +1,10 @@
 # M7-T01 presentation and local Unity runtime verification
 
-Date: 2026-10-04 (Asia/Bangkok)  
-Owner model: primary Codex, continuing the recorded primary takeover; no Sol/Gemini execution attributed.  
-Branch: `fix/m7-presentation-runtime-gate`  
-Starting main: `4c7b9e3e4f9b4b9ed91c1c1862fe1cf4a1710b14`  
-Final functional source head: `b2bc2ccebdb63d3a578f9db2d401a6b2ab931ed7`
+- Date: 2026-10-04 (Asia/Bangkok).
+- Owner model: primary Codex, continuing the recorded primary takeover; no Sol/Gemini execution attributed.
+- Branch: `fix/m7-presentation-runtime-gate`.
+- Starting main: `4c7b9e3e4f9b4b9ed91c1c1862fe1cf4a1710b14`.
+- Final functional source head: `b2bc2ccebdb63d3a578f9db2d401a6b2ab931ed7`.
 
 **M7-T01 NOT CLOSED.** The local source, generated assets, Unity journey, visuals and normal-save smoke now pass. Formal prerequisite acceptance remains pending: M7-T01 depends on M6-T02, while the authoritative ledger still records only M0-T01 complete. The [provisional sequencing allowance](../../architecture/FIRST_PLAYABLE_CONTRACTS.md) retains full M1–M7 acceptance gates pending dependency/platform review. This evidence does not close those upstream gates. No checkbox changes; M7-T02 is not started; **M8 NOT READY — blocked by M7-T02**.
 
