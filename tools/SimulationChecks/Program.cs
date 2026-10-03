@@ -258,6 +258,16 @@ internal static class Program
             Equal(before.Scheduler.Cursor, after.Scheduler.Cursor); Equal(before.CurrentCue, after.CurrentCue);
             Equal(10, f.Session.Snapshot().PlaybackCursor);
         });
+        Check("committed non-boundary cue forgery is corrupt before outcome publication", () =>
+        {
+            var f = new Fixture(); f.Create(); f.Accept(); f.Buy("cue-source");
+            var forged = f.State();
+            var receipt = forged.Receipts.Single(x => x.CommandId == "cue-source");
+            Equal("course.purchased", receipt.Cue);
+            receipt.Cue = "forged.cue";
+            var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(forged), 1, forged.Revision);
+            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(bytes).Status);
+        });
         Check("synthetic v0 migration and current continuation", () =>
         {
             var f = new Fixture();
