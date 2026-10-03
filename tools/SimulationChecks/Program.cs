@@ -204,6 +204,60 @@ internal static class Program
             Equal(before.Cash, f.State().Cash); Equal(before.Employment!.Xp, f.State().Employment!.Xp); Equal(before.Scheduler.Cursor, f.State().Scheduler.Cursor);
             Equal(before.CurrentCue, f.State().CurrentCue); Equal(10, f.State().PlaybackCursor);
         });
+        Check("committed outcome exposes transactions and survives old retry after restore", () =>
+        {
+            var f = new Fixture(); f.Create(); f.Accept(); var buy = f.Buy("buy-outcome");
+            True(buy.Outcome != null); var expected = buy.Outcome!;
+            Equal("buy-outcome", expected.CommandId); Equal(buy.OperationId, expected.OperationId);
+            Equal(-200000L, expected.CashDelta); Equal(expected.Start, expected.End);
+            Equal(1, expected.LedgerEntries.Count); Equal("course.purchase", expected.LedgerEntries[0].Category);
+            Equal(-200000L, expected.LedgerEntries[0].CashDelta); Equal(200000L, expected.LedgerEntries[0].Amount);
+            Equal(1, expected.HistoryEntries.Count); Equal("course.purchased:communication-basics", expected.HistoryEntries[0]);
+            ThrowsNotSupported(() => ((IList<OutcomeLedgerEntry>)expected.LedgerEntries).Clear());
+
+            f.Evening();
+            var retry = f.Session.Execute(new CommandEnvelope("run", "buy-outcome", 0,
+                new GameCommand(CommandKind.PurchaseCourse, "communication-basics")));
+            Equal(CommandStatus.AlreadyCommitted, retry.Status); True(retry.Outcome != null); SameOutcome(expected, retry.Outcome!);
+
+            var restored = new Fixture(f.Content, f.State());
+            var retryAfterReload = restored.Session.Execute(new CommandEnvelope("run", "buy-outcome", 0,
+                new GameCommand(CommandKind.PurchaseCourse, "communication-basics")));
+            Equal(CommandStatus.AlreadyCommitted, retryAfterReload.Status); True(retryAfterReload.Outcome != null);
+            SameOutcome(expected, retryAfterReload.Outcome!);
+        });
+        Check("career boundary outcome exposes activity interval progression and reached instant", () =>
+        {
+            var f = new Fixture(); f.Create(); f.Accept();
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            var scene = f.SendOk(new GameCommand(CommandKind.AdvanceBoundary), "scene-outcome");
+            True(scene.Outcome != null); var outcome = scene.Outcome!;
+            Equal(540, outcome.Start.Minute); Equal(660, outcome.End.Minute); Equal(120, outcome.MinutesConsumed);
+            True(outcome.Cue.Length > 0); Equal("run/activity/2026-09-01/540", outcome.ActivityId);
+            Equal(10L, outcome.CareerXpDelta); Equal(0, outcome.PriorRank); Equal(0, outcome.NewRank);
+            var skill = outcome.SkillDeltas.Single(x => x.SkillId == "communication");
+            Equal(1L, skill.ExposureDelta); Equal(0, skill.PriorLevel); Equal(0, skill.NewLevel);
+            var snapshot = f.Session.Snapshot(); Equal(outcome.ActivityId, snapshot.CurrentActivityId); Equal(0, snapshot.PlaybackCursor);
+
+            var advance = f.Session.AdvanceDay(new CommandEnvelope("run", "outcome-day", snapshot.Revision,
+                new GameCommand(CommandKind.AdvanceBoundary)));
+            Equal("TargetReached", advance.StopReason); Equal(f.Session.Snapshot().Instant, advance.ReachedInstant);
+            True(advance.Boundaries.All(x => x.Outcome != null));
+        });
+        Check("playback outcome changes cursor only and snapshot publishes it", () =>
+        {
+            var f = new Fixture(); f.Create(); f.Accept(); f.Evening(); var before = f.State();
+            var snapshot = f.Session.Snapshot(); True(snapshot.CurrentActivityId.Length > 0); Equal(0, snapshot.PlaybackCursor);
+            var ack = f.SendOk(new GameCommand(CommandKind.AcknowledgePlayback, snapshot.CurrentActivityId, 10), "ack-outcome");
+            True(ack.Outcome != null); var outcome = ack.Outcome!;
+            Equal(snapshot.CurrentActivityId, outcome.ActivityId); Equal(10, outcome.PlaybackCursor); Equal(0L, outcome.CashDelta);
+            Equal(0L, outcome.CareerXpDelta); Equal(0, outcome.LedgerEntries.Count); Equal(0, outcome.SkillDeltas.Count);
+            Equal(0, outcome.GrantedIds.Count); Equal(0, outcome.HistoryEntries.Count); Equal(outcome.Start, outcome.End);
+            var after = f.State(); Equal(before.Cash, after.Cash); Equal(before.Employment!.Xp, after.Employment!.Xp);
+            Equal(before.Scheduler.Cursor, after.Scheduler.Cursor); Equal(before.CurrentCue, after.CurrentCue);
+            Equal(10, f.Session.Snapshot().PlaybackCursor);
+        });
         Check("synthetic v0 migration and current continuation", () =>
         {
             var f = new Fixture();
@@ -318,6 +372,21 @@ internal static class Program
     private static void True(bool value) { if (!value) throw new Exception("Assertion failed"); }
     private static void Bytes(byte[] expected, byte[] actual) => True(expected.SequenceEqual(actual));
     private static void Throws(Action action) { try { action(); } catch (ArgumentException) { return; } throw new Exception("Expected rejection"); }
+    private static void ThrowsNotSupported(Action action) { try { action(); } catch (NotSupportedException) { return; } throw new Exception("Expected immutable collection"); }
+    private static void SameOutcome(SimulationOutcome expected, SimulationOutcome actual)
+    {
+        Equal(expected.OperationId, actual.OperationId); Equal(expected.CommandId, actual.CommandId); Equal(expected.ActivityId, actual.ActivityId);
+        Equal(expected.PriorRevision, actual.PriorRevision); Equal(expected.Revision, actual.Revision); Equal(expected.Start, actual.Start); Equal(expected.End, actual.End);
+        Equal(expected.MinutesConsumed, actual.MinutesConsumed); Equal(expected.Cue, actual.Cue); Equal(expected.PlaybackCursor, actual.PlaybackCursor);
+        Equal(expected.CashDelta, actual.CashDelta); Equal(expected.EmploymentId, actual.EmploymentId); Equal(expected.CareerXpDelta, actual.CareerXpDelta);
+        Equal(expected.PriorRank, actual.PriorRank); Equal(expected.NewRank, actual.NewRank); Equal(expected.CourseInstanceId, actual.CourseInstanceId);
+        Equal(expected.StudyUnitsDelta, actual.StudyUnitsDelta);
+        True(expected.LedgerEntries.Select(x => (x.Id, x.Category, x.CashDelta, x.Amount, x.AttributionId))
+            .SequenceEqual(actual.LedgerEntries.Select(x => (x.Id, x.Category, x.CashDelta, x.Amount, x.AttributionId))));
+        True(expected.SkillDeltas.Select(x => (x.SkillId, x.ExposureDelta, x.PriorLevel, x.NewLevel, x.PriorGrantedLevel, x.NewGrantedLevel))
+            .SequenceEqual(actual.SkillDeltas.Select(x => (x.SkillId, x.ExposureDelta, x.PriorLevel, x.NewLevel, x.PriorGrantedLevel, x.NewGrantedLevel))));
+        True(expected.GrantedIds.SequenceEqual(actual.GrantedIds)); True(expected.HistoryEntries.SequenceEqual(actual.HistoryEntries));
+    }
     private static SkillDefinition Skill(string id) => new(id, "skill." + id, 100, 300, 600, 1000, 1500);
     private static CareerSceneDefinition Scene(string id, int weight, long xp = 10) => new(id, "scene." + id, weight, xp, "communication", 1);
     private static CareerDefinition Career(IEnumerable<CareerSceneDefinition> scenes, long promotionXp = 1000, int promotionDays = 30, DayOfWeek[]? days = null) =>
