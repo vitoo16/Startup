@@ -50,6 +50,7 @@
   "M7T02": "NOT STARTED",
   "M8": "NOT READY — blocked by M7-T02",
   "artifacts": {
+    ".gitattributes": "d8406a5c22e3ed1571f169917f68e4de3792f7976810c40cdd54fa0499c2684f",
     "builders.log": "a07bb22cf5c888ab5cabf3a74d9cc3d040fd29e7495e88c8d8545a534218ac27",
     "editmode-results.xml": "89bf647b3934a23a2e4fcb8b38ed2ecb3296b9dea6e007348239aba10374b96a",
     "editmode.log": "19479f4d5e1ad27cc422bffc2d5b6532d9203a09cda80d6749c2d09c17bab757",
