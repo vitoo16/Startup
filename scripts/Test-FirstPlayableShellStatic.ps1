@@ -22,8 +22,10 @@ $editorAsm = (Read-Text 'Assets/StartupLife/Scripts/Editor/StartupLife.Editor.as
 $coordinator = Read-Text 'Assets/StartupLife/Scripts/Presentation/FirstPlayableFlow.cs'
 $bootstrap = Read-Text 'Assets/StartupLife/Scripts/Presentation/StartupLifeBootstrapper.cs'
 $work = Read-Text 'Assets/StartupLife/Scripts/Presentation/WorkShiftPlaybackController.cs'
+$lifecycle = Read-Text 'Assets/StartupLife/Scripts/Presentation/FirstPlayableLifecycle.cs'
 $builder = Read-Text 'Assets/StartupLife/Scripts/Editor/FirstPlayableShellBuilder.cs'
 $playMode = Read-Text 'Assets/StartupLife/Tests/PlayMode/FirstPlayableFlowTests.cs'
+$lifecyclePlayMode = Read-Text 'Assets/StartupLife/Tests/PlayMode/FirstPlayableLifecycleTests.cs'
 
 Add-Check 'Presentation references Content' ('StartupLife.Content' -in @($presentationAsm.references)) ($presentationAsm.references -join ', ')
 Add-Check 'Presentation references uGUI' ('Unity.ugui' -in @($presentationAsm.references)) ($presentationAsm.references -join ', ')
@@ -44,8 +46,14 @@ Add-Check 'Bootstrap uses atomic local store' ($bootstrap -match 'new\s+AtomicFi
 Add-Check 'Bootstrap restores before creating a new run' ($bootstrap -match 'GameSession\.TryRestore') 'expected TryRestore'
 Add-Check 'Bootstrap does not hardcode first playable catalog' (-not ($bootstrap -match 'FirstPlayableContentTemplate|new\s+ContentCatalog')) 'Presentation must consume Content asset'
 
-Add-Check 'Work playback acknowledges committed activity' ($work -match 'AcknowledgePlayback\(snapshot\.PlaybackCursor\s*\+\s*1\)') 'playback completion must use reward-independent acknowledgement'
+Add-Check 'Work playback acknowledges committed activity' ($work -match 'AcknowledgePlayback\(expectedCursor\s*\+\s*1\)') 'playback completion must use reward-independent acknowledgement'
 Add-Check 'Work playback does not mutate domain state' (-not ($work -match 'GameState|CommandReceipt|\.Cash\s*=|\.Xp\s*=')) 'view must not mutate domain state'
+Add-Check 'Bootstrap owns pause lifecycle callback' ($bootstrap -match 'OnApplicationPause\(bool\s+pauseStatus\)') 'mobile lifecycle must enter through the composition root'
+Add-Check 'Bootstrap avoids focus duplicate checkpointing' (-not ($bootstrap -match 'OnApplicationFocus\s*\(')) 'focus churn must not duplicate lifecycle actions'
+Add-Check 'Lifecycle reads only public presentation state' (($lifecycle -match 'flow\.Refresh\(\)') -and -not ($lifecycle -match 'GameState|CommandReceipt|ExportCheckpoint|ISaveStore|JsonSaveSerializer|AtomicFileSaveStore')) 'lifecycle must not bypass FirstPlayableFlow'
+Add-Check 'Lifecycle pause stops active work coroutine' (($work -match 'SuspendForLifecycle\(\)') -and ($work -match 'StopAllCoroutines\(\)')) 'paused coroutine locals must not drive resumed state'
+Add-Check 'Pending work replay requires unacknowledged cursor' ($work -match 'snapshot\.PlaybackCursor\s*!=\s*0') 'only cursor zero may replay a committed work cue'
+Add-Check 'Restored work cue is acknowledgement-only' ((([regex]::Matches($work, 'AdvanceBoundary\(\)')).Count -eq 1) -and (([regex]::Matches($work, 'AcknowledgePlayback\(expectedCursor\s*\+\s*1\)')).Count -eq 2)) 'restore path must never recommit AdvanceBoundary'
 
 Add-Check 'Editor builder creates scene through EditorSceneManager' ($builder -match 'EditorSceneManager\.NewScene') 'scene must be generated through Unity'
 Add-Check 'Editor builder configures portrait reference canvas' ($builder -match 'referenceResolution\s*=\s*new\s+Vector2\(1080,\s*1920\)') 'expected 1080x1920'
@@ -58,6 +66,15 @@ Add-Check 'Editor builder seeds Content asset through content builder' ($builder
 Add-Check 'PlayMode first playable journey source exists' ($playMode -match 'CreateWorkStudyAndAdvanceDayThroughViews') 'expected full first playable flow test'
 Add-Check 'PlayMode test cleans persistent save' ($playMode -match 'DeleteSave\(\)') 'tests must isolate autosave state'
 Add-Check 'PlayMode test drives UI buttons' ($playMode -match '\.onClick\.Invoke\(\)') 'test should exercise view dispatch'
+Add-Check 'Lifecycle PlayMode covers fresh launch' ($lifecyclePlayMode -match 'FreshLaunchWithoutSaveShowsCharacterCreation') 'M7-T02 fresh launch test required'
+Add-Check 'Lifecycle PlayMode covers pause before acknowledge' ($lifecyclePlayMode -match 'PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards') 'W1/W3 restore test required'
+Add-Check 'Lifecycle PlayMode covers pause after acknowledge' ($lifecyclePlayMode -match 'AcknowledgedWorkCueDoesNotReplayAfterRestart') 'W2 restore test required'
+Add-Check 'Lifecycle PlayMode covers course restart' ($lifecyclePlayMode -match 'MidCourseRestartRestoresExactProgressAndCompletesOnce') 'mid-course restore test required'
+Add-Check 'Lifecycle PlayMode covers next day restart' ($lifecyclePlayMode -match 'NextDayRestartDoesNotRecommitBoundary') 'next-day restore test required'
+Add-Check 'Lifecycle PlayMode covers backup recovery' ($lifecyclePlayMode -match 'CorruptPrimaryRecoversBackupAndAllowsNextWrite') 'backup recovery test required'
+Add-Check 'Lifecycle PlayMode covers unreadable fail closed' ($lifecyclePlayMode -match 'UnreadablePrimaryFailsClosedWithoutUsingBackup') 'unreadable primary contract required'
+Add-Check 'Lifecycle PlayMode covers both invalid' ($lifecyclePlayMode -match 'BothInvalidSavesFailWithoutStartingNewRun') 'fatal save contract required'
+Add-Check 'Lifecycle PlayMode covers wall clock rule' ($lifecyclePlayMode -match 'RealElapsedPauseDoesNotAdvanceSimulation') 'wall clock must not advance simulation'
 
 $presentationFiles = Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'Assets/StartupLife/Scripts/Presentation') -Filter '*.cs' -File
 $presentationText = ($presentationFiles | ForEach-Object { [IO.File]::ReadAllText($_.FullName) }) -join [Environment]::NewLine
