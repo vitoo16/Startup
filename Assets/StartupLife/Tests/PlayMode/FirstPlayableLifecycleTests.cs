@@ -222,6 +222,12 @@ namespace StartupLife.Tests.PlayMode
             var committedNextDay = bootstrap.Snapshot;
             Assert.That(committedNextDay.Instant.Date, Is.EqualTo(priorDate.AddDays(1)));
             Assert.That(committedNextDay.Instant.Minute, Is.Zero);
+            // This fixture dispatches directly through Flow; refresh the view before capturing it.
+            bootstrap.RefreshMode();
+            Assert.That(GameObject.Find("DateValue").GetComponent<TMP_Text>().text,
+                Is.EqualTo(committedNextDay.Instant.Date.ToString()), "Capture must show the committed day.");
+            Assert.That(GameObject.Find("TimeValue").GetComponent<TMP_Text>().text,
+                Is.EqualTo("00:00"), "Capture must show the committed minute.");
             FirstPlayableVisualEvidence.Capture("M7-T02/05-next-day-before-restart");
 
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
