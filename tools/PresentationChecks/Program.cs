@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using StartupLife.Core;
+using StartupLife.Application;
+using StartupLife.Infrastructure;
 using StartupLife.Presentation;
 
 internal static class Program
@@ -21,6 +23,10 @@ internal static class Program
         Check("day and month advancement use boundary intent and project reached state", AdvanceDispatch);
         Check("active course read model flows through unchanged", ActiveCourseProjection);
         Check("empty command id source fails before dispatch", EmptyCommandIdRejected);
+        Check("run id is read again for every dispatch", CurrentRunId);
+        Check("empty ids block both direct and batch dispatch", EmptyBatchIdsRejected);
+        Check("backward playback returns application rejection without rewards", BackwardPlaybackRejected);
+        Check("old and restored course retries preserve original outcome and current projection", HistoricalCourseRetry);
 
         var report = new { suite = "Startup Life M7 presentation adapter — .NET, not Unity", passed, failed = failures.Count, failures };
         if (args.Length > 0)
@@ -150,6 +156,72 @@ internal static class Program
         True(gateway.LastEnvelope == null);
     }
 
+    private static void CurrentRunId()
+    {
+        var gateway = new FakeGateway(Snapshot("An", 3));
+        var flow = new FirstPlayableFlow(gateway, new SequenceIds());
+        gateway.Next = Snapshot("An", 8, runId: "run-reloaded");
+        flow.AdvanceBoundary();
+        flow.AcceptJob("developer");
+        Equal("run-reloaded", gateway.LastEnvelope!.RunId);
+        Equal(8L, gateway.LastEnvelope.ExpectedRevision);
+    }
+
+    private static void EmptyBatchIdsRejected()
+    {
+        var gateway = new FakeGateway(Snapshot("An", 1));
+        var flow = new FirstPlayableFlow(gateway, new EmptyIds());
+        ThrowsInvalidOperation(() => flow.CreateCharacter("An", 25, "fresh", "base.female"));
+        ThrowsInvalidOperation(() => flow.AdvanceDay());
+        ThrowsInvalidOperation(() => flow.AdvanceMonth());
+        True(gateway.LastEnvelope == null);
+        Equal("", gateway.LastDispatch);
+    }
+
+    private static void BackwardPlaybackRejected()
+    {
+        var fixture = new SessionFixture();
+        var flow = new FirstPlayableFlow(fixture.Session, new SequenceIds());
+        Equal(CommandStatus.Committed, flow.CreateCharacter("An", 25, "fresh", "base.female").Command.Status);
+        Equal(CommandStatus.Committed, flow.AcknowledgePlayback(10).Command.Status);
+        var bytes = fixture.Session.ExportCheckpoint();
+        var writes = fixture.Store.Writes;
+        var result = flow.AcknowledgePlayback(9);
+        Equal(CommandStatus.Rejected, result.Command.Status);
+        Equal("playback.stale", result.Command.ReasonKey);
+        True(result.Command.Outcome == null);
+        Equal(10, result.State.PlaybackCursor);
+        True(bytes.SequenceEqual(fixture.Session.ExportCheckpoint()));
+        Equal(writes, fixture.Store.Writes);
+    }
+
+    private static void HistoricalCourseRetry()
+    {
+        var fixture = new SessionFixture();
+        var ids = new RepeatIds();
+        var flow = new FirstPlayableFlow(fixture.Session, ids);
+        flow.CreateCharacter("An", 25, "fresh", "base.female");
+        var purchase = flow.PurchaseCourse("communication-basics").Command;
+        Equal(CommandStatus.Committed, purchase.Status);
+        flow.AdvanceBoundary();
+        flow.Study(60);
+        var bytes = fixture.Session.ExportCheckpoint();
+        var writes = fixture.Store.Writes;
+        var repeated = flow.PurchaseCourse("communication-basics");
+        Equal(CommandStatus.AlreadyCommitted, repeated.Command.Status);
+        Equal(JsonSerializer.Serialize(purchase.Outcome), JsonSerializer.Serialize(repeated.Command.Outcome));
+        Equal(600000L, repeated.State.ActiveCourse!.ProgressUnits);
+        True(GameSession.TryRestore(fixture.Content, fixture.Serializer, fixture.Store, out var restored, out var load));
+        Equal(LoadStatus.Valid, load.Status);
+        var cold = new FirstPlayableFlow(restored!, ids).PurchaseCourse("communication-basics");
+        Equal(CommandStatus.AlreadyCommitted, cold.Command.Status);
+        Equal(JsonSerializer.Serialize(purchase.Outcome), JsonSerializer.Serialize(cold.Command.Outcome));
+        Equal(600000L, cold.State.ActiveCourse!.ProgressUnits);
+        Equal(writes, fixture.Store.Writes);
+        True(bytes.SequenceEqual(fixture.Session.ExportCheckpoint()));
+        True(bytes.SequenceEqual(restored!.ExportCheckpoint()));
+    }
+
     private static void AssertLast(FakeGateway gateway, string id, long revision, CommandKind kind, string contentId, int amount)
     {
         True(gateway.LastEnvelope != null);
@@ -163,12 +235,12 @@ internal static class Program
 
     private static GameSnapshot Snapshot(string name, long revision, string date = "2026-09-01", int minute = 480,
         string careerId = "", bool activeCourse = false, long courseProgress = 0, string activity = "", int playback = 0,
-        string[]? history = null)
+        string[]? history = null, string runId = "run-a")
     {
         var state = new GameState
         {
             ContentVersion = "fixture.v1",
-            RunId = "run-a",
+            RunId = runId,
             Revision = revision,
             DateIso = date,
             Minute = minute,
@@ -211,6 +283,43 @@ internal static class Program
     private sealed class EmptyIds : ICommandIdSource
     {
         public string Next(string action) => "";
+    }
+
+    private sealed class RepeatIds : ICommandIdSource
+    {
+        public string Next(string action) => action + "/original";
+    }
+
+    private sealed class SessionFixture
+    {
+        public ContentCatalog Content { get; } = Catalog();
+        public JsonSaveSerializer Serializer { get; }
+        public MemoryStore Store { get; }
+        public GameSession Session { get; }
+        public SessionFixture()
+        {
+            Serializer = new JsonSaveSerializer(Content, GameSession.CreateRestoreValidator());
+            Store = new MemoryStore(Serializer);
+            Session = new GameSession(GameSession.NewState(Content, "run-real", 937, new SimDate(2026, 9, 1)), Content, Serializer, Store);
+        }
+    }
+
+    private sealed class MemoryStore : ISaveStore
+    {
+        private readonly ISaveSerializer serializer;
+        private byte[]? checkpoint;
+        public int Writes { get; private set; }
+        public MemoryStore(ISaveSerializer value) { serializer = value; }
+        public LoadResult Read() => checkpoint == null ? new LoadResult(LoadStatus.Missing) : serializer.DeserializeAndValidate(checkpoint);
+        public WriteStatus Commit(byte[] bytes, long revision)
+        {
+            var load = serializer.DeserializeAndValidate(bytes);
+            if (load.Status != LoadStatus.Valid || load.State!.Revision != revision + 1 || (Read().State?.Revision ?? 0) != revision)
+                return WriteStatus.Failed;
+            checkpoint = (byte[])bytes.Clone();
+            Writes++;
+            return WriteStatus.Committed;
+        }
     }
 
     private sealed class FakeGateway : IGameCommands

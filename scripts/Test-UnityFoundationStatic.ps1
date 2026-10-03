@@ -123,7 +123,9 @@ foreach ($property in $manifest.dependencies.PSObject.Properties) {
 Add-Check 'manifest and lock direct dependencies agree' ($lockProblems.Count -eq 0) ($(if ($lockProblems.Count -eq 0) { "$($manifest.dependencies.PSObject.Properties.Count) direct dependencies aligned" } else { $lockProblems -join '; ' }))
 
 $buildSettings = Read-RepoText 'ProjectSettings/EditorBuildSettings.asset'
-Add-Check 'mobile baseline is launch scene' ($buildSettings -match '(?ms)m_Scenes:\s*\n\s*- enabled:\s*1\s*\n\s*path:\s*Assets/StartupLife/Scenes/MobileBaseline\.unity') 'MobileBaseline.unity must be the first enabled build scene'
+$launchMatch = [regex]::Match($buildSettings, '(?ms)m_Scenes:\s*\n\s*- enabled:\s*1\s*\n\s*path:\s*(Assets/StartupLife/Scenes/(MobileBaseline|FirstPlayable)\.unity)')
+$baselineEnabled = $buildSettings -match '(?m)- enabled:\s*1\s*\n\s*path:\s*Assets/StartupLife/Scenes/MobileBaseline\.unity'
+Add-Check 'verified mobile shell is launch scene' ($launchMatch.Success -and $baselineEnabled -and (Test-Path (Join-Path $repositoryRoot $launchMatch.Groups[1].Value))) 'Launch MobileBaseline or generated FirstPlayable; retain enabled baseline regression scene'
 Add-Check 'Input System settings registered' ($buildSettings -match 'com\.unity\.input\.settings\.actions:') 'EditorBuildSettings must register Input System actions'
 Add-Check 'Localization settings registered' ($buildSettings -match 'com\.unity\.localization\.settings:') 'EditorBuildSettings must register Localization settings'
 

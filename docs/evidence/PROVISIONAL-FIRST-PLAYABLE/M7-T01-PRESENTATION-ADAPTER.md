@@ -1,196 +1,139 @@
-# M7-T01 provisional presentation adapter
+# M7-T01 presentation and local Unity runtime verification
 
-Date: 2026-10-03  
-Owner model: GPT-5.6 Sol  
-PR: #17 — `feat: add M7 first playable presentation adapter`
+- Date: 2026-10-04 (Asia/Bangkok).
+- Owner model: primary Codex, continuing the recorded primary takeover; no Sol/Gemini execution attributed.
+- Branch: `fix/m7-presentation-runtime-gate`.
+- Starting main: `4c7b9e3e4f9b4b9ed91c1c1862fe1cf4a1710b14`.
+- Final functional source head: `b2bc2ccebdb63d3a578f9db2d401a6b2ab931ed7`.
 
-Status: **provisional engine-free sub-slice only**. M7-T01 remains incomplete until the Unity composition root, Character Creation UI, Life screen, button bindings, PlayMode flow, and visual/runtime evidence are implemented and verified in a live Unity Editor.
+**M7-T01 NOT CLOSED.** The local source, generated assets, Unity journey, visuals and normal-save smoke now pass. Formal prerequisite acceptance remains pending: M7-T01 depends on M6-T02, while the authoritative ledger still records only M0-T01 complete. The [provisional sequencing allowance](../../architecture/FIRST_PLAYABLE_CONTRACTS.md) retains full M1–M7 acceptance gates pending dependency/platform review. This evidence does not close those upstream gates. No checkbox changes; M7-T02 is not started; **M8 NOT READY — blocked by M7-T02**.
 
-## Why this slice is next
+## Revision and evidence integrity
 
-The post-freeze implementation audit found that M1–M6 domain behavior already exists and is covered by engine-free tests, while the first genuinely missing first-playable layer is M7-T01 Presentation integration.
+PR #17 was freshly verified merged; its merge is the starting main above. Its Engine-free CI #61, run 37139073037, succeeded on 7a5ad94910316b76a928244110b0fdfdf2c4ca07; that is baseline evidence, not evidence for these changes.
 
-The audit specifically identified M7-T01 as the first safe next Sol slice because the frozen M1 public API already supplies the required `GameSnapshot`, `SimulationOutcome`, `ActiveCourseSnapshot`, and `CourseChange` contracts.
+The fixed functional head above identifies the final implementation and test source. Subsequent commits contain documentation/evidence only. A tracked document cannot contain its own commit hash: resolve the final repository SHA with `git rev-parse HEAD`, compare it with the [branch head](https://github.com/vitoo16/Startup/tree/fix/m7-presentation-runtime-gate), and use the PR's latest Engine-free CI check for that exact head. The PR description and final execution receipt record the resolved final SHA and run URL. Do not use historical #57/#58 as current verification.
 
-This PR implements only the part that can be proven without a live Unity Editor/MCP session.
+[Runtime manifest](M7-RUNTIME-2026-10-04/manifest.json) contains artifact SHA-256 hashes, runner/version, actual counts, capture geometry, save-smoke results and task boundaries. The original local main was f4518ad85a5269d4463f0cfaf0eebf033ac49242 before fast-forwarding. Three pre-existing engine-free reports were copied outside the repository and preserved in the named stash `preserve pre-existing engine-free reports before M7 runtime gate`; they were not overwritten or included in this PR.
 
-## Skills used
+## Single Presentation command seam
 
-Project skills:
+**FirstPlayableFlow** is canonical. StartupLifeBootstrapper, CharacterCreationViewController, LifeScreenViewController, WorkShiftPlaybackController and StudyActionController now consume it. DaySummaryModal consumes its immutable FirstPlayableState.
 
-- `startup-life-session-orchestrator`
-- `startup-life-gameplay-guardian`
+FirstPlayableFlowCoordinator and its .meta were removed through Unity AssetDatabase after migration and serialized-scene verification. The obsolete tools/PresentationFlowChecks project/source were removed; their useful assertions were merged into PresentationChecks.
 
-Pinned community skills reviewed from revision
-`dafb97ef00f94e64e42e6260bc6b3af74cc83dad`:
+The canonical seam depends only on frozen IGameCommands/public Core contracts. Each envelope reads fresh RunId and Revision; ICommandIdSource is injected and empty IDs fail before dispatch. It maps create/job/boundary/course/study/resign/playback/day/month commands, publishes immutable collections and ActiveCourse, and exposes no mutable GameState, receipts, checkpoint or save API. Historical retry outcomes remain Application-owned. Backward playback is passed to Application and returns Rejected/playback.stale without writes or rewards, rather than introducing a competing Presentation rule.
 
-- `unity-game-director`
-- `unity-gameplay-systems`
-- `unity-qa-release`
+PresentationChecks now has **11 cases**, including current RunId/latest Revision, command mappings, injected IDs, empty direct/batch IDs, immutable projection, ActiveCourse, acknowledgement activity, actual backward rejection, and old/cold-restored course retries with unchanged historical outcome/save bytes/write count.
 
-Unity/MCP/UI skills remain required for the later scene/prefab/view-binding continuation. They were not claimed as runtime-executed in this engine-free slice.
+Test-Simulation.ps1 assigns **presentation-adapter-report.json once**, and only PresentationChecks writes it. No duplicate suite or historical counts are retained.
 
-## Acceptance criteria for this sub-slice
+## Implemented source — PRESENT
 
-- Presentation dispatches through frozen `IGameCommands` only.
-- Presentation never reads or mutates `GameState`, save envelopes, receipts, or persistence internals.
-- Every command envelope uses the latest public snapshot `RunId` and `Revision`.
-- Command IDs are supplied by an injectable source so tests can be deterministic while runtime may use GUID retry tokens.
-- Character Creation versus Life-screen routing is derived from the immutable snapshot.
-- Course state is consumed through frozen `ActiveCourseSnapshot`.
-- Playback acknowledgement binds the frozen `CurrentActivityId`.
-- Day/month advancement remains Application-owned through `IGameCommands`.
-- Presentation-projected history and skill collections remain immutable.
-- The frozen M1 API is unchanged.
-- SaveVersion remains 1.
-- No scene/prefab/runtime evidence is claimed.
+- Composition root: StartupLifeBootstrapper creates/restores GameSession using authored Content, JsonSaveSerializer and AtomicFileSaveStore.
+- Character entry and Life UI: CharacterCreationViewController and LifeScreenViewController.
+- Work/playback and evening study: WorkShiftPlaybackController and StudyActionController.
+- Snapshot-based Day Summary: DaySummaryModal.
+- Content bridge/builders: StartupLifeContentCatalogAsset, FirstPlayableContentTemplate and FirstPlayableContentBuilder.
+- Editor scene generation/verification: FirstPlayableShellBuilder and FirstPlayableRuntimeGate.
+- Vietnamese strings: FirstPlayableUI table builder, LocalizedKeyLabel and LocalizeStringEvent/TMP bindings.
+- Safe area and Input System: MobileSafeArea, portrait CanvasScaler, EventSystem/InputSystemUIInputModule with default actions.
+- Actual test source: FirstPlayableShellTests, FirstPlayableFlowTests, FirstPlayableVisualEvidence and existing foundation/content/baseline tests.
 
-## Implementation
+## Generated assets — PRESENT
 
-### FirstPlayableFlow
+All generated/modified serialized assets were produced and saved through Unity Editor APIs; no YAML was hand-edited.
 
-New file:
+- Assets/StartupLife/Scenes/FirstPlayable.unity and .meta.
+- Assets/StartupLife/Data/FirstPlayableContent.asset and .meta.
+- Assets/StartupLife/Localization/FirstPlayableUI.asset, FirstPlayableUI_vi.asset, FirstPlayableUI Shared Data.asset and their .meta files.
+- Localization Addressables group registrations and EditorBuildSettings scene registration.
+- Existing MobileBaseline scene, MobileTheme, Vietnamese locale, Localization settings, TMP resources and Noto font are reused.
 
-`Assets/StartupLife/Scripts/Presentation/FirstPlayableFlow.cs`
+FirstPlayable is now the enabled launch scene; MobileBaseline remains enabled for regression tests. The static foundation guard accepts either verified mobile shell as launch and still requires the baseline scene.
 
-The engine-independent adapter provides typed Presentation actions:
+The scene was reopened after saving. Verification checks missing scripts, authored Content and all controller references, TMP font assignments, 1080 × 1920 scaler, safe area, Main Camera, Input System EventSystem, persistent action listeners, and fresh Character Creation visible/Life and Summary hidden.
 
-- `CreateCharacter`
-- `AcceptJob`
-- `AdvanceBoundary`
-- `PurchaseCourse`
-- `Study`
-- `Resign`
-- `AcknowledgePlayback`
-- `AdvanceDay`
-- `AdvanceMonth`
+## Real Unity execution
 
-Every action obtains a fresh `GameSnapshot`, constructs a `CommandEnvelope` using its current `RunId` and `Revision`, dispatches through `IGameCommands`, then republishes a detached `FirstPlayableState`.
+Installed licensed Windows Editor **6000.3.25f1**, matching ProjectVersion.txt. No live MCP surface was available; the installed Editor was executed directly in batch mode. PlayMode used graphics (no -nographics), D3D and the project's URP pipeline.
 
-The adapter does not reference Simulation, Infrastructure internals, mutable Core state, Unity views, scenes, or save files.
+| Gate | Actual result | Evidence |
+|---|---|---|
+| Import/compile/packages/asmdefs | PASS; zero Startup Life C# errors/warnings in final runs | [Builder/import log](M7-RUNTIME-2026-10-04/builders.log) |
+| Builders/reopened bindings | PASS; baseline reused safely, Content/shell generated, final idempotent gate passed | [Builder log](M7-RUNTIME-2026-10-04/builders.log) |
+| EditMode | **8/8 PASS** | [XML](M7-RUNTIME-2026-10-04/editmode-results.xml), [log](M7-RUNTIME-2026-10-04/editmode.log) |
+| PlayMode | **2/2 PASS** | [XML](M7-RUNTIME-2026-10-04/playmode-results.xml), [log](M7-RUNTIME-2026-10-04/playmode.log) |
+| Localization/glyphs | PASS, including existing Vietnamese baseline test and first-playable course label | PlayMode XML/log and captures |
+| Portrait/simulated notch | PASS at 1080 × 1920 | Captures below |
+| First-playable journey | PASS through actual generated scene and views | CreateWorkStudyAndAdvanceDayThroughViews |
+| Normal save/reload | PASS; real AtomicFileSaveStore output, schema 1, generation 17 | [Synthetic journey save](M7-RUNTIME-2026-10-04/visuals/normal-save.json) |
 
-### Command ID source
+The journey proves clean save isolation, bootstrap readiness, character creation/entry transition, Developer acceptance, accelerated work, XP, 17:00 work end, acknowledgement with zero duplicate cash/XP/skill/grants, course purchase, 60-minute study/progress, next day 00:00 and Summary visibility. Summary cash/XP match the authoritative snapshot. Scene reload preserves name/time/cash/XP/course progress and passes normal Application restore validation. Existing user saves are backed up in memory and restored by test teardown.
 
-`ICommandIdSource` is injected.
+Observed end state: cash **1,800,000 ₫**, career XP **40**, course progress **600,000 units (16%)**, next date **2026-09-02**. The exported save contains the legitimate earned salary claim **5,000,000/11**, while work did not turn accrued salary into duplicate spendable cash. This inspection is test evidence; views do not read save bytes.
 
-`GuidCommandIdSource` is the runtime-safe default implementation for unique local retry tokens.
+Published logs omit license identifiers and replace machine-specific user/project paths; compilation, execution, render and test diagnostics are retained. Original full logs remain in the local m7-runtime evidence directory.
 
-Tests inject a deterministic sequential implementation.
+## Runtime defects corrected
 
-Simulation randomness remains untouched; command IDs are presentation/application retry identifiers, not gameplay RNG.
+1. NewScene unloaded previously held asset references. Reload theme/font/Content after scene creation; repair the reviewed generated scene through Editor APIs and verify after reopening.
+2. Empty localized values displayed English missing-translation diagnostics. Supply the ready message and an intentionally blank non-empty fatal value.
+3. Dense layout shrank buttons. Use compact row/gap spacing and a 96-unit minimum touch height; verify full and simulated-notched geometry.
+4. Playback refreshed button state before clearing IsRunning. Refresh in finally after clearing it; PlayMode asserts the work button recovers.
+5. Summary summed only the remaining AdvanceDay boundaries and omitted earlier work XP. Show authoritative cash and total career XP from FirstPlayableState with accurate Vietnamese labels. FormerlySerializedAs preserves the scene's renamed cash field; this is not a save schema migration.
+6. Replace obsolete TMP wrapping API with the installed package's textWrappingMode API.
 
-### FirstPlayableState
-
-The immutable read model publishes the first-playable fields needed by later view bindings:
-
-- screen mode: Character Creation or Life;
-- name;
-- simulated instant and revision;
-- cash and arrears;
-- career ID/XP/rank;
-- cue;
-- current activity ID;
-- playback cursor;
-- active course;
-- skill levels;
-- history;
-- convenience state for career/study/playback availability.
-
-Collections are copied into read-only wrappers before publication.
-
-## Engine-free verification
-
-A dedicated `tools/PresentationChecks` harness compiles `FirstPlayableFlow.cs` as a plain netstandard2.1 source file, proving that the adapter itself has no Unity dependency.
-
-The 7 focused cases verify:
-
-1. initial snapshot selects Character Creation and publishes immutable collections;
-2. character creation binds current RunId, revision, injected command ID, and exact command payload;
-3. job/course/study/resign/boundary actions use the latest revision and correct frozen command type;
-4. playback acknowledgement uses the current public activity ID;
-5. day/month advancement uses `AdvanceBoundary` intent and republishes the reached state;
-6. `ActiveCourseSnapshot` is preserved through the adapter;
-7. an invalid empty command-ID source fails before command dispatch.
-
-## Verified evidence
-
-Functional head `600ca45a0af08f3241e084932ea31d73a0ee4415` passed Engine-free CI run
-`37137937289` (#57):
-
-- authoritative documentation: PASS;
-- static Unity foundation: **31/31**;
-- frozen M1 API guard: **31/31**;
-- Unity runner contract static gate: **30/30**;
-- repository security/release hygiene: **28/28**;
-- SimulationChecks: **45/45**;
-- H1/H2/R2: **19/19**;
-- M2 restore/provenance: **35/35**;
-- PresentationChecks: **7/7**;
-- all .NET builds: **0 warnings / 0 errors**;
-- clean-worktree verification: PASS;
-- artifact `engine-free-foundation-reports`: ID `11279027230`;
-- artifact SHA-256: `59ec8faaecdce1f8962117450834401dc751765eab2c8e83762cb3b3a560e603`.
-
-Two earlier CI attempts failed only because two .NET projects in the new harness shared the same MSBuild intermediate directory. The final harness isolates project extension/intermediate paths through `Directory.Build.props`. No production-domain correction was needed.
+Early failed test attempts are not reported as passes: the frame-count playback timeout was replaced by a real-time deadline; the recording output directory was created correctly; deliberate capture logs are explicitly expected while unexpected logs remain asserted. Final XML reports above are the successful runs.
 
 ## Visual evidence
 
-None.
+Real UI-inclusive Unity camera/render-target captures, not generated mockups:
 
-No scene, prefab, hierarchy, uGUI layout, TMP binding, animation, or screenshot was changed in this sub-slice.
+1. [Character Creation](M7-RUNTIME-2026-10-04/visuals/01-character-creation.png).
+2. [Life after Developer acceptance](M7-RUNTIME-2026-10-04/visuals/02-life-developer.png).
+3. [Work playback/status](M7-RUNTIME-2026-10-04/visuals/03-work-playback.png).
+4. [Evening study/course](M7-RUNTIME-2026-10-04/visuals/04-evening-study.png).
+5. [Day Summary](M7-RUNTIME-2026-10-04/visuals/05-day-summary.png).
+6. [Simulated notched safe area](M7-RUNTIME-2026-10-04/visuals/06-simulated-notched-safe-area.png).
+7. [Workday/evening recording](M7-RUNTIME-2026-10-04/visuals/workday-evening.gif): 36 actual Unity frame samples, encoded with sampled time deltas, approximately 10 seconds. This is an automated Editor recording, not a physical-device video.
 
-## Save impact
+All six screens were visually inspected. Capture assertions reject missing translations/glyphs, text overflow, buttons below the 96-unit target, and buttons leaving the safe area. The simulated notch uses y=90 through y=1830 in a 1920-high canvas. Development UI placeholders/theme only; no polished/generated production art.
 
-None.
+## Engine-free regressions
 
-- SaveVersion remains 1.
-- no DTO persistence shape changes;
-- no migration;
-- no new save field;
-- no Application/Infrastructure persistence change.
+[Machine-readable reports](M7-RUNTIME-2026-10-04/manifest.json):
 
-## Known limitations / next continuation
+| Suite | Pass/total |
+|---|---|
+| SimulationChecks | 45/45 |
+| H1/H2/R2 foundation regressions | 19/19 |
+| M2 restore/provenance | 35/35 |
+| PresentationChecks (consolidated) | 11/11 |
+| ContentCatalogChecks | 8/8 |
+| Unity foundation static | 31/31 |
+| Frozen M1 API | 31/31 |
+| Content bridge static | 8/8 |
+| M7 shell static | 28/28 |
+| Runner contract static | 30/30 |
+| Security/release hygiene | 28/28 |
 
-M7-T01 is not complete.
+All five .NET executable builds passed with zero warnings/errors. Documentation validation passed; latest final-head CI is resolved from the PR checks rather than copied from the baseline.
 
-Still required with live Unity tooling:
+## Session closeout
 
-- composition root that creates/restores `GameSession`;
-- Character Creation view/controller binding;
-- Life screen HUD binding;
-- work fast-forward/playback controller;
-- evening study controls;
-- day-summary modal;
-- Vietnamese localization keys for the new UI;
-- PlayMode first-playable journey;
-- safe-area/portrait visual evidence;
-- Unity Editor import/compile evidence.
+**Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, vietnam-art-direction; official ui, ui-ugui, localization, unity-cli; pinned community unity-game-director, unity-gameplay-systems, unity-mcp-bridge, unity-qa-release, unity-ui-designer, unity-localization from dafb97ef00f94e64e42e6260bc6b3af74cc83dad. Project Unity/offline/uGUI/Vietnam rules override unrelated package defaults.
 
-Scene/prefab assets must be edited through Unity Editor/MCP or generated Editor scripts, not raw YAML.
+**Acceptance criteria:** one public-contract seam; truthful unique report; real pinned-Editor import/build/bindings/EditMode/PlayMode/portrait/localization/save proof. Local checks pass; official prerequisite closure remains pending.
 
-Android/iOS/device gates remain separate.
+**Tests:** actual suite counts above; static/.NET evidence is distinguished from Unity execution.
 
-## Files changed
+**Visual evidence:** six actual portrait captures and rendered work/evening recording above.
 
-Production:
+**Save impact:** none. SaveVersion/schema stays 1; no GameState/DTO/migration/Application/Infrastructure/Simulation/frozen Core API changes. Normal persistence route and historical retry architecture retained.
 
-- `Assets/StartupLife/Scripts/Presentation/FirstPlayableFlow.cs`
-- `Assets/StartupLife/Scripts/Presentation/FirstPlayableFlow.cs.meta`
+**Known limitations:** formal upstream task acceptance remains pending. M7-T02 still owns pause checkpoints, mid-work interruption, mid-course restart, Android lifecycle/device backup recovery and current iOS smoke. No pause/Android/iOS/IL2CPP/device claim is made. Overall first-playable/platform acceptance is not closed.
 
-Verification:
+**Files changed:** Presentation consumers/duplicate removal; merged engine-free harness/obsolete harness removal; report/source/foundation guards; Editor builder/runtime gate; generated scene/Content/localization/Addressables/build settings; EditMode/PlayMode/evidence helper; this closeout and dated evidence bundle. Runtime font-cache churn was restored to the existing inputs.
 
-- `tools/PresentationChecks/StartupLife.PresentationModel.csproj`
-- `tools/PresentationChecks/PresentationChecks.csproj`
-- `tools/PresentationChecks/Directory.Build.props`
-- `tools/PresentationChecks/Program.cs`
-- `scripts/Test-Simulation.ps1`
-
-Documentation:
-
-- this closeout.
-
-## Task ledger boundary
-
-No checkbox is changed.
-
-The engine-free adapter is meaningful M7-T01 progress, but it is not a substitute for the required Unity PlayMode and visual acceptance evidence.
+**Commit:** ef321f3 (canonical seam), c236f95 (Unity shell/runtime proof), b2bc2cc (report integrity); later commits update documentation/evidence only. No automatic merge.

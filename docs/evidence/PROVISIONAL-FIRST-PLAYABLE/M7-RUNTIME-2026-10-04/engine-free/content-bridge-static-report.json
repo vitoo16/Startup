@@ -1,0 +1,47 @@
+{
+  "suite": "Startup Life content bridge static contract",
+  "passed": 8,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "Content assembly exists with expected name",
+      "passed": true,
+      "detail": "got StartupLife.Content"
+    },
+    {
+      "name": "Content assembly depends only on Core",
+      "passed": true,
+      "detail": "StartupLife.Core"
+    },
+    {
+      "name": "Presentation references Content",
+      "passed": true,
+      "detail": "StartupLife.Core, StartupLife.Application, StartupLife.Content, StartupLife.Infrastructure, Unity.TextMeshPro, Unity.ugui, Unity.Localization"
+    },
+    {
+      "name": "Editor references Content",
+      "passed": true,
+      "detail": "StartupLife.Core, StartupLife.Content, StartupLife.Presentation, Unity.TextMeshPro, Unity.Localization, Unity.Localization.Editor, Unity.RenderPipelines.Universal.Runtime, Unity.RenderPipelines.Universal.2D.Runtime, Unity.ugui, Unity.InputSystem"
+    },
+    {
+      "name": "EditMode tests reference Content",
+      "passed": true,
+      "detail": "StartupLife.Core, StartupLife.Simulation, StartupLife.Application, StartupLife.Content, StartupLife.Infrastructure, StartupLife.Presentation"
+    },
+    {
+      "name": "ScriptableObject converts through immutable source",
+      "passed": true,
+      "detail": "StartupLifeContentCatalogAsset.BuildCatalog must delegate to ContentCatalogSource.Build"
+    },
+    {
+      "name": "First playable content builder validates before save",
+      "passed": true,
+      "detail": "Editor builder must build/validate the catalog before SaveAssets"
+    },
+    {
+      "name": "First playable content asset path is stable",
+      "passed": true,
+      "detail": "expected stable content asset path"
+    }
+  ]
+}

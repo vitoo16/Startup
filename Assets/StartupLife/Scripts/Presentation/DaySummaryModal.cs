@@ -1,8 +1,7 @@
 using System.Globalization;
-using System.Linq;
 using TMPro;
 using UnityEngine;
-using StartupLife.Core;
+using UnityEngine.Serialization;
 
 namespace StartupLife.Presentation
 {
@@ -10,7 +9,7 @@ namespace StartupLife.Presentation
     {
         [SerializeField] private GameObject root;
         [SerializeField] private TMP_Text dateValue;
-        [SerializeField] private TMP_Text cashDeltaValue;
+        [SerializeField, FormerlySerializedAs("cashDeltaValue")] private TMP_Text cashValue;
         [SerializeField] private TMP_Text careerXpValue;
 
         public void Hide()
@@ -19,13 +18,11 @@ namespace StartupLife.Presentation
             else gameObject.SetActive(false);
         }
 
-        public void Show(AdvanceResult result, GameSnapshot snapshot)
+        public void Show(FirstPlayableState snapshot)
         {
-            var cashDelta = result.Boundaries.Where(x => x.Outcome != null).Sum(x => x.Outcome!.CashDelta);
-            var careerXp = result.Boundaries.Where(x => x.Outcome != null).Sum(x => x.Outcome!.CareerXpDelta);
             if (dateValue) dateValue.text = snapshot.Instant.Date.ToString();
-            if (cashDeltaValue) cashDeltaValue.text = cashDelta.ToString("+#,0;-#,0;0", CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
-            if (careerXpValue) careerXpValue.text = careerXp.ToString("+#,0;-#,0;0", CultureInfo.InvariantCulture);
+            if (cashValue) cashValue.text = snapshot.Cash.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
+            if (careerXpValue) careerXpValue.text = snapshot.CareerXp.ToString(CultureInfo.InvariantCulture);
             if (root) root.SetActive(true);
             else gameObject.SetActive(true);
         }

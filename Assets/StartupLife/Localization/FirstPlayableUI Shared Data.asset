@@ -1,0 +1,336 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: FirstPlayableUI Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: FirstPlayableUI
+  m_TableCollectionNameGuidString: f6f5cd1f018de0b4f9fdd392aa38fda4
+  m_Entries:
+  - m_Id: 587030528
+    m_Key: fatal.none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973568
+    m_Key: fatal.content_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973569
+    m_Key: fatal.save_unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973570
+    m_Key: fatal.bootstrap_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973571
+    m_Key: character.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973572
+    m_Key: character.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973573
+    m_Key: character.name.placeholder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973574
+    m_Key: character.age
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973575
+    m_Key: character.age.minus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973576
+    m_Key: character.age.plus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973577
+    m_Key: character.appearance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973578
+    m_Key: character.appearance.female
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973579
+    m_Key: character.appearance.male
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973580
+    m_Key: character.create
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973581
+    m_Key: life.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973582
+    m_Key: life.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973583
+    m_Key: life.date
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973584
+    m_Key: life.time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973585
+    m_Key: life.cash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973586
+    m_Key: life.career
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973587
+    m_Key: life.rank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973588
+    m_Key: life.course
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973589
+    m_Key: life.course_progress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973590
+    m_Key: career.none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973591
+    m_Key: career.developer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973592
+    m_Key: course.none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973593
+    m_Key: course.communication
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973594
+    m_Key: course.problem
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973595
+    m_Key: action.accept_developer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973596
+    m_Key: action.work
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973597
+    m_Key: action.buy_course
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973598
+    m_Key: action.study_60
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973599
+    m_Key: action.advance_day
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973600
+    m_Key: action.resign
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973601
+    m_Key: status.ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973602
+    m_Key: status.character.created
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973603
+    m_Key: status.career.accepted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973604
+    m_Key: status.career.resigned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973605
+    m_Key: status.course.purchased
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973606
+    m_Key: status.course.progressed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973607
+    m_Key: status.course.completed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973608
+    m_Key: status.work.complete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973609
+    m_Key: status.day.completed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973610
+    m_Key: scene.coding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973611
+    m_Key: scene.meeting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973612
+    m_Key: scene.bug-fixing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973613
+    m_Key: scene.client-discussion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973614
+    m_Key: scene.demo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973615
+    m_Key: scene.documentation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973616
+    m_Key: reason.career.required
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973617
+    m_Key: reason.character.invalid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973618
+    m_Key: reason.content.missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973619
+    m_Key: reason.appearance.invalid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973620
+    m_Key: reason.career.already_employed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973621
+    m_Key: reason.economy.insufficient_cash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973622
+    m_Key: reason.course.active
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973623
+    m_Key: reason.course.target_met
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973624
+    m_Key: reason.course.prerequisite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973625
+    m_Key: reason.arrears.blocked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973626
+    m_Key: reason.time.unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973627
+    m_Key: reason.playback.stale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973628
+    m_Key: reason.command.stale_state
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973629
+    m_Key: reason.state.invalid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973630
+    m_Key: reason.save.write_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973631
+    m_Key: reason.save.invalid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973632
+    m_Key: reason.save.content_id
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973633
+    m_Key: reason.save.content_version
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973634
+    m_Key: advance.PlayerChoice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973635
+    m_Key: advance.InvalidRequest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973636
+    m_Key: advance.InvalidState
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973637
+    m_Key: advance.PersistenceOrRuleFailure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973638
+    m_Key: advance.RecoveryRequired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973639
+    m_Key: summary.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973640
+    m_Key: summary.date
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973641
+    m_Key: summary.cash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973642
+    m_Key: summary.xp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973643
+    m_Key: summary.close
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 602090453571731456
+  references:
+    version: 2
+    RefIds:
+    - rid: 602090453571731456
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1791051507761

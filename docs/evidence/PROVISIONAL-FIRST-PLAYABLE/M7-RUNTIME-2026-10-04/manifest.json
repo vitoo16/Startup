@@ -1,0 +1,79 @@
+{
+  "dateLocal": "2026-10-04",
+  "timezone": "Asia/Bangkok",
+  "startingMain": "4c7b9e3e4f9b4b9ed91c1c1862fe1cf4a1710b14",
+  "functionalHead": "b2bc2ccebdb63d3a578f9db2d401a6b2ab931ed7",
+  "finalHeadResolution": "git rev-parse HEAD; compare with the PR head and Engine-free CI head_sha. Subsequent changes contain documentation/evidence only.",
+  "unityVersion": "6000.3.25f1",
+  "runner": "installed licensed Windows Editor; direct batch fallback; PlayMode graphics enabled",
+  "editorCompile": "PASS",
+  "startupLifeCompilerWarnings": 0,
+  "builders": "PASS",
+  "editMode": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0
+  },
+  "playMode": {
+    "total": 2,
+    "passed": 2,
+    "failed": 0
+  },
+  "visuals": {
+    "resolution": [
+      1080,
+      1920
+    ],
+    "captures": 6,
+    "simulatedNotch": [
+      0,
+      90,
+      1080,
+      1740
+    ],
+    "recordedFrames": 36,
+    "recording": "actual Unity render frames, PNG sequence encoded as GIF with sampled time deltas; not device video"
+  },
+  "normalSave": {
+    "schemaVersion": 1,
+    "generation": 17,
+    "reload": "PASS",
+    "cash": 1800000,
+    "careerXp": 40,
+    "courseProgressUnits": 600000,
+    "accruedSalary": {
+      "numerator": 5000000,
+      "denominator": 11
+    }
+  },
+  "M7T01": "NOT CLOSED — formal prerequisite acceptance remains pending despite passed local runtime proof",
+  "M7T02": "NOT STARTED",
+  "M8": "NOT READY — blocked by M7-T02",
+  "artifacts": {
+    ".gitattributes": "d8406a5c22e3ed1571f169917f68e4de3792f7976810c40cdd54fa0499c2684f",
+    "builders.log": "a07bb22cf5c888ab5cabf3a74d9cc3d040fd29e7495e88c8d8545a534218ac27",
+    "editmode-results.xml": "89bf647b3934a23a2e4fcb8b38ed2ecb3296b9dea6e007348239aba10374b96a",
+    "editmode.log": "19479f4d5e1ad27cc422bffc2d5b6532d9203a09cda80d6749c2d09c17bab757",
+    "engine-free/astra-foundation-highs-report.json": "d77929da4fd7f4bd23b1bade0b924a8e9c61330b4e732d4b56d5ee51acafcb7f",
+    "engine-free/astra-m2-restore-invariants-report.json": "886b44669c783b76034d173185bb6cca9d35540ce1458e4c2d878fec13890d94",
+    "engine-free/content-bridge-static-report.json": "0225c383318965e1260cf4eb39b6451b94f8a604d9db3d28af3b20f46b583a6f",
+    "engine-free/content-catalog-report.json": "c17c0e58b95aca475c4a30d50ce0d3cc05bb95fbf0008f0ac5da0df822252ff7",
+    "engine-free/m1-api-freeze-report.json": "1b9509f1da3b2665e63323777af06588866a4705ad411526eb49ef46dffbae30",
+    "engine-free/m7-first-playable-shell-static-report.json": "d8f24bb8118434b79e52265b71174658b12f778b1eda2fe31bb852a2884bd8d6",
+    "engine-free/presentation-adapter-report.json": "5552d71e011abcd7299250ce9b84116c7341ab8ce96bd74804a571547ecfa54f",
+    "engine-free/repository-security-report.json": "ca49bda0f80c4159a0a6c8e39f9ea04646d1b6a851f404a05af9fcd785184f68",
+    "engine-free/test-report.json": "5e420e11d399b7e6e40f3b8cc080e2b2a6b965a4380de6493ec10d3a4ac43a75",
+    "engine-free/unity-foundation-report.json": "e751658cdf80adb82c3d729ab8882340dfa340ea5618fb459b86211624a3a7aa",
+    "engine-free/unity-runner-contract-report.json": "9a5670127f0406b927ec93fba7c32552afcf9277da0e877df33b1b87ad039e83",
+    "playmode-results.xml": "17d811e9099f7d064bbbdb692e668421aa107b09829c3431250466ef3741ab50",
+    "playmode.log": "185ea8ad4e617f9a03ea1f49bfcb6e8dd7cbdc24349d217de1c9c249ed7c620a",
+    "visuals/01-character-creation.png": "a0b5e2199d5f012ff38b6efceabb9a81899fa80e03e19b6cc74c7d918910b764",
+    "visuals/02-life-developer.png": "6e70ea194f9929bb7f8344f65ddc2ef0f264443bd6b600c1bc744fa11edf4a5d",
+    "visuals/03-work-playback.png": "de1a6ccf771e1848736b1e862395171932429f1dffad0c52fa239358cca6049d",
+    "visuals/04-evening-study.png": "72a972f459b8a50ecb71b0b4c7f1802590ae6c63160f57efb4928b9e48a130c8",
+    "visuals/05-day-summary.png": "30861853554d333b7cb6ed1a51f46f1158ad67e29e361cfdac26581d42811b8f",
+    "visuals/06-simulated-notched-safe-area.png": "9aee4547f0c2ad7c6a8001e15f19c2095835328d931db0189a19ebe96a018ad9",
+    "visuals/normal-save.json": "8e847c32f117801f6c9eb248698e23ea2b4af3614cb0ea0d4f2b18fafb36e528",
+    "visuals/workday-evening.gif": "abb18754ae4dd8d8f7f33bbe653d1dfce82c79e9078898a6883a19eadeafaf29"
+  }
+}

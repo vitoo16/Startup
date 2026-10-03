@@ -5,11 +5,11 @@ namespace StartupLife.Presentation
 {
     public sealed class StudyActionController
     {
-        private readonly FirstPlayableFlowCoordinator flow;
+        private readonly FirstPlayableFlow flow;
         private readonly Action refresh;
         private readonly LocalizedKeyLabel status;
 
-        public StudyActionController(FirstPlayableFlowCoordinator coordinator, Action refreshView, LocalizedKeyLabel statusLabel)
+        public StudyActionController(FirstPlayableFlow coordinator, Action refreshView, LocalizedKeyLabel statusLabel)
         {
             flow = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
             refresh = refreshView ?? throw new ArgumentNullException(nameof(refreshView));
@@ -18,14 +18,14 @@ namespace StartupLife.Presentation
 
         public CommandResult PurchaseCommunicationCourse()
         {
-            var result = flow.PurchaseCourse("communication-basics");
+            var result = flow.PurchaseCourse("communication-basics").Command;
             Publish(result, "status.course.purchased");
             return result;
         }
 
         public CommandResult Study60Minutes()
         {
-            var result = flow.Study(60);
+            var result = flow.Study(60).Command;
             Publish(result, result.Outcome?.CourseChange?.Kind == CourseChangeKind.Completed
                 ? "status.course.completed"
                 : "status.course.progressed");

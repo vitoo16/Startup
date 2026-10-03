@@ -11,7 +11,7 @@ $reportDirectory = Split-Path -Parent $ReportPath
 $astraReportPath = Join-Path $reportDirectory 'astra-foundation-highs-report.json'
 $restoreReportPath = Join-Path $reportDirectory 'astra-m2-restore-invariants-report.json'
 $contentReportPath = Join-Path $reportDirectory 'content-catalog-report.json'
-$presentationReportPath = Join-Path $reportDirectory 'presentation-flow-report.json'
+$presentationReportPath = Join-Path $reportDirectory 'presentation-adapter-report.json'
 
 & $DotnetPath build "$startupRoot/tools/SimulationChecks/SimulationChecks.csproj" --configuration Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Provisional .NET build failed.' }
@@ -28,8 +28,6 @@ if ($LASTEXITCODE -ne 0) { throw 'Astra M2 restore invariant build failed.' }
 & $DotnetPath run --project "$startupRoot/tools/RestoreInvariantChecks/RestoreInvariantChecks.csproj" --configuration Release --no-build -- $restoreReportPath
 if ($LASTEXITCODE -ne 0) { throw 'Astra M2 restore invariant checks failed.' }
 
-$presentationReportPath = Join-Path $reportDirectory 'presentation-adapter-report.json'
-
 & $DotnetPath build "$startupRoot/tools/PresentationChecks/PresentationChecks.csproj" --configuration Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Presentation adapter regression build failed.' }
 & $DotnetPath run --project "$startupRoot/tools/PresentationChecks/PresentationChecks.csproj" --configuration Release --no-build -- $presentationReportPath
@@ -38,10 +36,5 @@ if ($LASTEXITCODE -ne 0) { throw 'Presentation adapter regression checks failed.
 if ($LASTEXITCODE -ne 0) { throw 'Content catalog bridge build failed.' }
 & $DotnetPath run --project "$startupRoot/tools/ContentCatalogChecks/ContentCatalogChecks.csproj" --configuration Release --no-build -- $contentReportPath
 if ($LASTEXITCODE -ne 0) { throw 'Content catalog bridge checks failed.' }
-
-& $DotnetPath build "$startupRoot/tools/PresentationFlowChecks/PresentationFlowChecks.csproj" --configuration Release --nologo
-if ($LASTEXITCODE -ne 0) { throw 'Presentation flow seam build failed.' }
-& $DotnetPath run --project "$startupRoot/tools/PresentationFlowChecks/PresentationFlowChecks.csproj" --configuration Release --no-build -- $presentationReportPath
-if ($LASTEXITCODE -ne 0) { throw 'Presentation flow seam checks failed.' }
 
 Write-Output 'These reports verify .NET behavior only. Unity EditMode, PlayMode, IL2CPP, and devices remain separate gates.'
