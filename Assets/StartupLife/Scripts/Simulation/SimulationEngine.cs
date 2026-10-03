@@ -284,7 +284,7 @@ namespace StartupLife.Simulation
                 try { minutes = engine.Evaluate(replay, command, receipt.OperationId); }
                 catch (RuleFailure error) { throw new ArgumentException("Receipt cannot represent a committed command: " + error.ReasonKey, error); }
                 Require(minutes == receipt.MinutesConsumed, "committed duration");
-                if (command.Kind == CommandKind.AdvanceBoundary) Require(receipt.Cue == replay.CurrentCue, "committed boundary cue");
+                Require(receipt.Cue == replay.CurrentCue, "committed cue");
                 if (command.Kind != CommandKind.AdvanceBoundary && command.Kind != CommandKind.AcknowledgePlayback)
                 { replay.CurrentActivity = receipt.OperationId; replay.PlaybackCursor = 0; }
                 replay.Revision = receipt.Revision;

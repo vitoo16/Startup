@@ -53,6 +53,72 @@ namespace StartupLife.Core
         { RunId = runId; CommandId = commandId; ExpectedRevision = revision; Command = command; }
     }
     public enum CommandStatus { Committed, AlreadyCommitted, Rejected, PersistenceFailed, RecoveryRequired }
+    public sealed class OutcomeLedgerEntry
+    {
+        public string Id { get; }
+        public string Category { get; }
+        public long CashDelta { get; }
+        public long Amount { get; }
+        public string AttributionId { get; }
+        public OutcomeLedgerEntry(string id, string category, long cashDelta, long amount, string attributionId)
+        { Id = id; Category = category; CashDelta = cashDelta; Amount = amount; AttributionId = attributionId; }
+    }
+    public sealed class SkillProgressDelta
+    {
+        public string SkillId { get; }
+        public long ExposureDelta { get; }
+        public int PriorLevel { get; }
+        public int NewLevel { get; }
+        public int PriorGrantedLevel { get; }
+        public int NewGrantedLevel { get; }
+        public SkillProgressDelta(string skillId, long exposureDelta, int priorLevel, int newLevel, int priorGrantedLevel, int newGrantedLevel)
+        {
+            SkillId = skillId; ExposureDelta = exposureDelta; PriorLevel = priorLevel; NewLevel = newLevel;
+            PriorGrantedLevel = priorGrantedLevel; NewGrantedLevel = newGrantedLevel;
+        }
+    }
+    public sealed class SimulationOutcome
+    {
+        public string OperationId { get; }
+        public string CommandId { get; }
+        public string ActivityId { get; }
+        public long PriorRevision { get; }
+        public long Revision { get; }
+        public SimInstant Start { get; }
+        public SimInstant End { get; }
+        public int MinutesConsumed { get; }
+        public string Cue { get; }
+        public int PlaybackCursor { get; }
+        public long CashDelta { get; }
+        public string EmploymentId { get; }
+        public long CareerXpDelta { get; }
+        public int PriorRank { get; }
+        public int NewRank { get; }
+        public string CourseInstanceId { get; }
+        public long StudyUnitsDelta { get; }
+        public IReadOnlyList<OutcomeLedgerEntry> LedgerEntries { get; }
+        public IReadOnlyList<SkillProgressDelta> SkillDeltas { get; }
+        public IReadOnlyList<string> GrantedIds { get; }
+        public IReadOnlyList<string> HistoryEntries { get; }
+        public SimulationOutcome(string operationId, string commandId, string activityId, long priorRevision, long revision,
+            SimInstant start, SimInstant end, int minutesConsumed, string cue, int playbackCursor, long cashDelta,
+            string employmentId, long careerXpDelta, int priorRank, int newRank, string courseInstanceId, long studyUnitsDelta,
+            IReadOnlyList<OutcomeLedgerEntry> ledgerEntries, IReadOnlyList<SkillProgressDelta> skillDeltas,
+            IReadOnlyList<string> grantedIds, IReadOnlyList<string> historyEntries)
+        {
+            OperationId = operationId; CommandId = commandId; ActivityId = activityId; PriorRevision = priorRevision; Revision = revision;
+            Start = start; End = end; MinutesConsumed = minutesConsumed; Cue = cue; PlaybackCursor = playbackCursor; CashDelta = cashDelta;
+            EmploymentId = employmentId; CareerXpDelta = careerXpDelta; PriorRank = priorRank; NewRank = newRank;
+            CourseInstanceId = courseInstanceId; StudyUnitsDelta = studyUnitsDelta;
+            LedgerEntries = Copy(ledgerEntries); SkillDeltas = Copy(skillDeltas); GrantedIds = Copy(grantedIds); HistoryEntries = Copy(historyEntries);
+        }
+        private static IReadOnlyList<T> Copy<T>(IReadOnlyList<T> source)
+        {
+            var values = new T[source.Count];
+            for (var i = 0; i < source.Count; i++) values[i] = source[i];
+            return Array.AsReadOnly(values);
+        }
+    }
     public sealed class CommandResult
     {
         public CommandStatus Status { get; }
@@ -60,14 +126,17 @@ namespace StartupLife.Core
         public long Revision { get; }
         public string OperationId { get; }
         public int MinutesConsumed { get; }
-        public CommandResult(CommandStatus status, string reason, long revision, string operationId = "", int minutes = 0)
-        { Status = status; ReasonKey = reason; Revision = revision; OperationId = operationId; MinutesConsumed = minutes; }
+        public SimulationOutcome? Outcome { get; }
+        public CommandResult(CommandStatus status, string reason, long revision, string operationId = "", int minutes = 0, SimulationOutcome? outcome = null)
+        { Status = status; ReasonKey = reason; Revision = revision; OperationId = operationId; MinutesConsumed = minutes; Outcome = outcome; }
     }
     public sealed class AdvanceResult
     {
         public IReadOnlyList<CommandResult> Boundaries { get; }
+        public SimInstant ReachedInstant { get; }
         public string StopReason { get; }
-        public AdvanceResult(IReadOnlyList<CommandResult> boundaries, string reason) { Boundaries = boundaries; StopReason = reason; }
+        public AdvanceResult(IReadOnlyList<CommandResult> boundaries, SimInstant reachedInstant, string reason)
+        { Boundaries = boundaries; ReachedInstant = reachedInstant; StopReason = reason; }
     }
     public interface IGameCommands
     {
