@@ -416,7 +416,7 @@ Unity documents that local iOS application builds require Xcode on macOS; Window
   **Acceptance/tests:** Age boundaries, invalid packages, plausible seniority, duplicate prior grants, and save round-trip pass. Age alone introduces no harsh debuff.  
   **Visual:** None. **Save:** Additive; migration fixture required. **Evidence:** Starting-condition matrix and tests.
 
-- [ ] **M2-T02 — Calendar and schedule planner**  
+- [x] **M2-T02 — Calendar and schedule planner**  
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `unity-game-director`, `unity-gameplay-systems`, `unity-mcp-bridge`, `unity-qa-release`. **Dependencies:** M2-T01.  
   **Implementation/systems:** Implement date rollover, birthdays, work schedules, free blocks, sleep, weekend shifts, activity boundaries, and suspension semantics.  
   **Acceptance/tests:** Leap years, month ends, office weekends, F&B shifts, unemployment, founder days, and zero offline advancement pass. Allocated minutes never exceed available time.  
@@ -432,7 +432,7 @@ Unity documents that local iOS application builds require Xcode on macOS; Window
   **Acceptance/tests:** Partial months, payday replay, leap-month accrual, no double payment, overflow rejection, and cash conservation pass.  
   **Visual:** None. **Save:** Economy state addition with migration. **Evidence:** Ledger reconciliation tests.
 
-- [ ] **M3-T02 — Arrears and purchase eligibility**  
+- [x] **M3-T02 — Arrears and purchase eligibility**  
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `unity-game-director`, `unity-gameplay-systems`, `unity-mcp-bridge`, `unity-qa-release`, `unity-game-economy`. **Dependencies:** M3-T01.  
   **Implementation/systems:** Record unpaid obligations, settle oldest arrears, reject unaffordable discretionary commands, and preserve recovery through employment.  
   **Acceptance/tests:** Zero-cash month, repeated shortfalls, income recovery, insufficient course funds, and interrupted transaction replay pass; cash never becomes negative.  
@@ -474,13 +474,13 @@ Unity documents that local iOS application builds require Xcode on macOS; Window
 
 **Goal:** Free career progress and deliberate paid study both work.
 
-- [ ] **M6-T01 — Six skills and career-earned progression**  
+- [x] **M6-T01 — Six skills and career-earned progression**  
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `unity-game-director`, `unity-gameplay-systems`, `unity-mcp-bridge`, `unity-qa-release`. **Dependencies:** M4-T02, M5-T02.  
   **Implementation/systems:** Add six level-0–5 skill definitions, XP curves, source attribution, milestone grants, and configured modifiers.  
   **Acceptance/tests:** Level boundaries, duplicate grants, stronger existing skills, scene exposure, and career/skill separation pass.  
   **Visual:** None. **Save:** Skill state addition with migration. **Evidence:** Grant/source tests.
 
-- [ ] **M6-T02 — Course purchase, study, and completion**  
+- [x] **M6-T02 — Course purchase, study, and completion**  
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `unity-game-director`, `unity-gameplay-systems`, `unity-mcp-bridge`, `unity-qa-release`, `unity-game-economy`. **Dependencies:** M6-T01, M3-T02, M2-T02.  
   **Implementation/systems:** Add courses, prerequisites, one active course, purchase transaction, study-time allocation, LearningSpeed calculation, and completion estimates.  
   **Acceptance/tests:** Money charge once, study consumes time, speed changes duration, partial-progress restore, obsolete target completion, and unaffordable purchase rejection pass.  
@@ -490,7 +490,7 @@ Unity documents that local iOS application builds require Xcode on macOS; Window
 
 **Goal:** Complete the first playable Developer → evening study → save/resume loop.
 
-- [ ] **M7-T01 — Bootstrap, character entry, and Life screen**  
+- [x] **M7-T01 — Bootstrap, character entry, and Life screen**  
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `ui`, `ui-ugui`, `unity-ui-designer`, `unity-mcp-bridge`, `vietnam-art-direction`, `unity-qa-release`, `localization`, `unity-localization`, `startup-life-gameplay-guardian`, `unity-game-director`, `unity-gameplay-systems`. **Dependencies:** M6-T02.  
   **Implementation/systems:** Build the composition root, new/load entry, character creation UI, safe-area Life view, work fast-forward, approved development placeholders, evening study, and day summary.  
   **Acceptance/tests:** PlayMode journey completes without state writes from views; clock, salary accrual, XP, skill/course progress, and summary agree with simulation.  
