@@ -28,6 +28,12 @@ if ($LASTEXITCODE -ne 0) { throw 'Astra M2 restore invariant build failed.' }
 & $DotnetPath run --project "$startupRoot/tools/RestoreInvariantChecks/RestoreInvariantChecks.csproj" --configuration Release --no-build -- $restoreReportPath
 if ($LASTEXITCODE -ne 0) { throw 'Astra M2 restore invariant checks failed.' }
 
+$presentationReportPath = Join-Path $reportDirectory 'presentation-adapter-report.json'
+
+& $DotnetPath build "$startupRoot/tools/PresentationChecks/PresentationChecks.csproj" --configuration Release --nologo
+if ($LASTEXITCODE -ne 0) { throw 'Presentation adapter regression build failed.' }
+& $DotnetPath run --project "$startupRoot/tools/PresentationChecks/PresentationChecks.csproj" --configuration Release --no-build -- $presentationReportPath
+if ($LASTEXITCODE -ne 0) { throw 'Presentation adapter regression checks failed.' }
 & $DotnetPath build "$startupRoot/tools/ContentCatalogChecks/ContentCatalogChecks.csproj" --configuration Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Content catalog bridge build failed.' }
 & $DotnetPath run --project "$startupRoot/tools/ContentCatalogChecks/ContentCatalogChecks.csproj" --configuration Release --no-build -- $contentReportPath
