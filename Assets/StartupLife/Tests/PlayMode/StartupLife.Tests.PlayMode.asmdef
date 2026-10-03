@@ -1,6 +1,6 @@
 {
   "name": "StartupLife.Tests.PlayMode",
-  "references": ["StartupLife.Presentation", "Unity.TextMeshPro", "Unity.Localization", "Unity.ResourceManager"],
+  "references": ["StartupLife.Core", "StartupLife.Application", "StartupLife.Presentation", "Unity.TextMeshPro", "Unity.Localization", "Unity.ResourceManager", "Unity.ugui", "Unity.InputSystem"],
   "optionalUnityReferences": ["TestAssemblies"],
   "autoReferenced": false
 }
