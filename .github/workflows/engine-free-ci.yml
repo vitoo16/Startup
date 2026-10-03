@@ -38,6 +38,12 @@ jobs:
           $reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/unity-foundation-report.json'
           ./scripts/Test-UnityFoundationStatic.ps1 -ReportPath $reportPath
 
+      - name: Validate frozen M1 public API
+        shell: pwsh
+        run: |
+          $reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/m1-api-freeze-report.json'
+          ./scripts/Test-M1ApiContractStatic.ps1 -ReportPath $reportPath
+
       - name: Validate Unity runner contract
         shell: pwsh
         run: |
