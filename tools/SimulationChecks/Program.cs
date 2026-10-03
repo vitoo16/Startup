@@ -258,6 +258,46 @@ internal static class Program
             Equal(before.Scheduler.Cursor, after.Scheduler.Cursor); Equal(before.CurrentCue, after.CurrentCue);
             Equal(10, f.Session.Snapshot().PlaybackCursor);
         });
+        Check("root playback cue and cursor forgery are corrupt before restore publication", () =>
+        {
+            var f = new Fixture(); f.Create(); f.Accept(); f.Evening();
+            var cueState = f.State(); cueState.CurrentCue = "forged.root.cue";
+            var cueBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(cueState), 1, cueState.Revision);
+            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(cueBytes).Status);
+            var cueStore = new MemoryStore(f.Serializer, cueBytes);
+            True(!GameSession.TryRestore(f.Content, f.Serializer, cueStore, out var cueSession, out var cueLoad));
+            True(cueSession == null); Equal(LoadStatus.Corrupt, cueLoad.Status);
+
+            var activity = f.Session.Snapshot().CurrentActivityId;
+            f.SendOk(new GameCommand(CommandKind.AcknowledgePlayback, activity, 10), "root-cursor-source");
+            var cursorState = f.State(); Equal(10, cursorState.PlaybackCursor); cursorState.PlaybackCursor = 0;
+            var cursorBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(cursorState), 1, cursorState.Revision);
+            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(cursorBytes).Status);
+            var cursorStore = new MemoryStore(f.Serializer, cursorBytes);
+            True(!GameSession.TryRestore(f.Content, f.Serializer, cursorStore, out var cursorSession, out var cursorLoad));
+            True(cursorSession == null); Equal(LoadStatus.Corrupt, cursorLoad.Status);
+        });
+        Check("playback provenance does not mask unsupported content", () =>
+        {
+            var f = new Fixture(); f.Create(); f.Accept(); f.Buy(); var state = f.State();
+            state.Course!.DefinitionId = "missing-course"; state.CurrentCue = "forged.root.cue";
+            var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision);
+            Equal(LoadStatus.UnsupportedContent, f.Serializer.DeserializeAndValidate(bytes).Status);
+        });
+        Check("candidate serialization validation is contained as state invalid", () =>
+        {
+            var content = Catalog();
+            var inner = new JsonSaveSerializer(content, GameSession.CreateRestoreValidator(), new SyntheticV0Migration());
+            var serializer = new NthSerializeFailureSerializer(inner);
+            var initial = GameSession.NewState(content, "run", 12345, new SimDate(2026, 9, 1));
+            var store = new MemoryStore(serializer, null);
+            var session = new GameSession(initial, content, serializer, store);
+            serializer.Arm(2);
+            var result = session.Execute(new CommandEnvelope("run", "serialization-invalid", 0,
+                new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "Nguyễn Ánh", "base.female")));
+            Equal(CommandStatus.Rejected, result.Status); Equal("state.invalid", result.ReasonKey);
+            Equal(0L, session.Snapshot().Revision); Equal(LoadStatus.Missing, store.Read().Status);
+        });
         Check("committed non-boundary cue forgery is corrupt before outcome publication", () =>
         {
             var f = new Fixture(); f.Create(); f.Accept(); f.Buy("cue-source");
@@ -430,6 +470,21 @@ internal static class Program
         public CommandResult Buy(string? id = null) => SendOk(new GameCommand(CommandKind.PurchaseCourse, "communication-basics"), id);
         public void Evening() { while (Session.Snapshot().Instant.Minute < 1020) SendOk(new GameCommand(CommandKind.AdvanceBoundary)); }
         public void Day() { var result = Session.AdvanceDay(new CommandEnvelope("run", "day-" + (++sequence), Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary))); Equal("TargetReached", result.StopReason); }
+    }
+    private sealed class NthSerializeFailureSerializer : ISaveSerializer
+    {
+        private readonly ISaveSerializer inner;
+        private int failOn;
+        private int calls;
+        public NthSerializeFailureSerializer(ISaveSerializer innerSerializer) { inner = innerSerializer; }
+        public void Arm(int serializeCall) { failOn = serializeCall; calls = 0; }
+        public byte[] Serialize(GameState state)
+        {
+            calls++;
+            if (failOn > 0 && calls == failOn) throw new ArgumentException("Injected candidate serialization validation failure.");
+            return inner.Serialize(state);
+        }
+        public LoadResult DeserializeAndValidate(byte[] bytes) => inner.DeserializeAndValidate(bytes);
     }
     private sealed class MemoryStore : ISaveStore
     {
