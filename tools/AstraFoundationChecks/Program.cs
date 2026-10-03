@@ -451,7 +451,10 @@ internal static class Program
         var store = new AtomicFileSaveStore(path, serializer);
         var changed = serializer.DeserializeAndValidate(expected).State!;
         changed.Cash++;
-        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, serializer.Serialize(changed)));
+        // The public serializer now rejects forged cash before storage. Build an adversarial envelope
+        // directly so this H1 test still reaches the compatibility-store full-checkpoint guard.
+        var forgedCash = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(changed), 1, changed.Revision);
+        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, forgedCash));
         Bytes(expected, File.ReadAllBytes(path));
         changed = serializer.DeserializeAndValidate(expected).State!;
         changed.Receipts.Single(x => x.CommandId == "job").CommandId = "renamed-direct";
@@ -471,9 +474,11 @@ internal static class Program
         Bytes(durable, File.ReadAllBytes(path));
         var differentBackup = serializer.DeserializeAndValidate(expected).State!;
         differentBackup.Cash++;
-        var differentBytes = serializer.Serialize(differentBackup);
+        // F1 makes same-generation forged gameplay semantically invalid. Keep raw checksummed bytes here
+        // to prove an invalid/different backup is never mistaken for a pending ownership mirror.
+        var differentBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(differentBackup), 1, differentBackup.Revision);
         File.WriteAllBytes(path + ".backup", differentBytes);
-        Equal("", store.Read().Reason); // Different gameplay data is never a pending ownership mirror.
+        Equal("", store.Read().Reason);
         True(GameSession.TryRestore(catalog, serializer, store, out _, out _));
         Bytes(differentBytes, File.ReadAllBytes(path + ".backup"));
     }

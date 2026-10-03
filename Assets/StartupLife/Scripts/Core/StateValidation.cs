@@ -26,8 +26,13 @@ namespace StartupLife.Core
             {
                 if (!c.Starts.TryGetValue(s.BackgroundId, out var start))
                     Unsupported("save.content_id", "Character background is unavailable in the active catalog.");
-                else if (!start.AppearanceIds.Contains(s.AppearanceId))
-                    Unsupported("save.content_id", "Character appearance is unavailable in the active catalog.");
+                else
+                {
+                    if (!start.AppearanceIds.Contains(s.AppearanceId))
+                        Unsupported("save.content_id", "Character appearance is unavailable in the active catalog.");
+                    if (s.LearningSpeed != start.LearningSpeed)
+                        throw new ArgumentException("Character learning speed differs from its start definition.");
+                }
             }
             var missingSkill = false;
             foreach (var skill in s.Skills)
@@ -53,7 +58,7 @@ namespace StartupLife.Core
                 (s.Scheduler.LastScene.Length == 0 || c.Careers.Values.Any(career => career.Scenes.Any(scene => scene.Id == s.Scheduler.LastScene)));
             if (schedulerEmployment != null && schedulerReferencesAvailable && c.Careers.TryGetValue(schedulerEmployment.CareerId, out var schedulerCareer) &&
                 schedulerCareer.Revision == schedulerEmployment.DefinitionRevision)
-                ValidateSchedulerContent(s, schedulerEmployment, schedulerCareer, activities);
+                ValidateSchedulerContent(s, schedulerEmployment, schedulerCareer, activities, s.Employment != null);
 
             if (s.Employment != null && c.Careers.TryGetValue(s.Employment.CareerId, out var career) &&
                 career.Revision == s.Employment.DefinitionRevision)
@@ -237,6 +242,15 @@ namespace StartupLife.Core
                 var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
                 if ((i == 0) != (command.Kind == CommandKind.CreateCharacter))
                     throw new ArgumentException("Character creation does not own the timeline origin.");
+                if (i == 0)
+                {
+                    var expectedBirth = new DateTime(date.Year, date.Month, date.Day).AddYears(-command.Amount)
+                        .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    if (state.Name != command.Name.Trim() || state.StartingAge != command.Amount ||
+                        state.BirthDateIso != expectedBirth || state.BackgroundId != command.ContentId ||
+                        state.AppearanceId != command.AppearanceId)
+                        throw new ArgumentException("Character identity differs from its committed creation receipt.");
+                }
                 if (command.Kind == CommandKind.AdvanceBoundary)
                 {
                     var activity = state.RunId + "/activity/" + date + "/" + minute.ToString(CultureInfo.InvariantCulture);
@@ -281,12 +295,15 @@ namespace StartupLife.Core
         }
 
         private static void ValidateSchedulerContent(GameState state, EmploymentState employment, CareerDefinition career,
-            IReadOnlyList<ActivityStamp> activities)
+            IReadOnlyList<ActivityStamp> activities, bool currentEmployment)
         {
             if (state.Scheduler.Deck.Count == 0)
             {
-                var committed = CountCareerActivities(activities, career, ParseDate(employment.FirstShiftIso), EndDate(state, employment));
-                if (committed.Total != 0) throw new ArgumentException("Scheduler lost committed career scenes.");
+                if (currentEmployment)
+                {
+                    var committed = CountCareerActivities(activities, career, ParseDate(employment.FirstShiftIso), state.Date);
+                    if (committed.Total != 0) throw new ArgumentException("Scheduler lost committed career scenes.");
+                }
                 return;
             }
             if (state.Scheduler.Deck.Count != career.QuotaSlots || !career.Scenes.Any(scene => scene.Id == state.Scheduler.LastScene))
@@ -301,8 +318,12 @@ namespace StartupLife.Core
                 if (state.Scheduler.Signature == expected) { signatureMatches = true; break; }
             }
             if (!signatureMatches) throw new ArgumentException("Scheduler signature cannot belong to the current employment transition.");
+            // Historical employment has only a date-level EndedIso. An unemployed boundary later on that
+            // same date can share an old career slot timestamp, so exact receipt reconstruction owns
+            // historical cursor/cycle provenance instead of this timestamp heuristic.
+            if (!currentEmployment) return;
 
-            var counts = CountCareerActivities(activities, career, ParseDate(employment.FirstShiftIso), EndDate(state, employment));
+            var counts = CountCareerActivities(activities, career, ParseDate(employment.FirstShiftIso), state.Date);
             if (counts.Total <= 0) throw new ArgumentException("Generated scheduler has no committed career scene.");
             var expectedCycle = checked((counts.Total - 1) / career.QuotaSlots + 1);
             var expectedCursor = checked((counts.Total - 1) % career.QuotaSlots + 1);

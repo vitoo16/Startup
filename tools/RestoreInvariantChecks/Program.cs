@@ -45,6 +45,10 @@ internal static class Program
         Check("M2 coordinated receipt and cursor rewind cannot retain rewards", CoordinatedRewindIsCorrupt);
         Check("M2 committed reward and salary provenance cannot be forged", ForgedRewardsAreCorrupt);
         Check("M2 scheduler RNG and plausible generation must match its trace", SchedulerTraceFieldsAreCorrupt);
+        Check("M2 creation receipt binds intrinsic character identity", CharacterCreationProvenanceIsBound);
+        Check("M2 available start definition binds learning speed", LearningSpeedProvenanceIsBound);
+        Check("M2 reconstructed cash must match authoritative checkpoint", CashProvenanceIsBound);
+        Check("M2 unemployed boundary after mid-shift resignation is not career work", PostResignationBoundaryRemainsValid);
 
         var reportPath = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.Combine(Path.GetTempPath(), "startup-life-m2-restore-invariants.json");
         Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
@@ -360,6 +364,77 @@ internal static class Program
         var generation = f.State(); generation.Scheduler.Generation++;
         True(generation.Scheduler.Generation <= generation.ConsumedActivities.Count); RejectBeforePublication(f, generation);
     }
+    private static void CharacterCreationProvenanceIsBound()
+    {
+        var f = new Fixture(CharacterCatalog());
+        Equal(CommandStatus.Committed, f.Execute("create", new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female")).Status);
+        var forgedReceipt = f.State();
+        forgedReceipt.Receipts[0].Payload = new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "Forged", "base.female").CanonicalPayload;
+        RejectBeforePublication(f, forgedReceipt);
+
+        var missingName = f.State(); missingName.Name = "";
+        RejectBeforePublication(f, missingName);
+
+        var wrongAge = f.State(); wrongAge.StartingAge = 26;
+        RejectBeforePublication(f, wrongAge);
+
+        var wrongBirth = f.State(); wrongBirth.BirthDateIso = "2000-09-07";
+        RejectBeforePublication(f, wrongBirth);
+    }
+
+    private static void LearningSpeedProvenanceIsBound()
+    {
+        var f = new Fixture(CharacterCatalog());
+        Equal(CommandStatus.Committed, f.Execute("create", new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female")).Status);
+        Equal(CommandStatus.Committed, f.Step().Status);
+        Equal(480, f.State().Minute);
+        Equal(CommandStatus.Committed, f.Execute("course", new GameCommand(CommandKind.PurchaseCourse, "communication-basics")).Status);
+
+        var checkpoint = f.Session.ExportCheckpoint();
+        var store = new MemoryStore(f.Serializer, checkpoint);
+        True(GameSession.TryRestore(f.Catalog, f.Serializer, store, out var restored, out var result));
+        Equal(LoadStatus.Valid, result.Status);
+        Equal(CommandStatus.Committed, restored!.Execute(new CommandEnvelope("run", "study-valid", restored.Snapshot().Revision,
+            new GameCommand(CommandKind.Study, amount: 60))).Status);
+
+        var tampered = f.State(); tampered.LearningSpeed = 20000;
+        RejectBeforePublication(f, tampered);
+    }
+
+    private static void CashProvenanceIsBound()
+    {
+        var f = new Fixture(CharacterCatalog(cash: 9500));
+        Equal(CommandStatus.Committed, f.Execute("create", new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female")).Status);
+        var checkpoint = f.Session.ExportCheckpoint();
+        var store = new MemoryStore(f.Serializer, checkpoint);
+        True(GameSession.TryRestore(f.Catalog, f.Serializer, store, out var restored, out var result));
+        Equal(LoadStatus.Valid, result.Status);
+        var rejected = restored!.Execute(new CommandEnvelope("run", "too-expensive", restored.Snapshot().Revision,
+            new GameCommand(CommandKind.PurchaseCourse, "communication-basics")));
+        Equal(CommandStatus.Rejected, rejected.Status); Equal("economy.insufficient_cash", rejected.ReasonKey);
+
+        var tampered = f.State(); tampered.Cash = 100000;
+        RejectBeforePublication(f, tampered);
+    }
+
+    private static void PostResignationBoundaryRemainsValid()
+    {
+        var f = new Fixture(MidShiftResignationCatalog());
+        Equal(CommandStatus.Committed, f.Execute("create", new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female")).Status);
+        Equal(CommandStatus.Committed, f.Execute("job", new GameCommand(CommandKind.AcceptJob, "developer")).Status);
+        while (f.State().Minute < 780) Equal(CommandStatus.Committed, f.Step().Status);
+        Equal(780, f.State().Minute); Equal(1, f.State().Scheduler.Cursor);
+        Equal(CommandStatus.Committed, f.Execute("resign-mid-shift", new GameCommand(CommandKind.Resign)).Status);
+        Equal(LoadStatus.Valid, Raw(f.Serializer, f.State()).Status);
+
+        var advance = f.Execute("unemployed-evening", new GameCommand(CommandKind.AdvanceBoundary));
+        Equal(CommandStatus.Committed, advance.Status);
+        var state = f.State();
+        Equal(1320, state.Minute); Equal(1, state.Scheduler.Cursor); Equal(1, state.PreviousEmployment.Count);
+        Equal(LoadStatus.Valid, Raw(f.Serializer, state).Status);
+        AssertContinuation(f);
+    }
+
     private static void RejectBeforePublication(Fixture fixture, GameState state)
     {
         var before = fixture.Session.ExportCheckpoint();
@@ -402,6 +477,27 @@ internal static class Program
             missingStart ? Array.Empty<CharacterStartDefinition>() : new[] { new CharacterStartDefinition("fresh", 3000000, 10000, "base.female") },
             new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
     }
+    private static ContentCatalog CharacterCatalog(long cash = 3000000, int speed = 10000)
+    {
+        var basis = Catalog();
+        var course = new CourseDefinition("communication-basics", "course.communication", "communication", 1, 0, 180, 20000);
+        return new ContentCatalog(basis.Version, basis.Skills.Values, basis.Careers.Values, new[] { course },
+            new[] { new CharacterStartDefinition("fresh", cash, speed, "base.female") }, basis.Economy, basis.Schedule);
+    }
+
+    private static ContentCatalog MidShiftResignationCatalog()
+    {
+        var skill = new SkillDefinition("communication", "skill.communication", 100, 300, 600, 1000, 1500);
+        var scene = new CareerSceneDefinition("coding", "scene.coding", 100, 10, "communication", 1);
+        var rank = new CareerRankDefinition("junior", 0, 0, 10000000, "communication", 0);
+        var career = new CareerDefinition("developer", "v1", "career.developer", 540, 1020, 2, 10,
+            new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday },
+            new[] { scene }, new[] { rank });
+        return new ContentCatalog("fixture.v1", new[] { skill }, new[] { career }, Array.Empty<CourseDefinition>(),
+            new[] { new CharacterStartDefinition("fresh", 3000000, 10000, "base.female") },
+            new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
+    }
+
     private static ContentCatalog TwoCareers(bool removeCoding = false, bool foreignCoding = false)
     {
         var basis = Catalog(sceneId: removeCoding ? "meeting" : "coding"); var developer = basis.Careers["developer"];
