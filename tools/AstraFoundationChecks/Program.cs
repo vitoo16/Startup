@@ -474,9 +474,11 @@ internal static class Program
         Bytes(durable, File.ReadAllBytes(path));
         var differentBackup = serializer.DeserializeAndValidate(expected).State!;
         differentBackup.Cash++;
-        var differentBytes = serializer.Serialize(differentBackup);
+        // F1 makes same-generation forged gameplay semantically invalid. Keep raw checksummed bytes here
+        // to prove an invalid/different backup is never mistaken for a pending ownership mirror.
+        var differentBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(differentBackup), 1, differentBackup.Revision);
         File.WriteAllBytes(path + ".backup", differentBytes);
-        Equal("", store.Read().Reason); // Different gameplay data is never a pending ownership mirror.
+        Equal("", store.Read().Reason);
         True(GameSession.TryRestore(catalog, serializer, store, out _, out _));
         Bytes(differentBytes, File.ReadAllBytes(path + ".backup"));
     }
