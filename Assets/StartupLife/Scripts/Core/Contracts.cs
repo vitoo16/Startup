@@ -77,6 +77,30 @@ namespace StartupLife.Core
             PriorGrantedLevel = priorGrantedLevel; NewGrantedLevel = newGrantedLevel;
         }
     }
+    public enum CourseChangeKind { Activated, Progressed, Completed }
+    public enum CourseCompletionReason { None, StudyTargetReached, SkillTargetAlreadyMet }
+    public sealed class CourseChange
+    {
+        public CourseChangeKind Kind { get; }
+        public CourseCompletionReason CompletionReason { get; }
+        public string InstanceId { get; }
+        public string DefinitionId { get; }
+        public string SkillId { get; }
+        public long PriorProgressUnits { get; }
+        public long NewProgressUnits { get; }
+        public long TargetUnits { get; }
+        public int TargetLevel { get; }
+        public CourseChange(CourseChangeKind kind, CourseCompletionReason completionReason, string instanceId, string definitionId,
+            string skillId, long priorProgressUnits, long newProgressUnits, long targetUnits, int targetLevel)
+        {
+            if (kind != CourseChangeKind.Completed && completionReason != CourseCompletionReason.None)
+                throw new ArgumentException("Only completed course changes may carry a completion reason.");
+            if (kind == CourseChangeKind.Completed && completionReason == CourseCompletionReason.None)
+                throw new ArgumentException("Completed course changes require an explicit completion reason.");
+            Kind = kind; CompletionReason = completionReason; InstanceId = instanceId; DefinitionId = definitionId; SkillId = skillId;
+            PriorProgressUnits = priorProgressUnits; NewProgressUnits = newProgressUnits; TargetUnits = targetUnits; TargetLevel = targetLevel;
+        }
+    }
     public sealed class SimulationOutcome
     {
         public string OperationId { get; }
@@ -94,22 +118,21 @@ namespace StartupLife.Core
         public long CareerXpDelta { get; }
         public int PriorRank { get; }
         public int NewRank { get; }
-        public string CourseInstanceId { get; }
-        public long StudyUnitsDelta { get; }
+        public CourseChange? CourseChange { get; }
         public IReadOnlyList<OutcomeLedgerEntry> LedgerEntries { get; }
         public IReadOnlyList<SkillProgressDelta> SkillDeltas { get; }
         public IReadOnlyList<string> GrantedIds { get; }
         public IReadOnlyList<string> HistoryEntries { get; }
         public SimulationOutcome(string operationId, string commandId, string activityId, long priorRevision, long revision,
             SimInstant start, SimInstant end, int minutesConsumed, string cue, int playbackCursor, long cashDelta,
-            string employmentId, long careerXpDelta, int priorRank, int newRank, string courseInstanceId, long studyUnitsDelta,
+            string employmentId, long careerXpDelta, int priorRank, int newRank, CourseChange? courseChange,
             IReadOnlyList<OutcomeLedgerEntry> ledgerEntries, IReadOnlyList<SkillProgressDelta> skillDeltas,
             IReadOnlyList<string> grantedIds, IReadOnlyList<string> historyEntries)
         {
             OperationId = operationId; CommandId = commandId; ActivityId = activityId; PriorRevision = priorRevision; Revision = revision;
             Start = start; End = end; MinutesConsumed = minutesConsumed; Cue = cue; PlaybackCursor = playbackCursor; CashDelta = cashDelta;
             EmploymentId = employmentId; CareerXpDelta = careerXpDelta; PriorRank = priorRank; NewRank = newRank;
-            CourseInstanceId = courseInstanceId; StudyUnitsDelta = studyUnitsDelta;
+            CourseChange = courseChange;
             LedgerEntries = Copy(ledgerEntries); SkillDeltas = Copy(skillDeltas); GrantedIds = Copy(grantedIds); HistoryEntries = Copy(historyEntries);
         }
         private static IReadOnlyList<T> Copy<T>(IReadOnlyList<T> source)
