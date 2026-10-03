@@ -1,0 +1,188 @@
+{
+  "suite": "Provisional first playable \u2014 .NET, not Unity",
+  "runtime": "8.0.31",
+  "passed": 45,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "xorshift32-v1 reference vector",
+      "status": "passed"
+    },
+    {
+      "name": "independent event stream leaves scheduler unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "Developer 20-slot quota exact across cycles",
+      "status": "passed"
+    },
+    {
+      "name": "largest remainder stable ties and \u003C1 slot error",
+      "status": "passed"
+    },
+    {
+      "name": "content rejects invalid quota, duplicate IDs and missing references",
+      "status": "passed"
+    },
+    {
+      "name": "character boundaries and rejected commands are byte identical",
+      "status": "passed"
+    },
+    {
+      "name": "Vietnamese name and course save round trip",
+      "status": "passed"
+    },
+    {
+      "name": "salary accrues without spendable cash and retry grants once",
+      "status": "passed"
+    },
+    {
+      "name": "course charge once, study time and completion floor",
+      "status": "passed"
+    },
+    {
+      "name": "active course snapshot survives cold restore without checkpoint inspection",
+      "status": "passed"
+    },
+    {
+      "name": "course outcome distinguishes progress and study completion",
+      "status": "passed"
+    },
+    {
+      "name": "career grant course completion has explicit target-already-met reason",
+      "status": "passed"
+    },
+    {
+      "name": "LearningSpeed changes duration and study never overlaps work/sleep",
+      "status": "passed"
+    },
+    {
+      "name": "career XP remains separate from skills; promotion milestone idempotent",
+      "status": "passed"
+    },
+    {
+      "name": "course target met by career completes without refund/second grant",
+      "status": "passed"
+    },
+    {
+      "name": "mid-cycle/course restore and next outcomes deterministic",
+      "status": "passed"
+    },
+    {
+      "name": "suspension/real elapsed time never advances simulation",
+      "status": "passed"
+    },
+    {
+      "name": "full month salary, expenses, payday and batch retry",
+      "status": "passed"
+    },
+    {
+      "name": "partial-month resignation preserves exact earned pay and biography",
+      "status": "passed"
+    },
+    {
+      "name": "oldest arrears settle before spending and employment recovers",
+      "status": "passed"
+    },
+    {
+      "name": "insufficient funds and stale revision reject without mutation",
+      "status": "passed"
+    },
+    {
+      "name": "overflow rejects entire boundary including RNG/rewards",
+      "status": "passed"
+    },
+    {
+      "name": "leap years, month end and hospitality weekends",
+      "status": "passed"
+    },
+    {
+      "name": "payday clamp and payday work excluded from current payment",
+      "status": "passed"
+    },
+    {
+      "name": "rank changes preserve committed deck prefix/history",
+      "status": "passed"
+    },
+    {
+      "name": "pending required choice stops month advancement",
+      "status": "passed"
+    },
+    {
+      "name": "playback acknowledgement cannot add rewards",
+      "status": "passed"
+    },
+    {
+      "name": "committed outcome exposes transactions and survives old retry after restore",
+      "status": "passed"
+    },
+    {
+      "name": "career boundary outcome exposes activity interval progression and reached instant",
+      "status": "passed"
+    },
+    {
+      "name": "playback outcome changes cursor only and snapshot publishes it",
+      "status": "passed"
+    },
+    {
+      "name": "root playback cue and cursor forgery are corrupt before restore publication",
+      "status": "passed"
+    },
+    {
+      "name": "playback provenance does not mask unsupported content",
+      "status": "passed"
+    },
+    {
+      "name": "candidate serialization validation is contained as state invalid",
+      "status": "passed"
+    },
+    {
+      "name": "committed non-boundary cue forgery is corrupt before outcome publication",
+      "status": "passed"
+    },
+    {
+      "name": "synthetic v0 migration and current continuation",
+      "status": "passed"
+    },
+    {
+      "name": "future/content-incompatible saves preserved without backup fallback",
+      "status": "passed"
+    },
+    {
+      "name": "atomic storage before-replace failure retains state and backup",
+      "status": "passed"
+    },
+    {
+      "name": "post-replace ambiguity blocks commands then reconciles retry",
+      "status": "passed"
+    },
+    {
+      "name": "corrupt primary recovers prior generation and preserves backup",
+      "status": "passed"
+    },
+    {
+      "name": "malformed save checksum, duplicate identity and invalid RNG rejected",
+      "status": "passed"
+    },
+    {
+      "name": "transient read lock does not roll back to backup",
+      "status": "passed"
+    },
+    {
+      "name": "competing writer cannot delete active writer temp",
+      "status": "passed"
+    },
+    {
+      "name": "invalid restored work cursor and reward coherence rejected",
+      "status": "passed"
+    },
+    {
+      "name": "snapshot collections cannot mutate authoritative state",
+      "status": "passed"
+    },
+    {
+      "name": "ledger cash reconciliation over multi-month employed study scenario",
+      "status": "passed"
+    }
+  ]
+}

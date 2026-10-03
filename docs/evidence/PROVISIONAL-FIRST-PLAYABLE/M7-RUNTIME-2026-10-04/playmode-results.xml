@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="2" result="Passed" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-03 18:46:49Z" end-time="2026-10-03 18:47:00Z" duration="10.8961872">
+  <test-suite type="TestSuite" id="1012" name="Startup Life" fullname="Startup Life" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-03 18:46:49Z" end-time="2026-10-03 18:47:00Z" duration="10.896187" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1005" name="StartupLife.Tests.PlayMode.dll" fullname="C:/Users/viett/Startup/Library/ScriptAssemblies/StartupLife.Tests.PlayMode.dll" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-03 18:46:49Z" end-time="2026-10-03 18:47:00Z" duration="10.889162" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="11360" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1006" name="StartupLife" fullname="StartupLife" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-03 18:46:49Z" end-time="2026-10-03 18:47:00Z" duration="10.888287" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1007" name="Tests" fullname="StartupLife.Tests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-03 18:46:49Z" end-time="2026-10-03 18:47:00Z" duration="10.887906" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1008" name="PlayMode" fullname="StartupLife.Tests.PlayMode" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-03 18:46:49Z" end-time="2026-10-03 18:47:00Z" duration="10.887542" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1001" name="FirstPlayableFlowTests" fullname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" classname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-03 18:46:49Z" end-time="2026-10-03 18:47:00Z" duration="10.659259" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1002" name="CreateWorkStudyAndAdvanceDayThroughViews" fullname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests.CreateWorkStudyAndAdvanceDayThroughViews" methodname="CreateWorkStudyAndAdvanceDayThroughViews" classname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" runstate="Runnable" seed="980896131" result="Passed" start-time="2026-10-03 18:46:49Z" end-time="2026-10-03 18:47:00Z" duration="10.648598" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[StartupLifeM7Visual] 01-character-creation 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0000 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 02-life-developer 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0001 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 03-work-playback 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0002 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0003 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0004 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0005 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0006 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0007 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0008 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0009 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0010 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0011 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0012 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0013 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0014 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0015 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0016 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0017 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0018 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0019 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0020 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0021 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0022 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0023 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0024 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0025 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0026 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0027 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0028 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0029 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0030 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0031 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0032 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0033 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 04-evening-study 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0034 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 05-day-summary 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0035 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 06-simulated-notched-safe-area 1080x1920; UI-inclusive camera capture; simulatedNotch=True
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1003" name="MobileBaselineTests" fullname="StartupLife.Tests.PlayMode.MobileBaselineTests" classname="StartupLife.Tests.PlayMode.MobileBaselineTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-03 18:47:00Z" end-time="2026-10-03 18:47:00Z" duration="0.226950" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1004" name="BaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage" fullname="StartupLife.Tests.PlayMode.MobileBaselineTests.BaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage" methodname="BaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage" classname="StartupLife.Tests.PlayMode.MobileBaselineTests" runstate="Runnable" seed="83576337" result="Passed" start-time="2026-10-03 18:47:00Z" end-time="2026-10-03 18:47:00Z" duration="0.225595" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: C:/Users/viett/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
