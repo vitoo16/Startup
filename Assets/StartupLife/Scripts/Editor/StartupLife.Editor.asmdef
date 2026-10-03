@@ -1,7 +1,7 @@
 {
   "name": "StartupLife.Editor",
   "rootNamespace": "StartupLife.Editor",
-  "references": ["StartupLife.Core", "StartupLife.Content", "StartupLife.Presentation", "Unity.TextMeshPro", "Unity.Localization", "Unity.Localization.Editor", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Universal.2D.Runtime"],
+  "references": ["StartupLife.Core", "StartupLife.Content", "StartupLife.Presentation", "Unity.TextMeshPro", "Unity.Localization", "Unity.Localization.Editor", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Universal.2D.Runtime", "Unity.ugui", "Unity.InputSystem"],
   "includePlatforms": ["Editor"],
   "autoReferenced": true
 }
