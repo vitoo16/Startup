@@ -49,7 +49,8 @@ namespace StartupLife.Editor
 
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             CreateCamera(theme);
-            new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+            var eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+            eventSystem.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
 
             var canvas = new GameObject("FirstPlayableCanvas", typeof(Canvas), typeof(UnityEngine.UI.CanvasScaler),
                 typeof(UnityEngine.UI.GraphicRaycaster)).GetComponent<Canvas>();
