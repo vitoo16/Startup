@@ -13,12 +13,12 @@ namespace StartupLife.Presentation
         [SerializeField] private TMP_Text appearanceValue;
         [SerializeField] private LocalizedKeyLabel status;
 
-        private FirstPlayableFlowCoordinator flow;
+        private FirstPlayableFlow flow;
         private Action onCreated;
         private int age = 25;
         private string appearanceId = "base.female";
 
-        public void Bind(FirstPlayableFlowCoordinator coordinator, Action created)
+        public void Bind(FirstPlayableFlow coordinator, Action created)
         {
             flow = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
             onCreated = created ?? throw new ArgumentNullException(nameof(created));
@@ -58,7 +58,7 @@ namespace StartupLife.Presentation
         public void Submit()
         {
             if (flow == null) throw new InvalidOperationException("Character creation view is not bound.");
-            var result = flow.CreateCharacter(nameInput ? nameInput.text : "", age, "fresh", appearanceId);
+            var result = flow.CreateCharacter(nameInput ? nameInput.text : "", age, "fresh", appearanceId).Command;
             if (result.Status == CommandStatus.Committed || result.Status == CommandStatus.AlreadyCommitted)
             {
                 status?.SetKey("status.character.created");

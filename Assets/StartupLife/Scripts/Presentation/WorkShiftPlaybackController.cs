@@ -9,7 +9,7 @@ namespace StartupLife.Presentation
     {
         [SerializeField, Min(0f)] private float cueHoldSeconds = 0.25f;
 
-        private FirstPlayableFlowCoordinator flow;
+        private FirstPlayableFlow flow;
         private ContentCatalog content;
         private Action refresh;
         private LocalizedKeyLabel status;
@@ -17,7 +17,7 @@ namespace StartupLife.Presentation
 
         public bool IsRunning => running;
 
-        public void Bind(FirstPlayableFlowCoordinator coordinator, ContentCatalog catalog, Action refreshView, LocalizedKeyLabel statusLabel)
+        public void Bind(FirstPlayableFlow coordinator, ContentCatalog catalog, Action refreshView, LocalizedKeyLabel statusLabel)
         {
             flow = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
             content = catalog ?? throw new ArgumentNullException(nameof(catalog));
@@ -37,7 +37,7 @@ namespace StartupLife.Presentation
             running = true;
             try
             {
-                var initial = flow.Snapshot();
+                var initial = flow.Refresh();
                 if (string.IsNullOrEmpty(initial.CareerId) || !content.Careers.TryGetValue(initial.CareerId, out var career))
                 {
                     status?.SetKey("reason.career.required");
@@ -48,11 +48,11 @@ namespace StartupLife.Presentation
                 var guard = 0;
                 while (guard++ < 32)
                 {
-                    var before = flow.Snapshot();
+                    var before = flow.Refresh();
                     if (before.Instant.Date != date || before.CareerId != career.Id || before.Instant.Minute >= career.EndMinute)
                         break;
 
-                    var result = flow.AdvanceBoundary();
+                    var result = flow.AdvanceBoundary().Command;
                     if (result.Status != CommandStatus.Committed && result.Status != CommandStatus.AlreadyCommitted)
                     {
                         status?.SetKey("reason." + result.ReasonKey);
@@ -66,10 +66,10 @@ namespace StartupLife.Presentation
                         status?.SetKey("scene." + outcome.Cue);
                         if (cueHoldSeconds > 0f) yield return new WaitForSecondsRealtime(cueHoldSeconds);
 
-                        var snapshot = flow.Snapshot();
+                        var snapshot = flow.Refresh();
                         if (!string.IsNullOrEmpty(snapshot.CurrentActivityId))
                         {
-                            var acknowledge = flow.AcknowledgePlayback(snapshot.PlaybackCursor + 1);
+                            var acknowledge = flow.AcknowledgePlayback(snapshot.PlaybackCursor + 1).Command;
                             if (acknowledge.Status != CommandStatus.Committed && acknowledge.Status != CommandStatus.AlreadyCommitted)
                             {
                                 status?.SetKey("reason." + acknowledge.ReasonKey);
@@ -80,11 +80,11 @@ namespace StartupLife.Presentation
                 }
 
                 status?.SetKey("status.work.complete");
-                refresh();
             }
             finally
             {
                 running = false;
+                refresh();
             }
         }
     }

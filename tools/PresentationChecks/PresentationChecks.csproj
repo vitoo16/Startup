@@ -9,7 +9,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../SimulationChecks/StartupLife.Core.csproj" />
+    <ProjectReference Include="../SimulationChecks/StartupLife.Provisional.csproj" />
     <ProjectReference Include="StartupLife.PresentationModel.csproj" />
     <Compile Include="Program.cs" />
   </ItemGroup>

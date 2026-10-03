@@ -24,14 +24,14 @@ namespace StartupLife.Presentation
         [SerializeField] private UnityEngine.UI.Button studyButton;
         [SerializeField] private UnityEngine.UI.Button resignButton;
 
-        private FirstPlayableFlowCoordinator flow;
+        private FirstPlayableFlow flow;
         private ContentCatalog content;
         private WorkShiftPlaybackController workPlayback;
         private DaySummaryModal daySummary;
         private StudyActionController studyActions;
 
         public void Bind(
-            FirstPlayableFlowCoordinator coordinator,
+            FirstPlayableFlow coordinator,
             ContentCatalog catalog,
             WorkShiftPlaybackController workController,
             DaySummaryModal summary)
@@ -54,7 +54,7 @@ namespace StartupLife.Presentation
         public void Refresh()
         {
             if (flow == null || content == null) return;
-            var snapshot = flow.Snapshot();
+            var snapshot = flow.Refresh();
             var culture = CultureInfo.GetCultureInfo("vi-VN");
 
             if (nameValue) nameValue.text = snapshot.Name;
@@ -102,7 +102,7 @@ namespace StartupLife.Presentation
 
         public void AcceptDeveloper()
         {
-            Publish(flow.AcceptJob("developer"), "status.career.accepted");
+            Publish(flow.AcceptJob("developer").Command, "status.career.accepted");
         }
 
         public void RunWorkShift()
@@ -123,12 +123,12 @@ namespace StartupLife.Presentation
 
         public void AdvanceDay()
         {
-            var result = flow.AdvanceDay();
+            var result = flow.AdvanceDay().Advance;
             Refresh();
             if (result.StopReason == "TargetReached")
             {
                 status?.SetKey("status.day.completed");
-                daySummary.Show(result, flow.Snapshot());
+                daySummary.Show(flow.Refresh());
             }
             else
             {
@@ -138,7 +138,7 @@ namespace StartupLife.Presentation
 
         public void Resign()
         {
-            Publish(flow.Resign(), "status.career.resigned");
+            Publish(flow.Resign().Command, "status.career.resigned");
         }
 
         private void Publish(CommandResult result, string successKey)

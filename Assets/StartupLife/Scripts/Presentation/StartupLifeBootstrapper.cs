@@ -23,12 +23,12 @@ namespace StartupLife.Presentation
 
         private ContentCatalog content;
         private GameSession session;
-        private FirstPlayableFlowCoordinator flow;
+        private FirstPlayableFlow flow;
 
         public bool IsReady { get; private set; }
-        public FirstPlayableFlowCoordinator Flow => flow;
+        public FirstPlayableFlow Flow => flow;
         public ContentCatalog Catalog => content;
-        public GameSnapshot Snapshot => flow?.Snapshot();
+        public FirstPlayableState Snapshot => flow?.Refresh();
 
         private void Awake()
         {
@@ -75,7 +75,7 @@ namespace StartupLife.Presentation
                     session = new GameSession(initial, content, serializer, store);
                 }
 
-                flow = new FirstPlayableFlowCoordinator(session);
+                flow = new FirstPlayableFlow(session, new GuidCommandIdSource());
                 characterCreation.Bind(flow, RefreshMode);
                 lifeScreen.Bind(flow, content, workPlayback, daySummary);
                 daySummary.Hide();
@@ -92,7 +92,7 @@ namespace StartupLife.Presentation
         public void RefreshMode()
         {
             if (flow == null) return;
-            var hasCharacter = !string.IsNullOrEmpty(flow.Snapshot().Name);
+            var hasCharacter = !string.IsNullOrEmpty(flow.Refresh().Name);
             characterCreation?.SetVisible(!hasCharacter);
             lifeScreen?.SetVisible(hasCharacter);
             if (hasCharacter) lifeScreen?.Refresh();
