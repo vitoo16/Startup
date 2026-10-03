@@ -10,6 +10,7 @@ if (-not [IO.Path]::IsPathRooted($ReportPath)) { $ReportPath = Join-Path $startu
 $reportDirectory = Split-Path -Parent $ReportPath
 $astraReportPath = Join-Path $reportDirectory 'astra-foundation-highs-report.json'
 $restoreReportPath = Join-Path $reportDirectory 'astra-m2-restore-invariants-report.json'
+$contentReportPath = Join-Path $reportDirectory 'content-catalog-report.json'
 
 & $DotnetPath build "$startupRoot/tools/SimulationChecks/SimulationChecks.csproj" --configuration Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Provisional .NET build failed.' }
@@ -25,5 +26,10 @@ if ($LASTEXITCODE -ne 0) { throw 'Astra foundation regression checks failed.' }
 if ($LASTEXITCODE -ne 0) { throw 'Astra M2 restore invariant build failed.' }
 & $DotnetPath run --project "$startupRoot/tools/RestoreInvariantChecks/RestoreInvariantChecks.csproj" --configuration Release --no-build -- $restoreReportPath
 if ($LASTEXITCODE -ne 0) { throw 'Astra M2 restore invariant checks failed.' }
+
+& $DotnetPath build "$startupRoot/tools/ContentCatalogChecks/ContentCatalogChecks.csproj" --configuration Release --nologo
+if ($LASTEXITCODE -ne 0) { throw 'Content catalog bridge build failed.' }
+& $DotnetPath run --project "$startupRoot/tools/ContentCatalogChecks/ContentCatalogChecks.csproj" --configuration Release --no-build -- $contentReportPath
+if ($LASTEXITCODE -ne 0) { throw 'Content catalog bridge checks failed.' }
 
 Write-Output 'These reports verify .NET behavior only. Unity EditMode, PlayMode, IL2CPP, and devices remain separate gates.'
