@@ -38,6 +38,15 @@ $state = Read-RepoText 'Assets/StartupLife/Scripts/Core/GameState.cs'
 $session = Read-RepoText 'Assets/StartupLife/Scripts/Application/GameSession.cs'
 $simulation = Read-RepoText 'Assets/StartupLife/Scripts/Simulation/SimulationEngine.cs'
 
+$outcomeStart = $contracts.IndexOf('public sealed class SimulationOutcome', [StringComparison]::Ordinal)
+$outcomeEnd = $contracts.IndexOf('public sealed class CommandResult', [StringComparison]::Ordinal)
+if ($outcomeStart -lt 0 -or $outcomeEnd -le $outcomeStart) { throw 'SimulationOutcome contract block is missing.' }
+$outcomeContract = $contracts.Substring($outcomeStart, $outcomeEnd - $outcomeStart)
+
+$snapshotStart = $state.IndexOf('public sealed class GameSnapshot', [StringComparison]::Ordinal)
+if ($snapshotStart -lt 0) { throw 'GameSnapshot contract block is missing.' }
+$snapshotContract = $state.Substring($snapshotStart)
+
 $requiredContracts = [ordered]@{
     'CommandResult publishes SimulationOutcome' = 'public\s+SimulationOutcome\?\s+Outcome\s*\{\s*get;\s*\}'
     'AdvanceResult publishes reached instant' = 'public\s+SimInstant\s+ReachedInstant\s*\{\s*get;\s*\}'
@@ -74,16 +83,16 @@ foreach ($entry in $requiredSnapshot.GetEnumerator()) {
     Add-Check $entry.Key (Has-Pattern $state $entry.Value) $entry.Value
 }
 
-Add-Check 'legacy snapshot StudyUnits stays removed' (-not (Has-Pattern $state 'public\s+long\s+StudyUnits\s*\{')) 'GameSnapshot.StudyUnits must not return'
-Add-Check 'legacy outcome CourseInstanceId stays removed' (-not (Has-Pattern $contracts 'public\s+string\s+CourseInstanceId\s*\{')) 'SimulationOutcome.CourseInstanceId must not return'
-Add-Check 'legacy outcome StudyUnitsDelta stays removed' (-not (Has-Pattern $contracts 'public\s+long\s+StudyUnitsDelta\s*\{')) 'SimulationOutcome.StudyUnitsDelta must not return'
+Add-Check 'legacy snapshot StudyUnits stays removed' (-not (Has-Pattern $snapshotContract 'public\s+long\s+StudyUnits\s*\{')) 'GameSnapshot.StudyUnits must not return'
+Add-Check 'legacy outcome CourseInstanceId stays removed' (-not (Has-Pattern $outcomeContract 'public\s+string\s+CourseInstanceId\s*\{')) 'SimulationOutcome.CourseInstanceId must not return'
+Add-Check 'legacy outcome StudyUnitsDelta stays removed' (-not (Has-Pattern $outcomeContract 'public\s+long\s+StudyUnitsDelta\s*\{')) 'SimulationOutcome.StudyUnitsDelta must not return'
 
 Add-Check 'course outcome is built explicitly' (Has-Pattern $session 'BuildCourseChange\(before,\s*after,\s*history\)') 'GameSession must build typed CourseChange from authoritative before/after state'
 Add-Check 'root cue and cursor remain replay-bound' (Has-Pattern $simulation 'state\.CurrentCue\s*==\s*replay\.CurrentCue\s*&&\s*state\.PlaybackCursor\s*==\s*replay\.PlaybackCursor') 'restore validation must bind root playback provenance'
 Add-Check 'candidate serialization remains inside validation path' (Has-Pattern $session 'candidateBytes\s*=\s*serializer\.Serialize\(candidate\);') 'candidate serialization must remain in the controlled validation block'
 
 $publicMutableLeaks = @(
-    [regex]::Matches($contracts, 'public\s+(?:GameState|CourseState|EmploymentState|SkillState|LedgerEntry|CommandReceipt)\??\s+\w+\s*\{\s*get;') |
+    [regex]::Matches($outcomeContract, 'public\s+(?:GameState|CourseState|EmploymentState|SkillState|LedgerEntry|CommandReceipt)\??\s+\w+\s*\{\s*get;') |
         ForEach-Object { $_.Value }
 )
 Add-Check 'outcome contract exposes no mutable state DTOs' ($publicMutableLeaks.Count -eq 0) ($(if ($publicMutableLeaks.Count -eq 0) { 'no mutable Core state DTOs exposed' } else { $publicMutableLeaks -join '; ' }))
