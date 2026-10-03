@@ -94,8 +94,10 @@ if (Test-Path -LiteralPath $ledgerPath -PathType Leaf) {
     }
 
     $checkedTaskIds = @($taskMatches | Where-Object { $_.Groups['status'].Value -eq 'x' } | ForEach-Object { $_.Groups['id'].Value })
-    if (($checkedTaskIds.Count -ne 1) -or ($checkedTaskIds[0] -ne 'M0-T01')) {
-        Add-Failure "Only M0-T01 may be complete; checked tasks: $($checkedTaskIds -join ', ')"
+    $expectedCompletedTaskIds = @('M0-T01', 'M2-T02', 'M3-T02', 'M6-T01', 'M6-T02', 'M7-T01')
+    $completedTaskDiff = @(Compare-Object -ReferenceObject $expectedCompletedTaskIds -DifferenceObject $checkedTaskIds)
+    if ($completedTaskDiff.Count -ne 0) {
+        Add-Failure "Completed task set differs from reconciled ledger. Expected: $($expectedCompletedTaskIds -join ', '); actual: $($checkedTaskIds -join ', ')"
     }
 
     $skillLinePattern = '(?m)^  \*\*Owner:\*\* .+? \*\*Skills:\*\* (?<skills>.+?)\. \*\*Dependencies:\*\* (?<dependencies>.+?)\.\s*$'
@@ -281,7 +283,7 @@ if ($failures.Count -gt 0) {
 
 Write-Host 'Documentation validation passed.' -ForegroundColor Green
 Write-Host "Canonical source parity: $($sourceHashes.Count)/$($sourceHashes.Count)"
-Write-Host 'Task ledger: 49 unique expected IDs; only M0-T01 complete'
+Write-Host "Task ledger: 49 unique expected IDs; reconciled complete set: $($expectedCompletedTaskIds -join ', ')"
 Write-Host 'Task requirements: exact approved dependencies and expanded skills'
 Write-Host "Markdown links checked: $($markdownFiles.Count) files"
 

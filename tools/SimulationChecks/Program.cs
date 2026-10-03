@@ -93,6 +93,21 @@ internal static class Program
             f.Day(); f.Evening(); result = f.SendOk(new GameCommand(CommandKind.Study, amount: 300)); Equal(60, result.MinutesConsumed);
             Equal(1, f.Session.Snapshot().SkillLevels["communication"]); Equal(1080, f.Session.Snapshot().Instant.Minute); True(f.State().Course == null);
         });
+        Check("course prerequisites and single-active-course gate reject without mutation", () =>
+        {
+            var source = Catalog();
+            var gated = new CourseDefinition("negotiation-advanced", "course.negotiation", "negotiation", 2, 1, 120, 0);
+            var catalog = new ContentCatalog("fixture.course-gates.v1", source.Skills.Values, source.Careers.Values,
+                source.Courses.Values.Concat(new[] { gated }), source.Starts.Values, source.Economy, source.Schedule);
+            var f = new Fixture(catalog); f.Create();
+            var before = f.Session.ExportCheckpoint();
+            Equal("course.prerequisite", f.Send(new GameCommand(CommandKind.PurchaseCourse, "negotiation-advanced")).ReasonKey);
+            Bytes(before, f.Session.ExportCheckpoint());
+
+            f.Buy(); before = f.Session.ExportCheckpoint();
+            Equal("course.already_active", f.Send(new GameCommand(CommandKind.PurchaseCourse, "problem-course")).ReasonKey);
+            Bytes(before, f.Session.ExportCheckpoint());
+        });
         Check("active course snapshot survives cold restore without checkpoint inspection", () =>
         {
             var f = new Fixture(); f.Create(); f.Accept(); var buy = f.Buy("course-read-model");
@@ -161,6 +176,23 @@ internal static class Program
             Equal(40L, f.Session.Snapshot().CareerXp); Equal(1, f.Session.Snapshot().Rank); Equal(2, f.Session.Snapshot().SkillLevels["problem-solving"]);
             var grants = f.State().Grants.Count; f.Day(); f.Evening(); Equal(grants, f.State().Grants.Count);
         });
+        Check("skill levels cover 0-5 boundaries and weaker grants cannot lower earned strength", () =>
+        {
+            var definition = Skill("communication");
+            var state = new SkillState { Id = "communication" };
+            Equal(0, GameSnapshot.Level(state, definition));
+            state.Exposure = 99; Equal(0, GameSnapshot.Level(state, definition));
+            state.Exposure = 100; Equal(1, GameSnapshot.Level(state, definition));
+            state.Exposure = 299; Equal(1, GameSnapshot.Level(state, definition));
+            state.Exposure = 300; Equal(2, GameSnapshot.Level(state, definition));
+            state.Exposure = 599; Equal(2, GameSnapshot.Level(state, definition));
+            state.Exposure = 600; state.GrantedLevel = 2; Equal(3, GameSnapshot.Level(state, definition));
+            state.Exposure = 999; Equal(3, GameSnapshot.Level(state, definition));
+            state.Exposure = 1000; Equal(4, GameSnapshot.Level(state, definition));
+            state.Exposure = 1499; Equal(4, GameSnapshot.Level(state, definition));
+            state.Exposure = 1500; state.GrantedLevel = 1; Equal(5, GameSnapshot.Level(state, definition));
+            state.Exposure = 100; state.GrantedLevel = 4; Equal(4, GameSnapshot.Level(state, definition));
+        });
         Check("course target met by career completes without refund/second grant", () =>
         {
             var f = new Fixture(Catalog(promotionXp: 40, promotionDays: 0)); f.Create(); f.Accept();
@@ -185,6 +217,29 @@ internal static class Program
             var restored = new Fixture(f.Content, f.State()); Bytes(saved, restored.Session.ExportCheckpoint());
             for (var i = 0; i < 100; i++) _ = restored.Session.Snapshot(); Bytes(saved, restored.Session.ExportCheckpoint());
         });
+        Check("employment-free planner covers founder-equivalent availability and clamps allocated minutes", () =>
+        {
+            var source = Catalog();
+            var longCourse = new CourseDefinition("long-course", "course.long", "communication", 5, 0, 2000, 0);
+            var catalog = new ContentCatalog("fixture.calendar.v1", source.Skills.Values, source.Careers.Values,
+                source.Courses.Values.Concat(new[] { longCourse }), source.Starts.Values, source.Economy, source.Schedule);
+            var f = new Fixture(catalog); f.Create();
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            var engine = new SimulationEngine(catalog);
+            Equal(840, engine.FreeMinutes(f.State()));
+            f.SendOk(new GameCommand(CommandKind.PurchaseCourse, "long-course"));
+            var study = f.SendOk(new GameCommand(CommandKind.Study, amount: 5000));
+            Equal(840, study.MinutesConsumed); Equal(1320, f.State().Minute); Equal(0, engine.FreeMinutes(f.State()));
+
+            var resumed = new Fixture(); resumed.Create(); resumed.Accept();
+            resumed.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            resumed.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            resumed.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            resumed.SendOk(new GameCommand(CommandKind.Resign));
+            var resignedState = resumed.State();
+            True(resignedState.Employment == null);
+            Equal(1320 - resignedState.Minute, new SimulationEngine(resumed.Content).FreeMinutes(resignedState));
+        });
         Check("full month salary, expenses, payday and batch retry", () =>
         {
             var f = new Fixture(); f.Create(); f.Accept();
@@ -208,6 +263,18 @@ internal static class Program
             var before = f.Session.ExportCheckpoint(); Equal("economy.arrears", f.Send(new GameCommand(CommandKind.PurchaseCourse, "communication-basics")).ReasonKey); Bytes(before, f.Session.ExportCheckpoint());
             f.Session.AdvanceMonth(new CommandEnvelope("run", "recover-month", f.Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary)));
             Equal(0L, f.Session.Snapshot().Arrears); Equal(8000000L, f.Session.Snapshot().Cash); f.Buy();
+        });
+        Check("repeated zero-cash shortfalls accumulate arrears without negative cash", () =>
+        {
+            var f = new Fixture(Catalog(cash: 0)); f.Create();
+            Equal(1000000L, f.Session.Snapshot().Arrears); Equal(0L, f.Session.Snapshot().Cash);
+            Equal("TargetReached", f.Session.AdvanceMonth(new CommandEnvelope("run", "shortfall-1", f.Session.Snapshot().Revision,
+                new GameCommand(CommandKind.AdvanceBoundary))).StopReason);
+            Equal(2000000L, f.Session.Snapshot().Arrears); Equal(0L, f.Session.Snapshot().Cash);
+            Equal("TargetReached", f.Session.AdvanceMonth(new CommandEnvelope("run", "shortfall-2", f.Session.Snapshot().Revision,
+                new GameCommand(CommandKind.AdvanceBoundary))).StopReason);
+            Equal(3000000L, f.Session.Snapshot().Arrears); Equal(0L, f.Session.Snapshot().Cash);
+            True(f.State().Arrears.Select(x => x.DueIso).SequenceEqual(f.State().Arrears.Select(x => x.DueIso).OrderBy(x => x, StringComparer.Ordinal)));
         });
         Check("insufficient funds and stale revision reject without mutation", () =>
         {
