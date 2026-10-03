@@ -48,6 +48,10 @@ namespace StartupLife.Editor
             EditorUtility.SetDirty(collection);
 
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            // NewScene unloads unused assets. Reload asset references before serialized wiring.
+            theme = AssetDatabase.LoadAssetAtPath<MobileTheme>(Root + "/Data/MobileTheme.asset");
+            font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(Root + "/UI/Fonts/NotoSansVietnamese.asset");
+            contentAsset = AssetDatabase.LoadAssetAtPath<StartupLifeContentCatalogAsset>(FirstPlayableContentBuilder.AssetPath);
             CreateCamera(theme);
             var eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
             eventSystem.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
@@ -152,7 +156,7 @@ namespace StartupLife.Editor
 
             Assign(summary, "root", summaryRoot);
             Assign(summary, "dateValue", summaryDate);
-            Assign(summary, "cashDeltaValue", summaryCash);
+            Assign(summary, "cashValue", summaryCash);
             Assign(summary, "careerXpValue", summaryXp);
 
             Assign(bootstrap, "contentAsset", contentAsset);
@@ -188,6 +192,47 @@ namespace StartupLife.Editor
             Debug.Log("[StartupLifeFirstPlayable] Created source-wired first playable shell.");
         }
 
+        public static void RepairGeneratedAssetReferences()
+        {
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            var content = AssetDatabase.LoadAssetAtPath<StartupLifeContentCatalogAsset>(FirstPlayableContentBuilder.AssetPath);
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(Root + "/UI/Fonts/NotoSansVietnamese.asset");
+            if (!content || !font) throw new InvalidOperationException("Authored Content and font assets are required.");
+            var bootstrap = UnityEngine.Object.FindAnyObjectByType<StartupLifeBootstrapper>();
+            if (!bootstrap) throw new InvalidOperationException("FirstPlayable composition root is missing.");
+            Assign(bootstrap, "contentAsset", content);
+            foreach (var text in UnityEngine.Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                text.font = font;
+                EditorUtility.SetDirty(text);
+            }
+            var theme = AssetDatabase.LoadAssetAtPath<MobileTheme>(Root + "/Data/MobileTheme.asset");
+            foreach (var layout in UnityEngine.Object.FindObjectsByType<UnityEngine.UI.VerticalLayoutGroup>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                layout.spacing = theme.gap / 2f;
+                EditorUtility.SetDirty(layout);
+            }
+            foreach (var row in UnityEngine.Object.FindObjectsByType<UnityEngine.UI.HorizontalLayoutGroup>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                row.GetComponent<UnityEngine.UI.LayoutElement>().preferredHeight = 90;
+                EditorUtility.SetDirty(row.GetComponent<UnityEngine.UI.LayoutElement>());
+            }
+            foreach (var button in UnityEngine.Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                var element = button.GetComponent<UnityEngine.UI.LayoutElement>();
+                element.minHeight = theme.touchTarget;
+                EditorUtility.SetDirty(element);
+            }
+            var locale = LocalizationEditorSettings.GetLocales().Single(value => value.Identifier.Code == "vi");
+            var collection = LocalizationEditorSettings.GetStringTableCollections().Single(value => value.TableCollectionName == LocalizedKeyLabel.Table);
+            var table = (StringTable)collection.GetTable(locale.Identifier);
+            AddStrings(table);
+            EditorUtility.SetDirty(table);
+            EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            AssetDatabase.SaveAssets();
+            FirstPlayableRuntimeGate.VerifyScene();
+        }
+
         static void CreateCamera(MobileTheme theme)
         {
             var camera = new GameObject("MainCamera", typeof(Camera)).GetComponent<Camera>();
@@ -207,7 +252,7 @@ namespace StartupLife.Editor
             obj.GetComponent<UnityEngine.UI.Image>().color = theme.panel;
             var layout = obj.GetComponent<UnityEngine.UI.VerticalLayoutGroup>();
             layout.padding = new RectOffset(theme.padding, theme.padding, theme.padding, theme.padding);
-            layout.spacing = theme.gap;
+            layout.spacing = theme.gap / 2f;
             layout.childControlHeight = true;
             layout.childControlWidth = true;
             layout.childForceExpandHeight = false;
@@ -225,7 +270,7 @@ namespace StartupLife.Editor
             layout.childControlWidth = true;
             layout.childForceExpandHeight = false;
             layout.childForceExpandWidth = true;
-            obj.GetComponent<UnityEngine.UI.LayoutElement>().preferredHeight = 110;
+            obj.GetComponent<UnityEngine.UI.LayoutElement>().preferredHeight = 90;
             return obj;
         }
 
@@ -271,7 +316,7 @@ namespace StartupLife.Editor
             text.fontSize = size;
             text.color = color;
             text.raycastTarget = false;
-            text.enableWordWrapping = true;
+            text.textWrappingMode = TextWrappingModes.Normal;
             obj.GetComponent<UnityEngine.UI.LayoutElement>().preferredHeight = height;
             return text;
         }
@@ -313,6 +358,7 @@ namespace StartupLife.Editor
             var button = obj.GetComponent<UnityEngine.UI.Button>();
             button.targetGraphic = image;
             obj.GetComponent<UnityEngine.UI.LayoutElement>().preferredHeight = theme.touchTarget;
+            obj.GetComponent<UnityEngine.UI.LayoutElement>().minHeight = theme.touchTarget;
             var label = StaticLabel("Label", key, obj.transform, font, theme.body, Color.white, theme.touchTarget);
             Stretch(label.rectTransform, 12);
             label.alignment = TextAlignmentOptions.Center;
@@ -321,7 +367,7 @@ namespace StartupLife.Editor
 
         static void AddStrings(StringTable table)
         {
-            Add(table, "fatal.none", "");
+            Add(table, "fatal.none", " ");
             Add(table, "fatal.content_missing", "Thiếu dữ liệu trò chơi.");
             Add(table, "fatal.save_unavailable", "Không thể mở dữ liệu đã lưu.");
             Add(table, "fatal.bootstrap_failed", "Không thể khởi động trò chơi.");
@@ -360,7 +406,7 @@ namespace StartupLife.Editor
             Add(table, "action.advance_day", "Kết thúc ngày");
             Add(table, "action.resign", "Nghỉ việc");
 
-            Add(table, "status.ready", "");
+            Add(table, "status.ready", "Sẵn sàng.");
             Add(table, "status.character.created", "Nhân vật đã sẵn sàng.");
             Add(table, "status.career.accepted", "Đã nhận việc.");
             Add(table, "status.career.resigned", "Đã nghỉ việc.");
@@ -404,8 +450,8 @@ namespace StartupLife.Editor
 
             Add(table, "summary.title", "Tổng kết ngày");
             Add(table, "summary.date", "Ngày mới");
-            Add(table, "summary.cash", "Thay đổi tiền");
-            Add(table, "summary.xp", "Kinh nghiệm nghề");
+            Add(table, "summary.cash", "Tiền mặt");
+            Add(table, "summary.xp", "Tổng XP nghề");
             Add(table, "summary.close", "Đóng");
         }
 

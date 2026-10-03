@@ -1,0 +1,123 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94dac99b03074482b13b6dc2c7184eb3, type: 3}
+  m_Name: FirstPlayableContent
+  m_EditorClassIdentifier: StartupLife.Content::StartupLife.Content.StartupLifeContentCatalogAsset
+  source:
+    Version: first-playable.v1
+    Skills:
+    - Id: communication
+      NameKey: skill.communication
+      Thresholds: 64000000000000002c010000000000005802000000000000e803000000000000dc05000000000000
+    - Id: negotiation
+      NameKey: skill.negotiation
+      Thresholds: 64000000000000002c010000000000005802000000000000e803000000000000dc05000000000000
+    - Id: time-management
+      NameKey: skill.time-management
+      Thresholds: 64000000000000002c010000000000005802000000000000e803000000000000dc05000000000000
+    - Id: problem-solving
+      NameKey: skill.problem-solving
+      Thresholds: 64000000000000002c010000000000005802000000000000e803000000000000dc05000000000000
+    - Id: networking
+      NameKey: skill.networking
+      Thresholds: 64000000000000002c010000000000005802000000000000e803000000000000dc05000000000000
+    - Id: leadership
+      NameKey: skill.leadership
+      Thresholds: 64000000000000002c010000000000005802000000000000e803000000000000dc05000000000000
+    Careers:
+    - Id: developer
+      Revision: v1
+      NameKey: career.developer
+      StartMinute: 540
+      EndMinute: 1020
+      ScenesPerShift: 4
+      QuotaSlots: 20
+      WorkDays: 0100000002000000030000000400000005000000
+      Scenes:
+      - Id: coding
+        NameKey: scene.coding
+        Weight: 40
+        CareerXp: 10
+        SkillId: communication
+        Exposure: 1
+      - Id: meeting
+        NameKey: scene.meeting
+        Weight: 20
+        CareerXp: 10
+        SkillId: communication
+        Exposure: 1
+      - Id: bug-fixing
+        NameKey: scene.bug-fixing
+        Weight: 15
+        CareerXp: 10
+        SkillId: communication
+        Exposure: 1
+      - Id: client-discussion
+        NameKey: scene.client-discussion
+        Weight: 10
+        CareerXp: 10
+        SkillId: communication
+        Exposure: 1
+      - Id: demo
+        NameKey: scene.demo
+        Weight: 10
+        CareerXp: 10
+        SkillId: communication
+        Exposure: 1
+      - Id: documentation
+        NameKey: scene.documentation
+        Weight: 5
+        CareerXp: 10
+        SkillId: communication
+        Exposure: 1
+      Ranks:
+      - Id: junior
+        RequiredXp: 0
+        RequiredServiceDays: 0
+        MonthlySalary: 10000000
+        GrantSkillId: problem-solving
+        GrantLevel: 0
+      - Id: mid
+        RequiredXp: 1000
+        RequiredServiceDays: 30
+        MonthlySalary: 15000000
+        GrantSkillId: problem-solving
+        GrantLevel: 2
+    Courses:
+    - Id: communication-basics
+      NameKey: course.communication
+      SkillId: communication
+      TargetLevel: 1
+      PrerequisiteLevel: 0
+      BaseMinutes: 360
+      Price: 200000
+    - Id: problem-course
+      NameKey: course.problem
+      SkillId: problem-solving
+      TargetLevel: 2
+      PrerequisiteLevel: 0
+      BaseMinutes: 360
+      Price: 200000
+    Starts:
+    - Id: fresh
+      Cash: 3000000
+      LearningSpeed: 10000
+      AppearanceIds:
+      - base.female
+      - base.male
+    Economy:
+      Payday: 1
+      ExpenseDay: 1
+      LivingCost: 1000000
+    Schedule:
+      WakeMinute: 480
+      SleepMinute: 1320

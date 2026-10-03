@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f6f5cd1f018de0b4f9fdd392aa38fda4
+    m_Address: Assets/StartupLife/Localization/FirstPlayableUI Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: fb06cc3bfed2b3641b69754e450277e4, type: 2}
   m_SchemaSet:
