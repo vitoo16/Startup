@@ -1,0 +1,153 @@
+using System;
+using System.Globalization;
+using TMPro;
+using UnityEngine;
+using StartupLife.Core;
+
+namespace StartupLife.Presentation
+{
+    public sealed class LifeScreenViewController : MonoBehaviour
+    {
+        [SerializeField] private GameObject root;
+        [SerializeField] private TMP_Text nameValue;
+        [SerializeField] private TMP_Text dateValue;
+        [SerializeField] private TMP_Text timeValue;
+        [SerializeField] private TMP_Text cashValue;
+        [SerializeField] private TMP_Text rankValue;
+        [SerializeField] private TMP_Text courseProgressValue;
+        [SerializeField] private LocalizedKeyLabel careerValue;
+        [SerializeField] private LocalizedKeyLabel courseNameValue;
+        [SerializeField] private LocalizedKeyLabel status;
+        [SerializeField] private UnityEngine.UI.Button acceptJobButton;
+        [SerializeField] private UnityEngine.UI.Button workButton;
+        [SerializeField] private UnityEngine.UI.Button buyCourseButton;
+        [SerializeField] private UnityEngine.UI.Button studyButton;
+        [SerializeField] private UnityEngine.UI.Button resignButton;
+
+        private FirstPlayableFlowCoordinator flow;
+        private ContentCatalog content;
+        private WorkShiftPlaybackController workPlayback;
+        private DaySummaryModal daySummary;
+        private StudyActionController studyActions;
+
+        public void Bind(
+            FirstPlayableFlowCoordinator coordinator,
+            ContentCatalog catalog,
+            WorkShiftPlaybackController workController,
+            DaySummaryModal summary)
+        {
+            flow = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
+            content = catalog ?? throw new ArgumentNullException(nameof(catalog));
+            workPlayback = workController ?? throw new ArgumentNullException(nameof(workController));
+            daySummary = summary ?? throw new ArgumentNullException(nameof(summary));
+            studyActions = new StudyActionController(flow, Refresh, status);
+            workPlayback.Bind(flow, content, Refresh, status);
+            Refresh();
+        }
+
+        public void SetVisible(bool visible)
+        {
+            if (root) root.SetActive(visible);
+            else gameObject.SetActive(visible);
+        }
+
+        public void Refresh()
+        {
+            if (flow == null || content == null) return;
+            var snapshot = flow.Snapshot();
+            var culture = CultureInfo.GetCultureInfo("vi-VN");
+
+            if (nameValue) nameValue.text = snapshot.Name;
+            if (dateValue) dateValue.text = snapshot.Instant.Date.ToString();
+            if (timeValue)
+            {
+                var hour = snapshot.Instant.Minute / 60;
+                var minute = snapshot.Instant.Minute % 60;
+                timeValue.text = hour.ToString("00", CultureInfo.InvariantCulture) + ":" +
+                                 minute.ToString("00", CultureInfo.InvariantCulture);
+            }
+            if (cashValue) cashValue.text = snapshot.Cash.ToString("N0", culture) + " ₫";
+            if (rankValue) rankValue.text = string.IsNullOrEmpty(snapshot.CareerId)
+                ? "—"
+                : (snapshot.Rank + 1).ToString(CultureInfo.InvariantCulture);
+
+            careerValue?.SetKey(string.IsNullOrEmpty(snapshot.CareerId)
+                ? "career.none"
+                : content.Careers[snapshot.CareerId].NameKey);
+
+            if (snapshot.ActiveCourse == null)
+            {
+                courseNameValue?.SetKey("course.none");
+                if (courseProgressValue) courseProgressValue.text = "—";
+            }
+            else
+            {
+                courseNameValue?.SetKey(content.Courses[snapshot.ActiveCourse.DefinitionId].NameKey);
+                if (courseProgressValue)
+                {
+                    var percent = snapshot.ActiveCourse.TargetUnits == 0
+                        ? 0
+                        : (int)(snapshot.ActiveCourse.ProgressUnits * 100 / snapshot.ActiveCourse.TargetUnits);
+                    courseProgressValue.text = percent.ToString(CultureInfo.InvariantCulture) + "%";
+                }
+            }
+
+            var employed = !string.IsNullOrEmpty(snapshot.CareerId);
+            if (acceptJobButton) acceptJobButton.interactable = !employed;
+            if (workButton) workButton.interactable = employed && !workPlayback.IsRunning;
+            if (buyCourseButton) buyCourseButton.interactable = snapshot.ActiveCourse == null && snapshot.Arrears == 0;
+            if (studyButton) studyButton.interactable = snapshot.ActiveCourse != null;
+            if (resignButton) resignButton.interactable = employed;
+        }
+
+        public void AcceptDeveloper()
+        {
+            Publish(flow.AcceptJob("developer"), "status.career.accepted");
+        }
+
+        public void RunWorkShift()
+        {
+            workPlayback.RunShift();
+            Refresh();
+        }
+
+        public void PurchaseCommunicationCourse()
+        {
+            studyActions.PurchaseCommunicationCourse();
+        }
+
+        public void Study60Minutes()
+        {
+            studyActions.Study60Minutes();
+        }
+
+        public void AdvanceDay()
+        {
+            var result = flow.AdvanceDay();
+            Refresh();
+            if (result.StopReason == "TargetReached")
+            {
+                status?.SetKey("status.day.completed");
+                daySummary.Show(result, flow.Snapshot());
+            }
+            else
+            {
+                status?.SetKey("advance." + result.StopReason);
+            }
+        }
+
+        public void Resign()
+        {
+            Publish(flow.Resign(), "status.career.resigned");
+        }
+
+        private void Publish(CommandResult result, string successKey)
+        {
+            if (result.Status == CommandStatus.Committed || result.Status == CommandStatus.AlreadyCommitted)
+                status?.SetKey(successKey);
+            else
+                status?.SetKey("reason." + result.ReasonKey);
+            Refresh();
+        }
+    }
+}

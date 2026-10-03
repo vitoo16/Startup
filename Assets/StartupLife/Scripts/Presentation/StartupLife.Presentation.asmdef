@@ -1,6 +1,6 @@
 {
   "name": "StartupLife.Presentation",
   "rootNamespace": "StartupLife.Presentation",
-  "references": ["StartupLife.Core", "StartupLife.Application", "StartupLife.Content", "StartupLife.Infrastructure", "Unity.TextMeshPro"],
+  "references": ["StartupLife.Core", "StartupLife.Application", "StartupLife.Content", "StartupLife.Infrastructure", "Unity.TextMeshPro", "Unity.ugui", "Unity.Localization"],
   "autoReferenced": true
 }
