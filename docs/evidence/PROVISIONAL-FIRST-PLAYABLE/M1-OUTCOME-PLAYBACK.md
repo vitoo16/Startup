@@ -2,9 +2,9 @@
 
 Date: 2026-10-03  
 Owner model: GPT-5.6 Sol  
-PR: #12 — `feat: publish M1 outcome and playback contract`
+PR #12 merged the initial candidate; follow-up PR #13 — `fix: close M1 playback provenance and course read model`
 
-Status: **engine-free closure candidate only**. This document does not mark M1-T01, M1-T02, or any milestone complete. Independent Astra API review and the separately tracked Unity/runtime dependency evidence are still required.
+Status: **engine-free follow-up closure candidate only**. Astra found one HIGH and one MEDIUM after PR #12; PR #13 addresses both. This document does not mark M1-T01, M1-T02, or any milestone complete. Independent Astra re-verification and the separately tracked Unity/runtime dependency evidence are still required.
 
 ## Scope
 
@@ -54,7 +54,7 @@ The immutable outcome publishes Core-only values:
 - cash delta and immutable ledger entries;
 - employment identity, career-XP delta and prior/new rank;
 - immutable skill exposure/effective-level/granted-floor deltas;
-- course instance/progress delta;
+- nullable typed `CourseChange` with identity, definition, skill, prior/new progress, target, change kind, and explicit completion reason;
 - newly committed grant IDs;
 - newly committed history entries.
 
@@ -66,6 +66,7 @@ All list inputs are copied into read-only arrays before publication.
 
 - `CurrentActivityId`
 - `PlaybackCursor`
+- nullable immutable `ActiveCourse`, including instance/definition/skill IDs, current progress, target units, and target level
 
 `AdvanceResult` now publishes:
 
@@ -107,13 +108,13 @@ It performs no storage write and never mutates the live session.
 
 This permits a retry after later commits or after a fresh restore to publish the same semantic outcome without a SaveVersion change.
 
-## Cue provenance
+## Cue and playback provenance
 
-The restore verifier now requires every committed receipt cue—not only `AdvanceBoundary` career cues—to equal the cue produced by deterministic production replay.
+The restore verifier requires every committed receipt cue—not only `AdvanceBoundary` career cues—to equal the cue produced by deterministic production replay. PR #13 additionally requires checkpoint-level `CurrentCue` and `PlaybackCursor` to equal replay before a session can be published when required content is available.
 
-A checksum-valid save with a forged non-boundary cue is classified as `Corrupt` before the cue can become a presentation outcome.
+Checksum-valid saves with a forged receipt cue, forged root cue, or rolled-back root playback cursor are classified as `Corrupt` before `TryRestore` can return a session. When required content is unavailable, compatibility classification retains precedence and returns `UnsupportedContent`.
 
-This prevents the public outcome API from turning a previously weak receipt field into an unverified presentation source.
+Candidate serialization now occurs inside the controlled validation path, so serializer/invariant validation failure returns `state.invalid` instead of escaping from the command gate.
 
 ## Playback safety
 
@@ -132,7 +133,7 @@ The activity ID and cue remain the already committed playback target. Animation/
 
 ## Tests
 
-Functional head `075caaf0be4fd0f7312dc9989a5d3e3c318d223e` passed Engine-free CI run `37128381023`.
+Functional PR #13 head `f04b6241397b717403f9b0600c59834dbdf1064d` passed Engine-free CI run `37130997830` (#45).
 
 Evidence:
 
@@ -140,13 +141,13 @@ Evidence:
 - static Unity foundation: **31/31**;
 - Unity runner contract static gate: **30/30**;
 - repository security/release hygiene: **28/28**;
-- SimulationChecks: **39/39**;
+- SimulationChecks: **45/45**;
 - H1/H2/R2 focused regressions: **19/19**;
 - M2 restore/provenance regressions: **35/35**;
 - all three .NET harness builds: **0 warnings / 0 errors**;
 - clean-worktree verification: PASS;
-- artifact `engine-free-foundation-reports`: ID `11275901421`;
-- artifact SHA-256: `90a628d216f6f2fa0eb25a4dc8e9e60dbc11d5df3b1af29ef083521dd523dfc4`.
+- artifact `engine-free-foundation-reports`: ID `11277310271`;
+- artifact SHA-256: `272444eefe0a69370ca305935f162902c80c6554ea0ac4e31e8f105e9dfe7ec9`.
 
 New M1-focused checks cover:
 
@@ -157,7 +158,13 @@ New M1-focused checks cover:
 5. snapshot current activity/playback state;
 6. batch reached instant and non-null boundary outcomes;
 7. playback acknowledgement produces no reward/progression/history deltas;
-8. checksum-valid forged non-boundary receipt cue is rejected as corrupt.
+8. checksum-valid forged non-boundary receipt cue is rejected as corrupt;
+9. forged root cue and playback-cursor rollback are rejected before restore publication;
+10. unsupported-content precedence is retained despite forged playback fields;
+11. candidate serialization validation is contained as `state.invalid`;
+12. active course identity/definition/progress/target survive cold restore through public snapshot only;
+13. course purchase/progress/study completion publish typed changes;
+14. career-grant completion is explicitly marked `SkillTargetAlreadyMet`.
 
 Existing H1/H2/R2 and M2 suites remain green.
 
@@ -182,7 +189,7 @@ This slice contains no user-visible Unity screen, scene, prefab, animation, art,
 - Receipt compaction is still prohibited until a separate design proves exactly-once retries and outcome reconstruction remain safe.
 - The public API has engine-free evidence only; Unity compiler/import, EditMode, PlayMode, IL2CPP/AOT, Android/iOS, device lifecycle, physical filesystem durability, and performance remain separate gates.
 - Future deferred business/event systems may extend outcome delta families; such extensions must preserve immutable Core-only publication and save-compatibility rules.
-- This PR is not independently architecture-approved until Astra reviews the final API semantics.
+- PR #13 is not independently architecture-approved until Astra re-verifies F1/F2 and the final API semantics.
 
 ## Files changed
 
