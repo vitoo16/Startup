@@ -92,6 +92,7 @@ namespace StartupLife.Application
             GameState candidate;
             CommandReceipt receipt;
             SimulationOutcome outcome;
+            byte[] candidateBytes;
             var baseline = CaptureOutcome(state);
             try
             {
@@ -106,11 +107,12 @@ namespace StartupLife.Application
                     Revision = candidate.Revision, Cue = candidate.CurrentCue, MinutesConsumed = minutes, AdvanceTargetIso = advanceTarget, ParentPayload = parentPayload };
                 candidate.Receipts.Add(receipt); StateValidation.Validate(candidate, content);
                 outcome = BuildOutcome(baseline, candidate, receipt);
+                candidateBytes = serializer.Serialize(candidate);
             }
             catch (RuleFailure e) { return Result(CommandStatus.Rejected, e.ReasonKey); }
             catch (OverflowException) { return Result(CommandStatus.Rejected, "arithmetic.overflow"); }
             catch (ArgumentException) { return Result(CommandStatus.Rejected, "state.invalid"); }
-            var write = store.Commit(serializer.Serialize(candidate), state.Revision);
+            var write = store.Commit(candidateBytes, state.Revision);
             if (write == WriteStatus.Failed) return Result(CommandStatus.PersistenceFailed, "save.write_failed");
             if (write == WriteStatus.Ambiguous) { recoveryRequired = true; return Result(CommandStatus.RecoveryRequired, "save.recovery_required"); }
             var verified = store.Read();
@@ -311,7 +313,8 @@ namespace StartupLife.Application
             foreach (var skill in source.Skills)
                 skills.Add(skill.Id, new SkillBaseline(skill.Exposure, skill.GrantedLevel, GameSnapshot.Level(skill, content.Skills[skill.Id])));
             return new OutcomeBaseline(Instant(source), source.Revision, source.Cash, source.Employment, skills,
-                source.Course?.InstanceId ?? "", source.Course?.ProgressUnits ?? 0, source.Grants.Count, source.History.Count);
+                source.Course?.InstanceId ?? "", source.Course?.DefinitionId ?? "", source.Course?.ProgressUnits ?? 0,
+                source.Grants.Count, source.History.Count);
         }
 
         private SimulationOutcome BuildOutcome(OutcomeBaseline before, GameState after, CommandReceipt receipt)
@@ -344,22 +347,54 @@ namespace StartupLife.Application
                 careerXpDelta = checked(after.Employment.Xp - before.CareerXp); newRank = after.Employment.Rank;
             }
 
-            var courseId = before.CourseInstanceId;
-            var priorStudy = before.CourseProgressUnits;
-            if (courseId.Length == 0 && after.Course != null) courseId = after.Course.InstanceId;
-            var studyDelta = courseId.Length == 0 ? 0 : checked(CourseProgress(after, courseId) - priorStudy);
             var grants = after.Grants.Skip(before.GrantCount).ToArray();
             var history = after.History.Skip(before.HistoryCount).ToArray();
+            var courseChange = BuildCourseChange(before, after, history);
             return new SimulationOutcome(receipt.OperationId, receipt.CommandId, after.CurrentActivity, before.Revision, receipt.Revision,
                 before.Instant, Instant(after), receipt.MinutesConsumed, receipt.Cue, after.PlaybackCursor, checked(after.Cash - before.Cash),
-                employmentId, careerXpDelta, priorRank, newRank, courseId, studyDelta, ledger, skillDeltas.ToArray(), grants, history);
+                employmentId, careerXpDelta, priorRank, newRank, courseChange, ledger, skillDeltas.ToArray(), grants, history);
         }
 
-        private static long CourseProgress(GameState source, string instanceId)
+        private CourseChange? BuildCourseChange(OutcomeBaseline before, GameState after, IReadOnlyList<string> history)
         {
-            if (source.Course != null && source.Course.InstanceId == instanceId) return source.Course.ProgressUnits;
-            var completed = source.CompletedCourses.SingleOrDefault(x => x.InstanceId == instanceId);
-            return completed?.ProgressUnits ?? 0;
+            if (before.CourseInstanceId.Length == 0)
+            {
+                if (after.Course == null) return null;
+                return NewCourseChange(CourseChangeKind.Activated, CourseCompletionReason.None, after.Course,
+                    0, after.Course.ProgressUnits);
+            }
+
+            if (after.Course != null && after.Course.InstanceId == before.CourseInstanceId)
+            {
+                if (after.Course.DefinitionId != before.CourseDefinitionId)
+                    throw new ArgumentException("Active course definition changed within one command.");
+                if (after.Course.ProgressUnits == before.CourseProgressUnits) return null;
+                return NewCourseChange(CourseChangeKind.Progressed, CourseCompletionReason.None, after.Course,
+                    before.CourseProgressUnits, after.Course.ProgressUnits);
+            }
+
+            var completed = after.CompletedCourses.SingleOrDefault(x => x.InstanceId == before.CourseInstanceId);
+            if (completed == null || completed.DefinitionId != before.CourseDefinitionId)
+                throw new ArgumentException("Active course disappeared without a committed completion.");
+
+            CourseCompletionReason reason;
+            if (history.Contains("course.completed:" + completed.DefinitionId))
+                reason = CourseCompletionReason.StudyTargetReached;
+            else if (history.Contains("course.target_already_met"))
+                reason = CourseCompletionReason.SkillTargetAlreadyMet;
+            else
+                throw new ArgumentException("Course completion has no authoritative completion reason.");
+
+            return NewCourseChange(CourseChangeKind.Completed, reason, completed,
+                before.CourseProgressUnits, completed.ProgressUnits);
+        }
+
+        private CourseChange NewCourseChange(CourseChangeKind kind, CourseCompletionReason reason, CourseState course,
+            long priorProgressUnits, long newProgressUnits)
+        {
+            var definition = content.Courses[course.DefinitionId];
+            return new CourseChange(kind, reason, course.InstanceId, course.DefinitionId, definition.SkillId,
+                priorProgressUnits, newProgressUnits, checked((long)definition.BaseMinutes * 10000), definition.TargetLevel);
         }
 
         private static SimInstant Instant(GameState source) => new SimInstant(source.Date, source.Minute);
@@ -382,15 +417,17 @@ namespace StartupLife.Application
             public int Rank { get; }
             public IReadOnlyDictionary<string, SkillBaseline> Skills { get; }
             public string CourseInstanceId { get; }
+            public string CourseDefinitionId { get; }
             public long CourseProgressUnits { get; }
             public int GrantCount { get; }
             public int HistoryCount { get; }
             public OutcomeBaseline(SimInstant instant, long revision, long cash, EmploymentState? employment,
-                IReadOnlyDictionary<string, SkillBaseline> skills, string courseInstanceId, long courseProgressUnits, int grantCount, int historyCount)
+                IReadOnlyDictionary<string, SkillBaseline> skills, string courseInstanceId, string courseDefinitionId,
+                long courseProgressUnits, int grantCount, int historyCount)
             {
                 Instant = instant; Revision = revision; Cash = cash; EmploymentId = employment?.InstanceId ?? "";
                 CareerXp = employment?.Xp ?? 0; Rank = employment?.Rank ?? 0; Skills = skills;
-                CourseInstanceId = courseInstanceId; CourseProgressUnits = courseProgressUnits;
+                CourseInstanceId = courseInstanceId; CourseDefinitionId = courseDefinitionId; CourseProgressUnits = courseProgressUnits;
                 GrantCount = grantCount; HistoryCount = historyCount;
             }
         }

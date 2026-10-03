@@ -33,3 +33,13 @@ A fresh outcome is derived from the isolated before/candidate pair but is return
 All committed receipt cues are checked against deterministic production replay before a checkpoint is accepted. Presentation therefore consumes a committed cue rather than trusting a freely editable receipt field. `AcknowledgePlayback` may advance only playback state; its published outcome contains no cash, ledger, career, skill, grant, or history reward delta.
 
 Receipt-history replay is intentionally correctness-first for the MVP. Its scaling cost remains a later runtime/mobile measurement concern and does not authorize receipt compaction without a separate audited contract.
+
+## M1 review follow-up: restored playback and course read model
+
+Independent review of the PR #12 implementation found two remaining publication gaps. Follow-up PR #13 closes them without changing SaveVersion 1.
+
+Restore validation now binds the checkpoint-level `CurrentCue` and `PlaybackCursor` to the same detached production replay that already proves committed receipt outcomes. This check runs only after required content is known to be available, preserving `UnsupportedContent` precedence. Candidate serialization is performed inside the controlled command-validation path; an invariant/serializer validation failure rejects with `state.invalid` rather than escaping from `ExecuteInternal`.
+
+The Presentation course read model is explicit. `GameSnapshot.ActiveCourse` is an immutable runtime view containing course instance ID, definition ID, target skill, current progress units, target units, and target level. `SimulationOutcome.CourseChange` is nullable and appears only when a command changes course state. It classifies `Activated`, `Progressed`, or `Completed`; completed changes require an explicit completion reason of `StudyTargetReached` or `SkillTargetAlreadyMet`. Presentation therefore does not infer course enrollment/completion from history or cue strings.
+
+The previous ambiguous `GameSnapshot.StudyUnits` and `SimulationOutcome.CourseInstanceId / StudyUnitsDelta` read-model fields are replaced before the M1 API freeze. Persisted `CourseState`, the save envelope, schema version 1, and synthetic-v0 migration are unchanged.

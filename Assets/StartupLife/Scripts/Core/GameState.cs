@@ -124,6 +124,21 @@ namespace StartupLife.Core
         public string AdvanceTargetIso { get; set; } = "";
         public string ParentPayload { get; set; } = "";
     }
+    public sealed class ActiveCourseSnapshot
+    {
+        public string InstanceId { get; }
+        public string DefinitionId { get; }
+        public string SkillId { get; }
+        public long ProgressUnits { get; }
+        public long TargetUnits { get; }
+        public int TargetLevel { get; }
+        public ActiveCourseSnapshot(CourseState state, CourseDefinition definition)
+        {
+            InstanceId = state.InstanceId; DefinitionId = state.DefinitionId; SkillId = definition.SkillId;
+            ProgressUnits = state.ProgressUnits; TargetUnits = checked((long)definition.BaseMinutes * 10000);
+            TargetLevel = definition.TargetLevel;
+        }
+    }
     public sealed class GameSnapshot
     {
         public string RunId { get; }
@@ -138,7 +153,7 @@ namespace StartupLife.Core
         public string Cue { get; }
         public string CurrentActivityId { get; }
         public int PlaybackCursor { get; }
-        public long StudyUnits { get; }
+        public ActiveCourseSnapshot? ActiveCourse { get; }
         public IReadOnlyDictionary<string, int> SkillLevels { get; }
         public IReadOnlyList<string> History { get; }
         public GameSnapshot(GameState state, ContentCatalog content)
@@ -147,7 +162,8 @@ namespace StartupLife.Core
             Revision = state.Revision; Cash = state.Cash; Arrears = state.Arrears.Sum(x => x.Amount);
             CareerXp = state.Employment?.Xp ?? 0; Rank = state.Employment?.Rank ?? 0;
             CareerId = state.Employment?.CareerId ?? ""; Cue = state.CurrentCue; CurrentActivityId = state.CurrentActivity;
-            PlaybackCursor = state.PlaybackCursor; StudyUnits = state.Course?.ProgressUnits ?? 0;
+            PlaybackCursor = state.PlaybackCursor;
+            ActiveCourse = state.Course == null ? null : new ActiveCourseSnapshot(state.Course, content.Courses[state.Course.DefinitionId]);
             SkillLevels = new System.Collections.ObjectModel.ReadOnlyDictionary<string, int>(state.Skills.ToDictionary(x => x.Id, x => Level(x, content.Skills[x.Id]), StringComparer.Ordinal));
             History = Array.AsReadOnly(state.History.ToArray());
         }

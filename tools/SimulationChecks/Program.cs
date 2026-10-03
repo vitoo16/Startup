@@ -93,6 +93,58 @@ internal static class Program
             f.Day(); f.Evening(); result = f.SendOk(new GameCommand(CommandKind.Study, amount: 300)); Equal(60, result.MinutesConsumed);
             Equal(1, f.Session.Snapshot().SkillLevels["communication"]); Equal(1080, f.Session.Snapshot().Instant.Minute); True(f.State().Course == null);
         });
+        Check("active course snapshot survives cold restore without checkpoint inspection", () =>
+        {
+            var f = new Fixture(); f.Create(); f.Accept(); var buy = f.Buy("course-read-model");
+            True(buy.Outcome?.CourseChange != null); var activated = buy.Outcome!.CourseChange!;
+            Equal(CourseChangeKind.Activated, activated.Kind); Equal(CourseCompletionReason.None, activated.CompletionReason);
+            Equal("communication-basics", activated.DefinitionId); Equal("communication", activated.SkillId);
+            Equal(0L, activated.PriorProgressUnits); Equal(0L, activated.NewProgressUnits);
+            Equal(3600000L, activated.TargetUnits); Equal(1, activated.TargetLevel);
+
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            var store = new MemoryStore(f.Serializer, f.Session.ExportCheckpoint());
+            True(GameSession.TryRestore(f.Content, f.Serializer, store, out var restored, out var load));
+            Equal(LoadStatus.Valid, load.Status); True(restored != null);
+            var snapshot = restored!.Snapshot(); True(snapshot.ActiveCourse != null); var active = snapshot.ActiveCourse!;
+            Equal(activated.InstanceId, active.InstanceId); Equal("communication-basics", active.DefinitionId);
+            Equal("communication", active.SkillId); Equal(0L, active.ProgressUnits);
+            Equal(3600000L, active.TargetUnits); Equal(1, active.TargetLevel);
+        });
+        Check("course outcome distinguishes progress and study completion", () =>
+        {
+            var f = new Fixture(Catalog(speed: 20000)); f.Create(); f.Accept(); f.Buy();
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            var progress = f.SendOk(new GameCommand(CommandKind.Study, amount: 60), "course-progress");
+            True(progress.Outcome?.CourseChange != null); var progressed = progress.Outcome!.CourseChange!;
+            Equal(CourseChangeKind.Progressed, progressed.Kind); Equal(CourseCompletionReason.None, progressed.CompletionReason);
+            Equal(0L, progressed.PriorProgressUnits); Equal(1200000L, progressed.NewProgressUnits);
+            Equal(3600000L, progressed.TargetUnits); Equal(1200000L, f.Session.Snapshot().ActiveCourse!.ProgressUnits);
+
+            f.Evening();
+            var complete = f.SendOk(new GameCommand(CommandKind.Study, amount: 500), "course-complete");
+            True(complete.Outcome?.CourseChange != null); var completed = complete.Outcome!.CourseChange!;
+            Equal(CourseChangeKind.Completed, completed.Kind); Equal(CourseCompletionReason.StudyTargetReached, completed.CompletionReason);
+            Equal(1200000L, completed.PriorProgressUnits); Equal(3600000L, completed.NewProgressUnits);
+            Equal("communication-basics", completed.DefinitionId); Equal("communication", completed.SkillId);
+            True(f.Session.Snapshot().ActiveCourse == null); Equal(1, f.Session.Snapshot().SkillLevels["communication"]);
+        });
+        Check("career grant course completion has explicit target-already-met reason", () =>
+        {
+            var f = new Fixture(Catalog(promotionXp: 40, promotionDays: 0)); f.Create(); f.Accept();
+            var purchase = f.SendOk(new GameCommand(CommandKind.PurchaseCourse, "problem-course"), "problem-read-model");
+            True(purchase.Outcome?.CourseChange != null); var courseId = purchase.Outcome!.CourseChange!.InstanceId;
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            f.SendOk(new GameCommand(CommandKind.AdvanceBoundary));
+            CommandResult scene = null!;
+            for (var i = 0; i < 4; i++) scene = f.SendOk(new GameCommand(CommandKind.AdvanceBoundary), "promotion-scene-" + i);
+            True(scene.Outcome?.CourseChange != null); var completed = scene.Outcome!.CourseChange!;
+            Equal(CourseChangeKind.Completed, completed.Kind);
+            Equal(CourseCompletionReason.SkillTargetAlreadyMet, completed.CompletionReason);
+            Equal(courseId, completed.InstanceId); Equal("problem-course", completed.DefinitionId); Equal("problem-solving", completed.SkillId);
+            Equal(0L, completed.PriorProgressUnits); Equal(3600000L, completed.NewProgressUnits);
+            True(f.Session.Snapshot().ActiveCourse == null); Equal(2, f.Session.Snapshot().SkillLevels["problem-solving"]);
+        });
         Check("LearningSpeed changes duration and study never overlaps work/sleep", () =>
         {
             var f = new Fixture(Catalog(speed: 20000)); f.Create(); f.Accept(); f.Buy();
@@ -258,6 +310,46 @@ internal static class Program
             Equal(before.Scheduler.Cursor, after.Scheduler.Cursor); Equal(before.CurrentCue, after.CurrentCue);
             Equal(10, f.Session.Snapshot().PlaybackCursor);
         });
+        Check("root playback cue and cursor forgery are corrupt before restore publication", () =>
+        {
+            var f = new Fixture(); f.Create(); f.Accept(); f.Evening();
+            var cueState = f.State(); cueState.CurrentCue = "forged.root.cue";
+            var cueBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(cueState), 1, cueState.Revision);
+            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(cueBytes).Status);
+            var cueStore = new MemoryStore(f.Serializer, cueBytes);
+            True(!GameSession.TryRestore(f.Content, f.Serializer, cueStore, out var cueSession, out var cueLoad));
+            True(cueSession == null); Equal(LoadStatus.Corrupt, cueLoad.Status);
+
+            var activity = f.Session.Snapshot().CurrentActivityId;
+            f.SendOk(new GameCommand(CommandKind.AcknowledgePlayback, activity, 10), "root-cursor-source");
+            var cursorState = f.State(); Equal(10, cursorState.PlaybackCursor); cursorState.PlaybackCursor = 0;
+            var cursorBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(cursorState), 1, cursorState.Revision);
+            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(cursorBytes).Status);
+            var cursorStore = new MemoryStore(f.Serializer, cursorBytes);
+            True(!GameSession.TryRestore(f.Content, f.Serializer, cursorStore, out var cursorSession, out var cursorLoad));
+            True(cursorSession == null); Equal(LoadStatus.Corrupt, cursorLoad.Status);
+        });
+        Check("playback provenance does not mask unsupported content", () =>
+        {
+            var f = new Fixture(); f.Create(); f.Accept(); f.Buy(); var state = f.State();
+            state.Course!.DefinitionId = "missing-course"; state.CurrentCue = "forged.root.cue";
+            var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision);
+            Equal(LoadStatus.UnsupportedContent, f.Serializer.DeserializeAndValidate(bytes).Status);
+        });
+        Check("candidate serialization validation is contained as state invalid", () =>
+        {
+            var content = Catalog();
+            var inner = new JsonSaveSerializer(content, GameSession.CreateRestoreValidator(), new SyntheticV0Migration());
+            var serializer = new NthSerializeFailureSerializer(inner);
+            var initial = GameSession.NewState(content, "run", 12345, new SimDate(2026, 9, 1));
+            var store = new MemoryStore(serializer, null);
+            var session = new GameSession(initial, content, serializer, store);
+            serializer.Arm(2);
+            var result = session.Execute(new CommandEnvelope("run", "serialization-invalid", 0,
+                new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "Nguyễn Ánh", "base.female")));
+            Equal(CommandStatus.Rejected, result.Status); Equal("state.invalid", result.ReasonKey);
+            Equal(0L, session.Snapshot().Revision); Equal(LoadStatus.Missing, store.Read().Status);
+        });
         Check("committed non-boundary cue forgery is corrupt before outcome publication", () =>
         {
             var f = new Fixture(); f.Create(); f.Accept(); f.Buy("cue-source");
@@ -389,13 +481,20 @@ internal static class Program
         Equal(expected.PriorRevision, actual.PriorRevision); Equal(expected.Revision, actual.Revision); Equal(expected.Start, actual.Start); Equal(expected.End, actual.End);
         Equal(expected.MinutesConsumed, actual.MinutesConsumed); Equal(expected.Cue, actual.Cue); Equal(expected.PlaybackCursor, actual.PlaybackCursor);
         Equal(expected.CashDelta, actual.CashDelta); Equal(expected.EmploymentId, actual.EmploymentId); Equal(expected.CareerXpDelta, actual.CareerXpDelta);
-        Equal(expected.PriorRank, actual.PriorRank); Equal(expected.NewRank, actual.NewRank); Equal(expected.CourseInstanceId, actual.CourseInstanceId);
-        Equal(expected.StudyUnitsDelta, actual.StudyUnitsDelta);
+        Equal(expected.PriorRank, actual.PriorRank); Equal(expected.NewRank, actual.NewRank); SameCourseChange(expected.CourseChange, actual.CourseChange);
         True(expected.LedgerEntries.Select(x => (x.Id, x.Category, x.CashDelta, x.Amount, x.AttributionId))
             .SequenceEqual(actual.LedgerEntries.Select(x => (x.Id, x.Category, x.CashDelta, x.Amount, x.AttributionId))));
         True(expected.SkillDeltas.Select(x => (x.SkillId, x.ExposureDelta, x.PriorLevel, x.NewLevel, x.PriorGrantedLevel, x.NewGrantedLevel))
             .SequenceEqual(actual.SkillDeltas.Select(x => (x.SkillId, x.ExposureDelta, x.PriorLevel, x.NewLevel, x.PriorGrantedLevel, x.NewGrantedLevel))));
         True(expected.GrantedIds.SequenceEqual(actual.GrantedIds)); True(expected.HistoryEntries.SequenceEqual(actual.HistoryEntries));
+    }
+    private static void SameCourseChange(CourseChange? expected, CourseChange? actual)
+    {
+        if (expected == null || actual == null) { True(expected == actual); return; }
+        Equal(expected.Kind, actual.Kind); Equal(expected.CompletionReason, actual.CompletionReason);
+        Equal(expected.InstanceId, actual.InstanceId); Equal(expected.DefinitionId, actual.DefinitionId); Equal(expected.SkillId, actual.SkillId);
+        Equal(expected.PriorProgressUnits, actual.PriorProgressUnits); Equal(expected.NewProgressUnits, actual.NewProgressUnits);
+        Equal(expected.TargetUnits, actual.TargetUnits); Equal(expected.TargetLevel, actual.TargetLevel);
     }
     private static SkillDefinition Skill(string id) => new(id, "skill." + id, 100, 300, 600, 1000, 1500);
     private static CareerSceneDefinition Scene(string id, int weight, long xp = 10) => new(id, "scene." + id, weight, xp, "communication", 1);
@@ -430,6 +529,21 @@ internal static class Program
         public CommandResult Buy(string? id = null) => SendOk(new GameCommand(CommandKind.PurchaseCourse, "communication-basics"), id);
         public void Evening() { while (Session.Snapshot().Instant.Minute < 1020) SendOk(new GameCommand(CommandKind.AdvanceBoundary)); }
         public void Day() { var result = Session.AdvanceDay(new CommandEnvelope("run", "day-" + (++sequence), Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary))); Equal("TargetReached", result.StopReason); }
+    }
+    private sealed class NthSerializeFailureSerializer : ISaveSerializer
+    {
+        private readonly ISaveSerializer inner;
+        private int failOn;
+        private int calls;
+        public NthSerializeFailureSerializer(ISaveSerializer innerSerializer) { inner = innerSerializer; }
+        public void Arm(int serializeCall) { failOn = serializeCall; calls = 0; }
+        public byte[] Serialize(GameState state)
+        {
+            calls++;
+            if (failOn > 0 && calls == failOn) throw new ArgumentException("Injected candidate serialization validation failure.");
+            return inner.Serialize(state);
+        }
+        public LoadResult DeserializeAndValidate(byte[] bytes) => inner.DeserializeAndValidate(bytes);
     }
     private sealed class MemoryStore : ISaveStore
     {
