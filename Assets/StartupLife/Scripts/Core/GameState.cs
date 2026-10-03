@@ -136,6 +136,8 @@ namespace StartupLife.Core
         public int Rank { get; }
         public string CareerId { get; }
         public string Cue { get; }
+        public string CurrentActivityId { get; }
+        public int PlaybackCursor { get; }
         public long StudyUnits { get; }
         public IReadOnlyDictionary<string, int> SkillLevels { get; }
         public IReadOnlyList<string> History { get; }
@@ -144,7 +146,8 @@ namespace StartupLife.Core
             RunId = state.RunId; Name = state.Name; Instant = new SimInstant(state.Date, state.Minute);
             Revision = state.Revision; Cash = state.Cash; Arrears = state.Arrears.Sum(x => x.Amount);
             CareerXp = state.Employment?.Xp ?? 0; Rank = state.Employment?.Rank ?? 0;
-            CareerId = state.Employment?.CareerId ?? ""; Cue = state.CurrentCue; StudyUnits = state.Course?.ProgressUnits ?? 0;
+            CareerId = state.Employment?.CareerId ?? ""; Cue = state.CurrentCue; CurrentActivityId = state.CurrentActivity;
+            PlaybackCursor = state.PlaybackCursor; StudyUnits = state.Course?.ProgressUnits ?? 0;
             SkillLevels = new System.Collections.ObjectModel.ReadOnlyDictionary<string, int>(state.Skills.ToDictionary(x => x.Id, x => Level(x, content.Skills[x.Id]), StringComparer.Ordinal));
             History = Array.AsReadOnly(state.History.ToArray());
         }
