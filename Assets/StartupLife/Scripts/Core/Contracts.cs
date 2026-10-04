@@ -27,7 +27,9 @@ namespace StartupLife.Core
         public string AppearanceId { get; }
         public int Amount { get; }
         public GameCommand(CommandKind kind, string contentId = "", int amount = 0, string name = "", string appearanceId = "")
-        { Kind = kind; ContentId = contentId; Amount = amount; Name = name; AppearanceId = appearanceId; }
+        {
+            Kind = kind; ContentId = contentId ?? ""; Amount = amount; Name = name ?? ""; AppearanceId = appearanceId ?? "";
+        }
         public string CanonicalPayload => ((int)Kind).ToString(CultureInfo.InvariantCulture) + ":" + Field(ContentId) + Field(Name) + Field(AppearanceId) + Amount.ToString(CultureInfo.InvariantCulture);
         private static string Field(string value) => value.Length.ToString(CultureInfo.InvariantCulture) + ":" + value;
         public static GameCommand ParseCanonicalPayload(string payload)
