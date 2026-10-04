@@ -76,7 +76,7 @@ namespace StartupLife.Infrastructure
             foreach (var value in dto.Skills) RequireNoExtension(value);
         }
 
-        private static void RequireNoExtension(V1Extensible? value)
+        private static void RequireNoExtension(IExtensibleDataObject? value)
         {
             if (value == null) return;
             if (value.ExtensionData != null) throw new ArgumentException("Frozen v1 contains unknown members.");
@@ -202,14 +202,9 @@ namespace StartupLife.Infrastructure
     }
 
     [DataContract]
-    internal abstract class V1Extensible : IExtensibleDataObject
+    internal sealed class V1GameState : IExtensibleDataObject
     {
         public ExtensionDataObject? ExtensionData { get; set; }
-    }
-
-    [DataContract]
-    internal sealed class V1GameState : V1Extensible
-    {
         [DataMember] public string AppearanceId { get; set; } = "";
         [DataMember] public List<V1ArrearState> Arrears { get; set; } = new List<V1ArrearState>();
         [DataMember] public string BackgroundId { get; set; } = "";
@@ -248,8 +243,9 @@ namespace StartupLife.Infrastructure
         [DataMember] public int StartingAge { get; set; }
     }
 
-    [DataContract] internal sealed class V1EmploymentState : V1Extensible
+    [DataContract] internal sealed class V1EmploymentState : IExtensibleDataObject
     {
+        public ExtensionDataObject? ExtensionData { get; set; }
         [DataMember] public string CareerId { get; set; } = "";
         [DataMember] public string DefinitionRevision { get; set; } = "";
         [DataMember] public string EmployerId { get; set; } = "";
@@ -262,21 +258,24 @@ namespace StartupLife.Infrastructure
         [DataMember] public string WorkDateIso { get; set; } = "";
         [DataMember] public long Xp { get; set; }
     }
-    [DataContract] internal sealed class V1SkillState : V1Extensible
+    [DataContract] internal sealed class V1SkillState : IExtensibleDataObject
     {
+        public ExtensionDataObject? ExtensionData { get; set; }
         [DataMember] public long Exposure { get; set; }
         [DataMember] public int GrantedLevel { get; set; }
         [DataMember] public string Id { get; set; } = "";
     }
-    [DataContract] internal sealed class V1CourseState : V1Extensible
+    [DataContract] internal sealed class V1CourseState : IExtensibleDataObject
     {
+        public ExtensionDataObject? ExtensionData { get; set; }
         [DataMember] public bool Completed { get; set; }
         [DataMember] public string DefinitionId { get; set; } = "";
         [DataMember] public string InstanceId { get; set; } = "";
         [DataMember] public long ProgressUnits { get; set; }
     }
-    [DataContract] internal sealed class V1SchedulerState : V1Extensible
+    [DataContract] internal sealed class V1SchedulerState : IExtensibleDataObject
     {
+        public ExtensionDataObject? ExtensionData { get; set; }
         [DataMember] public int Cursor { get; set; }
         [DataMember] public long Cycle { get; set; }
         [DataMember] public List<string> Deck { get; set; } = new List<string>();
@@ -284,22 +283,25 @@ namespace StartupLife.Infrastructure
         [DataMember] public string LastScene { get; set; } = "";
         [DataMember] public string Signature { get; set; } = "";
     }
-    [DataContract] internal sealed class V1SalaryClaim : V1Extensible
+    [DataContract] internal sealed class V1SalaryClaim : IExtensibleDataObject
     {
+        public ExtensionDataObject? ExtensionData { get; set; }
         [DataMember] public string Denominator { get; set; } = "1";
         [DataMember] public string EarnedIso { get; set; } = "";
         [DataMember] public string EmploymentId { get; set; } = "";
         [DataMember] public string Id { get; set; } = "";
         [DataMember] public string Numerator { get; set; } = "0";
     }
-    [DataContract] internal sealed class V1ArrearState : V1Extensible
+    [DataContract] internal sealed class V1ArrearState : IExtensibleDataObject
     {
+        public ExtensionDataObject? ExtensionData { get; set; }
         [DataMember] public long Amount { get; set; }
         [DataMember] public string DueIso { get; set; } = "";
         [DataMember] public string Id { get; set; } = "";
     }
-    [DataContract] internal sealed class V1LedgerEntry : V1Extensible
+    [DataContract] internal sealed class V1LedgerEntry : IExtensibleDataObject
     {
+        public ExtensionDataObject? ExtensionData { get; set; }
         [DataMember] public long Amount { get; set; }
         [DataMember] public string AttributionId { get; set; } = "";
         [DataMember] public long CashDelta { get; set; }
@@ -307,8 +309,9 @@ namespace StartupLife.Infrastructure
         [DataMember] public string Id { get; set; } = "";
         [DataMember] public string OperationId { get; set; } = "";
     }
-    [DataContract] internal sealed class V1CommandReceipt : V1Extensible
+    [DataContract] internal sealed class V1CommandReceipt : IExtensibleDataObject
     {
+        public ExtensionDataObject? ExtensionData { get; set; }
         [DataMember] public string AdvanceTargetIso { get; set; } = "";
         [DataMember] public string CommandId { get; set; } = "";
         [DataMember] public string Cue { get; set; } = "";
