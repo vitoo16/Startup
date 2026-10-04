@@ -431,7 +431,9 @@ internal static class Program
         {
             var f = new Fixture();
             var fixture = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "synthetic-v0.json"));
-            var migrated = f.Serializer.DeserializeAndValidate(fixture); Equal(LoadStatus.Valid, migrated.Status); Equal(SaveSchema.CurrentVersion, migrated.State!.SaveVersion);
+            var migrated = f.Serializer.DeserializeAndValidate(fixture);
+            if (migrated.Status != LoadStatus.Valid) throw new Exception("Synthetic v0 migration failed: " + migrated.Status + " / " + migrated.Reason);
+            Equal(SaveSchema.CurrentVersion, migrated.State!.SaveVersion);
             var current = f.Serializer.DeserializeAndValidate(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "current-v1.json")));
             Equal(LoadStatus.Valid, current.Status); Equal(current.State!.Name, migrated.State.Name); Equal(current.State.Cash, migrated.State.Cash);
             var g = new Fixture(f.Content, migrated.State); g.Evening(); Equal(40L, g.State().Employment!.Xp);
