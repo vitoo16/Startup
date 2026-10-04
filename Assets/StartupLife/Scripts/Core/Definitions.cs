@@ -145,14 +145,21 @@ namespace StartupLife.Core
         public IReadOnlyDictionary<string, CareerDefinition> Careers { get; }
         public IReadOnlyDictionary<string, CourseDefinition> Courses { get; }
         public IReadOnlyDictionary<string, CharacterStartDefinition> Starts { get; }
+        public IReadOnlyDictionary<string, BusinessDefinition> Businesses { get; }
         public EconomyBalanceDefinition Economy { get; }
         public DayScheduleDefinition Schedule { get; }
         public ContentCatalog(string version, IEnumerable<SkillDefinition> skills, IEnumerable<CareerDefinition> careers,
             IEnumerable<CourseDefinition> courses, IEnumerable<CharacterStartDefinition> starts, EconomyBalanceDefinition economy, DayScheduleDefinition schedule)
+            : this(version, skills, careers, courses, starts, Array.Empty<BusinessDefinition>(), economy, schedule) { }
+
+        public ContentCatalog(string version, IEnumerable<SkillDefinition> skills, IEnumerable<CareerDefinition> careers,
+            IEnumerable<CourseDefinition> courses, IEnumerable<CharacterStartDefinition> starts, IEnumerable<BusinessDefinition> businesses,
+            EconomyBalanceDefinition economy, DayScheduleDefinition schedule)
         {
             if (string.IsNullOrWhiteSpace(version)) throw new ArgumentException("Content version required.");
             Version = version; Skills = Index(skills, x => x.Id); Careers = Index(careers, x => x.Id);
-            Courses = Index(courses, x => x.Id); Starts = Index(starts, x => x.Id); Economy = economy; Schedule = schedule;
+            Courses = Index(courses, x => x.Id); Starts = Index(starts, x => x.Id); Businesses = Index(businesses, x => x.Id);
+            Economy = economy; Schedule = schedule;
             foreach (var c in Careers.Values)
                 if (c.StartMinute < schedule.WakeMinute || c.EndMinute > schedule.SleepMinute || c.Scenes.Any(x => !Skills.ContainsKey(x.SkillId)) || c.Ranks.Any(x => !Skills.ContainsKey(x.GrantSkillId)))
                     throw new ArgumentException("Missing career skill reference.");
