@@ -9,7 +9,7 @@ namespace StartupLife.Core
     // Mutable candidate DTOs. Application owns them and publishes only detached immutable snapshots.
     public sealed class GameState
     {
-        public int SaveVersion { get; set; } = 1;
+        public int SaveVersion { get; set; } = SaveSchema.CurrentVersion;
         public string ContentVersion { get; set; } = "";
         public string RunId { get; set; } = "";
         public ulong Seed { get; set; }
@@ -38,6 +38,7 @@ namespace StartupLife.Core
         public List<SalaryClaim> Claims { get; set; } = new List<SalaryClaim>();
         public List<ArrearState> Arrears { get; set; } = new List<ArrearState>();
         public List<LedgerEntry> Ledger { get; set; } = new List<LedgerEntry>();
+        public List<BusinessState> Businesses { get; set; } = new List<BusinessState>();
         public List<string> History { get; set; } = new List<string>();
         public List<CommandReceipt> Receipts { get; set; } = new List<CommandReceipt>();
         public List<string> ConsumedActivities { get; set; } = new List<string>();
