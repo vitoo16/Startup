@@ -294,6 +294,8 @@ namespace StartupLife.Tests.PlayMode
             Assert.That(failed.IsReady, Is.False);
             Assert.That(GameObject.Find("LifePanel"), Is.Null);
             Assert.That(File.Exists(backup), Is.True);
+            AssertFatalSaveStatus("Không thể đọc dữ liệu đã lưu.");
+            FirstPlayableVisualEvidence.Capture("M7-T02/07-unreadable-fatal");
             LogAssert.NoUnexpectedReceived();
         }
 
@@ -316,6 +318,8 @@ namespace StartupLife.Tests.PlayMode
             Assert.That(failed.IsReady, Is.False);
             Assert.That(GameObject.Find("CharacterCreationPanel"), Is.Null);
             Assert.That(GameObject.Find("LifePanel"), Is.Null);
+            AssertFatalSaveStatus("Không thể khôi phục dữ liệu đã lưu.");
+            FirstPlayableVisualEvidence.Capture("M7-T02/08-both-invalid-fatal");
             LogAssert.NoUnexpectedReceived();
         }
 
@@ -350,6 +354,16 @@ namespace StartupLife.Tests.PlayMode
             var bootstrap = Object.FindAnyObjectByType<StartupLifeBootstrapper>();
             Assert.That(bootstrap, Is.Not.Null);
             return bootstrap;
+        }
+
+        private static void AssertFatalSaveStatus(string expected)
+        {
+            var text = GameObject.Find("FatalStatus").GetComponent<TMP_Text>();
+            Assert.That(text.text, Is.EqualTo(expected));
+            text.ForceMeshUpdate();
+            Assert.That(text.isTextOverflowing, Is.False);
+            var safeArea = text.transform.parent.GetComponent<RectTransform>();
+            Assert.That(text.rectTransform.rect.width, Is.GreaterThanOrEqualTo(safeArea.rect.width * 0.8f));
         }
 
         private static void CreateCharacterOnly(StartupLifeBootstrapper bootstrap, string name)
