@@ -4,7 +4,7 @@
     <properties>
       <property name="platform" value="EditMode" />
     </properties>
-    <test-suite type="Assembly" id="1012" name="StartupLife.Tests.EditMode.dll" fullname="<PROJECT>/Library/ScriptAssemblies/StartupLife.Tests.EditMode.dll" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-03 22:20:37Z" end-time="2026-10-03 22:20:38Z" duration="0.500109" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <test-suite type="Assembly" id="1012" name="StartupLife.Tests.EditMode.dll" fullname="[PROJECT]/Library/ScriptAssemblies/StartupLife.Tests.EditMode.dll" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-03 22:20:37Z" end-time="2026-10-03 22:20:38Z" duration="0.500109" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
       <properties>
         <property name="_PID" value="28400" />
         <property name="_APPDOMAIN" value="Unity Child Domain" />
@@ -72,7 +72,7 @@
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
-                <output><![CDATA[Saving results to: <USER>/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml
+                <output><![CDATA[Saving results to: [USER]/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml
 ]]></output>
               </test-case>
             </test-suite>

@@ -4,7 +4,7 @@
     <properties>
       <property name="platform" value="PlayMode" />
     </properties>
-    <test-suite type="Assembly" id="1015" name="StartupLife.Tests.PlayMode.dll" fullname="<PROJECT>/Library/ScriptAssemblies/StartupLife.Tests.PlayMode.dll" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-10-04 08:34:30Z" end-time="2026-10-04 08:34:49Z" duration="19.097616" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <test-suite type="Assembly" id="1015" name="StartupLife.Tests.PlayMode.dll" fullname="[PROJECT]/Library/ScriptAssemblies/StartupLife.Tests.PlayMode.dll" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-10-04 08:34:30Z" end-time="2026-10-04 08:34:49Z" duration="19.097616" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
       <properties>
         <property name="_PID" value="27612" />
         <property name="_APPDOMAIN" value="Unity Child Domain" />
@@ -158,7 +158,7 @@
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
-                <output><![CDATA[Saving results to: <USER>/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml
+                <output><![CDATA[Saving results to: [USER]/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml
 ]]></output>
               </test-case>
             </test-suite>

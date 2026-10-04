@@ -7,7 +7,7 @@
     <failure>
       <message><![CDATA[One or more child tests had errors]]></message>
     </failure>
-    <test-suite type="Assembly" id="1015" name="StartupLife.Tests.PlayMode.dll" fullname="<PROJECT>/Library/ScriptAssemblies/StartupLife.Tests.PlayMode.dll" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-04 08:32:27Z" end-time="2026-10-04 08:32:35Z" duration="7.989176" total="9" passed="7" failed="2" inconclusive="0" skipped="0" asserts="0">
+    <test-suite type="Assembly" id="1015" name="StartupLife.Tests.PlayMode.dll" fullname="[PROJECT]/Library/ScriptAssemblies/StartupLife.Tests.PlayMode.dll" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-04 08:32:27Z" end-time="2026-10-04 08:32:35Z" duration="7.989176" total="9" passed="7" failed="2" inconclusive="0" skipped="0" asserts="0">
       <properties>
         <property name="_PID" value="30508" />
         <property name="_APPDOMAIN" value="Unity Child Domain" />
@@ -56,8 +56,8 @@
   But was:  "No translation found for 'reason.save.unrecoverable' in First..."
   -----------^
 ]]></message>
-                  <stack-trace><![CDATA[at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AssertFatalSaveStatus (System.String expected) [0x0000f] in <PROJECT>\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:362
-at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests+<BothInvalidSavesFailWithoutStartingNewRun>d__10.MoveNext () [0x000ea] in <PROJECT>\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:321
+                  <stack-trace><![CDATA[at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AssertFatalSaveStatus (System.String expected) [0x0000f] in [PROJECT]\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:362
+at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests+<BothInvalidSavesFailWithoutStartingNewRun>d__10.MoveNext () [0x000ea] in [PROJECT]\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:321
 at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@bd7f943e9647\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:44
 ]]></stack-trace>
                 </failure>
@@ -125,12 +125,12 @@ at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .
   But was:  "No translation found for 'reason.save.read_failed' in FirstPl..."
   -----------^
 ]]></message>
-                  <stack-trace><![CDATA[at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AssertFatalSaveStatus (System.String expected) [0x0000f] in <PROJECT>\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:362
-at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests+<UnreadablePrimaryFailsClosedWithoutUsingBackup>d__9.MoveNext () [0x000f6] in <PROJECT>\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:297
+                  <stack-trace><![CDATA[at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AssertFatalSaveStatus (System.String expected) [0x0000f] in [PROJECT]\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:362
+at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests+<UnreadablePrimaryFailsClosedWithoutUsingBackup>d__9.MoveNext () [0x000f6] in [PROJECT]\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:297
 at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@bd7f943e9647\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:44
 ]]></stack-trace>
                 </failure>
-                <output><![CDATA[Saving results to: <USER>/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml
+                <output><![CDATA[Saving results to: [USER]/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml
 ]]></output>
               </test-case>
             </test-suite>

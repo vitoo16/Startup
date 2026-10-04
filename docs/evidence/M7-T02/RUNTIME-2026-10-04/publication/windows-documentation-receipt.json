@@ -1,0 +1,8 @@
+{
+  "powershellVersion": "7.6.5",
+  "head": "1069171504c6c42ba0c8651e13c9c477ff906e33",
+  "timestamp": "2026-10-04T16:52:38.4610593+07:00",
+  "command": "./scripts/validate-documentation.ps1",
+  "productionTreeIdentical": true,
+  "exitCode": null
+}

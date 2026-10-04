@@ -4,7 +4,7 @@
     <properties>
       <property name="platform" value="EditMode" />
     </properties>
-    <test-suite type="Assembly" id="1012" name="StartupLife.Tests.EditMode.dll" fullname="<PROJECT>/Library/ScriptAssemblies/StartupLife.Tests.EditMode.dll" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:28Z" duration="0.657735" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <test-suite type="Assembly" id="1012" name="StartupLife.Tests.EditMode.dll" fullname="[PROJECT]/Library/ScriptAssemblies/StartupLife.Tests.EditMode.dll" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:28Z" duration="0.657735" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
       <properties>
         <property name="_PID" value="32132" />
         <property name="_APPDOMAIN" value="Unity Child Domain" />
@@ -78,7 +78,7 @@
         </test-suite>
       </test-suite>
     </test-suite>
-    <test-suite type="Assembly" id="1018" name="Unity.Addressables.DocExampleCode.Editor.Tests.dll" fullname="<PROJECT>/Library/ScriptAssemblies/Unity.Addressables.DocExampleCode.Editor.Tests.dll" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-04 08:35:28Z" end-time="2026-10-04 08:35:28Z" duration="0.002229" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <test-suite type="Assembly" id="1018" name="Unity.Addressables.DocExampleCode.Editor.Tests.dll" fullname="[PROJECT]/Library/ScriptAssemblies/Unity.Addressables.DocExampleCode.Editor.Tests.dll" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-04 08:35:28Z" end-time="2026-10-04 08:35:28Z" duration="0.002229" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
       <properties>
         <property name="_PID" value="32132" />
         <property name="_APPDOMAIN" value="Unity Child Domain" />
@@ -96,7 +96,7 @@
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
-              <output><![CDATA[Saving results to: <USER>/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml
+              <output><![CDATA[Saving results to: [USER]/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml
 ]]></output>
             </test-case>
           </test-suite>

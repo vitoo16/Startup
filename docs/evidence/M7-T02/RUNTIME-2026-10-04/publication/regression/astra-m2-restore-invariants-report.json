@@ -1,0 +1,147 @@
+{
+  "suite": "Astra M2 restore invariants \u2014 .NET, not Unity",
+  "passed": 35,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "M2 operation and entity counters cannot reuse issued identities",
+      "status": "passed"
+    },
+    {
+      "name": "M2 scheduler cursor cannot rewind committed work",
+      "status": "passed"
+    },
+    {
+      "name": "M2 scheduler cycle follows committed career activities",
+      "status": "passed"
+    },
+    {
+      "name": "M2 promoted rank transition remains valid until next scheduler consume",
+      "status": "passed"
+    },
+    {
+      "name": "M2 committed activity history cannot be removed or forged",
+      "status": "passed"
+    },
+    {
+      "name": "M2 resigned employment keeps its persisted scheduler valid",
+      "status": "passed"
+    },
+    {
+      "name": "M2 valid mid-cycle restore continues byte-identically",
+      "status": "passed"
+    },
+    {
+      "name": "M2 rewinding cursor and history cannot replay XP or salary",
+      "status": "passed"
+    },
+    {
+      "name": "M2 same-career deck cannot violate quota",
+      "status": "passed"
+    },
+    {
+      "name": "M2 correct quota cannot hide impossible deck ordering",
+      "status": "passed"
+    },
+    {
+      "name": "M2 generation overflow is rejected before publication",
+      "status": "passed"
+    },
+    {
+      "name": "M2 stale signature after an already-consumed promotion is corrupt",
+      "status": "passed"
+    },
+    {
+      "name": "M2 non-career boundary history cannot be removed",
+      "status": "passed"
+    },
+    {
+      "name": "M2 canonical past activities cannot be invented",
+      "status": "passed"
+    },
+    {
+      "name": "M2 equal activity counts cannot hide forged provenance",
+      "status": "passed"
+    },
+    {
+      "name": "M2 global entity sequence cannot be shared by different kinds",
+      "status": "passed"
+    },
+    {
+      "name": "M2 counter covers settled entity references retained in ledger",
+      "status": "passed"
+    },
+    {
+      "name": "M2 committed receipt history cannot be removed or reordered",
+      "status": "passed"
+    },
+    {
+      "name": "M2 malformed canonical payloads remain structural corruption",
+      "status": "passed"
+    },
+    {
+      "name": "M2 timeline corruption wins over unavailable content",
+      "status": "passed"
+    },
+    {
+      "name": "M2 known scheduler corruption wins over missing background",
+      "status": "passed"
+    },
+    {
+      "name": "M2 valid missing background remains unsupported content",
+      "status": "passed"
+    },
+    {
+      "name": "M2 missing scheduler scenes remain unsupported content",
+      "status": "passed"
+    },
+    {
+      "name": "M2 multi-scene promotion and cycle-seam continuation are deterministic",
+      "status": "passed"
+    },
+    {
+      "name": "M2 resignation and subsequent employment preserve scheduler provenance",
+      "status": "passed"
+    },
+    {
+      "name": "M2 missing historical scheduler scene is unsupported",
+      "status": "passed"
+    },
+    {
+      "name": "M2 historical scene belonging to another career is corrupt",
+      "status": "passed"
+    },
+    {
+      "name": "M2 serializer requires an explicit restore verifier",
+      "status": "passed"
+    },
+    {
+      "name": "M2 coordinated receipt and cursor rewind cannot retain rewards",
+      "status": "passed"
+    },
+    {
+      "name": "M2 committed reward and salary provenance cannot be forged",
+      "status": "passed"
+    },
+    {
+      "name": "M2 scheduler RNG and plausible generation must match its trace",
+      "status": "passed"
+    },
+    {
+      "name": "M2 creation receipt binds intrinsic character identity",
+      "status": "passed"
+    },
+    {
+      "name": "M2 available start definition binds learning speed",
+      "status": "passed"
+    },
+    {
+      "name": "M2 reconstructed cash must match authoritative checkpoint",
+      "status": "passed"
+    },
+    {
+      "name": "M2 unemployed boundary after mid-shift resignation is not career work",
+      "status": "passed"
+    }
+  ]
+}

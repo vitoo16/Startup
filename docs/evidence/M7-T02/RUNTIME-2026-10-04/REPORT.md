@@ -1,8 +1,13 @@
 # M7-T02 runtime acceptance — 2026-10-04
 
-**M7-T02 NOT CLOSED — physical Android acceptance and current iOS smoke unavailable.**
+**M7-T02 IMPLEMENTED — EXTERNAL ACCEPTANCE BLOCKERS: physical Android + iOS.**
 Windows, Unity Editor, the dedicated Android emulator, and required portrait/video evidence
 were executed. The ledger checkbox remains open. **M8 NOT READY. NOT SAFE FOR GATE B.**
+
+The [follow-up publication record](publication/PUBLICATION.md) identifies the latest remote
+baseline, preserved/cherry-picked commits, production-tree identity and fresh engine-free checks.
+The runtime observations below retain their original executed source SHA. Publication changes
+only evidence metadata/documentation; no new physical Android/iOS acceptance is claimed.
 
 ## Repository state and provenance
 
@@ -199,4 +204,5 @@ FirstPlayable scene fatal text bounds/alignment; shared/Vietnamese string tables
 bundle/manifest; SESSION execution addendum and M7-T02 ledger evidence link. M7 remains unchecked.
 Commits: `17e685e`, `57418f6`, then the evidence/docs-only closeout commit.
 
-Final decision: **M7-T02 NOT CLOSED. M8 NOT READY. NOT SAFE FOR GATE B.**
+Final decision: **M7-T02 IMPLEMENTED — EXTERNAL ACCEPTANCE BLOCKERS: physical Android + iOS.**
+**M8 NOT READY — blocked by M7-T02. NOT SAFE FOR GATE B — physical Android and iOS remain unexecuted.**
