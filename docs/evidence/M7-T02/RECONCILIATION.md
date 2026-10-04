@@ -116,7 +116,7 @@ Skills used: startup-life-session-orchestrator; startup-life-gameplay-guardian.
 
 Acceptance criteria: ADR-010 created; ledger/platform policy reconciled; historical evidence preserved; deferred iOS and physical Android remain explicitly not passed; no runtime tree change.
 
-Tests: fresh documentation/engine-free regression to be recorded on the reconciliation PR; Unity rerun is not required when the final diff remains documentation/validator-only.
+Tests: GitHub Engine-free CI run #77 passed on the reconciled policy/validator head: documentation validator PASS; Simulation 49/49; H1/H2/R2 19/19; M2 restore/provenance 35/35; Presentation 11/11; Content 8/8; Static Unity 31/31; M1 API 31/31; Content bridge 8/8; M7 static 43/43; runner 30/30; security/release 28/28; .NET builds 0 warnings / 0 errors; clean-worktree gate PASS. The initial run #76 exposed a PowerShell parser error in the first validator patch; that patch was rebuilt from main and run #77 passed. Unity rerun is not required because the diff remains documentation/validator-only.
 
 Visual evidence: None; no visible runtime change.
 
