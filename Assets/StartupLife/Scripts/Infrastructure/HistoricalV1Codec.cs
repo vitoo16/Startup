@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using StartupLife.Core;
 
 namespace StartupLife.Infrastructure
@@ -49,16 +50,28 @@ namespace StartupLife.Infrastructure
 
         private static V1GameState Decode(byte[] payload, int expectedVersion)
         {
+            if (expectedVersion == SaveSchema.HistoricalV1)
+                RejectImpossibleV1WireMembers(payload);
             var dto = JsonSaveSerializer.ReadObject<V1GameState>(payload);
             Validate(dto, expectedVersion);
             return dto;
+        }
+
+        private static void RejectImpossibleV1WireMembers(byte[] payload)
+        {
+            // DataContractJsonSerializer may populate ExtensionData even on a self-roundtrip, so
+            // ExtensionDataObject is not a reliable unknown-member detector for this frozen JSON
+            // wire contract. Reject the concrete v2-only persisted member at the wire boundary;
+            // receipt parsing below independently rejects command ordinals that did not exist in v1.
+            var json = Encoding.UTF8.GetString(payload);
+            if (json.IndexOf("\"Businesses\":", StringComparison.Ordinal) >= 0)
+                throw new ArgumentException("Frozen v1 cannot carry business state.");
         }
 
         private static void Validate(V1GameState dto, int expectedVersion)
         {
             if (dto == null) throw new ArgumentException("Invalid frozen v1 root: null.");
             if (dto.SaveVersion != expectedVersion) throw new ArgumentException("Invalid frozen v1 root: version.");
-            if (dto.ExtensionData != null) throw new ArgumentException("Invalid frozen v1 root: extension data.");
             if (dto.Arrears == null) throw new ArgumentException("Invalid frozen v1 root: Arrears.");
             if (dto.Claims == null) throw new ArgumentException("Invalid frozen v1 root: Claims.");
             if (dto.CompletedCourses == null) throw new ArgumentException("Invalid frozen v1 root: CompletedCourses.");
@@ -70,28 +83,12 @@ namespace StartupLife.Infrastructure
             if (dto.Receipts == null) throw new ArgumentException("Invalid frozen v1 root: Receipts.");
             if (dto.Scheduler == null) throw new ArgumentException("Invalid frozen v1 root: Scheduler.");
             if (dto.Skills == null) throw new ArgumentException("Invalid frozen v1 root: Skills.");
-            RequireNoExtension(dto.Employment);
-            RequireNoExtension(dto.Course);
-            RequireNoExtension(dto.Scheduler);
-            foreach (var value in dto.Arrears) RequireNoExtension(value);
-            foreach (var value in dto.Claims) RequireNoExtension(value);
-            foreach (var value in dto.CompletedCourses) RequireNoExtension(value);
-            foreach (var value in dto.Ledger) RequireNoExtension(value);
-            foreach (var value in dto.PreviousEmployment) RequireNoExtension(value);
             foreach (var value in dto.Receipts)
             {
-                RequireNoExtension(value);
                 var command = GameCommand.ParseCanonicalPayload(value.Payload);
                 if ((int)command.Kind > (int)CommandKind.AcknowledgePlayback)
                     throw new ArgumentException("Frozen v1 cannot carry future command semantics.");
             }
-            foreach (var value in dto.Skills) RequireNoExtension(value);
-        }
-
-        private static void RequireNoExtension(IExtensibleDataObject? value)
-        {
-            if (value == null) return;
-            if (value.ExtensionData != null) throw new ArgumentException("Frozen v1 contains unknown members.");
         }
 
         private static GameState ToCurrent(V1GameState s) => new GameState
