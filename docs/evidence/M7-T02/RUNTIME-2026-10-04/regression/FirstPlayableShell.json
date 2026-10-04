@@ -1,0 +1,222 @@
+{
+  "suite": "Startup Life M7 first playable shell source contract",
+  "passed": 43,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "Presentation references Content",
+      "passed": true,
+      "detail": "StartupLife.Core, StartupLife.Application, StartupLife.Content, StartupLife.Infrastructure, Unity.TextMeshPro, Unity.ugui, Unity.Localization"
+    },
+    {
+      "name": "Presentation references uGUI",
+      "passed": true,
+      "detail": "StartupLife.Core, StartupLife.Application, StartupLife.Content, StartupLife.Infrastructure, Unity.TextMeshPro, Unity.ugui, Unity.Localization"
+    },
+    {
+      "name": "Presentation references Localization",
+      "passed": true,
+      "detail": "StartupLife.Core, StartupLife.Application, StartupLife.Content, StartupLife.Infrastructure, Unity.TextMeshPro, Unity.ugui, Unity.Localization"
+    },
+    {
+      "name": "Editor references Input System",
+      "passed": true,
+      "detail": "StartupLife.Core, StartupLife.Content, StartupLife.Presentation, Unity.TextMeshPro, Unity.Localization, Unity.Localization.Editor, Unity.RenderPipelines.Universal.Runtime, Unity.RenderPipelines.Universal.2D.Runtime, Unity.ugui, Unity.InputSystem"
+    },
+    {
+      "name": "Canonical flow uses only public command/read contracts",
+      "passed": true,
+      "detail": "clean"
+    },
+    {
+      "name": "Bootstrap binds the canonical flow",
+      "passed": true,
+      "detail": "same seam as engine-free consumers"
+    },
+    {
+      "name": "Canonical command ids fail closed",
+      "passed": true,
+      "detail": "invalid injected ids must not dispatch"
+    },
+    {
+      "name": "Duplicate command seam is removed",
+      "passed": true,
+      "detail": "one authoritative FirstPlayableFlow"
+    },
+    {
+      "name": "Duplicate presentation harness is removed",
+      "passed": true,
+      "detail": "unique assertions merged into PresentationChecks"
+    },
+    {
+      "name": "Bootstrap requires authored Content asset",
+      "passed": true,
+      "detail": "content asset must be serialized into composition root"
+    },
+    {
+      "name": "Bootstrap builds Json serializer",
+      "passed": true,
+      "detail": "expected JsonSaveSerializer"
+    },
+    {
+      "name": "Bootstrap uses atomic local store",
+      "passed": true,
+      "detail": "expected AtomicFileSaveStore"
+    },
+    {
+      "name": "Bootstrap restores before creating a new run",
+      "passed": true,
+      "detail": "expected TryRestore"
+    },
+    {
+      "name": "Bootstrap does not hardcode first playable catalog",
+      "passed": true,
+      "detail": "Presentation must consume Content asset"
+    },
+    {
+      "name": "Work playback acknowledges committed activity",
+      "passed": true,
+      "detail": "playback completion must use reward-independent acknowledgement"
+    },
+    {
+      "name": "Work playback does not mutate domain state",
+      "passed": true,
+      "detail": "view must not mutate domain state"
+    },
+    {
+      "name": "Bootstrap owns pause lifecycle callback",
+      "passed": true,
+      "detail": "mobile lifecycle must enter through the composition root"
+    },
+    {
+      "name": "Bootstrap avoids focus duplicate checkpointing",
+      "passed": true,
+      "detail": "focus churn must not duplicate lifecycle actions"
+    },
+    {
+      "name": "Lifecycle reads only public presentation state",
+      "passed": true,
+      "detail": "lifecycle must not bypass FirstPlayableFlow"
+    },
+    {
+      "name": "Lifecycle pause stops active work coroutine",
+      "passed": true,
+      "detail": "paused coroutine locals must not drive resumed state"
+    },
+    {
+      "name": "Pending work replay requires unacknowledged cursor",
+      "passed": true,
+      "detail": "only cursor zero may replay a committed work cue"
+    },
+    {
+      "name": "Restored work cue is acknowledgement-only",
+      "passed": true,
+      "detail": "restore path must never recommit AdvanceBoundary"
+    },
+    {
+      "name": "Editor builder creates scene through EditorSceneManager",
+      "passed": true,
+      "detail": "scene must be generated through Unity"
+    },
+    {
+      "name": "Editor builder configures portrait reference canvas",
+      "passed": true,
+      "detail": "expected 1080x1920"
+    },
+    {
+      "name": "Editor builder uses MobileSafeArea",
+      "passed": true,
+      "detail": "safe area required"
+    },
+    {
+      "name": "Editor builder uses InputSystem UI module",
+      "passed": true,
+      "detail": "Input System EventSystem required"
+    },
+    {
+      "name": "Editor builder assigns default UI input actions",
+      "passed": true,
+      "detail": "input module must have actions"
+    },
+    {
+      "name": "Editor builder creates localization table",
+      "passed": true,
+      "detail": "FirstPlayableUI localization table required"
+    },
+    {
+      "name": "Editor builder seeds Content asset through content builder",
+      "passed": true,
+      "detail": "content asset must precede scene composition"
+    },
+    {
+      "name": "PlayMode first playable journey source exists",
+      "passed": true,
+      "detail": "expected full first playable flow test"
+    },
+    {
+      "name": "PlayMode test cleans persistent save",
+      "passed": true,
+      "detail": "tests must isolate autosave state"
+    },
+    {
+      "name": "PlayMode test drives UI buttons",
+      "passed": true,
+      "detail": "test should exercise view dispatch"
+    },
+    {
+      "name": "Lifecycle PlayMode covers fresh launch",
+      "passed": true,
+      "detail": "M7-T02 fresh launch test required"
+    },
+    {
+      "name": "Lifecycle PlayMode covers pause before acknowledge",
+      "passed": true,
+      "detail": "W1/W3 restore test required"
+    },
+    {
+      "name": "Lifecycle PlayMode covers pause after acknowledge",
+      "passed": true,
+      "detail": "W2 restore test required"
+    },
+    {
+      "name": "Lifecycle PlayMode covers course restart",
+      "passed": true,
+      "detail": "mid-course restore test required"
+    },
+    {
+      "name": "Lifecycle PlayMode covers next day restart",
+      "passed": true,
+      "detail": "next-day restore test required"
+    },
+    {
+      "name": "Lifecycle PlayMode covers backup recovery",
+      "passed": true,
+      "detail": "backup recovery test required"
+    },
+    {
+      "name": "Lifecycle PlayMode covers unreadable fail closed",
+      "passed": true,
+      "detail": "unreadable primary contract required"
+    },
+    {
+      "name": "Lifecycle PlayMode covers both invalid",
+      "passed": true,
+      "detail": "fatal save contract required"
+    },
+    {
+      "name": "Lifecycle PlayMode covers wall clock rule",
+      "passed": true,
+      "detail": "wall clock must not advance simulation"
+    },
+    {
+      "name": "Presentation source does not construct ContentCatalog",
+      "passed": true,
+      "detail": "balance/content construction belongs to Content assembly"
+    },
+    {
+      "name": "Presentation source does not inspect receipts",
+      "passed": true,
+      "detail": "views must not inspect receipts"
+    }
+  ]
+}

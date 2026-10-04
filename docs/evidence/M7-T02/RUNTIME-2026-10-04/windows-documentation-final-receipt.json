@@ -1,0 +1,8 @@
+{
+  "exitCode": null,
+  "command": "./scripts/validate-documentation.ps1",
+  "powershellVersion": "7.6.5",
+  "timestamp": "2026-10-04T15:53:21.3949693+07:00",
+  "head": "57418f618cb2122ba8f71b6d82975184a14f7870",
+  "dirty": "evidence/docs only"
+}

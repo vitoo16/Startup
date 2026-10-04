@@ -1,0 +1,115 @@
+Performing Streamed Install
+
+Success
+
+
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=21ms (0ms mobile, 0ms wifi, 21ms not connected)
+
+
+{"label": "A-created", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 1, "date": "2026-09-01", "minute": 0, "cursor": 0, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/op/1", "xp": null, "course": null, "cash": 2000000, "claims": 0}
+{"label": "A-employed", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 2, "date": "2026-09-01", "minute": 0, "cursor": 0, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/op/2", "xp": 0, "course": null, "cash": 2000000, "claims": 0}
+{"label": "B-before-work", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 2, "date": "2026-09-01", "minute": 0, "cursor": 0, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/op/2", "xp": 0, "course": null, "cash": 2000000, "claims": 0}
+{"label": "B-background", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 5, "date": "2026-09-01", "minute": 660, "cursor": 0, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/activity/2026-09-01/540", "xp": 10, "course": null, "cash": 2000000, "claims": 0}
+{"label": "B-after-wait", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 5, "date": "2026-09-01", "minute": 660, "cursor": 0, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/activity/2026-09-01/540", "xp": 10, "course": null, "cash": 2000000, "claims": 0}
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=14ms (0ms mobile, 0ms wifi, 14ms not connected)
+
+
+{"label": "B-restored-acknowledged", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 6, "date": "2026-09-01", "minute": 660, "cursor": 1, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/activity/2026-09-01/540", "xp": 10, "course": null, "cash": 2000000, "claims": 0}
+{"label": "B-shift-complete", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 12, "date": "2026-09-01", "minute": 1020, "cursor": 1, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/activity/2026-09-01/900", "xp": 40, "course": null, "cash": 2000000, "claims": 1}
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=27ms (0ms mobile, 0ms wifi, 27ms not connected)
+
+
+{"label": "B-after-ack-restart", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 12, "date": "2026-09-01", "minute": 1020, "cursor": 1, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/activity/2026-09-01/900", "xp": 40, "course": null, "cash": 2000000, "claims": 1}
+{"label": "C-before-restart", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 14, "date": "2026-09-01", "minute": 1080, "cursor": 0, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/op/14", "xp": 40, "course": {"Completed": false, "DefinitionId": "communication-basics", "InstanceId": "run-5ee7513f1d5d49ff83fa10556f833b18/course/7", "ProgressUnits": 600000}, "cash": 1800000, "claims": 1}
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=21ms (0ms mobile, 0ms wifi, 21ms not connected)
+
+
+{"label": "C-after-restore", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 14, "date": "2026-09-01", "minute": 1080, "cursor": 0, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/op/14", "xp": 40, "course": {"Completed": false, "DefinitionId": "communication-basics", "InstanceId": "run-5ee7513f1d5d49ff83fa10556f833b18/course/7", "ProgressUnits": 600000}, "cash": 1800000, "claims": 1}
+{"label": "D-before-restart", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 16, "date": "2026-09-02", "minute": 0, "cursor": 0, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/activity/2026-09-01/1320", "xp": 40, "course": {"Completed": false, "DefinitionId": "communication-basics", "InstanceId": "run-5ee7513f1d5d49ff83fa10556f833b18/course/7", "ProgressUnits": 600000}, "cash": 1800000, "claims": 1}
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=18ms (0ms mobile, 0ms wifi, 18ms not connected)
+
+
+{"label": "D-after-restore", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 16, "date": "2026-09-02", "minute": 0, "cursor": 0, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/activity/2026-09-01/1320", "xp": 40, "course": {"Completed": false, "DefinitionId": "communication-basics", "InstanceId": "run-5ee7513f1d5d49ff83fa10556f833b18/course/7", "ProgressUnits": 600000}, "cash": 1800000, "claims": 1}
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=22ms (0ms mobile, 0ms wifi, 22ms not connected)
+
+
+{"label": "E-next-write", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 17, "date": "2026-09-02", "minute": 0, "cursor": 0, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/op/17", "xp": null, "course": {"Completed": false, "DefinitionId": "communication-basics", "InstanceId": "run-5ee7513f1d5d49ff83fa10556f833b18/course/7", "ProgressUnits": 600000}, "cash": 1800000, "claims": 1}
+Traceback (most recent call last):
+  File "<USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\run_android_final.py", line 78, in <module>
+    same(day,recovered,('Employment','PreviousEmployment','Revision','NextOperation','Receipts','History'))
+  File "<USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\run_android_final.py", line 27, in same
+    assert {k:v for k,v in a.items() if k not in ignored} == {k:v for k,v in b.items() if k not in ignored}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

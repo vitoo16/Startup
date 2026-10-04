@@ -1,0 +1,40 @@
+{
+  "suite": "Startup Life content catalog bridge \u2014 .NET, not Unity",
+  "runtime": "8.0.31",
+  "passed": 8,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "first playable template builds expected immutable catalog",
+      "status": "passed"
+    },
+    {
+      "name": "duplicate content ids reject at conversion boundary",
+      "status": "passed"
+    },
+    {
+      "name": "missing career skill reference rejects",
+      "status": "passed"
+    },
+    {
+      "name": "missing course skill reference rejects",
+      "status": "passed"
+    },
+    {
+      "name": "invalid appearance id rejects",
+      "status": "passed"
+    },
+    {
+      "name": "career outside day schedule rejects",
+      "status": "passed"
+    },
+    {
+      "name": "built catalog is detached from mutable source arrays",
+      "status": "passed"
+    },
+    {
+      "name": "null authoring entries reject explicitly",
+      "status": "passed"
+    }
+  ]
+}

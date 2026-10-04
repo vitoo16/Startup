@@ -1,0 +1,1649 @@
+{
+  "schemaVersion": 1,
+  "createdUtc": "2026-10-04T08:57:36.450626+00:00",
+  "repository": "https://github.com/vitoo16/Startup",
+  "branch": "fix/m7-t02-runtime-evidence",
+  "startingHead": "79b3f0bc35ff9c32e45b51fe04715d253bd3abd5",
+  "testedRuntimeHead": "57418f618cb2122ba8f71b6d82975184a14f7870",
+  "evidenceCommit": "Evidence/docs-only publication commit after fiveCherryPickHead; resolve from this branch Git history. Manifest does not hash itself.",
+  "saveVersion": 1,
+  "persistedFieldsChanged": false,
+  "migrationRequired": false,
+  "emulator": {
+    "avd": "StartupLife_M7T02_API35",
+    "serial": "emulator-5560",
+    "adbPort": 5038,
+    "android": "15/API 35",
+    "profile": "Pixel 2",
+    "abi": "x86_64 with ARM64 translation"
+  },
+  "gates": {
+    "UnityEditor": "PASS",
+    "EditMode": "8/8 PASS",
+    "PlayMode": "11/11 PASS",
+    "AndroidEmulatorAThroughE": "PASS",
+    "physicalAndroid": "NOT RUN",
+    "iOS": "NOT RUN — external Mac/iOS route unavailable",
+    "M7T02": "IMPLEMENTED — EXTERNAL ACCEPTANCE BLOCKERS: physical Android + iOS",
+    "M8": "NOT READY",
+    "GateB": "NOT SAFE"
+  },
+  "artifacts": [
+    {
+      "path": ".gitattributes",
+      "bytes": 95,
+      "sha256": "c4cff81930e34e74fb4cb602e9a33b1245acbd6cc92ca9b676cd3af5f2dce741",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 96,
+      "sha256": "f710799c2e45c4045deddb099e703925de555d34428d046d5df9d48615d098d3",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/A-api35-creation.png",
+      "bytes": 12508,
+      "sha256": "6ff125d57ec7336906151d05f1fd472e578201626814dce86566fad0579d1cfb",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/A-api35-fresh.png",
+      "bytes": 42691,
+      "sha256": "e0a1c0991053657c1a989c3eebeb1e8f4a8eb3eb38f9d4244d87491c38249388",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/A-api35-ready.png",
+      "bytes": 96392,
+      "sha256": "7436f61b88394ae19a808018156a2844fc4520856fd4c6e1e0e894947353b249",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/A-created.png",
+      "bytes": 95288,
+      "sha256": "f7f09d84f4a21f569a84a7602fee116a9dfd6ec2cb2a2cd1c53da9db2627bddf",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/A-created.save.json",
+      "bytes": 2389,
+      "sha256": "a4fa3c1dd0ec5f769d36d275c37a34f8f2e3abb3c85bfc45dfc8d9a0a11303bd",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/A-employed.save.json",
+      "bytes": 3201,
+      "sha256": "ad1e47c7351aaca901c2c634a0fef6d46e7e2d7f61d650fc921f1ea63e042042",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/A-fresh.png",
+      "bytes": 528418,
+      "sha256": "43ae9d0faa11b130f74168ede4547d8ab4a11fa974375aba341fbe0996ce20b0",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/A-keyboard.png",
+      "bytes": 179055,
+      "sha256": "ba4647e1161d3d831db66c885fd3e4fd5c13f271b1efb431ecbc76f5dc1162c8",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/A-life.png",
+      "bytes": 172788,
+      "sha256": "39690ea7657858a1a03c7e8b583c2d526e74cbc031325875c67891741de4eaed",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/A-name-entered.png",
+      "bytes": 180595,
+      "sha256": "a4e8858932ca95f4dc5fd2908bb5b266be8c4b45204d9ff632ff4704c125720c",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/api35-crash.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/api35-launch-resumed.log",
+      "bytes": 17189,
+      "sha256": "7942dd7792fc6a328c56bb494e49bdc5664559f6f63a47fa501a8b4c8ca93dce",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/api35-launch.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/api35-properties.log",
+      "bytes": 33152,
+      "sha256": "dfa9e2f80ee8d17beb93817fc9e180fdf0bfdf7a0e57c0ff3755f2d16d1a3f49",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/B-after-wait.save.json",
+      "bytes": 4757,
+      "sha256": "266ac41f3c513c6bd4fb90951e58f812fafc979dbedc07ff26f1350ad0e78e5a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/B-background.png",
+      "bytes": 1241539,
+      "sha256": "8f385c5f49059a20ebf97abcc514e8eb756d9ca30977309354553c1be299de7c",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/B-background.save.json",
+      "bytes": 4757,
+      "sha256": "266ac41f3c513c6bd4fb90951e58f812fafc979dbedc07ff26f1350ad0e78e5a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/B-before-work.save.json",
+      "bytes": 3201,
+      "sha256": "ad1e47c7351aaca901c2c634a0fef6d46e7e2d7f61d650fc921f1ea63e042042",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/B-restored-acknowledged.save.json",
+      "bytes": 5165,
+      "sha256": "e97ced6de31b9202ed023b2ee206ce850c1b30ca9f04fd87cc484529842d60b7",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/B-restored.png",
+      "bytes": 182567,
+      "sha256": "3c10036634a9e3f7238e6723b9c19cc404d26dcc7c693d9710d5ec7a76c31756",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/B-shift-complete.save.json",
+      "bytes": 8238,
+      "sha256": "231f5afbeaa8ba90bc344c1666d073c0bb30ecc6bad068df1412cb0b5177ba05",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/build-provenance.json",
+      "bytes": 3820,
+      "sha256": "81d95b536e6caff310c86154bac41c59fd0a59cbf4c21b739adf39de1d1d643a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/build-x86_64-provenance.json",
+      "bytes": 3820,
+      "sha256": "84a08690e1f24f82f80a20a5d4bc11401b36e132932636af411b09e9eac43c5d",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/C-after-restore.png",
+      "bytes": 181818,
+      "sha256": "155acab1fbaed5d17ae416e8eb166dd49b782d41315f47a0b097794950454876",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/C-after-restore.save.json",
+      "bytes": 9434,
+      "sha256": "d92275523fbd12edc4b4525fafbd85f51b3f3dda9b342a2c3148ff15307774df",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/C-before-restart.png",
+      "bytes": 172145,
+      "sha256": "6a44b2bd9fff9493ca9a0ada9dd415be9ad2a82fb7853c6ec1efda45c3073eff",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/C-before-restart.save.json",
+      "bytes": 9434,
+      "sha256": "d92275523fbd12edc4b4525fafbd85f51b3f3dda9b342a2c3148ff15307774df",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/commands.ndjson",
+      "bytes": 21049,
+      "sha256": "e3d841fc7ca5d12cef6b97f5784bf1e575b933ced71db155e75eb0835cc73f40",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/D-after-restore.png",
+      "bytes": 182687,
+      "sha256": "bb87da3c6c5fee0c90bc80c03ea2cbfcc8cce28dadb460ffd03f1340971377e4",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/D-after-restore.save.json",
+      "bytes": 11038,
+      "sha256": "017242340a3314b54fbdee8f8e1b7e635e98c00199a931bde989a87f73e15f4e",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/D-before-restart.png",
+      "bytes": 69670,
+      "sha256": "f8d3073784d2b994db4e8b1dc0c8107f8546a06e1d8c139bdb8b2f86a45eef52",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/D-before-restart.save.json",
+      "bytes": 11038,
+      "sha256": "017242340a3314b54fbdee8f8e1b7e635e98c00199a931bde989a87f73e15f4e",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/E-both-invalid-fatal.png",
+      "bytes": 49046,
+      "sha256": "890cea73c553a1ae2feae5d792d09612bf74f6961a47654675690784ac3bfc51",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/E-next-write.save.json",
+      "bytes": 11458,
+      "sha256": "177c287775420cd7b02e583ef5582a694bef224a935aaf35bbf46ca25573e6ca",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/E-recovered-before-write.png",
+      "bytes": 182687,
+      "sha256": "bb87da3c6c5fee0c90bc80c03ea2cbfcc8cce28dadb460ffd03f1340971377e4",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/E-second-reload.png",
+      "bytes": 173799,
+      "sha256": "a18797d607342c076e649147edde9fdcc317414a423c3106d817d4d3bd0151b8",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/E-second-reload.save.json",
+      "bytes": 11458,
+      "sha256": "177c287775420cd7b02e583ef5582a694bef224a935aaf35bbf46ca25573e6ca",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/E-unreadable-fatal.png",
+      "bytes": 47238,
+      "sha256": "0ff964eeb5e475cf13833a37088472eec76b17adf5470c5445497bcdc6f593c5",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/files-after-recovery.log",
+      "bytes": 547,
+      "sha256": "426d975297041ad6b7525b80cb8824360e1b183e1596660a29ab6b5b6446ce13",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/files-before-recovery.log",
+      "bytes": 431,
+      "sha256": "c4cf1868aca7b087fe3ab22e46bf08ef94b1575b55565d02b7a19918539dd15b",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/files-fault-fixtures.log",
+      "bytes": 540,
+      "sha256": "1c7c81a89b1785d73186b5abd0f2fc42d89955984bc318dfb89953b7e8fbf26e",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/launch-crash.log",
+      "bytes": 3417,
+      "sha256": "af39f097e3ba8b233139cfdc9538e020279ae00d6ee3cbb1f33815a91cfd2c0a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/launch.log",
+      "bytes": 4568,
+      "sha256": "030f6a7bf2c9ecb4d595700761962f7d4883d06a2d0243b96db0c355f0c1bb2f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/lifecycle-emulator.metadata.json",
+      "bytes": 218,
+      "sha256": "6de813f4f116e2eafa7b4d9fe1a97463b3eced71f7c6472695802c12962fb11e",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/lifecycle-emulator.mp4",
+      "bytes": 10960810,
+      "sha256": "f90e86909630a513f922e3222341a26f0714fb2539cf52fa1aa20e2bee7ce57b",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/lifecycle-runtime.log",
+      "bytes": 139358,
+      "sha256": "4c465685390780f3fcd6c2569703d99148770ecc5f07e733dbb70413204bfa9d",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/M7RuntimeEmulatorBuild.cs",
+      "bytes": 1509,
+      "sha256": "377806f421554cc020f1834a1b7aeca030ad6424952b7889d37713d88297f789",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/M7RuntimeEvidenceBuild.cs",
+      "bytes": 1400,
+      "sha256": "4a1b699872c717a64600b9db1067c89f6e967fe2b025cbea3a22fee0fed89ee8",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android/observed-states.ndjson",
+      "bytes": 76138,
+      "sha256": "f4f7f40f2793ae2b47838ce54425b1720fa61ceb228bdfcc1dfbcc6e3dface6d",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/A-created.png",
+      "bytes": 173575,
+      "sha256": "1a443590abe7983655a803cc2e432d515719ff7525385d9e6e1ce11e3a2bb61f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/A-created.save.json",
+      "bytes": 2401,
+      "sha256": "6761c82b11f18db29c7eee40826aa48b9cf990645174db23a673aff47a29e386",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/A-creation.png",
+      "bytes": 96194,
+      "sha256": "ca66f81fe98c00e6056df96952e9bea8f166d8122647a8dbafdb279b97471e5f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/A-employed.png",
+      "bytes": 183327,
+      "sha256": "1efff95be8d1ac278408a2b08d8e5a456333fbc73a3ba52b52dfb6aad1e28184",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/A-employed.save.json",
+      "bytes": 3213,
+      "sha256": "c4a27bb9e0a76d721da728b1561b2f69ae08b82d59e4cfbca1d9f6e3a678feb3",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/acceptance.json",
+      "bytes": 715,
+      "sha256": "090862142fb03063ca8ba1098ffc253a04dc4a9b7563288ee2257eeb0bc25adc",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-launcher-too-early/A-creation.png",
+      "bytes": 12508,
+      "sha256": "6ff125d57ec7336906151d05f1fd472e578201626814dce86566fad0579d1cfb",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-launcher-too-early/commands.ndjson",
+      "bytes": 2702,
+      "sha256": "dc9639ec73e47a177e10a5ca6b494e24af07d3abf576ea0331d1f2e1e9944f10",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-launcher-too-early/current.png",
+      "bytes": 1241708,
+      "sha256": "6f06fd2fad54399bb60eeb074fdf13448400f6a3bd0924871327da8af5f1afc0",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-launcher-too-early/journey.log",
+      "bytes": 1676,
+      "sha256": "78c64375a1bfab0ab314b37017e40f75a0c23d762307805e8d2b03d521247ea5",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/A-created.png",
+      "bytes": 174146,
+      "sha256": "1139087f086fc1d670be21ce478b58815bf406cbb9fc953e2d73453e8ad3f77d",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/A-created.save.json",
+      "bytes": 2401,
+      "sha256": "7131dc51e30f4536bdc70d1da00d16c51c6154d516466a2567f2a96836ac1fd6",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/A-creation.png",
+      "bytes": 12508,
+      "sha256": "6ff125d57ec7336906151d05f1fd472e578201626814dce86566fad0579d1cfb",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/A-employed.png",
+      "bytes": 183810,
+      "sha256": "3abbfa208f0e8358fb4c6da5ea31e6274baeb0332dc188f724cc14c05e384e1c",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/A-employed.save.json",
+      "bytes": 3213,
+      "sha256": "556251f8a77b27399d5113dedaf3a5ca45c17c0290b6708119da7f7d13837199",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/B-after-wait.save.json",
+      "bytes": 4769,
+      "sha256": "ba0fda17d4873d9b32ff5c077a630e5ccf8a1b690455df261a2adcd4646084ec",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/B-background.png",
+      "bytes": 196529,
+      "sha256": "3c37028d225e7d954c0c28f01848b32ba2da239a74ae3b4911d1f4c3cc2d2b33",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/B-background.save.json",
+      "bytes": 4769,
+      "sha256": "ba0fda17d4873d9b32ff5c077a630e5ccf8a1b690455df261a2adcd4646084ec",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/B-before-work.save.json",
+      "bytes": 3213,
+      "sha256": "556251f8a77b27399d5113dedaf3a5ca45c17c0290b6708119da7f7d13837199",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/B-restored-acknowledged.png",
+      "bytes": 42424,
+      "sha256": "f3dcc93f531e5d34ee02090be82421f9280ab4e0d29cf00a15c32a82280b1a2f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/B-restored-acknowledged.save.json",
+      "bytes": 4769,
+      "sha256": "ba0fda17d4873d9b32ff5c077a630e5ccf8a1b690455df261a2adcd4646084ec",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/commands.ndjson",
+      "bytes": 7735,
+      "sha256": "8edd42a75c334c6be49828113b48113cc26ae979bb33ad5f4b16e31996f61e3d",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/journey.log",
+      "bytes": 2417,
+      "sha256": "dcdb10772c806729c8ef25065dd6a9aca6a39aefb70ae6caa4d4cb2e805e39bf",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/observed-states.ndjson",
+      "bytes": 18877,
+      "sha256": "0dc67c146402dba1dd58813b1a8229c0736d9a8049c5eed064c980be61c80c4d",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-after-ack-restart.png",
+      "bytes": 181559,
+      "sha256": "bfc585ef04a8b4884b40e0ece8f8d0f063d068944530a6ac07de420953bb3396",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-after-ack-restart.save.json",
+      "bytes": 8250,
+      "sha256": "4e7b9ee7ceea0542013e7bb7e217e43f091e6aaa8606e4c004b7b34ecf8825fe",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-after-wait.save.json",
+      "bytes": 4769,
+      "sha256": "dc3a0b854035e2caae148d7dfbd138162ec8b7e7636255cc648e895cc033d719",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-background.png",
+      "bytes": 173746,
+      "sha256": "e6c7bd56d7d07b844e1a4c5f701b80b0bab5ef4e1f5e2358e4fc39dcfc00cfb0",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-background.save.json",
+      "bytes": 4769,
+      "sha256": "dc3a0b854035e2caae148d7dfbd138162ec8b7e7636255cc648e895cc033d719",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-before-work.save.json",
+      "bytes": 3213,
+      "sha256": "c4a27bb9e0a76d721da728b1561b2f69ae08b82d59e4cfbca1d9f6e3a678feb3",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-restored-acknowledged.png",
+      "bytes": 184289,
+      "sha256": "5abb5c544874de00b7ffddd036beeb718d7c9550b12ab3b181dbd9e166cd9a55",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-restored-acknowledged.save.json",
+      "bytes": 5177,
+      "sha256": "69978be392ed603d766c790c164530612dcb02976af53ac29fee03f694027c87",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-shift-complete.png",
+      "bytes": 188097,
+      "sha256": "1ca10dc42b25ad0ce7e4d976594c9c232941e58c864661c537dc4cda12741ff8",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-shift-complete.save.json",
+      "bytes": 8250,
+      "sha256": "4e7b9ee7ceea0542013e7bb7e217e43f091e6aaa8606e4c004b7b34ecf8825fe",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/build-provenance.json",
+      "bytes": 3820,
+      "sha256": "4ffdcd5653d2292239157896f51b58d0d1bf5bd7b9930ae569f718eb5ec3d3a1",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/C-after-restore.png",
+      "bytes": 183487,
+      "sha256": "244140c89956e97817e4f7fa3195a87440e5b64c36dbf2c35532d13fe7c372fb",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/C-after-restore.save.json",
+      "bytes": 9446,
+      "sha256": "76bd95800ebb00db87207b9d1fe6f97facabcd70cd0f57d321ba46851816fda4",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/C-before-restart.png",
+      "bytes": 173748,
+      "sha256": "234202b2795be001b043d3cfa0975d340aafe4c625118b68755fed544ff95fd2",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/C-before-restart.save.json",
+      "bytes": 9446,
+      "sha256": "76bd95800ebb00db87207b9d1fe6f97facabcd70cd0f57d321ba46851816fda4",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/commands.ndjson",
+      "bytes": 22899,
+      "sha256": "8c545c8a81ddcff898ecf80b4460b25b20050cd5fb8794af8706e52fb8f2aab1",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/D-after-restore.png",
+      "bytes": 184253,
+      "sha256": "1308fc323f184df8a003de0bd74ab1f6074b86e75217aa4dcd7e8d3cc5375b64",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/D-after-restore.save.json",
+      "bytes": 11050,
+      "sha256": "27a381b685a34c5a5de93ff2ca253a145e26328d54fd9559dbd3ef625b0cee4c",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/D-before-restart.png",
+      "bytes": 69680,
+      "sha256": "a4a406beee727777a57df888217ecff6339f8b35081ad2018ae8bc4e7edb5d08",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/D-before-restart.save.json",
+      "bytes": 11050,
+      "sha256": "27a381b685a34c5a5de93ff2ca253a145e26328d54fd9559dbd3ef625b0cee4c",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-both-invalid-fatal.png",
+      "bytes": 31929,
+      "sha256": "fb889fa6c289e8e8b0434f344f296655ca11fc68795934507a5c83ed3bd9dd9e",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-next-write.png",
+      "bytes": 176611,
+      "sha256": "5be50afe0f05278e994cbf08b5cd4f2b1400946f3e4f3ca19d61b0a8e71ce736",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-next-write.save.json",
+      "bytes": 11470,
+      "sha256": "ee1e065669b9c8a11c05eb97f9b3225da432ef6e73847c56bb0dde694b77b2ca",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-recovered-before-write.png",
+      "bytes": 184253,
+      "sha256": "1308fc323f184df8a003de0bd74ab1f6074b86e75217aa4dcd7e8d3cc5375b64",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-second-reload.png",
+      "bytes": 175621,
+      "sha256": "0014e64ff331d05b18b394aabff5f76285a4053401a27c033a8c47489952b37a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-second-reload.save.json",
+      "bytes": 11470,
+      "sha256": "ee1e065669b9c8a11c05eb97f9b3225da432ef6e73847c56bb0dde694b77b2ca",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-unreadable-fatal.png",
+      "bytes": 30098,
+      "sha256": "e741900b0280b72056eefbfd480862bfdbd0dd7584a6b3c7fb119a99a65865fd",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/files-after-recovery.log",
+      "bytes": 538,
+      "sha256": "5347abd4b598231473fd26487eef7248afee619381d6e8250713d4d427f42289",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/inspect-current.png",
+      "bytes": 43465,
+      "sha256": "cee89a6b13ae420b3d2c791da9433e060ba85c0070ffe7fcbfc245dcb1061205",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/journey.log",
+      "bytes": 6249,
+      "sha256": "d1437c02c1d891f3d833a53a3dc9d2a41e8acb4f85126ae970fe5fedf6e72646",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/lifecycle-emulator.metadata.json",
+      "bytes": 487,
+      "sha256": "e97c1b2a16386b4c4e9ac09bc3f20a2700a61e1cd98d6a79003b7a16b4e92bb2",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/lifecycle-emulator.mp4",
+      "bytes": 10730894,
+      "sha256": "c425ceec7ba4265cb9e93c68edb4647d5881dc9cf798813981b78028cc9b265f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/logcat.txt",
+      "bytes": 1514491,
+      "sha256": "a042c58461de507d4a4f43306514542d7acfc4b1b62e00a86a986ca39181cc24",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/M7RuntimeEvidenceBuild.cs",
+      "bytes": 1402,
+      "sha256": "4ddc71285a4d690d61612bcc82dda2ab8cb7abe5cab4e06941088463ee52d597",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/observed-states.ndjson",
+      "bytes": 91863,
+      "sha256": "a480c07131fb76935601cedd973de4d988b58d9549a18273b81d8a5259723b61",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/resume.log",
+      "bytes": 1809,
+      "sha256": "628ec24f20a09472228a51e775c56517709bca9d34bf1bbdcac34d6197e15a1a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/startup-logcat.txt",
+      "bytes": 1058038,
+      "sha256": "7c0a1e19e11d909a78c8b763593489598724bbdd13faff935bf3799305df9236",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/video-decode-vfr-muxer.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/video-decode.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/video-frame-begin.png",
+      "bytes": 78284,
+      "sha256": "b1e6d623d52c5f2248fe57250e084b6370fb043a852197ab87b33e31cdd8c8cf",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/video-frame-end.png",
+      "bytes": 147192,
+      "sha256": "29677068afe1a7a3b796f763051abef0a80fa7d649b521088a437f1659ac8f8f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/video-frame-middle.png",
+      "bytes": 41460,
+      "sha256": "0425910e46adb3b1a0a853baa0ce8a97d00f311acedd76ab60f334046b28dbc7",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/Z-restored-valid.png",
+      "bytes": 175621,
+      "sha256": "0014e64ff331d05b18b394aabff5f76285a4053401a27c033a8c47489952b37a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/Z-restored-valid.save.json",
+      "bytes": 11470,
+      "sha256": "ee1e065669b9c8a11c05eb97f9b3225da432ef6e73847c56bb0dde694b77b2ca",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "editmode-final-results.xml",
+      "bytes": 12112,
+      "sha256": "82ee566be266969e9435b1f84a8a157d69b998dc342c2bd5adb47d8f862e228a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "editmode-results.xml",
+      "bytes": 9682,
+      "sha256": "1a54f979480f3f1cafe1c761addea1259b9156f4edf7349c8c19577ab7976ed8",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "fatal-failing.xml",
+      "bytes": 13720,
+      "sha256": "7444e7daedeea0940f895dcac1595f28b4d551534a1c5bc17e0bd3f4b6f58d8f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/android-build.log",
+      "bytes": 1666546,
+      "sha256": "8fb099e621ed197d1d7ab7161f7b9409fd53d0b27436e01ea2810a0bb741e314",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/android-final-build.log",
+      "bytes": 516373,
+      "sha256": "17a8ffb9389031cb4cc3a9663eee2ef9416860ff8f67fee85015a36d03531a3b",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/android-x86_64-build.log",
+      "bytes": 80222,
+      "sha256": "e5df08ec4500259208d387f7ba4ab4a6942b6d24e5065836100533791aedfe68",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/editmode-final.log",
+      "bytes": 39276,
+      "sha256": "33c9ebbc1c6b9f50a8610ca7f28205a6738cae5e7139bcc03e46a1b10366263a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/fatal-failing.log",
+      "bytes": 95234,
+      "sha256": "018c2d96c3f534e1b59e08d8e396246b9aca254ad127706fef62bfa9ce36733a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/fatal-repair.log",
+      "bytes": 35965,
+      "sha256": "9e4bce42e81a6e0ef00b959c32e012d1c2fe15a56cae8a46bdcba93be470a137",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/import.log",
+      "bytes": 38730,
+      "sha256": "f22074f131a2f3f65aaf4c9fb6564aad1634b8c71079cea71b7b0ab023775584",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/nextday-visual-failing.log",
+      "bytes": 59168,
+      "sha256": "4915d5c1a1158c54334fa5004aab477bd88d309ca53609cae281104bd25c99cf",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/playmode-final.log",
+      "bytes": 281038,
+      "sha256": "776e9c3667601945367dabefe0c83937e7fa5cdc437fcc0b96f254d82a4e48df",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/playmode-shared.log",
+      "bytes": 262974,
+      "sha256": "73ed74651dc9ebb6ea5b2fda2d0887a37bf7866dfbda9948fc47e06aa54616ff",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/playmode-unobserved.log",
+      "bytes": 258658,
+      "sha256": "d6ac9d4d7e24c9b50d8aad83b1166c3266a210d2d6b3ebe1ce24b633e27a7505",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/playmode.log",
+      "bytes": 266804,
+      "sha256": "9b628621308a9d2b9ce742aeb8f6541dcbb01b5191826ccbf403d9eb9e92378c",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/regression.log",
+      "bytes": 12893,
+      "sha256": "736b979ada520e7207ccae81a4c400f8d4314d665df95debcca5c109e9a48ab6",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/windows-documentation-closeout-missing-artifacts.log",
+      "bytes": 275,
+      "sha256": "5177ae203b7bbdb42387aee0e9ba37d15725943bd77e78cb75a298163d4fe204",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/windows-documentation-final.log",
+      "bytes": 272,
+      "sha256": "146d96ce2b3a39163cb91914b8b0c293a0ec30bdbf5192bba2724a3c50072c79",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "logs/windows-documentation.log",
+      "bytes": 272,
+      "sha256": "e70ca3265f1c7f33e1960f6f4c6bf3e5bff22f3870c3966d87a221aee21b827f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "nextday-visual-failing.xml",
+      "bytes": 5392,
+      "sha256": "63ab1602b392e0b06d9276265b3d5ef9c3748f3ef465ade3f44c03163b7a038a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "playmode-final-results.xml",
+      "bytes": 18277,
+      "sha256": "d248d6abd7b9fc46f77e8614c9ca22af07277f0dfb4943aebf5ac638cb502463",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "playmode-results.xml",
+      "bytes": 20036,
+      "sha256": "f64c31bfa062dbf54520c97ef79ab12a30f0eee3be1b35d9fd4921bf9cbbfe4a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "playmode-shared-results.xml",
+      "bytes": 17965,
+      "sha256": "a2a2f9c6fcfa1a12cc479fbef5fb53d8da0100a59bf05d1034cb9e0c896c1746",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "playmode-unobserved-results.xml",
+      "bytes": 17857,
+      "sha256": "001b506c14cfe6027cd3a2c013682eeaca83810c05fbce2a4cdd9a4d0ae8b337",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "publication/evidence-audit.json",
+      "bytes": 16775,
+      "sha256": "a75dbac572bd8c91b35f0bea5a8c7e64c1c5c669a416164f97503a883debcd18",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/local-ci-receipt.json",
+      "bytes": 1183,
+      "sha256": "98938c87a183b8d940f1021f9427aafb73a53caee5e86470af328ad99b26ff58",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/logs/regression.log",
+      "bytes": 12913,
+      "sha256": "bfc1ec679beec0a7cb54d29a602a069393e38a46fc0cc417496a93eda6037079",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/logs/static-ContentBridge.log",
+      "bytes": 185,
+      "sha256": "cf21cb3223f08040895df33e2ff55f748e54aecc425a2af85415e30bc12ceaec",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/logs/static-FirstPlayableShell.log",
+      "bytes": 192,
+      "sha256": "45a3e326d39a47f72ea15316c0db61266442fdc9ae421f0dc85f8b6c6c172360",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/logs/static-M1ApiContract.log",
+      "bytes": 177,
+      "sha256": "dd1ddc39179151e066bb6a411a7ba33190ca4f9bc91d3f85225b92a77a897539",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/logs/static-RepositorySecurity.log",
+      "bytes": 197,
+      "sha256": "711bff464ff8289c57b3c52e30ce846d066eab840b7af9b53754b42076bdd178",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/logs/static-UnityFoundation.log",
+      "bytes": 182,
+      "sha256": "b5bcf65dc2562e87662f2cbad83073b1fc2bee981316bf85afe849bf73e1a1ab",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/logs/static-UnityRunnerContract.log",
+      "bytes": 239,
+      "sha256": "187c143c802d7d21605b6701170e748415c24b4e47e095f1776d0c993f831e76",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/logs/windows-documentation.log",
+      "bytes": 272,
+      "sha256": "eb9962a3af4feeff8195ea16563b58eab25b892f9a4c410681b27acd4140ff5f",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/PUBLICATION.md",
+      "bytes": 9272,
+      "sha256": "0f1ec352947dac032f2f026e148feca6c23bd1a62874bc9f70347d1c334e6bb7",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/regression/astra-foundation-highs-report.json",
+      "bytes": 2576,
+      "sha256": "f58396ce9b9d54cbc944942365f46c17af403f89ca8f5f1a9e20c8add9191fb0",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/regression/astra-m2-restore-invariants-report.json",
+      "bytes": 4071,
+      "sha256": "86c3962bf0ccd4c1d62a410a39e9c840074ae8d2e1fc9c8cd7bd5aae1ce08929",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/regression/content-catalog-report.json",
+      "bytes": 934,
+      "sha256": "88ca1b6f4360dac809471ba28d6e39c707b3ceddb591de1c3adc4859d28da150",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/regression/ContentBridge.json",
+      "bytes": 1747,
+      "sha256": "0225c383318965e1260cf4eb39b6451b94f8a604d9db3d28af3b20f46b583a6f",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/regression/FirstPlayableShell.json",
+      "bytes": 7089,
+      "sha256": "110c270d549f37e553968a0e6021931229402b5f34b8a678517a19a5c9115efd",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/regression/M1ApiContract.json",
+      "bytes": 5336,
+      "sha256": "1b9509f1da3b2665e63323777af06588866a4705ad411526eb49ef46dffbae30",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/regression/presentation-adapter-report.json",
+      "bytes": 126,
+      "sha256": "8a024f2fc3915ec5f2b005d57d33cc40a9cab70dab35956752d3b878072a905e",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/regression/RepositorySecurity.json",
+      "bytes": 4158,
+      "sha256": "1794a46b3d3a368135f190bca7eeae700ab6f2839cb4e194e7586fb99ab01c1e",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/regression/simulation-report.json",
+      "bytes": 5822,
+      "sha256": "79aab3346e1fa8d9e9b09e3fbe02147e37b41358d17d598f6165751eac7a574b",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/regression/UnityFoundation.json",
+      "bytes": 4835,
+      "sha256": "009eb6c2abbf9b9a8d4129d704c0fa579e971eb1fd24f239fa184f7ba3594e5c",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/regression/UnityRunnerContract.json",
+      "bytes": 5109,
+      "sha256": "9a5670127f0406b927ec93fba7c32552afcf9277da0e877df33b1b87ad039e83",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/tooling/audit_evidence.py",
+      "bytes": 4237,
+      "sha256": "060578a36de3140d9ab7a0241efc143ac5532e535ca59e74eefacd7b4ba26d49",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "publication/windows-documentation-receipt.json",
+      "bytes": 249,
+      "sha256": "7acb9024783eff41b7e205ad1b40924ca005c8a97f55783691d432bca51416a2",
+      "role": "publication verification/tooling/diagnostic"
+    },
+    {
+      "path": "regression/astra-foundation-highs-report.json",
+      "bytes": 2659,
+      "sha256": "5b3e2a345512b326ed97e7bd799d3df9002c5fc3fc3403bf828186d86825f3e1",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "regression/astra-m2-restore-invariants-report.json",
+      "bytes": 4218,
+      "sha256": "1f18535bb37830a75ec87afba13ee96f09b8aa782f25d57d096335ed91e3e22d",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "regression/content-catalog-report.json",
+      "bytes": 974,
+      "sha256": "822861835f21067dc93b972775d919bf550cf3730cb36a2cf9c4a980ef65be42",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "regression/ContentBridge.json",
+      "bytes": 1794,
+      "sha256": "91aaedf9fe3498f75cbbf61a0bc070f8a74b3f10c3390a7c410a52594a257b61",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "regression/FirstPlayableShell.json",
+      "bytes": 7311,
+      "sha256": "bcb0d00f9affa3cb0e0161fc55ad553840c53430136b393b4ec19610b048060c",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "regression/M1ApiContract.json",
+      "bytes": 5499,
+      "sha256": "7d3682134cd82a33ab5b3f7469eed016126e6a8d4f0afdc488f325c963ce5c83",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "regression/presentation-adapter-report.json",
+      "bytes": 132,
+      "sha256": "9d844af4bd5e4fe6e25feaf8cdf465144b46df777d7e7be541307fbaf6418f57",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "regression/RepositorySecurity.json",
+      "bytes": 4307,
+      "sha256": "4d574fa7ed4d6fe11a403f9f9cc56bad5165004794ff672de7cb7507151b35bc",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "regression/simulation-report.json",
+      "bytes": 6031,
+      "sha256": "95939f221625541d95d6ef19514d381e657ebb826f183316a376d05ad56375ee",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "regression/UnityFoundation.json",
+      "bytes": 4998,
+      "sha256": "221088b90a63e94a7a66f2a7944f4ae3cfb700f08cd8e04a1ce16bf00154e36a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "regression/UnityRunnerContract.json",
+      "bytes": 5269,
+      "sha256": "03a3cb48b82ff10248c728d235e6b0f5bc9e265de740e142341213d7abe391c5",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "rejected/05-next-day-stale-view.png",
+      "bytes": 142618,
+      "sha256": "dadd2036c35f9ce7da919f8886a939ca157068b1d4b0c06a668e3956f109d645",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 17867,
+      "sha256": "8b8be612ff1ef4a0cd78d30b4fd79f43d49f03d7cf06eeb20ac4ee73b1e5c2db",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-164fd67c04414dbc94e68bf030d08978-1.json",
+      "bytes": 2403,
+      "sha256": "a793146441b832ca7545ec7275b0b60bac0da1b769dc5328a209086bb45558bd",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-164fd67c04414dbc94e68bf030d08978-2.json",
+      "bytes": 3215,
+      "sha256": "61b8f581b7e03f788e9975de828128eda3e679776b71b33d7d7535c3723c6c54",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-164fd67c04414dbc94e68bf030d08978-3.json",
+      "bytes": 3619,
+      "sha256": "637b248d3abf585b585148e9d0094672e9aed16bfcd59e228f3e9d8cd00bc2cd",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-164fd67c04414dbc94e68bf030d08978-4.json",
+      "bytes": 4019,
+      "sha256": "71f348163de2160fb2fea5da222c7a909294e700c4f21ed33f845a9f422b016b",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-164fd67c04414dbc94e68bf030d08978-5.json",
+      "bytes": 4771,
+      "sha256": "8dc38339c860d4a3630dda664ec09e243edc2baf848cb513867fbeb10a63cd89",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-164fd67c04414dbc94e68bf030d08978-6.json",
+      "bytes": 5179,
+      "sha256": "d74c34c905aa1808c0a98ae213fc68ea926b09eb4a06b2d047f29a97a9eb9d60",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-1.json",
+      "bytes": 2379,
+      "sha256": "e27806789739181b6ca087f4c5d9d0667c21aaba72dad05a0eb9dd1c73c3b44e",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-10.json",
+      "bytes": 6800,
+      "sha256": "a61d8671b6eafe532473a3b904c4cbac93a8294760da48346a4aed9c9a000625",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-11.json",
+      "bytes": 7816,
+      "sha256": "290afdfc67bb6e63ee3a80939168a9a0ffad4c4ec195f6ef388cb6e34de0fe05",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-12.json",
+      "bytes": 8232,
+      "sha256": "4edd27f264032741d3b9c197b1da31eeeb4e771cf74d21253e1f832da6f007c9",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-13.json",
+      "bytes": 9008,
+      "sha256": "f895fba2c9ab61a5b5e6ec5a17322be355b6c5a3ea9e770416bd065264ec5fb9",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-14.json",
+      "bytes": 9812,
+      "sha256": "f29f7b21ad41fff7a5b5661d00abba606711f5318a943152eebe4a1dc44ad5e7",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-2.json",
+      "bytes": 3191,
+      "sha256": "e6eec21e25535ce1f4dc7edd4ce4cb591a92b94b0e34a6eb2bbdc1a0ad81cff2",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-3.json",
+      "bytes": 3595,
+      "sha256": "bf5ab55194e6776d7fdc919786a0b85cec5aa914735fbd4091aeecd4da94021a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-4.json",
+      "bytes": 3995,
+      "sha256": "a1d14dde7be1abe1a44c7293b3d1b61ed648867da93e1f372853621722c69b8f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-5.json",
+      "bytes": 4751,
+      "sha256": "52db5c0d963e9f9a5ce57529988ff0df145707772ec7daaafd2f73ad0365820a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-6.json",
+      "bytes": 5159,
+      "sha256": "c0a2868fd8de11ccef256ab6571a67b4f867dacf068a603e76c7cc9ad2c5a1da",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-7.json",
+      "bytes": 5571,
+      "sha256": "5931b8d0fc7b6d60d29c0cabfcb575d3f1991de911f197217342ababfdbedd4f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-8.json",
+      "bytes": 5979,
+      "sha256": "5138fa1c683d3c00c853fdca19d476ab217ef13e925ac2bb9085d9ad1fc7cbb3",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-9.json",
+      "bytes": 6387,
+      "sha256": "dce16689b23ad00cc9edc7c0eb7e40178e7824c8e4fede308fe3f42da97c697c",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1ac79fac9ea946669738ea1612fc8600-1.json",
+      "bytes": 2387,
+      "sha256": "930c082e69272321bc7a6b2070b32eee98137172aa955a627b1b2fd4c2a77c92",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-2b647021f4594812a17386e108a62272-1.json",
+      "bytes": 2407,
+      "sha256": "481d30f594efc11cb646f1799a56eaa28da6f62ee85a4988d8d2b56139c615de",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-2b647021f4594812a17386e108a62272-2.json",
+      "bytes": 3219,
+      "sha256": "79520055c918e7cd83f09bc6c8b78e6a32ae80ac8751c7639244d6c8daf41f9f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-1.json",
+      "bytes": 2399,
+      "sha256": "6594878253b2fef9d9c468854503bcc0233f549e943e34347bc58dcca02a1297",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-10.json",
+      "bytes": 6820,
+      "sha256": "47b02b594d3fa64d0502586cfe218be65798526710d2d0beaebc442adb7f4919",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-11.json",
+      "bytes": 7824,
+      "sha256": "03e7b84fe2591ba187b74bb22c24703bf2019a665de2a72e72a611d8cb26673c",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-12.json",
+      "bytes": 8236,
+      "sha256": "69f953cfcbaa5b2067c583607883da2683bc06ae33f672fe123eabe1c3e2341e",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-2.json",
+      "bytes": 3211,
+      "sha256": "b3fff161ebb15856d33bd31709aead411db3e4328ef68a75b98dfe4e35e51de3",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-3.json",
+      "bytes": 3615,
+      "sha256": "535e809a1bd3f166911f8697b050ac9711bd42af4d90e8356144c5a5f3264af7",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-4.json",
+      "bytes": 4015,
+      "sha256": "10857d6c59697688c5edadbc21394a02308cf65d4d48dfa94fd50f01a38e2114",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-5.json",
+      "bytes": 4771,
+      "sha256": "19ec010a8057107ec3704fb110db4aed9bf0c9bd2f64d3ae6c7f762252baa967",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-6.json",
+      "bytes": 5179,
+      "sha256": "6264bc91528fedbb8ab3b24f064233b6a68e922a33e2d4e12af0ac1c76f83957",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-7.json",
+      "bytes": 5591,
+      "sha256": "c5a87e0b9fc206968d16f3627a0c6561b3fbf34c81c1b32ffc18ac7bd7012ccd",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-8.json",
+      "bytes": 5999,
+      "sha256": "e076e1dc7ee24ef8caa32b902f4dd04ff8c0f6492f3176dc8b1f7ba70aa5292b",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-9.json",
+      "bytes": 6407,
+      "sha256": "a762e45a60bd85389f3c1c0d2c910a7567d622f7efa82ce0ee74b037d412993c",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-6bd7c1ddbb714e529858bd512a129731-1.json",
+      "bytes": 2391,
+      "sha256": "f128b2fb500adb8654fff2e5ca6e4c72a70b8828aac394ae821c10e83e4e8647",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-6bd7c1ddbb714e529858bd512a129731-2.json",
+      "bytes": 3203,
+      "sha256": "b41d6bc2b3830bf52dc5f0b37688e930d57c07fd9a9e923dcd66712881344b92",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-1.json",
+      "bytes": 2395,
+      "sha256": "c093bd43ce3af8c450093b5e3cdb5344b31a0def0b0c08cd6a919886f32ea262",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-10.json",
+      "bytes": 6816,
+      "sha256": "0b543e6d47ace44b5e7166b73d8ac6fd66855dfada2d752f0ce27d412d092b5f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-11.json",
+      "bytes": 7820,
+      "sha256": "6113273493573aa9110faa9c162aeb2dae1b546a0a05bdfa7f83d74640e10974",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-12.json",
+      "bytes": 8232,
+      "sha256": "423ef4cbe096eefcfd0262b308c308173bcb0ec8eca24bba93f2e233f003b14c",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-13.json",
+      "bytes": 9112,
+      "sha256": "31a40e9ca800b2cb6f67e3f4a130352b2c1fe8ce6825e721c19c1b14239734ad",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-14.json",
+      "bytes": 9432,
+      "sha256": "b58ef803ae7fb17eb3ca517fbcb26d866dd4039275b10e54782c1714a9db43b5",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-15.json",
+      "bytes": 9748,
+      "sha256": "4b493c3a39c46b2ea28bcf44e2c2bd6f45f56c7cda7cadeb672667274ef9ad67",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-16.json",
+      "bytes": 10064,
+      "sha256": "083fd2e0c6bfb11bd4955f8d8cc26520927c8a5435b318bec6b02e456fa9e636",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-17.json",
+      "bytes": 10380,
+      "sha256": "3d66bf8488afc7158a97dacf1c5e3c31672f9577c6116c599a637774e496b10d",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-18.json",
+      "bytes": 10696,
+      "sha256": "2c766b60ee2433686fcca905b47e2c938c66357f7d08091109ef0358410601b4",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-19.json",
+      "bytes": 11512,
+      "sha256": "aea2e1b05f1308bd060a5884104dca87758333a4e53654be4bd9a09e744230a4",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-2.json",
+      "bytes": 3211,
+      "sha256": "4cf78b99d35e276d0698d846218e706145bf17142f59a299f77c60e54935cd86",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-20.json",
+      "bytes": 11892,
+      "sha256": "c3aceeb332105cfb9ee486f581527d5a1bab1986001efcb14cdb7658d43996d5",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-21.json",
+      "bytes": 12296,
+      "sha256": "fbdcefd1a67c97688ad8f56210f172474238c9d328d6bf652d01aa39c99033d0",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-22.json",
+      "bytes": 12728,
+      "sha256": "79b086f7696370c35ffafeb0817fe0e67b32ff0cf5322c377382d798ee1e9fa7",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-23.json",
+      "bytes": 13140,
+      "sha256": "5088dc9ca167ccb0aace29d1e05ac1430d1811719448cbe77f1942625e26b7ff",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-24.json",
+      "bytes": 13564,
+      "sha256": "0b4ec7e416b051866c226052c47b326e096808e3778ae5a295e1f06e01e39889",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-25.json",
+      "bytes": 13980,
+      "sha256": "81a1a3c3c7016d89286cd6dd24a61dad393a8561cae7c436cf54c360c5a21884",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-26.json",
+      "bytes": 14380,
+      "sha256": "dc05d8cbeba80d0cfc17fab6ca10a6847d84fc1660dc75d98021966d07aa5b3a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-27.json",
+      "bytes": 14792,
+      "sha256": "9a25cf8c383dc4f9e266211af9ea245c4fb33c68be4b09e8b779dbdcdbacedb4",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-28.json",
+      "bytes": 15812,
+      "sha256": "801fda0aace7ff7369a4a81cb2e9d69fd519c2088dc1800d9fefa585680d4b63",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-29.json",
+      "bytes": 16228,
+      "sha256": "a41188c14bb716436fd4f56ae0c31c87d8204d0542700175cc3f1232c2305aa5",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-3.json",
+      "bytes": 3611,
+      "sha256": "306c54fd838bf1c7c4f0273cb679c02a1242906793a6ffeeaec90f35c1666f81",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-30.json",
+      "bytes": 16664,
+      "sha256": "5a17c6231c907c2a1fbf872c3fda330e3d6b8b34a596c945b7f47340e559550a",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-4.json",
+      "bytes": 4015,
+      "sha256": "97c5a816ef5753e874269a87139ce2468cc47eed89d569a746e790d79bb5c174",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-5.json",
+      "bytes": 4767,
+      "sha256": "533f688d5256303a26981a5d46e0d83d014f4dbac84003d7f4bf727945b20576",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-6.json",
+      "bytes": 5175,
+      "sha256": "9b31310d079cead49ab763f8803dc5b5655093278012b66f21c8b0068640f5ba",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-7.json",
+      "bytes": 5587,
+      "sha256": "2a9a9b5ee26d0a067a327c3a7f0c64742bde1ec6c03b88db2efee8856e91cbde",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-8.json",
+      "bytes": 5995,
+      "sha256": "42273732040d03ad4611d247da8cca60871c5580a4053cec228590b3c89db597",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-9.json",
+      "bytes": 6403,
+      "sha256": "3a7c17e43fa4e5a9f5c33cbd1caf295dbb4c71daed8f7bef93e236380a2eeecc",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-a1edd37080ff4f22b561c62727f363c8-1.json",
+      "bytes": 2399,
+      "sha256": "6f3c8592132bac7a67fd7156987a81a350d9c4fb57293d4bcb817990b7ff3758",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-a1edd37080ff4f22b561c62727f363c8-2.json",
+      "bytes": 3211,
+      "sha256": "c5209b13242ccf0c575dd9da755cba87ea6a1d6c2b08851de8600a8ba83e3020",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-a1edd37080ff4f22b561c62727f363c8-3.json",
+      "bytes": 3655,
+      "sha256": "64c528f92f84b8c34f9b757f8e1455504f26b4afb56cd8f21499d90d8f5b3a8d",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "tooling/android_probe.py",
+      "bytes": 4736,
+      "sha256": "79a5ecff4d778fe7d795782c566193d72c2ad0a2f7d25d2caf17617b8378fbbd",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "tooling/observe_shared.py",
+      "bytes": 2824,
+      "sha256": "328efe919fd72994e0fce0d7cf3a525c3c08a74143d88dca32bcb95541597274",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "tooling/resume_android_final.py",
+      "bytes": 1886,
+      "sha256": "ebd7f71b934c09d607edb3754e0c155095c3001948f4ebba9dfa4adf4801df12",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "tooling/run_android_final.py",
+      "bytes": 5618,
+      "sha256": "63059794c8c7f00adf50e845f7200e3651c2b433026504f36317b1521b5ceada",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "tooling/verify_video.py",
+      "bytes": 1558,
+      "sha256": "93a36d6e7a6bbe2ab850ad5ca2e71eae0cb3425d78a5684227529d86a8998dae",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "tooling/video_metadata.py",
+      "bytes": 1546,
+      "sha256": "6704948283bd5bd3aa66265e59e5d342515af127ebc36bcc63dd3f961f01b335",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "unity-observed-states.ndjson",
+      "bytes": 77474,
+      "sha256": "0a195348f04c87dc14a6196097eaddf7e7b2b7a6cc90820f978e7e253c8d8bbd",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/01-work-before-pause.png",
+      "bytes": 142291,
+      "sha256": "489350c5e1f7f17eb86d0c1278870fb2e9dfd18bd65125bb4b36919bf88c9687",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/02-work-restored-before-ack.png",
+      "bytes": 142418,
+      "sha256": "d0130d3aa0e317d0eb4943309fd14f4d4422fc11af8d4ed728a64e586662d7df",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/03-course-before-restart.png",
+      "bytes": 142270,
+      "sha256": "03c9619bd2c01f1b3f4f4e62b06b5c56cf4381e199f9c0e208a9b87570f6d778",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/04-course-after-restore.png",
+      "bytes": 141732,
+      "sha256": "edcf1832b51a23be9779f082c29cf979c266bbff326470fd09bb841583a8a8d3",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/05-next-day-before-restart.png",
+      "bytes": 143883,
+      "sha256": "b6b699809f835ee4dc202ebce2dde4abd36e06b347be0e2f642568cfc93e84c8",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/06-next-day-after-restore.png",
+      "bytes": 138725,
+      "sha256": "1b8616e659f5521d608b103e0e39a1b6d979bc35daf55462ab9e74537b8a4990",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/07-unreadable-fatal.png",
+      "bytes": 46024,
+      "sha256": "d514799642df444f4a89039e9b8760669a2c3c8ca1faac8344dc1eadd13527d4",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/08-both-invalid-fatal.png",
+      "bytes": 47942,
+      "sha256": "f4be991bf8d7dfeaf06f2e65915eb422f2c0acc3fc02c50046373f35a323b19f",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "windows-documentation-final-receipt.json",
+      "bytes": 255,
+      "sha256": "c1357f71211952b92c717f5128327cf1b5de14436700d99089acc2b0914baea3",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    },
+    {
+      "path": "windows-documentation-receipt.json",
+      "bytes": 220,
+      "sha256": "5db0da07e0315c32c7b8e6f773d27ff679f82b5f453b4a890f6b76aecc1e4c48",
+      "role": "runtime verification/baseline/tooling/diagnostic"
+    }
+  ],
+  "publication": {
+    "remoteMain": "71cfa55e8fd4ebd9d7cac03a31da8f93c15ae62f",
+    "pr21Merge": "71cfa55e8fd4ebd9d7cac03a31da8f93c15ae62f",
+    "preservedLocalHead": "11106836fa70bab9c70b0520c6e27c0f84804d84",
+    "fiveCherryPickHead": "1069171504c6c42ba0c8651e13c9c477ff906e33",
+    "productionTreeIdentical": true,
+    "trees": {
+      "Assets": "d842a944d1d49faf800fe9a4c7fdfae290f6e088",
+      "Packages": "693d64c7000ebd74105ea7ca5aff040e268c4ee9",
+      "ProjectSettings": "96655653f3cb972c63c66a44c6462da28c47bb5d"
+    },
+    "xmlRepair": "Only angle-bracket path placeholders replaced; all eight reports match original executed testcase fullname/result/duration tuples.",
+    "updatedUtc": "2026-10-04T09:55:05.360809+00:00"
+  }
+}

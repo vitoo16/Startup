@@ -1,0 +1,438 @@
+{
+  "xml": {
+    "editmode-final-results.xml": {
+      "runnerTotal": 9,
+      "projectTotal": 8,
+      "projectPassed": 8,
+      "projectFailed": 0,
+      "projectSkipped": 0,
+      "cases": [
+        {
+          "name": "StartupLife.Tests.EditMode.ContentCatalogTests.FirstPlayableTemplateBuildsThroughContentAssembly",
+          "result": "Passed",
+          "duration": "0.019243"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.ContentCatalogTests.InvalidAuthoringDataFailsBeforeRuntimeCatalogPublication",
+          "result": "Passed",
+          "duration": "0.001639"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.ContentCatalogTests.ScriptableObjectWrapperBuildsDetachedCatalog",
+          "result": "Passed",
+          "duration": "0.001141"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.FirstPlayableShellTests.GeneratedContentAssetImportsAndBuildsTheFirstPlayableCatalog",
+          "result": "Passed",
+          "duration": "0.001980"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.FirstPlayableShellTests.GeneratedSceneReopensWithSerializedContentAndControllerBindings",
+          "result": "Passed",
+          "duration": "0.514444"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.FoundationTests.DeveloperQuotasAndOrderingRemainDeterministicInUnity",
+          "result": "Passed",
+          "duration": "0.012961"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.FoundationTests.LeapDatesAndCheckedMoneyUseEngineIndependentContracts",
+          "result": "Passed",
+          "duration": "0.000937"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.FoundationTests.SafeAreaReappliesAfterResolutionChangeWithoutAccumulatingOffsets",
+          "result": "Passed",
+          "duration": "0.002445"
+        }
+      ]
+    },
+    "editmode-results.xml": {
+      "runnerTotal": 8,
+      "projectTotal": 8,
+      "projectPassed": 8,
+      "projectFailed": 0,
+      "projectSkipped": 0,
+      "cases": [
+        {
+          "name": "StartupLife.Tests.EditMode.ContentCatalogTests.FirstPlayableTemplateBuildsThroughContentAssembly",
+          "result": "Passed",
+          "duration": "0.033184"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.ContentCatalogTests.InvalidAuthoringDataFailsBeforeRuntimeCatalogPublication",
+          "result": "Passed",
+          "duration": "0.003438"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.ContentCatalogTests.ScriptableObjectWrapperBuildsDetachedCatalog",
+          "result": "Passed",
+          "duration": "0.001831"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.FirstPlayableShellTests.GeneratedContentAssetImportsAndBuildsTheFirstPlayableCatalog",
+          "result": "Passed",
+          "duration": "0.003435"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.FirstPlayableShellTests.GeneratedSceneReopensWithSerializedContentAndControllerBindings",
+          "result": "Passed",
+          "duration": "0.353810"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.FoundationTests.DeveloperQuotasAndOrderingRemainDeterministicInUnity",
+          "result": "Passed",
+          "duration": "0.008578"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.FoundationTests.LeapDatesAndCheckedMoneyUseEngineIndependentContracts",
+          "result": "Passed",
+          "duration": "0.000661"
+        },
+        {
+          "name": "StartupLife.Tests.EditMode.FoundationTests.SafeAreaReappliesAfterResolutionChangeWithoutAccumulatingOffsets",
+          "result": "Passed",
+          "duration": "0.001911"
+        }
+      ]
+    },
+    "fatal-failing.xml": {
+      "runnerTotal": 9,
+      "projectTotal": 9,
+      "projectPassed": 7,
+      "projectFailed": 2,
+      "projectSkipped": 0,
+      "cases": [
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AcknowledgedWorkCueDoesNotReplayAfterRestart",
+          "result": "Passed",
+          "duration": "2.103759"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.BothInvalidSavesFailWithoutStartingNewRun",
+          "result": "Failed",
+          "duration": "0.476369"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.CorruptPrimaryRecoversBackupAndAllowsNextWrite",
+          "result": "Passed",
+          "duration": "0.694725"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.FreshLaunchWithoutSaveShowsCharacterCreation",
+          "result": "Passed",
+          "duration": "0.211847"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.MidCourseRestartRestoresExactProgressAndCompletesOnce",
+          "result": "Passed",
+          "duration": "1.559393"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.NextDayRestartDoesNotRecommitBoundary",
+          "result": "Passed",
+          "duration": "0.898700"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards",
+          "result": "Passed",
+          "duration": "0.944056"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.RealElapsedPauseDoesNotAdvanceSimulation",
+          "result": "Passed",
+          "duration": "0.629203"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.UnreadablePrimaryFailsClosedWithoutUsingBackup",
+          "result": "Failed",
+          "duration": "0.458084"
+        }
+      ]
+    },
+    "nextday-visual-failing.xml": {
+      "runnerTotal": 1,
+      "projectTotal": 1,
+      "projectPassed": 0,
+      "projectFailed": 1,
+      "projectSkipped": 0,
+      "cases": [
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.NextDayRestartDoesNotRecommitBoundary",
+          "result": "Failed",
+          "duration": "1.401165"
+        }
+      ]
+    },
+    "playmode-final-results.xml": {
+      "runnerTotal": 11,
+      "projectTotal": 11,
+      "projectPassed": 11,
+      "projectFailed": 0,
+      "projectSkipped": 0,
+      "cases": [
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableFlowTests.CreateWorkStudyAndAdvanceDayThroughViews",
+          "result": "Passed",
+          "duration": "11.509227"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AcknowledgedWorkCueDoesNotReplayAfterRestart",
+          "result": "Passed",
+          "duration": "1.060314"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.BothInvalidSavesFailWithoutStartingNewRun",
+          "result": "Passed",
+          "duration": "0.550953"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.CorruptPrimaryRecoversBackupAndAllowsNextWrite",
+          "result": "Passed",
+          "duration": "0.808891"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.FreshLaunchWithoutSaveShowsCharacterCreation",
+          "result": "Passed",
+          "duration": "0.256888"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.MidCourseRestartRestoresExactProgressAndCompletesOnce",
+          "result": "Passed",
+          "duration": "1.347794"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.NextDayRestartDoesNotRecommitBoundary",
+          "result": "Passed",
+          "duration": "1.019249"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards",
+          "result": "Passed",
+          "duration": "1.031471"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.RealElapsedPauseDoesNotAdvanceSimulation",
+          "result": "Passed",
+          "duration": "0.663510"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.UnreadablePrimaryFailsClosedWithoutUsingBackup",
+          "result": "Passed",
+          "duration": "0.567026"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.MobileBaselineTests.BaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage",
+          "result": "Passed",
+          "duration": "0.267172"
+        }
+      ]
+    },
+    "playmode-results.xml": {
+      "runnerTotal": 11,
+      "projectTotal": 11,
+      "projectPassed": 9,
+      "projectFailed": 2,
+      "projectSkipped": 0,
+      "cases": [
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableFlowTests.CreateWorkStudyAndAdvanceDayThroughViews",
+          "result": "Passed",
+          "duration": "9.920940"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AcknowledgedWorkCueDoesNotReplayAfterRestart",
+          "result": "Passed",
+          "duration": "0.841564"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.BothInvalidSavesFailWithoutStartingNewRun",
+          "result": "Passed",
+          "duration": "0.364080"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.CorruptPrimaryRecoversBackupAndAllowsNextWrite",
+          "result": "Failed",
+          "duration": "0.358532"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.FreshLaunchWithoutSaveShowsCharacterCreation",
+          "result": "Passed",
+          "duration": "0.164182"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.MidCourseRestartRestoresExactProgressAndCompletesOnce",
+          "result": "Failed",
+          "duration": "0.814415"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.NextDayRestartDoesNotRecommitBoundary",
+          "result": "Passed",
+          "duration": "0.680908"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards",
+          "result": "Passed",
+          "duration": "0.803636"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.RealElapsedPauseDoesNotAdvanceSimulation",
+          "result": "Passed",
+          "duration": "0.574737"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.UnreadablePrimaryFailsClosedWithoutUsingBackup",
+          "result": "Passed",
+          "duration": "0.346452"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.MobileBaselineTests.BaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage",
+          "result": "Passed",
+          "duration": "0.166876"
+        }
+      ]
+    },
+    "playmode-shared-results.xml": {
+      "runnerTotal": 11,
+      "projectTotal": 11,
+      "projectPassed": 11,
+      "projectFailed": 0,
+      "projectSkipped": 0,
+      "cases": [
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableFlowTests.CreateWorkStudyAndAdvanceDayThroughViews",
+          "result": "Passed",
+          "duration": "10.507911"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AcknowledgedWorkCueDoesNotReplayAfterRestart",
+          "result": "Passed",
+          "duration": "0.931678"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.BothInvalidSavesFailWithoutStartingNewRun",
+          "result": "Passed",
+          "duration": "0.435703"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.CorruptPrimaryRecoversBackupAndAllowsNextWrite",
+          "result": "Passed",
+          "duration": "0.637545"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.FreshLaunchWithoutSaveShowsCharacterCreation",
+          "result": "Passed",
+          "duration": "0.193405"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.MidCourseRestartRestoresExactProgressAndCompletesOnce",
+          "result": "Passed",
+          "duration": "1.164345"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.NextDayRestartDoesNotRecommitBoundary",
+          "result": "Passed",
+          "duration": "0.823683"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards",
+          "result": "Passed",
+          "duration": "0.895463"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.RealElapsedPauseDoesNotAdvanceSimulation",
+          "result": "Passed",
+          "duration": "0.607886"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.UnreadablePrimaryFailsClosedWithoutUsingBackup",
+          "result": "Passed",
+          "duration": "0.401890"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.MobileBaselineTests.BaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage",
+          "result": "Passed",
+          "duration": "0.203553"
+        }
+      ]
+    },
+    "playmode-unobserved-results.xml": {
+      "runnerTotal": 11,
+      "projectTotal": 11,
+      "projectPassed": 11,
+      "projectFailed": 0,
+      "projectSkipped": 0,
+      "cases": [
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableFlowTests.CreateWorkStudyAndAdvanceDayThroughViews",
+          "result": "Passed",
+          "duration": "10.195024"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AcknowledgedWorkCueDoesNotReplayAfterRestart",
+          "result": "Passed",
+          "duration": "0.897790"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.BothInvalidSavesFailWithoutStartingNewRun",
+          "result": "Passed",
+          "duration": "0.412738"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.CorruptPrimaryRecoversBackupAndAllowsNextWrite",
+          "result": "Passed",
+          "duration": "0.604173"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.FreshLaunchWithoutSaveShowsCharacterCreation",
+          "result": "Passed",
+          "duration": "0.186366"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.MidCourseRestartRestoresExactProgressAndCompletesOnce",
+          "result": "Passed",
+          "duration": "1.068326"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.NextDayRestartDoesNotRecommitBoundary",
+          "result": "Passed",
+          "duration": "0.780474"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards",
+          "result": "Passed",
+          "duration": "0.843325"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.RealElapsedPauseDoesNotAdvanceSimulation",
+          "result": "Passed",
+          "duration": "0.583559"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.UnreadablePrimaryFailsClosedWithoutUsingBackup",
+          "result": "Passed",
+          "duration": "0.361850"
+        },
+        {
+          "name": "StartupLife.Tests.PlayMode.MobileBaselineTests.BaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage",
+          "result": "Passed",
+          "duration": "0.180885"
+        }
+      ]
+    }
+  },
+  "saveEnvelopes": 104,
+  "portraitCaptures": 8,
+  "androidPayloadComparisons": "PASS",
+  "recording": {
+    "seconds": 64.7481,
+    "sha256": "c425ceec7ba4265cb9e93c68edb4647d5881dc9cf798813981b78028cc9b265f",
+    "decodeReceipt": "PASS"
+  },
+  "externalBlockers": {
+    "physicalAndroid": "NOT RUN",
+    "iOS": "NOT RUN"
+  }
+}

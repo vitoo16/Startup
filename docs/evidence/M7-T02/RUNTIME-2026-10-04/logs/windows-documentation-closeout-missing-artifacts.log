@@ -1,0 +1,3 @@
+Documentation validation failed with 2 issue(s):
+- Broken local link in docs\evidence\M7-T02\RUNTIME-2026-10-04\REPORT.md: windows-documentation-final-receipt.json
+- Broken local link in docs\evidence\M7-T02\RUNTIME-2026-10-04\REPORT.md: logs/windows-documentation-final.log

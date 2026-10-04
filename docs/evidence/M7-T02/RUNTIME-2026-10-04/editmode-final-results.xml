@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="9" result="Passed" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:28Z" duration="0.6651482">
+  <test-suite type="TestSuite" id="1000" name="Startup Life" fullname="Startup Life" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:28Z" duration="0.665148" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1012" name="StartupLife.Tests.EditMode.dll" fullname="[PROJECT]/Library/ScriptAssemblies/StartupLife.Tests.EditMode.dll" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:28Z" duration="0.657735" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="32132" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1013" name="StartupLife" fullname="StartupLife" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:28Z" duration="0.657342" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1014" name="Tests" fullname="StartupLife.Tests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:28Z" duration="0.657074" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1015" name="EditMode" fullname="StartupLife.Tests.EditMode" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:28Z" duration="0.656778" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1001" name="ContentCatalogTests" fullname="StartupLife.Tests.EditMode.ContentCatalogTests" classname="StartupLife.Tests.EditMode.ContentCatalogTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:27Z" duration="0.032346" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1002" name="FirstPlayableTemplateBuildsThroughContentAssembly" fullname="StartupLife.Tests.EditMode.ContentCatalogTests.FirstPlayableTemplateBuildsThroughContentAssembly" methodname="FirstPlayableTemplateBuildsThroughContentAssembly" classname="StartupLife.Tests.EditMode.ContentCatalogTests" runstate="Runnable" seed="1374519733" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:27Z" duration="0.019243" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1004" name="InvalidAuthoringDataFailsBeforeRuntimeCatalogPublication" fullname="StartupLife.Tests.EditMode.ContentCatalogTests.InvalidAuthoringDataFailsBeforeRuntimeCatalogPublication" methodname="InvalidAuthoringDataFailsBeforeRuntimeCatalogPublication" classname="StartupLife.Tests.EditMode.ContentCatalogTests" runstate="Runnable" seed="1437857178" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:27Z" duration="0.001639" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1003" name="ScriptableObjectWrapperBuildsDetachedCatalog" fullname="StartupLife.Tests.EditMode.ContentCatalogTests.ScriptableObjectWrapperBuildsDetachedCatalog" methodname="ScriptableObjectWrapperBuildsDetachedCatalog" classname="StartupLife.Tests.EditMode.ContentCatalogTests" runstate="Runnable" seed="1636587906" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:27Z" duration="0.001141" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1005" name="FirstPlayableShellTests" fullname="StartupLife.Tests.EditMode.FirstPlayableShellTests" classname="StartupLife.Tests.EditMode.FirstPlayableShellTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:27Z" duration="0.517351" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1007" name="GeneratedContentAssetImportsAndBuildsTheFirstPlayableCatalog" fullname="StartupLife.Tests.EditMode.FirstPlayableShellTests.GeneratedContentAssetImportsAndBuildsTheFirstPlayableCatalog" methodname="GeneratedContentAssetImportsAndBuildsTheFirstPlayableCatalog" classname="StartupLife.Tests.EditMode.FirstPlayableShellTests" runstate="Runnable" seed="145692828" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:27Z" duration="0.001980" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1006" name="GeneratedSceneReopensWithSerializedContentAndControllerBindings" fullname="StartupLife.Tests.EditMode.FirstPlayableShellTests.GeneratedSceneReopensWithSerializedContentAndControllerBindings" methodname="GeneratedSceneReopensWithSerializedContentAndControllerBindings" classname="StartupLife.Tests.EditMode.FirstPlayableShellTests" runstate="Runnable" seed="117542276" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:27Z" duration="0.514444" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1008" name="FoundationTests" fullname="StartupLife.Tests.EditMode.FoundationTests" classname="StartupLife.Tests.EditMode.FoundationTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-04 08:35:27Z" end-time="2026-10-04 08:35:28Z" duration="0.106051" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1009" name="DeveloperQuotasAndOrderingRemainDeterministicInUnity" fullname="StartupLife.Tests.EditMode.FoundationTests.DeveloperQuotasAndOrderingRemainDeterministicInUnity" methodname="DeveloperQuotasAndOrderingRemainDeterministicInUnity" classname="StartupLife.Tests.EditMode.FoundationTests" runstate="Runnable" seed="1394984220" result="Passed" start-time="2026-10-04 08:35:28Z" end-time="2026-10-04 08:35:28Z" duration="0.012961" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1010" name="LeapDatesAndCheckedMoneyUseEngineIndependentContracts" fullname="StartupLife.Tests.EditMode.FoundationTests.LeapDatesAndCheckedMoneyUseEngineIndependentContracts" methodname="LeapDatesAndCheckedMoneyUseEngineIndependentContracts" classname="StartupLife.Tests.EditMode.FoundationTests" runstate="Runnable" seed="211215702" result="Passed" start-time="2026-10-04 08:35:28Z" end-time="2026-10-04 08:35:28Z" duration="0.000937" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1011" name="SafeAreaReappliesAfterResolutionChangeWithoutAccumulatingOffsets" fullname="StartupLife.Tests.EditMode.FoundationTests.SafeAreaReappliesAfterResolutionChangeWithoutAccumulatingOffsets" methodname="SafeAreaReappliesAfterResolutionChangeWithoutAccumulatingOffsets" classname="StartupLife.Tests.EditMode.FoundationTests" runstate="Runnable" seed="427108320" result="Passed" start-time="2026-10-04 08:35:28Z" end-time="2026-10-04 08:35:28Z" duration="0.002445" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+    <test-suite type="Assembly" id="1018" name="Unity.Addressables.DocExampleCode.Editor.Tests.dll" fullname="[PROJECT]/Library/ScriptAssemblies/Unity.Addressables.DocExampleCode.Editor.Tests.dll" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-04 08:35:28Z" end-time="2026-10-04 08:35:28Z" duration="0.002229" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="32132" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1019" name="AddressableAssets" fullname="AddressableAssets" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-04 08:35:28Z" end-time="2026-10-04 08:35:28Z" duration="0.001027" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1020" name="DocExampleCode" fullname="AddressableAssets.DocExampleCode" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-04 08:35:28Z" end-time="2026-10-04 08:35:28Z" duration="0.000854" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1016" name="TestStub" fullname="AddressableAssets.DocExampleCode.TestStub" classname="AddressableAssets.DocExampleCode.TestStub" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-04 08:35:28Z" end-time="2026-10-04 08:35:28Z" duration="0.000687" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1017" name="RequiredTest" fullname="AddressableAssets.DocExampleCode.TestStub.RequiredTest" methodname="RequiredTest" classname="AddressableAssets.DocExampleCode.TestStub" runstate="Runnable" seed="774096407" result="Passed" start-time="2026-10-04 08:35:28Z" end-time="2026-10-04 08:35:28Z" duration="0.000102" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: [USER]/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

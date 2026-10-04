@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="9" result="Failed(Child)" total="9" passed="7" failed="2" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-04 08:32:27Z" end-time="2026-10-04 08:32:35Z" duration="7.9953882">
+  <test-suite type="TestSuite" id="1022" name="Startup Life" fullname="Startup Life" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-04 08:32:27Z" end-time="2026-10-04 08:32:35Z" duration="7.995388" total="9" passed="7" failed="2" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1015" name="StartupLife.Tests.PlayMode.dll" fullname="[PROJECT]/Library/ScriptAssemblies/StartupLife.Tests.PlayMode.dll" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-04 08:32:27Z" end-time="2026-10-04 08:32:35Z" duration="7.989176" total="9" passed="7" failed="2" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="30508" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1016" name="StartupLife" fullname="StartupLife" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-04 08:32:27Z" end-time="2026-10-04 08:32:35Z" duration="7.988368" total="9" passed="7" failed="2" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1017" name="Tests" fullname="StartupLife.Tests" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-04 08:32:27Z" end-time="2026-10-04 08:32:35Z" duration="7.987935" total="9" passed="7" failed="2" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1018" name="PlayMode" fullname="StartupLife.Tests.PlayMode" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-04 08:32:27Z" end-time="2026-10-04 08:32:35Z" duration="7.987576" total="9" passed="7" failed="2" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1003" name="FirstPlayableLifecycleTests" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" testcasecount="9" result="Failed" site="Child" start-time="2026-10-04 08:32:27Z" end-time="2026-10-04 08:32:35Z" duration="7.986528" total="9" passed="7" failed="2" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1006" name="AcknowledgedWorkCueDoesNotReplayAfterRestart" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AcknowledgedWorkCueDoesNotReplayAfterRestart" methodname="AcknowledgedWorkCueDoesNotReplayAfterRestart" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="1626696593" result="Passed" start-time="2026-10-04 08:32:27Z" end-time="2026-10-04 08:32:29Z" duration="2.103759" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1011" name="BothInvalidSavesFailWithoutStartingNewRun" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.BothInvalidSavesFailWithoutStartingNewRun" methodname="BothInvalidSavesFailWithoutStartingNewRun" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="1969093701" result="Failed" start-time="2026-10-04 08:32:29Z" end-time="2026-10-04 08:32:30Z" duration="0.476369" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  Expected string length 35 but was 71. Strings differ at index 0.
+  Expected: "Không thể khôi phục dữ liệu đã lưu."
+  But was:  "No translation found for 'reason.save.unrecoverable' in First..."
+  -----------^
+]]></message>
+                  <stack-trace><![CDATA[at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AssertFatalSaveStatus (System.String expected) [0x0000f] in [PROJECT]\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:362
+at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests+<BothInvalidSavesFailWithoutStartingNewRun>d__10.MoveNext () [0x000ea] in [PROJECT]\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:321
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@bd7f943e9647\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:44
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1009" name="CorruptPrimaryRecoversBackupAndAllowsNextWrite" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.CorruptPrimaryRecoversBackupAndAllowsNextWrite" methodname="CorruptPrimaryRecoversBackupAndAllowsNextWrite" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="1617190815" result="Passed" start-time="2026-10-04 08:32:30Z" end-time="2026-10-04 08:32:30Z" duration="0.694725" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1004" name="FreshLaunchWithoutSaveShowsCharacterCreation" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.FreshLaunchWithoutSaveShowsCharacterCreation" methodname="FreshLaunchWithoutSaveShowsCharacterCreation" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="892632312" result="Passed" start-time="2026-10-04 08:32:30Z" end-time="2026-10-04 08:32:30Z" duration="0.211847" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1007" name="MidCourseRestartRestoresExactProgressAndCompletesOnce" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.MidCourseRestartRestoresExactProgressAndCompletesOnce" methodname="MidCourseRestartRestoresExactProgressAndCompletesOnce" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="648671723" result="Passed" start-time="2026-10-04 08:32:30Z" end-time="2026-10-04 08:32:32Z" duration="1.559393" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[StartupLifeM7Visual] M7-T02/03-course-before-restart 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] M7-T02/04-course-after-restore 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+]]></output>
+              </test-case>
+              <test-case id="1008" name="NextDayRestartDoesNotRecommitBoundary" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.NextDayRestartDoesNotRecommitBoundary" methodname="NextDayRestartDoesNotRecommitBoundary" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="526605565" result="Passed" start-time="2026-10-04 08:32:32Z" end-time="2026-10-04 08:32:33Z" duration="0.898700" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[StartupLifeM7Visual] M7-T02/05-next-day-before-restart 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] M7-T02/06-next-day-after-restore 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+]]></output>
+              </test-case>
+              <test-case id="1005" name="PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards" methodname="PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="1086037632" result="Passed" start-time="2026-10-04 08:32:33Z" end-time="2026-10-04 08:32:34Z" duration="0.944056" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[StartupLifeM7Visual] M7-T02/01-work-before-pause 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] M7-T02/02-work-restored-before-ack 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+]]></output>
+              </test-case>
+              <test-case id="1012" name="RealElapsedPauseDoesNotAdvanceSimulation" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.RealElapsedPauseDoesNotAdvanceSimulation" methodname="RealElapsedPauseDoesNotAdvanceSimulation" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="2018626526" result="Passed" start-time="2026-10-04 08:32:34Z" end-time="2026-10-04 08:32:35Z" duration="0.629203" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1010" name="UnreadablePrimaryFailsClosedWithoutUsingBackup" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.UnreadablePrimaryFailsClosedWithoutUsingBackup" methodname="UnreadablePrimaryFailsClosedWithoutUsingBackup" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="1786666809" result="Failed" start-time="2026-10-04 08:32:35Z" end-time="2026-10-04 08:32:35Z" duration="0.458084" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  Expected string length 29 but was 69. Strings differ at index 0.
+  Expected: "Không thể đọc dữ liệu đã lưu."
+  But was:  "No translation found for 'reason.save.read_failed' in FirstPl..."
+  -----------^
+]]></message>
+                  <stack-trace><![CDATA[at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AssertFatalSaveStatus (System.String expected) [0x0000f] in [PROJECT]\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:362
+at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests+<UnreadablePrimaryFailsClosedWithoutUsingBackup>d__9.MoveNext () [0x000f6] in [PROJECT]\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:297
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@bd7f943e9647\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:44
+]]></stack-trace>
+                </failure>
+                <output><![CDATA[Saving results to: [USER]/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

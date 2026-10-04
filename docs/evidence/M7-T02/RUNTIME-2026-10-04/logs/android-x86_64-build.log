@@ -1,0 +1,957 @@
+Built from '6000.3/staging' branch; Version is '6000.3.25f1 (e1dba0a9aba4) revision 14801824'; Using compiler version '194234433'; Build Type 'Release'
+OS: 'Windows 11  (10.0.26200) Professional' Language: 'en' Physical Memory: 32505 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-10-03T22:45:13Z
+  Version:                 1.18.3+d7ffd15
+  Session Id:              abe2748c271b4670a95f06646b1351ad
+  Correlation Id:          8bfbd227490a0a8e39eb6d7920e7b9d3
+  External correlation Id: 5388715189154629144
+  Id: 18968511734006-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Unity.exe
+-batchmode
+-nographics
+-quit
+-projectPath
+<PROJECT>
+-buildTarget
+Android
+-executeMethod
+M7RuntimeEvidenceBuild.Android
+-logFile
+<USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\android-x86_64-build.log
+-buildOutput
+<USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\android\StartupLife-M7T02-x86_64.apk
+-hubSessionId
+d5d9312c-1bea-4c5d-abdb-0c2197270c62
+-accessToken
+SXTlVdqZIjvWOqAqXREsKOnp9C2WMBHTYPkzL0cxgUY011f
+Successfully changed project path to: <PROJECT>
+<PROJECT>
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-remapper-allocator-initial-capacity=32768"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+Player connection [37464]  Target information:
+
+Player connection [37464]  * "[IP] 192.168.1.11 [Port] 55504 [Flags] 2 [Guid] 3335040773 [EditorId] 3335040773 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-O6PKTLQ) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor"
+
+Player connection [37464]  * "[IP] 172.30.160.1 [Port] 55504 [Flags] 2 [Guid] 3335040773 [EditorId] 3335040773 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-O6PKTLQ) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor"
+
+Player connection [37464] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [37464] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Package Manager] Connected to IPC stream "Upm-11340" after 0.2 seconds.
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Targeting platform: Android
+Refreshing native plugins compatible for Editor in 0.28 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.3.25f1 (e1dba0a9aba4)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path <PROJECT>/Assets
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56340
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.dll
+Registered in 0.004126 seconds.
+- Loaded All Assemblies, in  0.321 seconds
+[usbmuxd] Start listen thread
+[usbmuxd] Listen thread started
+Native extension for iOS target not found
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:False
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.315 seconds
+Domain Reload Profiling: 633ms
+	BeginReloadAssembly (103ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (13ms)
+	RebuildCommonClasses (29ms)
+	RebuildNativeTypeToScriptingClass (8ms)
+	initialDomainReloadingComplete (39ms)
+	LoadAllAssembliesAndSetupDomain (140ms)
+		LoadAssemblies (89ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (137ms)
+			TypeCache.Refresh (135ms)
+				TypeCache.ScanAssembly (123ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (1ms)
+	FinalizeReload (315ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (286ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (52ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (63ms)
+			ProcessInitializeOnLoadAttributes (103ms)
+			ProcessInitializeOnLoadMethodAttributes (65ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Package Manager] Registered 68 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.2d.animation@13.0.6 (location: <PROJECT>\Library\PackageCache\com.unity.2d.animation@cd6c3841e39a)
+    com.unity.2d.aseprite@3.0.2 (location: <PROJECT>\Library\PackageCache\com.unity.2d.aseprite@20edb5643ab5)
+    com.unity.2d.psdimporter@12.0.2 (location: <PROJECT>\Library\PackageCache\com.unity.2d.psdimporter@f207d91d598d)
+    com.unity.2d.spriteshape@13.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.2d.spriteshape@0738bab11647)
+    com.unity.2d.tilemap.extras@6.0.3 (location: <PROJECT>\Library\PackageCache\com.unity.2d.tilemap.extras@58739e072909)
+    com.unity.2d.tooling@1.0.4 (location: <PROJECT>\Library\PackageCache\com.unity.2d.tooling@04422e023209)
+    com.unity.ide.rider@3.0.40 (location: <PROJECT>\Library\PackageCache\com.unity.ide.rider@e4950c6d131b)
+    com.unity.ide.visualstudio@2.0.26 (location: <PROJECT>\Library\PackageCache\com.unity.ide.visualstudio@a99d56dec63f)
+    com.unity.inputsystem@1.20.0 (location: <PROJECT>\Library\PackageCache\com.unity.inputsystem@7a4e1a2a8194)
+    com.unity.localization@1.5.8 (location: <PROJECT>\Library\PackageCache\com.unity.localization@d45547f9f157)
+    com.unity.timeline@1.8.13 (location: <PROJECT>\Library\PackageCache\com.unity.timeline@3a22918286f5)
+    com.unity.pipeline@0.8.0-exp.1 (location: <PROJECT>\Library\PackageCache\com.unity.pipeline@62c08c808737)
+    com.unity.nuget.mono-cecil@1.11.6 (location: <PROJECT>\Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.nuget.newtonsoft-json@3.2.2 (location: <PROJECT>\Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64)
+    com.unity.addressables@2.10.3 (location: <PROJECT>\Library\PackageCache\com.unity.addressables@c0978d16db5d)
+    com.unity.2d.common@12.0.4 (location: <PROJECT>\Library\PackageCache\com.unity.2d.common@3e42aeccb30d)
+    com.unity.mathematics@1.3.3 (location: <PROJECT>\Library\PackageCache\com.unity.mathematics@19a9377c4ffa)
+    com.unity.collections@2.6.8 (location: <PROJECT>\Library\PackageCache\com.unity.collections@84e8eb3fc12e)
+    com.unity.searcher@4.9.5 (location: <PROJECT>\Library\PackageCache\com.unity.searcher@a463122f2c00)
+    com.unity.burst@1.8.30 (location: <PROJECT>\Library\PackageCache\com.unity.burst@2f3d916873ea)
+    com.unity.profiling.core@1.0.3 (location: <PROJECT>\Library\PackageCache\com.unity.profiling.core@8a49f7027d06)
+    com.unity.scriptablebuildpipeline@2.6.2 (location: <PROJECT>\Library\PackageCache\com.unity.scriptablebuildpipeline@97537e3e823b)
+    com.unity.test-framework.performance@3.5.0 (location: <PROJECT>\Library\PackageCache\com.unity.test-framework.performance@8b56083ec0f0)
+  Built-in packages:
+    com.unity.2d.sprite@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.2d.sprite@5b922524bd83)
+    com.unity.2d.tilemap@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.2d.tilemap@f666889fd587)
+    com.unity.render-pipelines.universal@17.3.0 (location: <PROJECT>\Library\PackageCache\com.unity.render-pipelines.universal@a0dd9d2bd983)
+    com.unity.test-framework@1.6.0 (location: <PROJECT>\Library\PackageCache\com.unity.test-framework@bd7f943e9647)
+    com.unity.ugui@2.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.ugui@f3ea87521141)
+    com.unity.modules.accessibility@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: <PROJECT>\Library\PackageCache\com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.0.5 (location: <PROJECT>\Library\PackageCache\com.unity.ext.nunit@d8c07649098d)
+    com.unity.render-pipelines.core@17.3.0 (location: <PROJECT>\Library\PackageCache\com.unity.render-pipelines.core@3f80e92e91c2)
+    com.unity.shadergraph@17.3.0 (location: <PROJECT>\Library\PackageCache\com.unity.shadergraph@2fa139ee8b62)
+    com.unity.render-pipelines.universal-config@17.0.3 (location: <PROJECT>\Library\PackageCache\com.unity.render-pipelines.universal-config@8dc1aab4af1d)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.02 seconds
+[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:80
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: <PROJECT>\
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 29.6451ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1300b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: <PROJECT>
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+warn: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.runtime.interopservices.windowsruntime has duplicate hint path. Ignoring "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\NetStandard\Extensions\2.0.0\System.Runtime.InteropServices.WindowsRuntime.dll" in favor of "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\UnityReferenceAssemblies\unity-4.8-api\Facades\System.Runtime.InteropServices.WindowsRuntime.dll"
+warn: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.componentmodel.composition has duplicate hint path. Ignoring "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\NetStandard\compat\2.1.0\shims\netfx\System.ComponentModel.Composition.dll" in favor of "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\UnityReferenceAssemblies\unity-4.8-api\System.ComponentModel.Composition.dll"
+DisplayProgressbar: Compiling Scripts
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Mono.Cecil, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff\Mono.Cecil.dll
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Unity.Burst.Cecil, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library\PackageCache\com.unity.burst@2f3d916873ea\Unity.Burst.CodeGen\Unity.Burst.Cecil.dll
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc - - 200 - application/grpc 35.3246ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\netcorerun\netcorerun.exe "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\Tools\BuildPipeline\ScriptCompilationBuildProgram.exe" "Library/Bee/1300b0aE.dag.json" "Library/Bee/1300b0aE-inputdata.json" "Library\Bee\buildprogram0.traceevents"
+WorkingDir: <PROJECT>
+ExitCode: 4 Duration: 0s214ms
+Rebuilding DAG because FileSignature timestamp changed: Library/Bee/1300b0aE-inputdata.json
+[ 908/1173  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+*** Tundra requires additional run (0.18 seconds), 1 items updated, 907 evaluated
+ExitCode: 0 Duration: 0s641ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1300b0aE.dag" --continue-on-failure --dagfilejson="Library\Bee\1300b0aE.dag.json" --profile="Library/Bee/backend2.traceevents" ScriptAssemblies
+WorkingDir: <PROJECT>
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Current configuration matches the requested one, skipping
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc - - 200 - application/grpc 0.9338ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/PostProcessAssembly application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/PostProcessAssembly'
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      Processing assembly Library/Bee/artifacts/1300b0aE.dag/StartupLife.Editor.dll, with 147 defines and 294 references
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      processors: Unity.Jobs.CodeGen.JobsILPostProcessor, Unity.Pipeline.CodeGen.CodeReloadInPlaceILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      running Unity.Jobs.CodeGen.JobsILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      running Unity.Pipeline.CodeGen.CodeReloadInPlaceILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/PostProcessAssembly'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/PostProcessAssembly application/grpc - - 200 - application/grpc 11.6910ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/PostProcessAssembly application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/PostProcessAssembly'
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      Processing assembly Library/Bee/artifacts/1300b0aE.dag/Assembly-CSharp-Editor.dll, with 147 defines and 361 references
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      processors: Unity.Jobs.CodeGen.JobsILPostProcessor, Unity.Pipeline.CodeGen.CodeReloadInPlaceILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      running Unity.Jobs.CodeGen.JobsILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Unity.Collections, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null with Library\Bee\artifacts\1300b0aE.dag\Unity.Collections.dll
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null with C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\Managed\UnityEngine\UnityEditor.CoreModule.dll
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null with C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\Managed\UnityEngine\UnityEngine.CoreModule.dll
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      running Unity.Pipeline.CodeGen.CodeReloadInPlaceILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Unity.Burst.Cecil.Rocks, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library\PackageCache\com.unity.burst@2f3d916873ea\Unity.Burst.CodeGen\Unity.Burst.Cecil.Rocks.dll
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/PostProcessAssembly'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/PostProcessAssembly application/grpc - - 200 - application/grpc 260.0124ms
+ExitCode: 0 Duration: 0s964ms
+Finished compiling graph: 1177 nodes, 22526 flattened edges (18426 ToBuild, 190 ToUse), maximum node priority 1257
+[ 635/1173  0s] WriteText Library/Bee/artifacts/1300b0aE.dag/StartupLife.Editor.rsp
+[ 906/1173  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+[1165/1173  0s] Csc Library/Bee/artifacts/1300b0aE.dag/StartupLife.Editor.dll (+2 others)
+[1166/1173  0s] ILPostProcess Library/Bee/artifacts/1300b0aE.dag/post-processed/StartupLife.Editor.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1300b0aE.dag/StartupLife.Editor.dll, with 147 defines and 294 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, Unity.Pipeline.CodeGen.CodeReloadInPlaceILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+
+running Unity.Pipeline.CodeGen.CodeReloadInPlaceILPostProcessor
+
+running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[1167/1173  0s] CopyFiles Library/ScriptAssemblies/StartupLife.Editor.pdb
+[1168/1173  0s] CopyFiles Library/ScriptAssemblies/StartupLife.Editor.dll
+[1169/1173  0s] Csc Library/Bee/artifacts/1300b0aE.dag/Assembly-CSharp-Editor.dll (+2 others)
+[1170/1173  0s] ILPostProcess Library/Bee/artifacts/1300b0aE.dag/post-processed/Assembly-CSharp-Editor.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1300b0aE.dag/Assembly-CSharp-Editor.dll, with 147 defines and 361 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, Unity.Pipeline.CodeGen.CodeReloadInPlaceILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+
+running Unity.Pipeline.CodeGen.CodeReloadInPlaceILPostProcessor
+
+running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[1171/1173  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.dll
+[1172/1173  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.pdb
+*** Tundra build success (0.95 seconds), 10 items updated, 1173 evaluated
+AssetDatabase: script compilation time: 2.203879s
+Begin MonoManager ReloadAssembly
+Symbol file LoadedFromMemory is not a mono symbol file
+- Loaded All Assemblies, in  0.790 seconds
+Refreshing native plugins compatible for Editor in 0.82 ms, found 1 plugins.
+Native extension for iOS target not found
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Start HTTP server: port:7800
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  2.638 seconds
+Domain Reload Profiling: 3424ms
+	BeginReloadAssembly (258ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (21ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (132ms)
+	RebuildCommonClasses (28ms)
+	RebuildNativeTypeToScriptingClass (10ms)
+	initialDomainReloadingComplete (40ms)
+	LoadAllAssembliesAndSetupDomain (449ms)
+		LoadAssemblies (282ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (240ms)
+			TypeCache.Refresh (183ms)
+				TypeCache.ScanAssembly (170ms)
+			BuildScriptInfoCaches (45ms)
+			ResolveRequiredComponents (7ms)
+	FinalizeReload (2638ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (2507ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (31ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (133ms)
+			ProcessInitializeOnLoadAttributes (2206ms)
+			ProcessInitializeOnLoadMethodAttributes (129ms)
+			AfterProcessingInitializeOnLoad (6ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (17ms)
+Start importing Assets/StartupLife/UI/Fonts/NotoSansVietnamese.asset using Guid(2395e518b17acbb438aa0940b76843a0) (NativeFormatImporter) -> (artifact id: '67b64b822df1044f033529e8580c18c9') in 0.0255065 seconds
+Start importing Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset using Guid(2e498d1c8094910479dc3e1b768306a4) (NativeFormatImporter) -> (artifact id: '904ebae6ee4474c266c74cd8e9f372b7') in 0.0019269 seconds
+Refreshing native plugins compatible for Editor in 0.63 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=36aa22c3ef7677d41a7751a865cbb8d5): Total: 6.535 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=2 (actual=2, local cache=0, cache server=0)
+		Asset DB Process Time: managed=3 ms, native=3117 ms
+		Asset DB Callback time: managed=350 ms, native=25 ms
+		Scripting: domain reloads=1, domain reload time=790 ms, compile time=2205 ms, other=41 ms
+		Project Asset Count: scripts=1474, non-scripts=3061
+		Asset File Changes: new=1, changed=3, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokeCustomDependenciesCallbacks: 0.001ms
+	InvokePackagesCallback: 24.376ms
+	ApplyChangesToAssetFolders: 0.583ms
+	Scan: 192.159ms
+	OnSourceAssetsModified: 0.565ms
+	CategorizeAssetsWithTransientArtifact: 28.673ms
+	ProcessAssetsWithTransientArtifactChanges: 57.339ms
+	CategorizeAssets: 45.333ms
+	ImportOutOfDateAssets: 2674.470ms (437.958ms without children)
+		ImportManagerImport: 28.834ms (0.962ms without children)
+			ImportInProcess: 27.849ms
+			UpdateCategorizedAssets: 0.023ms
+		CompileScripts: 2205.495ms
+		ReloadNativeAssets: 0.043ms
+		UnloadImportedAssets: 1.306ms
+		ReloadImportedAssets: 0.000ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.452ms
+		InitializingProgressBar: 0.006ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.001ms
+		OnDemandSchedulerStart: 0.374ms
+	PostProcessAllAssets: 349.133ms
+	Hotreload: 3.707ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.002ms
+	UnloadStreamsBegin: 1.886ms
+	PersistCurrentRevisions: 0.154ms
+	UnloadStreamsEnd: 0.001ms
+	GenerateScriptTypeHashes: 2.308ms
+	Untracked: 3156.471ms
+
+Application.AssetDatabase Initial Refresh End
+Scanning for USB devices : 2.123ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-Startup Life
+Unloading 51 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 6161 unused Assets / (6.3 MB). Loaded Objects now: 7001.
+Memory consumption went from 212.6 MB to 206.3 MB.
+Total: 11.434100 ms (FindLiveObjects: 0.366600 ms CreateObjectMapping: 0.348200 ms MarkObjects: 7.972700 ms  DeleteObjects: 2.745000 ms)
+
+M7 emulator evidence: Development; IL2CPP; X86_64
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+M7RuntimeEvidenceBuild:Android () (at Assets/StartupLife/Scripts/Editor/M7RuntimeEvidenceBuild.cs:17)
+
+(Filename: Assets/StartupLife/Scripts/Editor/M7RuntimeEvidenceBuild.cs Line: 17)
+
+Curl error 35: Recv failure: Connection was reset
+DisplayProgressbar: Processing Addressable Group
+Start importing ProjectSettings/ProjectSettings.asset using Guid(00000000000000004000000000000000) (LibraryAssetImporter) -> (artifact id: '52c1957eb094fb61ab5cfb5f2cc362c0') in 0.0045049 seconds
+Refreshing native plugins compatible for Editor in 0.79 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=f632ea5bde52e5644917c7c7086819b2): Total: 0.061 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Settings/UniversalRP.asset using Guid(681886c5eb7344803b6206f758bf0b1c) (NativeFormatImporter) -> (artifact id: '6f2f7fab91796aea57ab7f2f971c62b6') in 0.0017556 seconds
+Refreshing native plugins compatible for Editor in 0.82 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=531c20cc4714a8e40a8b967dabe1df02): Total: 0.031 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+DisplayProgressbar: Switch To Build Platform
+DisplayProgressbar: Rebuild Sprite Atlas Cache
+SpriteAtlasPacking completed in 0.004904 sec
+DisplayProgressbar: Build Player Scripts
+[ScriptCompilation] Requested script compilation because: Recompiling all scripts before compiling player scripts because Auto Refresh is disabled.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 0.2244ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1300b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: <PROJECT>
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Current configuration matches the requested one, skipping
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc - - 200 - application/grpc 1.6138ms
+DisplayProgressbar: Compiling Scripts
+ExitCode: 0 Duration: 0s199ms
+[ 908/1173  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+*** Tundra build success (0.18 seconds), 1 items updated, 1173 evaluated
+[ScriptCompilation] Requested script compilation because: Compiling scripts for player
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 0.2754ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1300b0aP.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssembliesAndTypeDB
+WorkingDir: <PROJECT>
+Total cache size 152881829
+Total cache size after purge 152881829, took 00:00:00.3638474
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+warn: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.runtime.interopservices.windowsruntime has duplicate hint path. Ignoring "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\NetStandard\Extensions\2.0.0\System.Runtime.InteropServices.WindowsRuntime.dll" in favor of "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\UnityReferenceAssemblies\unity-4.8-api\Facades\System.Runtime.InteropServices.WindowsRuntime.dll"
+warn: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.componentmodel.composition has duplicate hint path. Ignoring "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\NetStandard\compat\2.1.0\shims\netfx\System.ComponentModel.Composition.dll" in favor of "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\UnityReferenceAssemblies\unity-4.8-api\System.ComponentModel.Composition.dll"
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Mono.Cecil, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff\Mono.Cecil.dll
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Unity.Burst.Cecil, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library\PackageCache\com.unity.burst@2f3d916873ea\Unity.Burst.CodeGen\Unity.Burst.Cecil.dll
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc - - 200 - application/grpc 19.4237ms
+ExitCode: 0 Duration: 2s77ms
+[440/719    0s] WriteResponseFile Library/Bee/artifacts/rsp/4747638433968585886.rsp
+[441/719    0s] WriteText Library/Bee/artifacts/Android_CodeGen/Unity.Burst.CodeGen.rsp
+[468/719    0s] WriteText Library/Bee/artifacts/Android_CodeGen/Unity.Collections.CodeGen.rsp
+[471/719    0s] WriteText Library/Bee/artifacts/Android_CodeGen/UnityEngine.TestRunner.rsp
+[472/719    0s] WriteText Library/Bee/artifacts/Android_CodeGen/Unity.Mathematics.rsp
+[473/719    0s] WriteText Library/Bee/artifacts/Android_CodeGen/Unity.Burst.rsp
+[474/719    0s] WriteText Library/Bee/artifacts/Android_CodeGen/UnityEditor.UI.rsp
+[475/719    0s] WriteText Library/Bee/artifacts/Android_CodeGen/UnityEditor.TestRunner.rsp
+[476/719    0s] WriteText Library/Bee/artifacts/Android_CodeGen/Unity.Collections.rsp
+[477/719    0s] WriteText Library/Bee/artifacts/Android_CodeGen/Unity.Pipeline.CodeGen.rsp
+[478/719    0s] WriteText Library/Bee/artifacts/Android_CodeGen/UnityEngine.UI.rsp
+[574/719    0s] Csc Library/Bee/artifacts/Android_CodeGen/Unity.Pipeline.CodeGen.dll (+2 others) [CacheHit 8db78b77bef24b045ce4e9823042113000000000000000000000000000000005]
+[575/719   1791067523s] Csc Library/Bee/artifacts/Android_CodeGen/Unity.Pipeline.CodeGen.dll (+2 others)
+[575/719    0s] Csc Library/Bee/artifacts/Android_CodeGen/UnityEngine.UI.dll (+2 others) [CacheHit 4fa000fbf28c93fa206b1f9fa7135f5300000000000000000000000000000005]
+[575/719    0s] Csc Library/Bee/artifacts/Android_CodeGen/UnityEngine.TestRunner.dll (+2 others) [CacheHit 6c21f1d91b838221315f394ed511f74900000000000000000000000000000005]
+[577/719   1791067523s] Csc Library/Bee/artifacts/Android_CodeGen/UnityEngine.UI.dll (+2 others)
+[579/719   1791067523s] Csc Library/Bee/artifacts/Android_CodeGen/UnityEngine.TestRunner.dll (+2 others)
+[581/719    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/UnityEngine.TestRunner.ref.dll_80B890C2D7911DBF.mvfrm
+[582/719    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/UnityEngine.UI.ref.dll_DB7439BD0E712D01.mvfrm
+[583/719    0s] MovedFromExtractor-Combine Library/Bee/artifacts/Android_CodeGen/UnityEditor.TestRunner.dll.mvfrm
+[580/719    0s] Csc Library/Bee/artifacts/Android_CodeGen/UnityEditor.TestRunner.dll (+2 others) [CacheHit a164c99e1ba729cc7b0a49771b41083100000000000000000000000000000005]
+[584/719   1791067523s] Csc Library/Bee/artifacts/Android_CodeGen/UnityEditor.TestRunner.dll (+2 others)
+[586/719    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/UnityEditor.TestRunner.ref.dll_B49A4614ABCDBFD4.mvfrm
+[587/719    0s] MovedFromExtractor-Combine Library/Bee/artifacts/Android_CodeGen/UnityEditor.UI.dll.mvfrm
+[583/719    0s] Csc Library/Bee/artifacts/Android_CodeGen/UnityEditor.UI.dll (+2 others) [CacheHit a63147ee680870dcf267c674e4cd50c700000000000000000000000000000005]
+[588/719   1791067523s] Csc Library/Bee/artifacts/Android_CodeGen/UnityEditor.UI.dll (+2 others)
+[590/719    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/UnityEditor.UI.ref.dll_1F0E6362084F0496.mvfrm
+[591/719    0s] MovedFromExtractor-Combine Library/Bee/artifacts/Android_CodeGen/Unity.Mathematics.dll.mvfrm
+[592/719    0s] MovedFromExtractor-Combine Library/Bee/artifacts/Android_CodeGen/Unity.Burst.dll.mvfrm
+[587/719    0s] Csc Library/Bee/artifacts/Android_CodeGen/Unity.Burst.dll (+2 others) [CacheHit 9be907498aec2adaa57d36329cfc2de600000000000000000000000000000005]
+[593/719   1791067524s] Csc Library/Bee/artifacts/Android_CodeGen/Unity.Burst.dll (+2 others)
+[588/719    0s] Csc Library/Bee/artifacts/Android_CodeGen/Unity.Mathematics.dll (+2 others) [CacheHit 9dd25d60e9e9946f1da7c95783d5f65600000000000000000000000000000005]
+[595/719   1791067524s] Csc Library/Bee/artifacts/Android_CodeGen/Unity.Mathematics.dll (+2 others)
+[597/719    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/Unity.Burst.ref.dll_A570EA442BAEBF77.mvfrm
+[598/719    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/Unity.Mathematics.ref.dll_26011928474328FD.mvfrm
+[599/719    0s] MovedFromExtractor-Combine Library/Bee/artifacts/Android_CodeGen/Unity.Burst.CodeGen.dll.mvfrm
+[600/719    0s] MovedFromExtractor-Combine Library/Bee/artifacts/Android_CodeGen/Unity.Collections.dll.mvfrm
+[593/719    0s] Csc Library/Bee/artifacts/Android_CodeGen/Unity.Burst.CodeGen.dll (+2 others) [CacheHit 9c803217357ab5f7b0b494067e513e5200000000000000000000000000000005]
+[601/719   1791067524s] Csc Library/Bee/artifacts/Android_CodeGen/Unity.Burst.CodeGen.dll (+2 others)
+[594/719    0s] Csc Library/Bee/artifacts/Android_CodeGen/Unity.Collections.dll (+2 others) [CacheHit 5169871892b14a36b7ef08d342f610f900000000000000000000000000000005]
+[603/719   1791067524s] Csc Library/Bee/artifacts/Android_CodeGen/Unity.Collections.dll (+2 others)
+[605/719    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/Unity.Collections.ref.dll_A27EB21DA167B07C.mvfrm
+[606/719    0s] MovedFromExtractor-Combine Library/Bee/artifacts/Android_CodeGen/Unity.Collections.CodeGen.dll.mvfrm
+[597/719    0s] Csc Library/Bee/artifacts/Android_CodeGen/Unity.Collections.CodeGen.dll (+2 others) [CacheHit 32c12a9afb6eba9c7cf7b44471b477b300000000000000000000000000000005]
+[607/719   1791067524s] Csc Library/Bee/artifacts/Android_CodeGen/Unity.Collections.CodeGen.dll (+2 others)
+[609/719    0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+[649/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.ScriptableBuildPipeline.dll
+[650/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.2D.Common.Runtime.dll
+[651/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Mathematics.dll
+[652/719    0s] CopyFiles Library/PlayerScriptAssemblies/StartupLife.Application.dll
+[653/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.ResourceManager.dll
+[654/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.UnifiedRayTracing.Runtime.dll
+[655/719    0s] CopyFiles Library/PlayerScriptAssemblies/StartupLife.Core.dll
+[656/719    0s] CopyFiles Library/PlayerScriptAssemblies/UnityEngine.UI.dll
+[657/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Collections.dll
+[658/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.InternalAPIEngineBridge.001.dll
+[659/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Universal.2D.Runtime.dll
+[660/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.2D.IK.Runtime.dll
+[661/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Profiling.Core.dll
+[662/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Core.Runtime.dll
+[663/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.2D.Animation.Runtime.dll
+[664/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Pipeline.Attributes.dll
+[665/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.InternalAPIEngineBridge.013.dll
+[666/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Burst.dll
+[667/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Timeline.dll
+[668/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Core.Runtime.Shared.dll
+[669/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Universal.Config.Runtime.dll
+[670/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.GPUDriven.Runtime.dll
+[671/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Addressables.dll
+[672/719    0s] CopyFiles Library/PlayerScriptAssemblies/StartupLife.Content.dll
+[673/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.InputSystem.ForUI.dll
+[674/719    0s] CopyFiles Library/PlayerScriptAssemblies/StartupLife.Simulation.dll
+[675/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.2D.Tilemap.Extras.dll
+[676/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.InternalAPIEngineBridge.004.dll
+[677/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Universal.Shaders.dll
+[678/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.2D.SpriteShape.Runtime.dll
+[679/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll
+[680/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Core.ShaderLibrary.dll
+[681/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.InputSystem.dll
+[682/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Universal.Runtime.dll
+[683/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipeline.Universal.ShaderLibrary.dll
+[684/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.TextMeshPro.dll
+[685/719    0s] CopyFiles Library/PlayerScriptAssemblies/StartupLife.Infrastructure.dll
+[686/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Localization.dll
+[687/719    0s] CopyFiles Library/PlayerScriptAssemblies/StartupLife.Presentation.dll
+[688/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.InternalAPIEngineBridge.004.pdb
+[689/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Universal.Shaders.pdb
+[690/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.pdb
+[691/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.InputSystem.pdb
+[692/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Core.ShaderLibrary.pdb
+[693/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Universal.Runtime.pdb
+[694/719    0s] CopyFiles Library/PlayerScriptAssemblies/StartupLife.Simulation.pdb
+[695/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Core.Runtime.Shared.pdb
+[696/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.InputSystem.ForUI.pdb
+[697/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Timeline.pdb
+[698/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.2D.Animation.Runtime.pdb
+[699/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.2D.SpriteShape.Runtime.pdb
+[700/719    0s] CopyFiles Library/PlayerScriptAssemblies/StartupLife.Content.pdb
+[701/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.GPUDriven.Runtime.pdb
+[702/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.2D.IK.Runtime.pdb
+[703/719    0s] CopyFiles Library/PlayerScriptAssemblies/StartupLife.Presentation.pdb
+[704/719    0s] CopyFiles Library/PlayerScriptAssemblies/StartupLife.Infrastructure.pdb
+[705/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.TextMeshPro.pdb
+[706/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Collections.pdb
+[707/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.InternalAPIEngineBridge.001.pdb
+[708/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Universal.2D.Runtime.pdb
+[709/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.UnifiedRayTracing.Runtime.pdb
+[710/719    0s] CopyFiles Library/PlayerScriptAssemblies/UnityEngine.UI.pdb
+[711/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Burst.pdb
+[712/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.ScriptableBuildPipeline.pdb
+[713/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Mathematics.pdb
+[714/719    0s] CopyFiles Library/PlayerScriptAssemblies/StartupLife.Application.pdb
+[715/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipeline.Universal.ShaderLibrary.pdb
+[716/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Universal.Config.Runtime.pdb
+[717/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.2D.Common.Runtime.pdb
+[718/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Addressables.pdb
+[719/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Pipeline.Attributes.pdb
+[720/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.InternalAPIEngineBridge.013.pdb
+[721/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.ResourceManager.pdb
+[722/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Profiling.Core.pdb
+[723/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.Localization.pdb
+[724/719    0s] CopyFiles Library/PlayerScriptAssemblies/StartupLife.Core.pdb
+[725/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.2D.Tilemap.Extras.pdb
+[726/719    0s] CopyFiles Library/PlayerScriptAssemblies/Unity.RenderPipelines.Core.Runtime.pdb
+[728/719    0s] BuildPlayerDataGenerator Library/BuildPlayerData/Player/RuntimeInitializeOnLoads.json (+1 other)
+*** Tundra build success (2.05 seconds), 105 items updated, 719 evaluated
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 0.4260ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1300b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssembliesAndTypeDB
+WorkingDir: <PROJECT>
+Total cache size 152881829
+Total cache size after purge 152881829, took 00:00:00.1196057
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 2 is unloading
+warn: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.runtime.interopservices.windowsruntime has duplicate hint path. Ignoring "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\NetStandard\Extensions\2.0.0\System.Runtime.InteropServices.WindowsRuntime.dll" in favor of "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\UnityReferenceAssemblies\unity-4.8-api\Facades\System.Runtime.InteropServices.WindowsRuntime.dll"
+warn: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.componentmodel.composition has duplicate hint path. Ignoring "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\NetStandard\compat\2.1.0\shims\netfx\System.ComponentModel.Composition.dll" in favor of "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\UnityReferenceAssemblies\unity-4.8-api\System.ComponentModel.Composition.dll"
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Mono.Cecil, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff\Mono.Cecil.dll
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Unity.Burst.Cecil, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library\PackageCache\com.unity.burst@2f3d916873ea\Unity.Burst.CodeGen\Unity.Burst.Cecil.dll
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc - - 200 - application/grpc 20.4626ms
+ExitCode: 0 Duration: 1s303ms
+[ 636/1176  0s] WriteResponseFile Library/Bee/artifacts/rsp/4747638433968585886.rsp
+[ 909/1176  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+[1175/1176  1s] BuildPlayerDataGenerator Library/BuildPlayerData/Editor/TypeDb-All.json
+*** Tundra build success (1.28 seconds), 3 items updated, 1176 evaluated
+DisplayProgressbar: Post Scripts Callback
+DisplayProgressbar: Calculate Scene Dependency Data
+DisplayProgressbar: Calculate Asset Dependency Data
+Total cache size 152881829
+Total cache size after purge 152881829, took 00:00:00.2195314
+DisplayProgressbar: Add Hash To Bundle Name Task
+DisplayProgressbar: Strip Unused Sprite Sources
+DisplayProgressbar: Create Built In Bundle
+DisplayProgressbar: Create Mono Script Bundle
+DisplayProgressbar: Post Dependency Callback
+DisplayProgressbar: Generate Bundle Packing
+DisplayProgressbar: Update Bundle Object Layout
+DisplayProgressbar: Generate Bundle Commands
+DisplayProgressbar: Generate Sub Asset Path Maps
+DisplayProgressbar: Generate Bundle Maps
+DisplayProgressbar: Post Packing Callback
+DisplayProgressbar: Write Serialized Files
+DisplayProgressbar: Archive And Compress Bundles
+DisplayProgressbar: Generate Location Lists Task
+DisplayProgressbar: Post Writing Callback
+DisplayProgressbar: Extract Data Task
+Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 33 unused Assets / (Unknown). Loaded Objects now: 7002.
+Memory consumption went from 176.3 MB to 176.6 MB.
+Total: 6.999400 ms (FindLiveObjects: 0.332500 ms CreateObjectMapping: 0.149400 ms MarkObjects: 6.442100 ms  DeleteObjects: 0.074100 ms)
+
+DisplayProgressbar: Post Processing AssetBundles
+DisplayProgressbar: Post Processing Catalog Entries
+Addressable content successfully built (duration : 0:00:04.974)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.AddressableAssets.Settings.AddressableAssetSettings:BuildPlayerContentImpl (UnityEditor.AddressableAssets.Build.AddressablesDataBuilderInput,bool) (at ./Library/PackageCache/com.unity.addressables@c0978d16db5d/Editor/Settings/AddressableAssetSettings.cs:3149)
+UnityEditor.AddressableAssets.Settings.AddressableAssetSettings:BuildPlayerContent (UnityEditor.AddressableAssets.Build.AddressablesPlayerBuildResult&,UnityEditor.AddressableAssets.Build.AddressablesDataBuilderInput) (at ./Library/PackageCache/com.unity.addressables@c0978d16db5d/Editor/Settings/AddressableAssetSettings.cs:3051)
+UnityEditor.AddressableAssets.GUI.AddressableAssetsSettingsGroupEditor:BuildAddressablesWithResult (UnityEditor.AddressableAssets.GUI.AddressableAssetsSettingsGroupEditor/BuildMenuContext,UnityEditor.AddressableAssets.Build.AddressablesDataBuilderInput) (at ./Library/PackageCache/com.unity.addressables@c0978d16db5d/Editor/GUI/AddressableAssetsSettingsGroupEditor.cs:580)
+AddressablesPlayerBuildProcessor:DefaultBuild (UnityEditor.AddressableAssets.Settings.AddressableAssetSettings,UnityEditor.Build.BuildPlayerContext) (at ./Library/PackageCache/com.unity.addressables@c0978d16db5d/Editor/Build/AddressablesPlayerBuildProcessor.cs:147)
+AddressablesPlayerBuildProcessor:PrepareForPlayerbuild (UnityEditor.AddressableAssets.Settings.AddressableAssetSettings,UnityEditor.Build.BuildPlayerContext,bool) (at ./Library/PackageCache/com.unity.addressables@c0978d16db5d/Editor/Build/AddressablesPlayerBuildProcessor.cs:100)
+AddressablesPlayerBuildProcessor:PrepareForBuild (UnityEditor.Build.BuildPlayerContext) (at ./Library/PackageCache/com.unity.addressables@c0978d16db5d/Editor/Build/AddressablesPlayerBuildProcessor.cs:79)
+UnityEditor.Build.BuildPipelineInterfaces:PreparePlayerBuild (UnityEditor.Build.BuildPlayerContext)
+UnityEditor.BuildPipeline:PreparePlayerBuild (UnityEditor.BuildPlayerOptions)
+UnityEditor.BuildPipeline:BuildPlayerInternalNoCheck (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[],bool)
+UnityEditor.BuildPipeline:BuildPlayerInternal (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[])
+UnityEditor.BuildPipeline:BuildPlayer (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[])
+UnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)
+M7RuntimeEvidenceBuild:Android () (at Assets/StartupLife/Scripts/Editor/M7RuntimeEvidenceBuild.cs:19)
+
+(Filename: ./Library/PackageCache/com.unity.addressables@c0978d16db5d/Editor/Settings/AddressableAssetSettings.cs Line: 3149)
+
+Asset Pipeline Refresh (id=b32b379ad3663e84a940f78323a6a55c): Total: 0.011 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+Start importing Assets/AddressableAssetsData/link.xml using Guid(daf99bdf6ce8548418667b88b28603bd) (TextScriptImporter) -> (artifact id: '7c49ef0b9d101ec92a1355af06bbacbc') in 0.0022574 seconds
+Refreshing native plugins compatible for Editor in 0.66 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=35d8f25d178bb9549858df5cbdfe87ae): Total: 0.091 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Settings/UniversalRP.asset using Guid(681886c5eb7344803b6206f758bf0b1c) (NativeFormatImporter) -> (artifact id: '6f2f7fab91796aea57ab7f2f971c62b6') in 0.0014298 seconds
+Refreshing native plugins compatible for Editor in 0.58 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=76ab461e7a0080649afd6c482560fa0e): Total: 0.013 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Default Volume Profile has been modified to ensure all overrides are present. This is required to avoid missing overrides at runtime which can lead to unexpected rendering issues. Please save these changes to avoid this message in the future.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.Rendering.Universal.URPPreprocessBuild:EnsureVolumeProfile () (at ./Library/PackageCache/com.unity.render-pipelines.universal@a0dd9d2bd983/Editor/BuildProcessors/URPPreprocessBuild.cs:50)
+UnityEditor.Rendering.Universal.URPPreprocessBuild:OnPreprocessBuild (UnityEditor.Build.Reporting.BuildReport) (at ./Library/PackageCache/com.unity.render-pipelines.universal@a0dd9d2bd983/Editor/BuildProcessors/URPPreprocessBuild.cs:30)
+UnityEditor.Build.BuildPipelineInterfaces/<>c__DisplayClass17_0:<OnBuildPreProcess>b__1 (UnityEditor.Build.IPreprocessBuildWithReport)
+UnityEditor.Build.BuildPipelineInterfaces:InvokeCallbackInterfacesPair<UnityEditor.Build.IPreprocessBuild, UnityEditor.Build.IPreprocessBuildWithReport> (System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuild>,System.Action`1<UnityEditor.Build.IPreprocessBuild>,System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuildWithReport>,System.Action`1<UnityEditor.Build.IPreprocessBuildWithReport>,bool)
+UnityEditor.Build.BuildPipelineInterfaces:OnBuildPreProcess (UnityEditor.Build.Reporting.BuildReport)
+UnityEditor.BuildPipeline:BuildPlayerInternalNoCheck (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[],bool)
+UnityEditor.BuildPipeline:BuildPlayerInternal (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[])
+UnityEditor.BuildPipeline:BuildPlayer (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[])
+UnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)
+M7RuntimeEvidenceBuild:Android () (at Assets/StartupLife/Scripts/Editor/M7RuntimeEvidenceBuild.cs:19)
+
+(Filename: ./Library/PackageCache/com.unity.render-pipelines.universal@a0dd9d2bd983/Editor/BuildProcessors/URPPreprocessBuild.cs Line: 50)
+
+1 URP assets included in build
+- UniversalRP - Assets/Settings/UniversalRP.asset
+	 - Renderer2D - Assets/Settings/Renderer2D.asset - UnityEngine.Rendering.Universal.Renderer2DData
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.Rendering.Universal.URPPreprocessBuild:LogIncludedAssets (System.Collections.Generic.List`1<UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset>) (at ./Library/PackageCache/com.unity.render-pipelines.universal@a0dd9d2bd983/Editor/BuildProcessors/URPPreprocessBuild.cs:73)
+UnityEditor.Rendering.Universal.URPPreprocessBuild:OnPreprocessBuild (UnityEditor.Build.Reporting.BuildReport) (at ./Library/PackageCache/com.unity.render-pipelines.universal@a0dd9d2bd983/Editor/BuildProcessors/URPPreprocessBuild.cs:32)
+UnityEditor.Build.BuildPipelineInterfaces/<>c__DisplayClass17_0:<OnBuildPreProcess>b__1 (UnityEditor.Build.IPreprocessBuildWithReport)
+UnityEditor.Build.BuildPipelineInterfaces:InvokeCallbackInterfacesPair<UnityEditor.Build.IPreprocessBuild, UnityEditor.Build.IPreprocessBuildWithReport> (System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuild>,System.Action`1<UnityEditor.Build.IPreprocessBuild>,System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuildWithReport>,System.Action`1<UnityEditor.Build.IPreprocessBuildWithReport>,bool)
+UnityEditor.Build.BuildPipelineInterfaces:OnBuildPreProcess (UnityEditor.Build.Reporting.BuildReport)
+UnityEditor.BuildPipeline:BuildPlayerInternalNoCheck (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[],bool)
+UnityEditor.BuildPipeline:BuildPlayerInternal (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[])
+UnityEditor.BuildPipeline:BuildPlayer (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[])
+UnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)
+M7RuntimeEvidenceBuild:Android () (at Assets/StartupLife/Scripts/Editor/M7RuntimeEvidenceBuild.cs:19)
+
+(Filename: ./Library/PackageCache/com.unity.render-pipelines.universal@a0dd9d2bd983/Editor/BuildProcessors/URPPreprocessBuild.cs Line: 73)
+
+Start importing Assets/Resources using Guid(748c6ff43ce2ab24c96b3b43efc60a45) (DefaultImporter) -> (artifact id: '0ea307dc16bbef99603ed041f89841ba') in 0.0014188 seconds
+Refreshing native plugins compatible for Editor in 0.92 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=a44d1b54d061cd34b95121ba58240e67): Total: 0.034 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+[TestRunBuilder] Creating new file 'Assets/Resources/PerformanceTestRunInfo.json' (3229 bytes)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+Unity.PerformanceTesting.Editor.TestRunBuilder:SaveToStorage (object,string) (at ./Library/PackageCache/com.unity.test-framework.performance@8b56083ec0f0/Editor/TestRunBuilder.cs:242)
+Unity.PerformanceTesting.Editor.TestRunBuilder:OnPreprocessBuild (UnityEditor.Build.Reporting.BuildReport) (at ./Library/PackageCache/com.unity.test-framework.performance@8b56083ec0f0/Editor/TestRunBuilder.cs:35)
+UnityEditor.Build.BuildPipelineInterfaces/<>c__DisplayClass17_0:<OnBuildPreProcess>b__1 (UnityEditor.Build.IPreprocessBuildWithReport)
+UnityEditor.Build.BuildPipelineInterfaces:InvokeCallbackInterfacesPair<UnityEditor.Build.IPreprocessBuild, UnityEditor.Build.IPreprocessBuildWithReport> (System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuild>,System.Action`1<UnityEditor.Build.IPreprocessBuild>,System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuildWithReport>,System.Action`1<UnityEditor.Build.IPreprocessBuildWithReport>,bool)
+UnityEditor.Build.BuildPipelineInterfaces:OnBuildPreProcess (UnityEditor.Build.Reporting.BuildReport)
+UnityEditor.BuildPipeline:BuildPlayerInternalNoCheck (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[],bool)
+UnityEditor.BuildPipeline:BuildPlayerInternal (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[])
+UnityEditor.BuildPipeline:BuildPlayer (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[])
+UnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)
+M7RuntimeEvidenceBuild:Android () (at Assets/StartupLife/Scripts/Editor/M7RuntimeEvidenceBuild.cs:19)
+
+(Filename: ./Library/PackageCache/com.unity.test-framework.performance@8b56083ec0f0/Editor/TestRunBuilder.cs Line: 242)
+
+[TestRunBuilder] Creating new file 'Assets/Resources/PerformanceTestRunSettings.json' (23 bytes)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+Unity.PerformanceTesting.Editor.TestRunBuilder:SaveToStorage (object,string) (at ./Library/PackageCache/com.unity.test-framework.performance@8b56083ec0f0/Editor/TestRunBuilder.cs:242)
+Unity.PerformanceTesting.Editor.TestRunBuilder:OnPreprocessBuild (UnityEditor.Build.Reporting.BuildReport) (at ./Library/PackageCache/com.unity.test-framework.performance@8b56083ec0f0/Editor/TestRunBuilder.cs:38)
+UnityEditor.Build.BuildPipelineInterfaces/<>c__DisplayClass17_0:<OnBuildPreProcess>b__1 (UnityEditor.Build.IPreprocessBuildWithReport)
+UnityEditor.Build.BuildPipelineInterfaces:InvokeCallbackInterfacesPair<UnityEditor.Build.IPreprocessBuild, UnityEditor.Build.IPreprocessBuildWithReport> (System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuild>,System.Action`1<UnityEditor.Build.IPreprocessBuild>,System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuildWithReport>,System.Action`1<UnityEditor.Build.IPreprocessBuildWithReport>,bool)
+UnityEditor.Build.BuildPipelineInterfaces:OnBuildPreProcess (UnityEditor.Build.Reporting.BuildReport)
+UnityEditor.BuildPipeline:BuildPlayerInternalNoCheck (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[],bool)
+UnityEditor.BuildPipeline:BuildPlayerInternal (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[])
+UnityEditor.BuildPipeline:BuildPlayer (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[])
+UnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)
+M7RuntimeEvidenceBuild:Android () (at Assets/StartupLife/Scripts/Editor/M7RuntimeEvidenceBuild.cs:19)
+
+(Filename: ./Library/PackageCache/com.unity.test-framework.performance@8b56083ec0f0/Editor/TestRunBuilder.cs Line: 242)
+
+Start importing Assets/Settings/UniversalRP.asset using Guid(681886c5eb7344803b6206f758bf0b1c) (NativeFormatImporter) -> (artifact id: '6f2f7fab91796aea57ab7f2f971c62b6') in 0.0020288 seconds
+Refreshing native plugins compatible for Editor in 0.78 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=c9de710d9405693408f552e286114eee): Total: 0.014 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Pipeline: No RuntimePipelineConfig asset found (Project Settings > Pipeline > Runtime). Pipeline will be disabled in Player builds.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+Unity.Pipeline.Editor.BuildProcessors.PipelineRuntimeBuildProcessor:OnPreprocessBuild (UnityEditor.Build.BuildCallbackContext) (at ./Library/PackageCache/com.unity.pipeline@62c08c808737/Editor/BuildProcessors/PipelineRuntimeBuildProcessor.cs:73)
+UnityEditor.Build.BuildPipelineInterfaces:OnBuildPreProcessWithContext (UnityEditor.Build.BuildCallbackContext)
+UnityEditor.BuildPipeline:BuildPlayerInternalNoCheck (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[],bool)
+UnityEditor.BuildPipeline:BuildPlayerInternal (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[])
+UnityEditor.BuildPipeline:BuildPlayer (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[])
+UnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)
+M7RuntimeEvidenceBuild:Android () (at Assets/StartupLife/Scripts/Editor/M7RuntimeEvidenceBuild.cs:19)
+
+(Filename: ./Library/PackageCache/com.unity.pipeline@62c08c808737/Editor/BuildProcessors/PipelineRuntimeBuildProcessor.cs Line: 73)
+
+Start importing ProjectSettings/ProjectSettings.asset using Guid(00000000000000004000000000000000) (LibraryAssetImporter) -> (artifact id: '8e38f39df81697d627aa58a57d86f6e7') in 0.0026861 seconds
+Start importing ProjectSettings/GraphicsSettings.asset using Guid(00000000000000006100000000000000) (LibraryAssetImporter) -> (artifact id: '03eb16c5eaf75eed8c3a9a0d03b91a69') in 0.0020963 seconds
+Start importing Assets/StartupLife/UI/Fonts/NotoSansVietnamese.asset using Guid(2395e518b17acbb438aa0940b76843a0) (NativeFormatImporter) -> (artifact id: '67b64b822df1044f033529e8580c18c9') in 0.0047141 seconds
+Start importing Assets/Settings/UniversalRenderPipelineGlobalSettings.asset using Guid(93b439a37f63240aca3dd4e01d978a9f) (NativeFormatImporter) -> (artifact id: 'f3d7bb8f8689fb82645dd1c7a1e9d513') in 0.0011847 seconds
+Start importing Assets/Settings/DefaultVolumeProfile.asset using Guid(3f9215ea0144899419cfbc0957140d3f) (NativeFormatImporter) -> (artifact id: '0ad7cd7845d0125322ff48478924d8da') in 0.0010747 seconds
+Refreshing native plugins compatible for Editor in 0.79 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=d0049325cbc2aaf4fbd51dc862459863): Total: 0.046 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+DisplayProgressbar: Checking prerequisites
+Reporting tool paths:
+ JDK: 'C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\PlaybackEngines\AndroidPlayer\OpenJDK'
+ Android SDK: 'C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK'
+ Android NDK: 'C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\PlaybackEngines\AndroidPlayer\NDK'
+ Gradle: 'C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\PlaybackEngines\AndroidPlayer\Tools\gradle' (Gradle Version: '9.3.1' Android Plugin Version: '9.0.0')
+UnityException: x86-64 (Magic Leap) support is now limited.
+Target Architecture x86-64 (Magic Leap) is deprecated and will be fully removed in a future version of Unity. Support for Magic Leap is now limited. x86-64 (Magic Leap) will be unset in player settings.
+UnityEditor.BuildPipeline:BuildPlayerInternalNoCheck_Injected(String[], ManagedSpanWrapper&, ManagedSpanWrapper&, BuildTargetGroup, BuildTarget, Int32, BuildOptions, String[], Boolean)
+UnityEditor.BuildPipeline:BuildPlayerInternalNoCheck(String[], String, String, BuildTargetGroup, BuildTarget, Int32, BuildOptions, String[], Boolean)
+UnityEditor.BuildPipeline:BuildPlayerInternal(String[], String, String, BuildTargetGroup, BuildTarget, Int32, BuildOptions, String[])
+UnityEditor.BuildPipeline:BuildPlayer(String[], String, String, BuildTargetGroup, BuildTarget, Int32, BuildOptions, String[])
+UnityEditor.BuildPipeline:BuildPlayer(BuildPlayerOptions)
+M7RuntimeEvidenceBuild:Android() (at Assets\StartupLife\Scripts\Editor\M7RuntimeEvidenceBuild.cs:19)
+
+(Filename: Assets/StartupLife/Scripts/Editor/M7RuntimeEvidenceBuild.cs Line: 19)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 29 unused Assets / (0.5 KB). Loaded Objects now: 7019.
+Memory consumption went from 210.7 MB to 210.7 MB.
+Total: 7.583700 ms (FindLiveObjects: 0.225000 ms CreateObjectMapping: 0.088900 ms MarkObjects: 6.874400 ms  DeleteObjects: 0.393300 ms)
+
+Build Finished, Result: Failure.
+##utp:{"type":"PlayerBuildInfo","version":2,"phase":"Immediate","time":1791067527816,"processId":11340,"steps":[{"description":"Preprocess Player","duration":283},{"description":"Prepare For Build","duration":31}],"duration":314}
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Temp/__Backupscenes/0.backup'
+	Deserialize:            0.382 ms
+	Integration:            231.421 ms
+	Integration of assets:  0.002 ms
+	Thread Wait Time:       0.016 ms
+	Total Operation Time:   231.821 ms
+Unloading 0 unused Assets / (10.5 KB). Loaded Objects now: 7019.
+Memory consumption went from 210.5 MB to 210.5 MB.
+Total: 6.488400 ms (FindLiveObjects: 0.267000 ms CreateObjectMapping: 0.113200 ms MarkObjects: 6.093300 ms  DeleteObjects: 0.013400 ms)
+
+M7 emulator evidence build: Failed; warnings=1; errors=1
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+M7RuntimeEvidenceBuild:Android () (at Assets/StartupLife/Scripts/Editor/M7RuntimeEvidenceBuild.cs:26)
+
+(Filename: Assets/StartupLife/Scripts/Editor/M7RuntimeEvidenceBuild.cs Line: 26)
+
+Pipeline Server stopped
+Killing ADB server in 0.0556795 seconds.
+Start importing ProjectSettings/ProjectSettings.asset using Guid(00000000000000004000000000000000) (LibraryAssetImporter) -> (artifact id: 'b90c9c24b984e1f7f3bc89e9bd0eddf2') in 0.0025784 seconds
+Refreshing native plugins compatible for Editor in 0.84 ms, found 1 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=7bd125d94e08c084290b852a2e057976): Total: 0.028 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+abort_threads: Failed aborting id: 0000000000003844, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000009A98, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000003844, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000009A98, mono_thread_manage will ignore it
+
+debugger-agent: Unable to listen on 3624
+[usbmuxd] Stop listen thread
+[usbmuxd] Listen thread exiting
+Checking for leaked weakptr:
+  Found no leaked weakptrs.
+[Package Manager] Server process was shutdown
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791067533245,"processId":11340,"allocatedMemory":14918304,"memoryLabels":[{"Default":29313},{"Permanent":15236},{"NewDelete":67763},{"Thread":4230384},{"Manager":38877},{"VertexData":8},{"Geometry":816},{"Texture":160},{"Shader":79381},{"Material":24},{"GfxDevice":55872},{"Animation":392},{"Audio":3040},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":80},{"Input":14984},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":448},{"ScriptingNativeRuntime":155060},{"BaseObject":1620400},{"Resource":1336},{"Renderer":3000},{"Transform":4685},{"File":1016},{"WebCam":616},{"Culling":32},{"Terrain":11394},{"Wind":24},{"STL":40},{"String":28780},{"DynamicArray":114188},{"HashMap":76424},{"Utility":2662454},{"Curl":2498},{"PoolAlloc":2152},{"AI":80},{"TypeTree":18389},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7792},{"Director":8240},{"CloudService":10216},{"WebRequest":20751},{"VR":47994},{"SceneManager":504},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":2377},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":640},{"Hierarchy":608},{"CoreStats":13112},{"Identifiers":6480},{"Gui":96},{"EditorUtility":111032},{"VersionControl":4},{"Undo":947},{"AssetDatabase":5004793},{"EditorGi":328},{"UnityConnect":29208},{"Upm":1896},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":260},{"ProfilerEditor":9746},{"CoreBusinessMetrics":3518},{"Licensing":12805},{"AssetReference":32},{"IPCStream":32}]}

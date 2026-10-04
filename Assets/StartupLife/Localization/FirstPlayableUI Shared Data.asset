@@ -323,6 +323,14 @@ MonoBehaviour:
     m_Key: summary.close
     m_Metadata:
       m_Items: []
+  - m_Id: 215208030986240
+    m_Key: reason.save.read_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 215208072929280
+    m_Key: reason.save.unrecoverable
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

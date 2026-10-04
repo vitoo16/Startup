@@ -1,0 +1,163 @@
+{
+  "suite": "Startup Life M1 public API freeze",
+  "frozenFrom": "Astra closure after PR #13",
+  "passed": 31,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "CommandResult publishes SimulationOutcome",
+      "passed": true,
+      "detail": "public\\s+SimulationOutcome\\?\\s+Outcome\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "AdvanceResult publishes reached instant",
+      "passed": true,
+      "detail": "public\\s+SimInstant\\s+ReachedInstant\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "SimulationOutcome publishes activity identity",
+      "passed": true,
+      "detail": "public\\s+string\\s+ActivityId\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "SimulationOutcome publishes playback cursor",
+      "passed": true,
+      "detail": "public\\s+int\\s+PlaybackCursor\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "SimulationOutcome publishes typed course change",
+      "passed": true,
+      "detail": "public\\s+CourseChange\\?\\s+CourseChange\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "CourseChange kind is frozen",
+      "passed": true,
+      "detail": "enum\\s+CourseChangeKind\\s*\\{\\s*Activated\\s*,\\s*Progressed\\s*,\\s*Completed\\s*\\}"
+    },
+    {
+      "name": "Course completion reasons are frozen",
+      "passed": true,
+      "detail": "enum\\s+CourseCompletionReason\\s*\\{\\s*None\\s*,\\s*StudyTargetReached\\s*,\\s*SkillTargetAlreadyMet\\s*\\}"
+    },
+    {
+      "name": "CourseChange publishes instance id",
+      "passed": true,
+      "detail": "public\\s+string\\s+InstanceId\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "CourseChange publishes definition id",
+      "passed": true,
+      "detail": "public\\s+string\\s+DefinitionId\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "CourseChange publishes skill id",
+      "passed": true,
+      "detail": "public\\s+string\\s+SkillId\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "CourseChange publishes prior progress",
+      "passed": true,
+      "detail": "public\\s+long\\s+PriorProgressUnits\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "CourseChange publishes new progress",
+      "passed": true,
+      "detail": "public\\s+long\\s+NewProgressUnits\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "CourseChange publishes target units",
+      "passed": true,
+      "detail": "public\\s+long\\s+TargetUnits\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "CourseChange publishes target level",
+      "passed": true,
+      "detail": "public\\s+int\\s+TargetLevel\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "ActiveCourseSnapshot remains sealed",
+      "passed": true,
+      "detail": "public\\s+sealed\\s+class\\s+ActiveCourseSnapshot"
+    },
+    {
+      "name": "Snapshot publishes current activity id",
+      "passed": true,
+      "detail": "public\\s+string\\s+CurrentActivityId\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "Snapshot publishes playback cursor",
+      "passed": true,
+      "detail": "public\\s+int\\s+PlaybackCursor\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "Snapshot publishes nullable active course",
+      "passed": true,
+      "detail": "public\\s+ActiveCourseSnapshot\\?\\s+ActiveCourse\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "Active course publishes instance id",
+      "passed": true,
+      "detail": "public\\s+string\\s+InstanceId\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "Active course publishes definition id",
+      "passed": true,
+      "detail": "public\\s+string\\s+DefinitionId\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "Active course publishes skill id",
+      "passed": true,
+      "detail": "public\\s+string\\s+SkillId\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "Active course publishes progress units",
+      "passed": true,
+      "detail": "public\\s+long\\s+ProgressUnits\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "Active course publishes target units",
+      "passed": true,
+      "detail": "public\\s+long\\s+TargetUnits\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "Active course publishes target level",
+      "passed": true,
+      "detail": "public\\s+int\\s+TargetLevel\\s*\\{\\s*get;\\s*\\}"
+    },
+    {
+      "name": "legacy snapshot StudyUnits stays removed",
+      "passed": true,
+      "detail": "GameSnapshot.StudyUnits must not return"
+    },
+    {
+      "name": "legacy outcome CourseInstanceId stays removed",
+      "passed": true,
+      "detail": "SimulationOutcome.CourseInstanceId must not return"
+    },
+    {
+      "name": "legacy outcome StudyUnitsDelta stays removed",
+      "passed": true,
+      "detail": "SimulationOutcome.StudyUnitsDelta must not return"
+    },
+    {
+      "name": "course outcome is built explicitly",
+      "passed": true,
+      "detail": "GameSession must build typed CourseChange from authoritative before/after state"
+    },
+    {
+      "name": "root cue and cursor remain replay-bound",
+      "passed": true,
+      "detail": "restore validation must bind root playback provenance"
+    },
+    {
+      "name": "candidate serialization remains inside validation path",
+      "passed": true,
+      "detail": "candidate serialization must remain in the controlled validation block"
+    },
+    {
+      "name": "outcome contract exposes no mutable state DTOs",
+      "passed": true,
+      "detail": "no mutable Core state DTOs exposed"
+    }
+  ]
+}

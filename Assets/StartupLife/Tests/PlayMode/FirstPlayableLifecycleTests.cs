@@ -222,6 +222,12 @@ namespace StartupLife.Tests.PlayMode
             var committedNextDay = bootstrap.Snapshot;
             Assert.That(committedNextDay.Instant.Date, Is.EqualTo(priorDate.AddDays(1)));
             Assert.That(committedNextDay.Instant.Minute, Is.Zero);
+            // This fixture dispatches directly through Flow; refresh the view before capturing it.
+            bootstrap.RefreshMode();
+            Assert.That(GameObject.Find("DateValue").GetComponent<TMP_Text>().text,
+                Is.EqualTo(committedNextDay.Instant.Date.ToString()), "Capture must show the committed day.");
+            Assert.That(GameObject.Find("TimeValue").GetComponent<TMP_Text>().text,
+                Is.EqualTo("00:00"), "Capture must show the committed minute.");
             FirstPlayableVisualEvidence.Capture("M7-T02/05-next-day-before-restart");
 
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
@@ -288,6 +294,8 @@ namespace StartupLife.Tests.PlayMode
             Assert.That(failed.IsReady, Is.False);
             Assert.That(GameObject.Find("LifePanel"), Is.Null);
             Assert.That(File.Exists(backup), Is.True);
+            AssertFatalSaveStatus("Không thể đọc dữ liệu đã lưu.");
+            FirstPlayableVisualEvidence.Capture("M7-T02/07-unreadable-fatal");
             LogAssert.NoUnexpectedReceived();
         }
 
@@ -310,6 +318,8 @@ namespace StartupLife.Tests.PlayMode
             Assert.That(failed.IsReady, Is.False);
             Assert.That(GameObject.Find("CharacterCreationPanel"), Is.Null);
             Assert.That(GameObject.Find("LifePanel"), Is.Null);
+            AssertFatalSaveStatus("Không thể khôi phục dữ liệu đã lưu.");
+            FirstPlayableVisualEvidence.Capture("M7-T02/08-both-invalid-fatal");
             LogAssert.NoUnexpectedReceived();
         }
 
@@ -344,6 +354,16 @@ namespace StartupLife.Tests.PlayMode
             var bootstrap = Object.FindAnyObjectByType<StartupLifeBootstrapper>();
             Assert.That(bootstrap, Is.Not.Null);
             return bootstrap;
+        }
+
+        private static void AssertFatalSaveStatus(string expected)
+        {
+            var text = GameObject.Find("FatalStatus").GetComponent<TMP_Text>();
+            Assert.That(text.text, Is.EqualTo(expected));
+            text.ForceMeshUpdate();
+            Assert.That(text.isTextOverflowing, Is.False);
+            var safeArea = text.transform.parent.GetComponent<RectTransform>();
+            Assert.That(text.rectTransform.rect.width, Is.GreaterThanOrEqualTo(safeArea.rect.width * 0.8f));
         }
 
         private static void CreateCharacterOnly(StartupLifeBootstrapper bootstrap, string name)

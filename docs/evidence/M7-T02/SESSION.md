@@ -1,5 +1,23 @@
 # M7-T02 — First playable persistence and device gate
 
+## Current local execution addendum — 2026-10-04
+
+The [runtime acceptance report](RUNTIME-2026-10-04/REPORT.md) supersedes the historical
+NOT RUN entries below for Windows validation, Unity import/tests, portrait captures,
+and the dedicated Android emulator. It records two minimal verified fixes and actual
+checksummed lifecycle checkpoints. Physical Android acceptance and current iOS smoke
+remain NOT RUN. M7-T02 remains unchecked; M8 remains NOT READY.
+
+The original GitHub implementation session below is retained as historical evidence.
+
+## Follow-up publication
+
+The [publication record](RUNTIME-2026-10-04/publication/PUBLICATION.md) records transplantation
+onto the latest verified main, runtime-tree equality, fresh engine-free checks and evidence
+metadata repairs. Current classification:
+`M7-T02 IMPLEMENTED — EXTERNAL ACCEPTANCE BLOCKERS: physical Android + iOS`.
+The task checkbox remains unchecked and M8 remains blocked.
+
 ## Session identity
 
 - Owner model: GPT-5.6 Sol

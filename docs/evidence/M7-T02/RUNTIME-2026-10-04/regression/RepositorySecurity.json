@@ -1,0 +1,150 @@
+{
+  "suite": "Startup Life repository security and release hygiene",
+  "passed": 28,
+  "failed": 0,
+  "workflowCount": 2,
+  "trackedFileCount": 898,
+  "checks": [
+    {
+      "name": "gitignore protects secrets.json",
+      "passed": true,
+      "detail": "missing ignore fragment: secrets.json"
+    },
+    {
+      "name": "gitignore protects *.secrets.json",
+      "passed": true,
+      "detail": "missing ignore fragment: *.secrets.json"
+    },
+    {
+      "name": "gitignore protects *.private.*",
+      "passed": true,
+      "detail": "missing ignore fragment: *.private.*"
+    },
+    {
+      "name": "gitignore protects .credentials/",
+      "passed": true,
+      "detail": "missing ignore fragment: .credentials/"
+    },
+    {
+      "name": "gitignore protects .env",
+      "passed": true,
+      "detail": "missing ignore fragment: .env"
+    },
+    {
+      "name": "gitignore protects *.p8",
+      "passed": true,
+      "detail": "missing ignore fragment: *.p8"
+    },
+    {
+      "name": "gitignore protects *.p12",
+      "passed": true,
+      "detail": "missing ignore fragment: *.p12"
+    },
+    {
+      "name": "gitignore protects *.mobileprovision",
+      "passed": true,
+      "detail": "missing ignore fragment: *.mobileprovision"
+    },
+    {
+      "name": "gitignore protects GoogleService-Info.plist",
+      "passed": true,
+      "detail": "missing ignore fragment: GoogleService-Info.plist"
+    },
+    {
+      "name": "LFS rule exists: *.png",
+      "passed": true,
+      "detail": "expected Git LFS rule for *.png"
+    },
+    {
+      "name": "LFS rule exists: *.psd",
+      "passed": true,
+      "detail": "expected Git LFS rule for *.psd"
+    },
+    {
+      "name": "LFS rule exists: *.psb",
+      "passed": true,
+      "detail": "expected Git LFS rule for *.psb"
+    },
+    {
+      "name": "LFS rule exists: *.fbx",
+      "passed": true,
+      "detail": "expected Git LFS rule for *.fbx"
+    },
+    {
+      "name": "LFS rule exists: *.wav",
+      "passed": true,
+      "detail": "expected Git LFS rule for *.wav"
+    },
+    {
+      "name": "LFS rule exists: *.ttf",
+      "passed": true,
+      "detail": "expected Git LFS rule for *.ttf"
+    },
+    {
+      "name": "LFS rule exists: *.otf",
+      "passed": true,
+      "detail": "expected Git LFS rule for *.otf"
+    },
+    {
+      "name": "LFS rule exists: *.unitypackage",
+      "passed": true,
+      "detail": "expected Git LFS rule for *.unitypackage"
+    },
+    {
+      "name": "no sensitive credential filenames are tracked",
+      "passed": true,
+      "detail": "clean"
+    },
+    {
+      "name": "no private-key PEM blocks in tracked text",
+      "passed": true,
+      "detail": "clean"
+    },
+    {
+      "name": "GitHub workflows discovered for security scan",
+      "passed": true,
+      "detail": "discovered 2 workflow file(s)"
+    },
+    {
+      "name": "first-party GitHub actions are commit-SHA pinned",
+      "passed": true,
+      "detail": "2 workflow files checked"
+    },
+    {
+      "name": "no pull_request_target workflow",
+      "passed": true,
+      "detail": "clean"
+    },
+    {
+      "name": "workflow permissions remain read-only",
+      "passed": true,
+      "detail": "contents: read only"
+    },
+    {
+      "name": "release contract keeps signing secrets out of Git",
+      "passed": true,
+      "detail": "missing secret-storage policy"
+    },
+    {
+      "name": "release contract separates build from device QA",
+      "passed": true,
+      "detail": "artifact/device evidence boundary must remain explicit"
+    },
+    {
+      "name": "release contract marks build-number injection pending",
+      "passed": true,
+      "detail": "current release-number limitation must remain explicit"
+    },
+    {
+      "name": "Unity marketing version is present",
+      "passed": true,
+      "detail": "current: 1.0"
+    },
+    {
+      "name": "build wrapper does not bypass dirty-tree guard",
+      "passed": true,
+      "detail": "release/build provenance must reject accidental dirty builds by default"
+    }
+  ],
+  "note": "This is a high-signal repository policy scan, not a substitute for dedicated secret scanning, signing review, or store release QA."
+}

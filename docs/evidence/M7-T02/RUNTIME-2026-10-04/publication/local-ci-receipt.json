@@ -1,0 +1,55 @@
+{
+  "head": "1069171504c6c42ba0c8651e13c9c477ff906e33",
+  "productionTreeIdentical": true,
+  "completedUtc": "2026-10-04T09:55:05.194669+00:00",
+  "suites": {
+    "astra-foundation-highs-report.json": {
+      "passed": 19,
+      "failed": 0
+    },
+    "astra-m2-restore-invariants-report.json": {
+      "passed": 35,
+      "failed": 0
+    },
+    "content-catalog-report.json": {
+      "passed": 8,
+      "failed": 0
+    },
+    "ContentBridge.json": {
+      "passed": 8,
+      "failed": 0
+    },
+    "FirstPlayableShell.json": {
+      "passed": 43,
+      "failed": 0
+    },
+    "M1ApiContract.json": {
+      "passed": 31,
+      "failed": 0
+    },
+    "presentation-adapter-report.json": {
+      "passed": 11,
+      "failed": 0
+    },
+    "RepositorySecurity.json": {
+      "passed": 28,
+      "failed": 0
+    },
+    "simulation-report.json": {
+      "passed": 49,
+      "failed": 0
+    },
+    "UnityFoundation.json": {
+      "passed": 31,
+      "failed": 0
+    },
+    "UnityRunnerContract.json": {
+      "passed": 30,
+      "failed": 0
+    }
+  },
+  "dotnetWarnings": 0,
+  "dotnetErrors": 0,
+  "documentation": "PASS, 324 Markdown files",
+  "xmlComparedWithOriginalExecutedFiles": 8
+}

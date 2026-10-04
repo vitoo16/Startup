@@ -69,6 +69,7 @@ namespace StartupLife.Editor
             Stretch(safeArea.GetComponent<RectTransform>());
 
             var fatal = LocalizedValue("FatalStatus", "fatal.none", safeArea.transform, font, theme, 110);
+            ConfigureFatalStatus(fatal.GetComponent<TMP_Text>(), theme);
             fatal.gameObject.SetActive(true);
 
             var characterPanel = Panel("CharacterCreationPanel", safeArea.transform, theme);
@@ -231,6 +232,28 @@ namespace StartupLife.Editor
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             AssetDatabase.SaveAssets();
             FirstPlayableRuntimeGate.VerifyScene();
+        }
+
+        public static void RepairFatalSaveStatus()
+        {
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            var fatal = GameObject.Find("FatalStatus").GetComponent<TMP_Text>();
+            var theme = AssetDatabase.LoadAssetAtPath<MobileTheme>(Root + "/Data/MobileTheme.asset");
+            ConfigureFatalStatus(fatal, theme);
+            var locale = LocalizationEditorSettings.GetLocales().Single(value => value.Identifier.Code == "vi");
+            var collection = LocalizationEditorSettings.GetStringTableCollections().Single(value => value.TableCollectionName == LocalizedKeyLabel.Table);
+            var table = (StringTable)collection.GetTable(locale.Identifier);
+            AddStrings(table);
+            EditorUtility.SetDirty(table);
+            EditorUtility.SetDirty(table.SharedData);
+            EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            AssetDatabase.SaveAssets();
+        }
+
+        static void ConfigureFatalStatus(TMP_Text text, MobileTheme theme)
+        {
+            Stretch(text.rectTransform, theme.padding);
+            text.alignment = TextAlignmentOptions.Center;
         }
 
         static void CreateCamera(MobileTheme theme)
@@ -439,6 +462,8 @@ namespace StartupLife.Editor
             Add(table, "reason.state.invalid", "Trạng thái trò chơi không hợp lệ.");
             Add(table, "reason.save.write_failed", "Không thể lưu tiến trình.");
             Add(table, "reason.save.invalid", "Dữ liệu lưu không hợp lệ.");
+            Add(table, "reason.save.read_failed", "Không thể đọc dữ liệu đã lưu.");
+            Add(table, "reason.save.unrecoverable", "Không thể khôi phục dữ liệu đã lưu.");
             Add(table, "reason.save.content_id", "Dữ liệu lưu cần nội dung chưa có.");
             Add(table, "reason.save.content_version", "Phiên bản nội dung của dữ liệu lưu chưa được hỗ trợ.");
 

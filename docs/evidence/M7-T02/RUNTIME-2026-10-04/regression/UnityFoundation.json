@@ -1,0 +1,163 @@
+{
+  "suite": "Startup Life static Unity foundation",
+  "editor": "6000.3.25f1",
+  "passed": 31,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "foundation files exist",
+      "passed": true,
+      "detail": "15 required files present"
+    },
+    {
+      "name": "Unity editor patch pinned",
+      "passed": true,
+      "detail": "expected Unity 6000.3.25f1"
+    },
+    {
+      "name": "Unity editor revision pinned",
+      "passed": true,
+      "detail": "expected revision e1dba0a9aba4"
+    },
+    {
+      "name": "Force Text serialization",
+      "passed": true,
+      "detail": "EditorSettings.m_SerializationMode must be 2"
+    },
+    {
+      "name": "Visible Meta Files enabled",
+      "passed": true,
+      "detail": "VersionControlSettings must use Visible Meta Files"
+    },
+    {
+      "name": "product identity",
+      "passed": true,
+      "detail": "^\\s*companyName:\\s*Startup Life\\s*$; ^\\s*productName:\\s*Startup Life\\s*$"
+    },
+    {
+      "name": "portrait reference resolution",
+      "passed": true,
+      "detail": "^\\s*defaultScreenWidth:\\s*1080\\s*$; ^\\s*defaultScreenHeight:\\s*1920\\s*$"
+    },
+    {
+      "name": "landscape autorotation disabled",
+      "passed": true,
+      "detail": "^\\s*allowedAutorotateToLandscapeRight:\\s*0\\s*$; ^\\s*allowedAutorotateToLandscapeLeft:\\s*0\\s*$"
+    },
+    {
+      "name": "Input System active",
+      "passed": true,
+      "detail": "^\\s*activeInputHandler:\\s*1\\s*$"
+    },
+    {
+      "name": "package pinned: com.unity.render-pipelines.universal",
+      "passed": true,
+      "detail": "expected 17.3.0, got 17.3.0"
+    },
+    {
+      "name": "package pinned: com.unity.2d.animation",
+      "passed": true,
+      "detail": "expected 13.0.6, got 13.0.6"
+    },
+    {
+      "name": "package pinned: com.unity.2d.psdimporter",
+      "passed": true,
+      "detail": "expected 12.0.2, got 12.0.2"
+    },
+    {
+      "name": "package pinned: com.unity.inputsystem",
+      "passed": true,
+      "detail": "expected 1.20.0, got 1.20.0"
+    },
+    {
+      "name": "package pinned: com.unity.localization",
+      "passed": true,
+      "detail": "expected 1.5.8, got 1.5.8"
+    },
+    {
+      "name": "package pinned: com.unity.test-framework",
+      "passed": true,
+      "detail": "expected 1.6.0, got 1.6.0"
+    },
+    {
+      "name": "package pinned: com.unity.ugui",
+      "passed": true,
+      "detail": "expected 2.0.0, got 2.0.0"
+    },
+    {
+      "name": "package pinned: com.unity.pipeline",
+      "passed": true,
+      "detail": "expected 0.8.0-exp.1, got 0.8.0-exp.1"
+    },
+    {
+      "name": "manifest and lock direct dependencies agree",
+      "passed": true,
+      "detail": "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 direct dependencies aligned"
+    },
+    {
+      "name": "verified mobile shell is launch scene",
+      "passed": true,
+      "detail": "Launch MobileBaseline or generated FirstPlayable; retain enabled baseline regression scene"
+    },
+    {
+      "name": "Input System settings registered",
+      "passed": true,
+      "detail": "EditorBuildSettings must register Input System actions"
+    },
+    {
+      "name": "Localization settings registered",
+      "passed": true,
+      "detail": "EditorBuildSettings must register Localization settings"
+    },
+    {
+      "name": "baseline explicitly sets portrait",
+      "passed": true,
+      "detail": "PlayerSettings\\.defaultInterfaceOrientation\\s*=\\s*UIOrientation\\.Portrait"
+    },
+    {
+      "name": "baseline uses orthographic camera",
+      "passed": true,
+      "detail": "camera\\.orthographic\\s*=\\s*true"
+    },
+    {
+      "name": "baseline uses 1080x1920 CanvasScaler",
+      "passed": true,
+      "detail": "scaler\\.referenceResolution\\s*=\\s*new Vector2\\(1080, 1920\\)"
+    },
+    {
+      "name": "baseline installs safe area component",
+      "passed": true,
+      "detail": "typeof\\(MobileSafeArea\\)"
+    },
+    {
+      "name": "baseline validates Vietnamese glyphs",
+      "passed": true,
+      "detail": "font\\.TryAddCharacters\\(GlyphSample"
+    },
+    {
+      "name": "baseline writes localization keys",
+      "passed": true,
+      "detail": "CreateStringTableCollection\\(\"FoundationUI\""
+    },
+    {
+      "name": "generated Unity folders are not tracked",
+      "passed": true,
+      "detail": "clean"
+    },
+    {
+      "name": "tracked Unity assets have .meta sidecars",
+      "passed": true,
+      "detail": "124 tracked assets paired"
+    },
+    {
+      "name": "community Unity skill revision pinned",
+      "passed": true,
+      "detail": "expected reviewed community revision dafb97ef00f94e64e42e6260bc6b3af74cc83dad"
+    },
+    {
+      "name": "required community skill content matches pin",
+      "passed": true,
+      "detail": "30 required skills inventoried"
+    }
+  ]
+}

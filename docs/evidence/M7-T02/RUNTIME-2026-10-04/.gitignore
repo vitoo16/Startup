@@ -1,0 +1,3 @@
+# This reviewed evidence bundle intentionally retains sanitized execution logs.
+!logs/
+!logs/**

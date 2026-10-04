@@ -1,0 +1,15 @@
+total 60
+
+drwxrws--- 3 u0_a209 ext_data_rw  4096 2026-10-04 15:23 .
+
+drwxrws--- 3 u0_a209 ext_data_rw  4096 2026-10-04 15:23 ..
+
+drwxr-s--- 4 u0_a209 ext_data_rw  4096 2026-10-04 05:53 il2cpp
+
+-rw-rw---- 1 u0_a209 ext_data_rw 11036 2026-10-04 15:23 startup-life.json
+
+-rw-rw---- 1 u0_a209 ext_data_rw 10232 2026-10-04 15:23 startup-life.json.backup
+
+-rw-rw---- 1 u0_a209 ext_data_rw     0 2026-10-04 15:19 startup-life.json.lock
+
+
