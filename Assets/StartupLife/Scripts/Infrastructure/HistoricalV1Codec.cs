@@ -44,11 +44,20 @@ namespace StartupLife.Infrastructure
 
         private static void Validate(V1GameState dto, int expectedVersion)
         {
-            if (dto == null || dto.SaveVersion != expectedVersion || dto.ExtensionData != null ||
-                dto.Arrears == null || dto.Claims == null || dto.CompletedCourses == null || dto.ConsumedActivities == null ||
-                dto.Grants == null || dto.History == null || dto.Ledger == null || dto.PreviousEmployment == null ||
-                dto.Receipts == null || dto.Scheduler == null || dto.Skills == null)
-                throw new ArgumentException("Invalid frozen v1 root.");
+            if (dto == null) throw new ArgumentException("Invalid frozen v1 root: null.");
+            if (dto.SaveVersion != expectedVersion) throw new ArgumentException("Invalid frozen v1 root: version.");
+            if (dto.ExtensionData != null) throw new ArgumentException("Invalid frozen v1 root: extension data.");
+            if (dto.Arrears == null) throw new ArgumentException("Invalid frozen v1 root: Arrears.");
+            if (dto.Claims == null) throw new ArgumentException("Invalid frozen v1 root: Claims.");
+            if (dto.CompletedCourses == null) throw new ArgumentException("Invalid frozen v1 root: CompletedCourses.");
+            if (dto.ConsumedActivities == null) throw new ArgumentException("Invalid frozen v1 root: ConsumedActivities.");
+            if (dto.Grants == null) throw new ArgumentException("Invalid frozen v1 root: Grants.");
+            if (dto.History == null) throw new ArgumentException("Invalid frozen v1 root: History.");
+            if (dto.Ledger == null) throw new ArgumentException("Invalid frozen v1 root: Ledger.");
+            if (dto.PreviousEmployment == null) throw new ArgumentException("Invalid frozen v1 root: PreviousEmployment.");
+            if (dto.Receipts == null) throw new ArgumentException("Invalid frozen v1 root: Receipts.");
+            if (dto.Scheduler == null) throw new ArgumentException("Invalid frozen v1 root: Scheduler.");
+            if (dto.Skills == null) throw new ArgumentException("Invalid frozen v1 root: Skills.");
             RequireNoExtension(dto.Employment);
             RequireNoExtension(dto.Course);
             RequireNoExtension(dto.Scheduler);
