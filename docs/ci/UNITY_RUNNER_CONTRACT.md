@@ -71,6 +71,18 @@ The Unity smoke workflow can prove an iOS **Xcode project export** once the runn
 
 **Current blocker:** the user has no Mac host, so this route is not provisioned on 2026-09-30.
 
+### ADR-010 current policy
+
+Under [ADR-010](../adr/ADR-010-windows-android-first-ios-acceptance-deferral.md), iOS execution is currently **DEFERRED — NOT RUN**.
+
+- The self-hosted macOS route defined above remains prepared but unprovisioned.
+- No iOS workflow entrypoint, runner label, failure semantic, or future provisioning instruction is removed by the deferral.
+- The deferred M0-T04 Mac/iOS prerequisites must still be completed before M18-T02 acceptance.
+- Actual M18-T02 still requires the defined matching Mac + Unity iOS module + Xcode/IL2CPP route.
+- Physical iPhone evidence is mandatory before M18-T02 can close.
+- Android success, including Android emulator success, never implies iOS success.
+- **DEFERRED does not mean PASS.**
+
 ## Repository entrypoints
 
 ### Real Unity tests
