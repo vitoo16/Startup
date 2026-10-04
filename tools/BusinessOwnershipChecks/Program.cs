@@ -132,6 +132,10 @@ internal static class Program
 
         var arrearsState = ReadyArrearsState(Freelance);
         var engine = new SimulationEngine(arrearsState.catalog);
+        // SimulationEngine clears the detached candidate cue before rule evaluation; Application
+        // never publishes that candidate on rejection. Normalize the cue here so this direct-engine
+        // assertion measures the M8 state/counter preflight rather than generic cue preparation.
+        arrearsState.state.CurrentCue = "";
         var before = JsonSaveSerializer.WriteObject(arrearsState.state);
         ThrowsRule("economy.arrears", () => engine.Evaluate(arrearsState.state, BusinessCommands.Launch(Freelance.Id, Freelance.Revision, 100), "run/op/2"));
         Bytes(before, JsonSaveSerializer.WriteObject(arrearsState.state));
@@ -174,6 +178,7 @@ internal static class Program
             OpenedIso = cumulative.DateIso, OpenedMinute = cumulative.Minute, PricingPosture = PricingPosture.Standard,
             InitialInvestment = 100, ReinvestedAmount = long.MaxValue - 500
         });
+        cumulative.CurrentCue = "";
         var cumulativeBefore = JsonSaveSerializer.WriteObject(cumulative);
         Throws<OverflowException>(() => new SimulationEngine(overflowCatalog).Evaluate(cumulative,
             BusinessCommands.Reinvest(cumulative.Businesses.Single().InstanceId, 1000), "run/op/2"));
@@ -186,6 +191,7 @@ internal static class Program
             OpenedIso = total.DateIso, OpenedMinute = total.Minute, PricingPosture = PricingPosture.Standard,
             InitialInvestment = 1000, ReinvestedAmount = long.MaxValue - 1000
         });
+        total.CurrentCue = "";
         var totalBefore = JsonSaveSerializer.WriteObject(total);
         Throws<OverflowException>(() => new SimulationEngine(overflowCatalog).Evaluate(total,
             BusinessCommands.Reinvest(total.Businesses.Single().InstanceId, 1), "run/op/2"));
@@ -485,15 +491,25 @@ internal static class Program
 
     private static ContentCatalog LegacyCatalog()
     {
-        var skill = new SkillDefinition("communication", "skill.communication", 100, 300, 600, 1000, 1500);
-        var scene = new CareerSceneDefinition("coding", "scene.coding", 100, 10, "communication", 1);
-        var rank = new CareerRankDefinition("junior", 0, 0, 10000000, "communication", 0);
+        var skillIds = new[] { "communication", "negotiation", "time-management", "problem-solving", "networking", "leadership" };
+        var skills = skillIds.Select(id => new SkillDefinition(id, "skill." + id, 100, 300, 600, 1000, 1500)).ToArray();
+        CareerSceneDefinition Scene(string id, int weight) => new CareerSceneDefinition(id, "scene." + id, weight, 10, "communication", 1);
         var career = new CareerDefinition("developer", "v1", "career.developer", 540, 1020, 4, 20,
             new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday },
-            new[] { scene }, new[] { rank });
-        return new ContentCatalog("fixture.v1", new[] { skill }, new[] { career }, Array.Empty<CourseDefinition>(),
-            new[] { new CharacterStartDefinition("fresh", 3000000, 10000, "base.female") },
-            new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
+            new[] { Scene("coding", 40), Scene("meeting", 20), Scene("bug-fixing", 15), Scene("client-discussion", 10), Scene("demo", 10), Scene("documentation", 5) },
+            new[]
+            {
+                new CareerRankDefinition("junior", 0, 0, 10000000, "problem-solving", 0),
+                new CareerRankDefinition("mid", 1000, 30, 15000000, "problem-solving", 2)
+            });
+        var courses = new[]
+        {
+            new CourseDefinition("communication-basics", "course.communication", "communication", 1, 0, 360, 200000),
+            new CourseDefinition("problem-course", "course.problem", "problem-solving", 2, 0, 360, 200000)
+        };
+        return new ContentCatalog("fixture.v1", skills, new[] { career }, courses,
+            new[] { new CharacterStartDefinition("fresh", 3000000, 10000, "base.female", "base.male") },
+            new EconomyBalanceDefinition(1, 1, 1000000), new DayScheduleDefinition(480, 1320));
     }
 
     private static Fixture Ready(long cash, IEnumerable<BusinessDefinition>? businesses = null, bool includeCareer = false)
