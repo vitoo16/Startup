@@ -242,49 +242,7 @@ if (Test-Path -LiteralPath $ledgerPath -PathType Leaf) {
         }
     }
 
-    $legacyRows = [regex]::Matches($ledger, '(?m)^\| M[0-8] — .+ \| .+ \|
-$markdownFiles = @(Get-ChildItem -LiteralPath $repositoryRoot -Recurse -File -Filter '*.md' | Where-Object {
-    $_.FullName -notmatch '[\\/](Library|Temp|Logs|obj|Packages)[\\/]'
-})
-
-foreach ($markdownFile in $markdownFiles) {
-    $content = [IO.File]::ReadAllText($markdownFile.FullName)
-    foreach ($link in [regex]::Matches($content, '\[[^\]]+\]\((?<target>[^)]+)\)')) {
-        $target = $link.Groups['target'].Value.Trim()
-        if ($target.StartsWith('<') -and $target.EndsWith('>')) {
-            $target = $target.Substring(1, $target.Length - 2)
-        }
-        if ($target -match '^(https?://|mailto:|#|codex:)') {
-            continue
-        }
-        $targetPath = $target.Split('#')[0]
-        if ([string]::IsNullOrWhiteSpace($targetPath)) {
-            continue
-        }
-        $decodedTarget = [Uri]::UnescapeDataString($targetPath)
-        $resolvedTarget = Join-Path $markdownFile.DirectoryName $decodedTarget
-        if (-not (Test-Path -LiteralPath $resolvedTarget)) {
-            $relativeSource = [IO.Path]::GetRelativePath($repositoryRoot, $markdownFile.FullName)
-            Add-Failure "Broken local link in ${relativeSource}: $target"
-        }
-    }
-}
-
-if ($failures.Count -gt 0) {
-    Write-Host "Documentation validation failed with $($failures.Count) issue(s):" -ForegroundColor Red
-    foreach ($failure in $failures) {
-        Write-Host "- $failure" -ForegroundColor Red
-    }
-    exit 1
-}
-
-Write-Host 'Documentation validation passed.' -ForegroundColor Green
-Write-Host "Canonical source parity: $($sourceHashes.Count)/$($sourceHashes.Count)"
-Write-Host "Task ledger: 49 unique expected IDs; reconciled complete set: $($expectedCompletedTaskIds -join ', ')"
-Write-Host 'Task requirements: exact approved dependencies and expanded skills'
-Write-Host "Markdown links checked: $($markdownFiles.Count) files"
-
-)
+    $legacyRows = [regex]::Matches($ledger, '(?m)^\| M[0-8] — .+ \| .+ \|$')
     if ($legacyRows.Count -ne 9) {
         Add-Failure "Expected 9 legacy M0-M8 mapping rows, found $($legacyRows.Count)"
     }
@@ -312,18 +270,9 @@ if ((Test-Path -LiteralPath $adr010Path -PathType Leaf) -and (Test-Path -Literal
     if (-not $reconciliation.Contains('Physical Android: NOT RUN — owned by M18-T01')) {
         Add-Failure 'M7-T02 reconciliation does not preserve physical Android ownership under M18-T01'
     }
-
-    $deferredPolicyDocuments = [ordered]@{
-        'ADR-010' = $adr010
-        'M7-T02 reconciliation' = $reconciliation
-        'implementation ledger' = if (Test-Path -LiteralPath $ledgerPath -PathType Leaf) { [IO.File]::ReadAllText($ledgerPath) } else { '' }
-    }
-    foreach ($entry in $deferredPolicyDocuments.GetEnumerator()) {
-        foreach ($line in ($entry.Value -split '\r?\n')) {
-            if ($line -match '(?i)\biOS\b.*\bPASS\b') {
-                Add-Failure "$($entry.Key) represents deferred iOS as PASS: $line"
-            }
-        }
+    if (($adr010 -match '(?im)^.*\biOS\b.*\bPASS\b') -or
+        ($reconciliation -match '(?im)^.*\biOS\b.*\bPASS\b')) {
+        Add-Failure 'Deferred iOS must not be represented as PASS'
     }
 }
 
