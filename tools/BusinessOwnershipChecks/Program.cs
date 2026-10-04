@@ -118,7 +118,7 @@ internal static class Program
         ExpectRejectedUnchanged(duplicate, BusinessCommands.Launch(Freelance.Id, Freelance.Revision, 100), "business.type_active");
         ExpectRejectedUnchanged(duplicate, BusinessCommands.Launch(FreelanceAlt.Id, FreelanceAlt.Revision, 100), "business.type_active");
 
-        var four = Ready(cash: 5000, businesses: FourSideHustles);
+        var four = Ready(cash: 5000, businesses: FourSideHustles.Concat(new[] { FifthDifferentDefinition }));
         for (var i = 0; i < 4; i++)
             Equal(CommandStatus.Committed, four.Execute("launch-" + i, BusinessCommands.Launch(FourSideHustles[i].Id, FourSideHustles[i].Revision, 100)).Status);
         ExpectRejectedUnchanged(four, BusinessCommands.Launch(FifthDifferentDefinition.Id, FifthDifferentDefinition.Revision, 100), "business.active_limit");
