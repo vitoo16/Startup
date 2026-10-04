@@ -320,7 +320,7 @@ internal static class Program
 
     private static void MigrationCases()
     {
-        var catalog = LegacyCatalog();
+        var catalog = MigrationCatalog();
         var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(),
             new SyntheticV0Migration(), new V1ToV2Migration());
         var v1 = FixtureBytes("current-v1.json");
@@ -489,7 +489,7 @@ internal static class Program
             new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
     }
 
-    private static ContentCatalog LegacyCatalog()
+    private static ContentCatalog MigrationCatalog()
     {
         var skillIds = new[] { "communication", "negotiation", "time-management", "problem-solving", "networking", "leadership" };
         var skills = skillIds.Select(id => new SkillDefinition(id, "skill." + id, 100, 300, 600, 1000, 1500)).ToArray();
@@ -510,6 +510,19 @@ internal static class Program
         return new ContentCatalog("fixture.v1", skills, new[] { career }, courses,
             new[] { new CharacterStartDefinition("fresh", 3000000, 10000, "base.female", "base.male") },
             new EconomyBalanceDefinition(1, 1, 1000000), new DayScheduleDefinition(480, 1320));
+    }
+
+    private static ContentCatalog LegacyCatalog()
+    {
+        var skill = new SkillDefinition("communication", "skill.communication", 100, 300, 600, 1000, 1500);
+        var scene = new CareerSceneDefinition("coding", "scene.coding", 100, 10, "communication", 1);
+        var rank = new CareerRankDefinition("junior", 0, 0, 10000000, "communication", 0);
+        var career = new CareerDefinition("developer", "v1", "career.developer", 540, 1020, 4, 20,
+            new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday },
+            new[] { scene }, new[] { rank });
+        return new ContentCatalog("fixture.v1", new[] { skill }, new[] { career }, Array.Empty<CourseDefinition>(),
+            new[] { new CharacterStartDefinition("fresh", 3000000, 10000, "base.female") },
+            new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
     }
 
     private static Fixture Ready(long cash, IEnumerable<BusinessDefinition>? businesses = null, bool includeCareer = false)
@@ -632,7 +645,7 @@ internal static class Program
     private sealed class InvalidV1ToV2Migration : ISaveMigration
     {
         public int FromVersion => 1; public int ToVersion => 2;
-        public byte[] Migrate(byte[] payload) => Encoding.UTF8.GetBytes("{}");
+        public byte[] Migrate(byte[] payload) => Encoding.UTF8.GetBytes("{\\\"SaveVersion\\\":1}");
     }
 
     private static void Check(string name, Action action)
