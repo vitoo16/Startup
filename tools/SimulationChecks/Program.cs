@@ -400,7 +400,7 @@ internal static class Program
         {
             var f = new Fixture(); f.Create(); f.Accept(); f.Buy(); var state = f.State();
             state.Course!.DefinitionId = "missing-course"; state.CurrentCue = "forged.root.cue";
-            var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision);
+            var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), SaveSchema.CurrentVersion, state.Revision);
             Equal(LoadStatus.UnsupportedContent, f.Serializer.DeserializeAndValidate(bytes).Status);
         });
         Check("candidate serialization validation is contained as state invalid", () =>
@@ -431,7 +431,7 @@ internal static class Program
         {
             var f = new Fixture();
             var fixture = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "synthetic-v0.json"));
-            var migrated = f.Serializer.DeserializeAndValidate(fixture); Equal(LoadStatus.Valid, migrated.Status); Equal(1, migrated.State!.SaveVersion);
+            var migrated = f.Serializer.DeserializeAndValidate(fixture); Equal(LoadStatus.Valid, migrated.Status); Equal(SaveSchema.CurrentVersion, migrated.State!.SaveVersion);
             var current = f.Serializer.DeserializeAndValidate(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "current-v1.json")));
             Equal(LoadStatus.Valid, current.Status); Equal(current.State!.Name, migrated.State.Name); Equal(current.State.Cash, migrated.State.Cash);
             var g = new Fixture(f.Content, migrated.State); g.Evening(); Equal(40L, g.State().Employment!.Xp);
@@ -443,7 +443,7 @@ internal static class Program
             File.WriteAllBytes(PathFor("future"), future); File.WriteAllBytes(PathFor("future") + ".backup", original);
             Equal(LoadStatus.FutureVersion, store.Read().Status); Equal(WriteStatus.Failed, store.Commit(original, 0)); Bytes(future, File.ReadAllBytes(PathFor("future")));
             var incompatible = f.State(); incompatible.ContentVersion = "future.content";
-            Equal(LoadStatus.UnsupportedContent, f.Serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(incompatible), 1, incompatible.Revision)).Status);
+            Equal(LoadStatus.UnsupportedContent, f.Serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(incompatible), SaveSchema.CurrentVersion, incompatible.Revision)).Status);
         });
         Check("atomic storage before-replace failure retains state and backup", () =>
         {
@@ -474,9 +474,9 @@ internal static class Program
         {
             var f = new Fixture(); f.Create(); Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(Encoding.UTF8.GetBytes("{}" )).Status);
             var state = f.State(); state.SchedulerRng = 0;
-            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision)).Status);
+            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), SaveSchema.CurrentVersion, state.Revision)).Status);
             state = f.State(); state.Grants.Add("duplicate"); state.Grants.Add("duplicate");
-            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision)).Status);
+            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), SaveSchema.CurrentVersion, state.Revision)).Status);
         });
         Check("transient read lock does not roll back to backup", () =>
         {
@@ -506,9 +506,9 @@ internal static class Program
         Check("invalid restored work cursor and reward coherence rejected", () =>
         {
             var f = new Fixture(); f.Create(); f.Accept(); var state = f.State(); state.Minute = 600;
-            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision)).Status);
+            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), SaveSchema.CurrentVersion, state.Revision)).Status);
             state.Minute = 660; state.Employment!.ScenesToday = 0;
-            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision)).Status);
+            Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), SaveSchema.CurrentVersion, state.Revision)).Status);
         });
         Check("snapshot collections cannot mutate authoritative state", () =>
         {
@@ -582,7 +582,7 @@ internal static class Program
         private int sequence;
         public Fixture(ContentCatalog? content = null, GameState? state = null, SimDate? start = null)
         {
-            Content = content ?? Catalog(); Serializer = new JsonSaveSerializer(Content, GameSession.CreateRestoreValidator(), new SyntheticV0Migration());
+            Content = content ?? Catalog(); Serializer = new JsonSaveSerializer(Content, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
             var initial = state ?? GameSession.NewState(Content, "run", 12345, start ?? new SimDate(2026, 9, 1));
             sequence = checked((int)initial.NextOperation);
             var store = new MemoryStore(Serializer, state != null ? Serializer.Serialize(initial) : null);
