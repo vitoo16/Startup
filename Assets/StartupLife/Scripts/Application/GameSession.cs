@@ -30,6 +30,10 @@ namespace StartupLife.Application
             content = catalog; serializer = saveSerializer; store = saveStore; simulation = new SimulationEngine(catalog);
             this.legacyBatchOwners = CopyLegacyOwners(legacyBatchOwners);
             state = Clone(initial);
+            var persisted = store.Read();
+            if ((persisted.Status == LoadStatus.Valid || persisted.Status == LoadStatus.RecoveredBackup) &&
+                persisted.State != null && persisted.State.RunId == state.RunId && persisted.State.Revision == state.Revision)
+                sourceSchemaVersion = persisted.SourceSchemaVersion;
         }
         private static Dictionary<string, string> CopyLegacyOwners(IReadOnlyDictionary<string, string>? bindings)
         {
