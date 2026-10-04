@@ -12,11 +12,17 @@ $astraReportPath = Join-Path $reportDirectory 'astra-foundation-highs-report.jso
 $restoreReportPath = Join-Path $reportDirectory 'astra-m2-restore-invariants-report.json'
 $contentReportPath = Join-Path $reportDirectory 'content-catalog-report.json'
 $presentationReportPath = Join-Path $reportDirectory 'presentation-adapter-report.json'
+$businessReportPath = Join-Path $reportDirectory 'm8-business-ownership-report.json'
 
 & $DotnetPath build "$startupRoot/tools/SimulationChecks/SimulationChecks.csproj" --configuration Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Provisional .NET build failed.' }
 & $DotnetPath run --project "$startupRoot/tools/SimulationChecks/SimulationChecks.csproj" --configuration Release --no-build -- $ReportPath
 if ($LASTEXITCODE -ne 0) { throw 'Provisional simulation checks failed.' }
+
+& $DotnetPath build "$startupRoot/tools/BusinessOwnershipChecks/BusinessOwnershipChecks.csproj" --configuration Release --nologo
+if ($LASTEXITCODE -ne 0) { throw 'M8-T01 business ownership acceptance build failed.' }
+& $DotnetPath run --project "$startupRoot/tools/BusinessOwnershipChecks/BusinessOwnershipChecks.csproj" --configuration Release --no-build -- $businessReportPath
+if ($LASTEXITCODE -ne 0) { throw 'M8-T01 business ownership acceptance checks failed.' }
 
 & $DotnetPath build "$startupRoot/tools/AstraFoundationChecks/AstraFoundationChecks.csproj" --configuration Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Astra foundation regression build failed.' }
