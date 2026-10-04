@@ -457,7 +457,7 @@ internal static class Program
     }
 
     private static LoadResult Raw(JsonSaveSerializer serializer, GameState state) =>
-        serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision));
+        serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), SaveSchema.CurrentVersion, state.Revision));
 
     private static ContentCatalog Catalog(long promotionXp = 1000, bool multi = false, bool missingStart = false, string sceneId = "coding")
     {
