@@ -11,8 +11,20 @@ namespace StartupLife.Infrastructure
     {
         public static byte[] PromoteSyntheticV0ToV1(byte[] payload)
         {
-            var dto = Decode(payload, 0);
-            dto.SaveVersion = SaveSchema.HistoricalV1;
+            // v0 is a synthetic test fixture, not a shipped wire contract. Preserve the historical
+            // migration behavior by decoding that fixture through the then-current GameState shape,
+            // then explicitly project it into the frozen v1 DTO. Strict unknown-member validation
+            // remains mandatory for real v1 payloads and every v1 compatibility write.
+            var synthetic = JsonSaveSerializer.ReadObject<GameState>(payload);
+            if (synthetic.SaveVersion != 0) throw new ArgumentException("Not synthetic v0.");
+            if (synthetic.Businesses != null && synthetic.Businesses.Count != 0)
+                throw new ArgumentException("Synthetic v0 cannot contain business state.");
+            if (synthetic.Receipts == null ||
+                synthetic.Receipts.Any(x => (int)GameCommand.ParseCanonicalPayload(x.Payload).Kind > (int)CommandKind.AcknowledgePlayback))
+                throw new ArgumentException("Synthetic v0 cannot contain future command semantics.");
+
+            var dto = FromCurrent(synthetic);
+            Validate(dto, SaveSchema.HistoricalV1);
             return JsonSaveSerializer.WriteObject(dto);
         }
 
