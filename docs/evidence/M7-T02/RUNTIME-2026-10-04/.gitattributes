@@ -1,0 +1,2 @@
+# Preserve captured artifact bytes so manifest hashes survive Windows/Linux checkouts.
+* -text

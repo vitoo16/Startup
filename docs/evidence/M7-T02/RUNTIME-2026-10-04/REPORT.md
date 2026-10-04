@@ -116,6 +116,8 @@ before/after. No offline income/time progression is inferred or implemented.
 All six required final Unity captures are **1080×1920**:
 
 Every artifact's byte length and SHA-256 is recorded in [manifest](manifest.json).
+This bundle disables Git newline conversion locally so captured saves/logs and manifest hashes
+remain byte-identical across Windows/Linux checkouts. Image/video LFS filtering still applies.
 
 1. [01 work before pause](visuals/01-work-before-pause.png)
 2. [02 restored work before acknowledgement](visuals/02-work-restored-before-ack.png)

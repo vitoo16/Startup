@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "createdUtc": "2026-10-04T08:54:19.190709+00:00",
+  "createdUtc": "2026-10-04T08:55:34.338014+00:00",
   "repository": "https://github.com/vitoo16/Startup",
   "branch": "feat/m7-t02-lifecycle-device-gate",
   "startingHead": "79b3f0bc35ff9c32e45b51fe04715d253bd3abd5",
@@ -29,6 +29,12 @@
     "GateB": "NOT SAFE"
   },
   "artifacts": [
+    {
+      "path": ".gitattributes",
+      "bytes": 95,
+      "sha256": "c4cff81930e34e74fb4cb602e9a33b1245acbd6cc92ca9b676cd3af5f2dce741",
+      "role": "final verification/tooling/diagnostic"
+    },
     {
       "path": "android/A-api35-creation.png",
       "bytes": 12508,
@@ -949,8 +955,8 @@
     },
     {
       "path": "REPORT.md",
-      "bytes": 17172,
-      "sha256": "16cb09ac90b30dbffdd39841d69bc345c91bdf19a0bb3b3ccbefe9c61e56bc63",
+      "bytes": 17364,
+      "sha256": "a2bd9289ed8eabf6264012958336cb37e6dc70e267ecc90d2a4055a40a1e0b3c",
       "role": "final verification/tooling/diagnostic"
     },
     {
