@@ -40,8 +40,8 @@ namespace StartupLife.Core
                 {
                     if (business.ClosedMinute!.Value < 0 || business.ClosedMinute.Value >= 1440)
                         throw new ArgumentException("Invalid business closure minute.");
-                    var closed = ParseInstant(business.ClosedIso!, business.ClosedMinute.Value);
-                    if (Compare(opened, closed) > 0 || Compare(closed, new SimInstant(state.Date, state.Minute)) > 0)
+                    var closedInstant = ParseInstant(business.ClosedIso!, business.ClosedMinute.Value);
+                    if (Compare(opened, closedInstant) > 0 || Compare(closedInstant, new SimInstant(state.Date, state.Minute)) > 0)
                         throw new ArgumentException("Invalid business closure chronology.");
                 }
                 else if (Compare(opened, new SimInstant(state.Date, state.Minute)) > 0)
