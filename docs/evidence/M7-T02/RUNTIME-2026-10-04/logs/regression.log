@@ -1,0 +1,196 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  StartupLife.Core -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  StartupLife.Infrastructure -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Infrastructure.dll
+  StartupLife.Simulation -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Simulation.dll
+  StartupLife.Application -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Application.dll
+  StartupLife.Provisional -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Provisional.dll
+  SimulationChecks -> <PROJECT>\tools\SimulationChecks\bin\Release\net8.0\SimulationChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.94
+PASS xorshift32-v1 reference vector
+PASS independent event stream leaves scheduler unchanged
+PASS Developer 20-slot quota exact across cycles
+PASS largest remainder stable ties and <1 slot error
+PASS content rejects invalid quota, duplicate IDs and missing references
+PASS character boundaries and rejected commands are byte identical
+PASS Vietnamese name and course save round trip
+PASS salary accrues without spendable cash and retry grants once
+PASS course charge once, study time and completion floor
+PASS course prerequisites and single-active-course gate reject without mutation
+PASS active course snapshot survives cold restore without checkpoint inspection
+PASS course outcome distinguishes progress and study completion
+PASS career grant course completion has explicit target-already-met reason
+PASS LearningSpeed changes duration and study never overlaps work/sleep
+PASS career XP remains separate from skills; promotion milestone idempotent
+PASS skill levels cover 0-5 boundaries and weaker grants cannot lower earned strength
+PASS course target met by career completes without refund/second grant
+PASS mid-cycle/course restore and next outcomes deterministic
+PASS suspension/real elapsed time never advances simulation
+PASS employment-free planner covers founder-equivalent availability and clamps allocated minutes
+PASS full month salary, expenses, payday and batch retry
+PASS partial-month resignation preserves exact earned pay and biography
+PASS oldest arrears settle before spending and employment recovers
+PASS repeated zero-cash shortfalls accumulate arrears without negative cash
+PASS insufficient funds and stale revision reject without mutation
+PASS overflow rejects entire boundary including RNG/rewards
+PASS leap years, month end and hospitality weekends
+PASS payday clamp and payday work excluded from current payment
+PASS rank changes preserve committed deck prefix/history
+PASS pending required choice stops month advancement
+PASS playback acknowledgement cannot add rewards
+PASS committed outcome exposes transactions and survives old retry after restore
+PASS career boundary outcome exposes activity interval progression and reached instant
+PASS playback outcome changes cursor only and snapshot publishes it
+PASS root playback cue and cursor forgery are corrupt before restore publication
+PASS playback provenance does not mask unsupported content
+PASS candidate serialization validation is contained as state invalid
+PASS committed non-boundary cue forgery is corrupt before outcome publication
+PASS synthetic v0 migration and current continuation
+PASS future/content-incompatible saves preserved without backup fallback
+PASS atomic storage before-replace failure retains state and backup
+PASS post-replace ambiguity blocks commands then reconciles retry
+PASS corrupt primary recovers prior generation and preserves backup
+PASS malformed save checksum, duplicate identity and invalid RNG rejected
+PASS transient read lock does not roll back to backup
+PASS competing writer cannot delete active writer temp
+PASS invalid restored work cursor and reward coherence rejected
+PASS snapshot collections cannot mutate authoritative state
+PASS ledger cash reconciliation over multi-month employed study scenario
+49/49 passed. Report: <USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\regression\simulation-report.json
+Temporary fixtures retained for diagnosis: <USER>\AppData\Local\Temp\StartupLifeChecks\435980de853542af8a53e633b7a491cf
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  StartupLife.Core -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  StartupLife.Simulation -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Simulation.dll
+  StartupLife.Application -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Application.dll
+  StartupLife.Infrastructure -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Infrastructure.dll
+  StartupLife.Provisional -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Provisional.dll
+  AstraFoundationChecks -> <PROJECT>\tools\AstraFoundationChecks\bin\Release\net8.0\AstraFoundationChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.55
+PASS H1 direct command and advance batch cannot share caller CommandId
+PASS H1 completed batch retry replays persisted receipts after restore
+PASS H1 legacy reserved-prefix caller and batch identities remain disjoint
+PASS H1 unknown historical receipt ownership blocks writes without guessing
+PASS H1 PR6 and pre-PR6 completed day/month receipts replay with their original owner
+PASS H1 historical partial day/month continuation persists ownership atomically
+PASS H1 ordinary root/index day/month continuations need no provenance
+PASS H1 failed normalization preserves checkpoint and owner bindings are defensive
+PASS H1 internal IDs exclude historical callers including delimiter and maximum-length roots
+PASS H1 trusted recovery persists completed/partial day/month owners before retry
+PASS H1 compatibility recovery failures and replacement ambiguity preserve exactly-once results
+PASS H1 compatibility writes reject gameplay changes and competing owner resolutions
+PASS H1 malformed ownership groups fail closed without rewriting the checkpoint
+PASS H2 unsupported career revision does not fall back to backup or overwrite primary
+PASS H2 missing saved skill is unsupported content
+PASS H2 missing scheduled scene is unsupported while wrong-career scene is corrupt
+PASS H2 malformed persisted fields remain corrupt before compatibility resolution
+PASS R2 truncated skill state is corrupt and recovers the valid backup
+PASS R2 cross-field corruption wins over missing content and unavailable revisions
+19/19 passed. Report: <USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\regression\astra-foundation-highs-report.json
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  StartupLife.Core -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  StartupLife.Simulation -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Simulation.dll
+  StartupLife.Application -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Application.dll
+  StartupLife.Infrastructure -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Infrastructure.dll
+  StartupLife.Provisional -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Provisional.dll
+  RestoreInvariantChecks -> <PROJECT>\tools\RestoreInvariantChecks\bin\Release\net8.0\RestoreInvariantChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.12
+PASS M2 operation and entity counters cannot reuse issued identities
+PASS M2 scheduler cursor cannot rewind committed work
+PASS M2 scheduler cycle follows committed career activities
+PASS M2 promoted rank transition remains valid until next scheduler consume
+PASS M2 committed activity history cannot be removed or forged
+PASS M2 resigned employment keeps its persisted scheduler valid
+PASS M2 valid mid-cycle restore continues byte-identically
+PASS M2 rewinding cursor and history cannot replay XP or salary
+PASS M2 same-career deck cannot violate quota
+PASS M2 correct quota cannot hide impossible deck ordering
+PASS M2 generation overflow is rejected before publication
+PASS M2 stale signature after an already-consumed promotion is corrupt
+PASS M2 non-career boundary history cannot be removed
+PASS M2 canonical past activities cannot be invented
+PASS M2 equal activity counts cannot hide forged provenance
+PASS M2 global entity sequence cannot be shared by different kinds
+PASS M2 counter covers settled entity references retained in ledger
+PASS M2 committed receipt history cannot be removed or reordered
+PASS M2 malformed canonical payloads remain structural corruption
+PASS M2 timeline corruption wins over unavailable content
+PASS M2 known scheduler corruption wins over missing background
+PASS M2 valid missing background remains unsupported content
+PASS M2 missing scheduler scenes remain unsupported content
+PASS M2 multi-scene promotion and cycle-seam continuation are deterministic
+PASS M2 resignation and subsequent employment preserve scheduler provenance
+PASS M2 missing historical scheduler scene is unsupported
+PASS M2 historical scene belonging to another career is corrupt
+PASS M2 serializer requires an explicit restore verifier
+PASS M2 coordinated receipt and cursor rewind cannot retain rewards
+PASS M2 committed reward and salary provenance cannot be forged
+PASS M2 scheduler RNG and plausible generation must match its trace
+PASS M2 creation receipt binds intrinsic character identity
+PASS M2 available start definition binds learning speed
+PASS M2 reconstructed cash must match authoritative checkpoint
+PASS M2 unemployed boundary after mid-shift resignation is not career work
+35/35 passed. Report: <USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\regression\astra-m2-restore-invariants-report.json
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  StartupLife.Core -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  StartupLife.PresentationModel -> <PROJECT>\tools\PresentationChecks\bin\Release\netstandard2.1\StartupLife.PresentationModel.dll
+  StartupLife.Infrastructure -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Infrastructure.dll
+  StartupLife.Simulation -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Simulation.dll
+  StartupLife.Application -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Application.dll
+  StartupLife.Provisional -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Provisional.dll
+  PresentationChecks -> <PROJECT>\tools\PresentationChecks\bin\Release\net8.0\PresentationChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.45
+PASS initial snapshot selects character creation and copies read model
+PASS create character dispatches current run revision and injected command id
+PASS life actions dispatch frozen commands from latest snapshot revision
+PASS playback acknowledgement binds current activity
+PASS day and month advancement use boundary intent and project reached state
+PASS active course read model flows through unchanged
+PASS empty command id source fails before dispatch
+PASS run id is read again for every dispatch
+PASS empty ids block both direct and batch dispatch
+PASS backward playback returns application rejection without rewards
+PASS old and restored course retries preserve original outcome and current projection
+11/11 passed. Report: <USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\regression\presentation-adapter-report.json
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  StartupLife.Core -> <PROJECT>\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  ContentCatalogChecks -> <PROJECT>\tools\ContentCatalogChecks\bin\Release\net8.0\ContentCatalogChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.92
+PASS first playable template builds expected immutable catalog
+PASS duplicate content ids reject at conversion boundary
+PASS missing career skill reference rejects
+PASS missing course skill reference rejects
+PASS invalid appearance id rejects
+PASS career outside day schedule rejects
+PASS built catalog is detached from mutable source arrays
+PASS null authoring entries reject explicitly
+8/8 passed. Report: <USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\regression\content-catalog-report.json
+These reports verify .NET behavior only. Unity EditMode, PlayMode, IL2CPP, and devices remain separate gates.

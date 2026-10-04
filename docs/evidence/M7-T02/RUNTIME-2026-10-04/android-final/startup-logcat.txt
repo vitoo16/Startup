@@ -36,7 +36,7 @@
 10-04 15:43:05.944 25138 25138 I app_process: Using CollectorTypeCMC GC.
 10-04 15:43:05.992 25138 25138 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
 10-04 15:43:05.997 25138 25138 D nativeloader: Load libicu_jni.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
-10-04 15:43:05.998 25138 25138 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded. 
+10-04 15:43:05.998 25138 25138 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded.
 10-04 15:43:05.998 25138 25138 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt75l.dat
 10-04 15:43:05.998 25138 25138 D nativeloader: Load libjavacore.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
 10-04 15:43:05.999 25138 25138 D nativeloader: Load libopenjdk.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
@@ -78,7 +78,7 @@
 10-04 15:43:06.057   398   398 D Zygote  : Forked child process 25151
 10-04 15:43:06.060   599   633 I ActivityManager: Start proc 25151:com.DefaultCompany.urp_2d/u0a209 for next-top-activity {com.DefaultCompany.urp_2d/com.unity3d.player.UnityPlayerGameActivity}
 10-04 15:43:06.061   599   775 I AppWidgetServiceImpl: Received broadcast: android.intent.action.PACKAGE_UNSTOPPED on user 0
-10-04 15:43:06.062   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:43:06.062   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:43:06.062   599   775 I AppWidgetServiceImpl: Updating package stopped masked state for uid 10209 package com.DefaultCompany.urp_2d isStopped false
 10-04 15:43:06.064   599   987 D CoreBackPreview: Window{648d16f u0 Splash Screen com.DefaultCompany.urp_2d}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@3dd4dbd, mPriority=0, mIsAnimationCallback=false}
 10-04 15:43:06.074 25151 25151 I tCompany.urp_2d: Late-enabling -Xcheck:jni
@@ -237,7 +237,7 @@
 10-04 15:43:06.517 25151 25151 D nativeloader: Load /data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/lib/arm64/libmain.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): ok
 10-04 15:43:06.810 25151 25151 I IL2CPP  : JNI_OnLoad
 10-04 15:43:06.810 25151 25151 V Unity   : Context Type: GameActivity
-10-04 15:43:06.815 25151 25151 D Unity   : CommandLine:  
+10-04 15:43:06.815 25151 25151 D Unity   : CommandLine:
 10-04 15:43:06.826 25151 25151 W WindowOnBackDispatcher: OnBackInvokedCallback is not enabled for the application.
 10-04 15:43:06.826 25151 25151 W WindowOnBackDispatcher: Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
 10-04 15:43:06.827 25151 25151 I GameActivity: Looking for library libgame.so
@@ -249,11 +249,11 @@
 10-04 15:43:06.880 25151 25170 I Unity   : Handle cmd APP_CMD_START(11)
 10-04 15:43:06.881 25151 25151 I Unity   : onResume
 10-04 15:43:06.884 25151 25170 I Unity   : Handle cmd APP_CMD_RESUME(12)
-10-04 15:43:06.889   599  2091 W WindowManager: Failed looking up window session=Session{ef1b73c 25151:u0a10209} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.updateRequestedVisibleTypes:755 android.view.IWindowSession$Stub.onTransact:1078 
+10-04 15:43:06.889   599  2091 W WindowManager: Failed looking up window session=Session{ef1b73c 25151:u0a10209} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.updateRequestedVisibleTypes:755 android.view.IWindowSession$Stub.onTransact:1078
 10-04 15:43:06.903 25151 25151 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:43:06.904 25151 25170 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
 10-04 15:43:06.904   599  2092 D CoreBackPreview: Window{932561a u0 com.DefaultCompany.urp_2d/com.unity3d.player.UnityPlayerGameActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@1c10b28, mPriority=0, mIsAnimationCallback=false}
-10-04 15:43:06.908   448   520 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:43:06.908   448   520 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:43:06.909 25151 25151 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:43:06.909 25151 25170 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
 10-04 15:43:06.910 25151 25170 I Unity   : Handle cmd APP_CMD_CONTENT_RECT_CHANGED(5)
@@ -315,7 +315,7 @@
 10-04 15:43:06.971   599   715 I ImeTracker: com.DefaultCompany.urp_2d:a77f9b19: onCancelled at PHASE_SERVER_SHOULD_HIDE
 10-04 15:43:06.971  1070  1070 D StatsLog: LAUNCHER_GOOGLE_SEARCH_RESTORE_LIST_SIZE_AFTER_ACTIVITY_RESTART
 10-04 15:43:06.972  1070  1513 D OneSearchSuggestProvider: Shut down the binder channel
-10-04 15:43:06.975  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157 
+10-04 15:43:06.975  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157
 10-04 15:43:06.979  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 0, locked = false
 10-04 15:43:06.980  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=com.DefaultCompany.urp_2d, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
 10-04 15:43:06.980  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 1, locked = false
@@ -354,15 +354,15 @@
 10-04 15:43:07.630 25151 25170 D Unity   : Found 2 interfaces on host :
 10-04 15:43:07.630 25151 25170 D Unity   :  0) 10.0.2.15
 10-04 15:43:07.630 25151 25170 D Unity   :  1) 10.0.2.16
-10-04 15:43:07.630 25151 25170 D Unity   : 
+10-04 15:43:07.630 25151 25170 D Unity   :
 10-04 15:43:07.633 25151 25170 D Unity   : Player connection [132476537579712]  Target information:
-10-04 15:43:07.633 25151 25170 D Unity   : 
-10-04 15:43:07.633 25151 25170 D Unity   : Player connection [132476537579712]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 4267224035 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:43:07.633 25151 25170 D Unity   : 
-10-04 15:43:07.633 25151 25170 D Unity   : Player connection [132476537579712]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 4267224035 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:43:07.633 25151 25170 D Unity   : 
+10-04 15:43:07.633 25151 25170 D Unity   :
+10-04 15:43:07.633 25151 25170 D Unity   : Player connection [132476537579712]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 4267224035 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:43:07.633 25151 25170 D Unity   :
+10-04 15:43:07.633 25151 25170 D Unity   : Player connection [132476537579712]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 4267224035 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:43:07.633 25151 25170 D Unity   :
 10-04 15:43:07.633 25151 25170 D Unity   : Player connection [132476537579712] Started UDP target info broadcast (1) on [225.0.0.222:54997].
-10-04 15:43:07.633 25151 25170 D Unity   : 
+10-04 15:43:07.633 25151 25170 D Unity   :
 10-04 15:43:07.673 25151 25170 D Unity   : Input System module state changed to: Initialized.
 10-04 15:43:07.694 25151 25151 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:43:07.697 25151 25170 D Unity   : [Physics::Module] Initialized fallback backend.
@@ -431,7 +431,7 @@
 10-04 15:43:07.841 25151 25170 D Unity   : OPENGL LOG: Creating OpenGL ES 3.0 graphics device ; Context level  <OpenGL ES 3.0> ; Context handle -186896496
 10-04 15:43:07.848 25151 25170 D Unity   : [EGL] Attaching window :0x787d54db0750
 10-04 15:43:07.850 25151 25170 D Unity   : Requested framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[on], samples[1]
-10-04 15:43:07.851 25151 25170 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0] 
+10-04 15:43:07.851 25151 25170 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0]
 10-04 15:43:07.852 25151 25170 D nativeloader: Load liblibswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): dlopen failed: library "liblibswappywrapper.so" not found
 10-04 15:43:07.855 25151 25170 D nativeloader: Load /data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/lib/arm64/libswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): ok
 10-04 15:43:07.855 25151 25170 I SwappyWrapper: SwappyWrapperInit() succeeded. Build: Sun Oct  4 05:35:58 2026
@@ -448,9 +448,9 @@
 10-04 15:43:07.996 25151 25170 D Unity   : [Physics::Module] Integration Version: 1.0.0
 10-04 15:43:07.996 25151 25170 D Unity   : [Physics::Module] Threading Mode: Multi-Threaded
 10-04 15:43:08.218 25151 25170 I IL2CPP  : Locale en-US
-10-04 15:43:08.256 25151 25170 D Unity   : ERROR: Shader 
+10-04 15:43:08.256 25151 25170 D Unity   : ERROR: Shader
 10-04 15:43:08.256 25151 25170 D Unity   : Hidden/CoreSRP/CoreCopy shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
-10-04 15:43:08.361 25151 25170 D Unity   : ERROR: Shader 
+10-04 15:43:08.361 25151 25170 D Unity   : ERROR: Shader
 10-04 15:43:08.361 25151 25170 D Unity   : Hidden/Universal/HDRDebugView shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
 10-04 15:43:08.447 25151 25170 D Unity   : PlayerInitEngineGraphics OK
 10-04 15:43:08.476 25151 25170 I Unity   : SetGameState: isLoading: false, mode: UNKNOWN, label: -1, quality: 2
@@ -741,9 +741,9 @@
 10-04 15:43:16.552 25151 25170 W Unity   : Hiding input field is not supported when using Game Activity.
 10-04 15:43:16.552 25151 25170 W Unity   : TMPro.TMP_InputField:ActivateInputFieldInternal()
 10-04 15:43:16.552 25151 25170 W Unity   : TMPro.TMP_InputField:LateUpdate()
-10-04 15:43:16.552 25151 25170 W Unity   : 
+10-04 15:43:16.552 25151 25170 W Unity   :
 10-04 15:43:16.552 25151 25170 W Unity   : [ line -1727605896]
-10-04 15:43:16.552 25151 25170 W Unity   : 
+10-04 15:43:16.552 25151 25170 W Unity   :
 10-04 15:43:16.553 25151 25151 D GameActivity: ************** mainWorkCallback *********
 10-04 15:43:16.553 25151 25151 D gti.InputConnection: setEditorInfo
 10-04 15:43:16.553 25151 25151 D GameActivity: ************** mainWorkCallback *********
@@ -885,29 +885,29 @@
 10-04 15:43:16.640  1243  1243 W SupplementaryKeyboardsWrapper: SupplementaryKeyboardsWrapper.deactivateKeyboard():159 keyboard accessory_candidates_consumer is not activated before!
 10-04 15:43:16.641  1243  1243 I VoiceImeExtension: VoiceImeExtension.shouldStartVoiceInputAutomaticallyInCurrentInputBox():415 No private IME option set to start voice input.
 10-04 15:43:16.645  1243  1243 I KeyboardHeightUtil: KeyboardHeightUtil.calculateMaxKeyboardBodyHeight():45 leave 281 height for app when ime window height:1794, header height:116 and isFullscreenMode:false, so the max keyboard body height is:1397
-10-04 15:43:16.645  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:16.645  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:16.646  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:16.663  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:16.663  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:16.663  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:16.664  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:16.664  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:16.664  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:16.666 25151 25151 D InsetsController: show(ime(), fromIme=true)
 10-04 15:43:16.667  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 145<148, inputStateId=129, lastInputStateId=131
-10-04 15:43:16.668  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:16.668  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:16.668  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:16.668  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:16.668  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:16.668  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:16.669  1243  1243 I NormalModeController: NormalModeController.getKeyboardBodyViewHolderPaddingBottom():104 currentPrimeKeyboardType:SOFT systemPaddingBottom:-1
 10-04 15:43:16.669  1243  1835 I Delight5Decoder: Delight5DecoderWrapper.setKeyboardLayout():511 setKeyboardLayout()
 10-04 15:43:16.670  1243  1243 I GoogleInputMethodService: GoogleInputMethodService$1.onKeyboardViewShown():494 onKeyboardViewShown: keyboardType=prime, keyboardViewType=HEADER keyboardView=com.google.android.libraries.inputmethod.widgets.SoftKeyboardView{8abf653 V.E...... ........ 0,0-1080,116}
 10-04 15:43:16.670  1243  1243 I GoogleInputMethodService: GoogleInputMethodService$1.onKeyboardViewShown():494 onKeyboardViewShown: keyboardType=prime, keyboardViewType=BODY keyboardView=com.google.android.libraries.inputmethod.widgets.SoftKeyboardView{1cd6c6b V.E...... ........ 0,0-1080,630}
 10-04 15:43:16.670  1243  1243 I NewLanguagePromptExtension: NewLanguagePromptExtension$1.onKeyboardViewShown():104 Not show new language banner: no change in enabled input method entries
-10-04 15:43:16.670  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:16.670  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:16.671  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:16.671   835   885 D WindowManagerShell: onKeepClearAreasChanged: restricted={}, unrestricted={Rect(0, 1048 - 1080, 1920)}
-10-04 15:43:16.671  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:16.671  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:16.671  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:16.671  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:16.671  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:16.671  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:16.671  1243  1835 I Delight5Decoder: Delight5DecoderWrapper.setKeyboardLayout():511 setKeyboardLayout()
 10-04 15:43:16.679 25151 25151 V GameActivity: onImeInsetsChanged from Text Listener
@@ -1067,7 +1067,7 @@
 10-04 15:43:17.407  1243  1243 I VoiceImeExtension: VoiceImeExtension.shouldStartVoiceInputAutomaticallyInCurrentInputBox():415 No private IME option set to start voice input.
 10-04 15:43:17.408  1243  1243 I StylusModule: StylusModule.onUpdateToolType():770 Update tool type = 0
 10-04 15:43:17.410  1243  1243 I KeyboardHeightUtil: KeyboardHeightUtil.calculateMaxKeyboardBodyHeight():45 leave 281 height for app when ime window height:1794, header height:116 and isFullscreenMode:false, so the max keyboard body height is:1397
-10-04 15:43:17.410  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.410  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.410  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.412 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_DOWN, keyCode=KEYCODE_7, scanCode=0, metaState=0, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
 10-04 15:43:17.412 25151 25151 D gti.InputConnection: processKeyEvent(key=14) text=M
@@ -1088,14 +1088,14 @@
 10-04 15:43:17.417  1243  1243 I GoogleInputMethodService: GoogleInputMethodService$1.onKeyboardViewShown():494 onKeyboardViewShown: keyboardType=prime, keyboardViewType=HEADER keyboardView=com.google.android.libraries.inputmethod.widgets.SoftKeyboardView{8abf653 V.E...... ........ 0,0-1080,116}
 10-04 15:43:17.417  1243  1243 I GoogleInputMethodService: GoogleInputMethodService$1.onKeyboardViewShown():494 onKeyboardViewShown: keyboardType=prime, keyboardViewType=BODY keyboardView=com.google.android.libraries.inputmethod.widgets.SoftKeyboardView{1cd6c6b V.E...... ........ 0,0-1080,630}
 10-04 15:43:17.417  1243  1243 I NewLanguagePromptExtension: NewLanguagePromptExtension$1.onKeyboardViewShown():104 Not show new language banner: no change in enabled input method entries
-10-04 15:43:17.418  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.418  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.418  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:17.418  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.418  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.418  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.419  1243  1243 I NormalModeController: NormalModeController.getKeyboardBodyViewHolderPaddingBottom():104 currentPrimeKeyboardType:SOFT systemPaddingBottom:-1
 10-04 15:43:17.419  1243  1835 I Delight5Decoder: Delight5DecoderWrapper.setKeyboardLayout():511 setKeyboardLayout()
 10-04 15:43:17.419 25151 25151 D gti.InputConnection: setImeConsumesInput: false
-10-04 15:43:17.421  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.421  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.421  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.422 25151 25151 W RemoteInputConnectionImpl: getSurroundingText on inactive InputConnection
 10-04 15:43:17.424 25151 25151 W RemoteInputConnectionImpl: getTextBeforeCursor on inactive InputConnection
@@ -1161,7 +1161,7 @@
 10-04 15:43:17.492 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_DOWN, keyCode=KEYCODE_SHIFT_LEFT, scanCode=0, metaState=META_SHIFT_ON|META_SHIFT_LEFT_ON, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
 10-04 15:43:17.492 25151 25151 D gti.InputConnection: processKeyEvent(key=59) text=M7
 10-04 15:43:17.493  1243  1243 I KeyboardHeightUtil: KeyboardHeightUtil.calculateMaxKeyboardBodyHeight():45 leave 281 height for app when ime window height:1794, header height:116 and isFullscreenMode:false, so the max keyboard body height is:1397
-10-04 15:43:17.493  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.493  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.493  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.503  1243  1243 I StylusModule: StylusModule.onUpdateToolType():770 Update tool type = 0
 10-04 15:43:17.503 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_DOWN, keyCode=KEYCODE_F, scanCode=0, metaState=META_SHIFT_ON|META_SHIFT_LEFT_ON, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
@@ -1179,18 +1179,18 @@
 10-04 15:43:17.506  1243  1243 I NewLanguagePromptExtension: NewLanguagePromptExtension$1.onKeyboardViewShown():104 Not show new language banner: no change in enabled input method entries
 10-04 15:43:17.507 25151 25151 D gti.InputConnection: processKeyEvent: exit, text=M7F
 10-04 15:43:17.507 25151 25151 D gti.InputConnection: immUpdateSelection: 3,3. -1,-1
-10-04 15:43:17.507  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.507  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.507  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.507 25151 25151 D gti.InputConnection: closeConnection
 10-04 15:43:17.507 25151 25151 D gti.InputConnection: finishComposingText
 10-04 15:43:17.507 25151 25151 D gti.InputConnection: getEditable
 10-04 15:43:17.507 25151 25151 D gti.InputConnection: endBatchEdit
 10-04 15:43:17.507 25151 25151 D gti.InputConnection: setImeConsumesInput: false
-10-04 15:43:17.507  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.507  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.507  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.507  1243  1243 I NormalModeController: NormalModeController.getKeyboardBodyViewHolderPaddingBottom():104 currentPrimeKeyboardType:SOFT systemPaddingBottom:-1
 10-04 15:43:17.508  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 156<157, inputStateId=140, lastInputStateId=139
-10-04 15:43:17.508  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.508  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.508  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.509  1243  1835 I Delight5Decoder: Delight5DecoderWrapper.setKeyboardLayout():511 setKeyboardLayout()
 10-04 15:43:17.520 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_UP, keyCode=KEYCODE_F, scanCode=0, metaState=META_SHIFT_ON|META_SHIFT_LEFT_ON, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
@@ -1259,7 +1259,7 @@
 10-04 15:43:17.572  1243  1243 I StylusModule: StylusModule.onUpdateToolType():770 Update tool type = 0
 10-04 15:43:17.573 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_DOWN, keyCode=KEYCODE_I, scanCode=0, metaState=0, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
 10-04 15:43:17.573  1243  1243 I KeyboardHeightUtil: KeyboardHeightUtil.calculateMaxKeyboardBodyHeight():45 leave 281 height for app when ime window height:1794, header height:116 and isFullscreenMode:false, so the max keyboard body height is:1397
-10-04 15:43:17.573  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.573  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.573  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.574 25151 25151 D gti.InputConnection: processKeyEvent(key=37) text=M7F
 10-04 15:43:17.574 25151 25151 D gti.InputConnection: setComposingRegion: 4:8
@@ -1280,12 +1280,12 @@
 10-04 15:43:17.578  1243  1243 I GoogleInputMethodService: GoogleInputMethodService$1.onKeyboardViewShown():494 onKeyboardViewShown: keyboardType=prime, keyboardViewType=HEADER keyboardView=com.google.android.libraries.inputmethod.widgets.SoftKeyboardView{8abf653 V.E...... ........ 0,0-1080,116}
 10-04 15:43:17.578  1243  1243 I GoogleInputMethodService: GoogleInputMethodService$1.onKeyboardViewShown():494 onKeyboardViewShown: keyboardType=prime, keyboardViewType=BODY keyboardView=com.google.android.libraries.inputmethod.widgets.SoftKeyboardView{1cd6c6b V.E...... ........ 0,0-1080,630}
 10-04 15:43:17.578  1243  1243 I NewLanguagePromptExtension: NewLanguagePromptExtension$1.onKeyboardViewShown():104 Not show new language banner: no change in enabled input method entries
-10-04 15:43:17.579  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.579  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.579  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:17.579  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.579  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.579  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.579  1243  1243 I NormalModeController: NormalModeController.getKeyboardBodyViewHolderPaddingBottom():104 currentPrimeKeyboardType:SOFT systemPaddingBottom:-1
-10-04 15:43:17.580  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.580  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.580 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_UP, keyCode=KEYCODE_I, scanCode=0, metaState=0, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
 10-04 15:43:17.581 25151 25151 D gti.InputConnection: processKeyEvent(key=37) text=M7Fi
 10-04 15:43:17.582  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
@@ -1365,7 +1365,7 @@
 10-04 15:43:17.643 25151 25151 D gti.InputConnection: closeConnection
 10-04 15:43:17.643 25151 25151 D gti.InputConnection: finishComposingText
 10-04 15:43:17.644  1243  1243 I KeyboardHeightUtil: KeyboardHeightUtil.calculateMaxKeyboardBodyHeight():45 leave 281 height for app when ime window height:1794, header height:116 and isFullscreenMode:false, so the max keyboard body height is:1397
-10-04 15:43:17.644  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.644  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.644  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.644 25151 25151 D gti.InputConnection: getEditable
 10-04 15:43:17.650 25151 25151 D gti.InputConnection: endBatchEdit
@@ -1374,12 +1374,12 @@
 10-04 15:43:17.652  1243  1243 I GoogleInputMethodService: GoogleInputMethodService$1.onKeyboardViewShown():494 onKeyboardViewShown: keyboardType=prime, keyboardViewType=HEADER keyboardView=com.google.android.libraries.inputmethod.widgets.SoftKeyboardView{8abf653 V.E...... ........ 0,0-1080,116}
 10-04 15:43:17.652  1243  1243 I GoogleInputMethodService: GoogleInputMethodService$1.onKeyboardViewShown():494 onKeyboardViewShown: keyboardType=prime, keyboardViewType=BODY keyboardView=com.google.android.libraries.inputmethod.widgets.SoftKeyboardView{1cd6c6b V.E...... ........ 0,0-1080,630}
 10-04 15:43:17.652  1243  1243 I NewLanguagePromptExtension: NewLanguagePromptExtension$1.onKeyboardViewShown():104 Not show new language banner: no change in enabled input method entries
-10-04 15:43:17.653  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.653  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.653  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:17.653  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.653  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.654  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.654  1243  1243 I NormalModeController: NormalModeController.getKeyboardBodyViewHolderPaddingBottom():104 currentPrimeKeyboardType:SOFT systemPaddingBottom:-1
-10-04 15:43:17.654  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.654  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.654 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_UP, keyCode=KEYCODE_N, scanCode=0, metaState=0, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
 10-04 15:43:17.654 25151 25151 D gti.InputConnection: processKeyEvent(key=42) text=M7Fin
 10-04 15:43:17.655  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
@@ -1550,22 +1550,22 @@
 10-04 15:43:17.778 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_UP, keyCode=KEYCODE_L, scanCode=0, metaState=0, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
 10-04 15:43:17.778 25151 25151 D gti.InputConnection: processKeyEvent(key=40) text=M7Final
 10-04 15:43:17.778  1243  1243 I KeyboardHeightUtil: KeyboardHeightUtil.calculateMaxKeyboardBodyHeight():45 leave 281 height for app when ime window height:1794, header height:116 and isFullscreenMode:false, so the max keyboard body height is:1397
-10-04 15:43:17.778  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.778  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.779  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.781  1243  1243 I StylusModule: StylusModule.onUpdateToolType():770 Update tool type = 0
 10-04 15:43:17.782 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_DOWN, keyCode=KEYCODE_SHIFT_LEFT, scanCode=0, metaState=META_SHIFT_ON|META_SHIFT_LEFT_ON, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
 10-04 15:43:17.784 25151 25151 D gti.InputConnection: processKeyEvent(key=59) text=M7Final
 10-04 15:43:17.785  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 165<176, inputStateId=149, lastInputStateId=155
 10-04 15:43:17.785  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 170<176, inputStateId=151, lastInputStateId=155
-10-04 15:43:17.785  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.785  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.786  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:17.786  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.786  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.786  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.786  1243  1243 I NormalModeController: NormalModeController.getKeyboardBodyViewHolderPaddingBottom():104 currentPrimeKeyboardType:SOFT systemPaddingBottom:-1
 10-04 15:43:17.787  1243  1926 D EGL_emulation: app_time_stats: avg=88.20ms min=3.23ms max=579.49ms count=12
 10-04 15:43:17.787  1243  1243 I StylusModule: StylusModule.onUpdateToolType():770 Update tool type = 0
 10-04 15:43:17.788  1243  1835 I Delight5Decoder: Delight5DecoderWrapper.setKeyboardLayout():511 setKeyboardLayout()
-10-04 15:43:17.788  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.788  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.788  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.789  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 172<176, inputStateId=153, lastInputStateId=155
 10-04 15:43:17.791 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_DOWN, keyCode=KEYCODE_E, scanCode=0, metaState=META_SHIFT_ON|META_SHIFT_LEFT_ON, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
@@ -1653,7 +1653,7 @@
 10-04 15:43:17.862 25151 25151 D gti.InputConnection: processKeyEvent(key=59) text=M7FinalE
 10-04 15:43:17.864  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 175<181, inputStateId=156, lastInputStateId=161
 10-04 15:43:17.865  1243  1243 I StylusModule: StylusModule.onUpdateToolType():770 Update tool type = 0
-10-04 15:43:17.866  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.866  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.867 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_DOWN, keyCode=KEYCODE_M, scanCode=0, metaState=0, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
 10-04 15:43:17.867 25151 25151 D gti.InputConnection: processKeyEvent(key=41) text=M7FinalE
 10-04 15:43:17.867 25151 25151 D gti.InputConnection: setComposingRegion: 9:18
@@ -1661,7 +1661,7 @@
 10-04 15:43:17.867  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.867 25151 25151 E SpannableStringBuilder: SPAN_EXCLUSIVE_EXCLUSIVE spans cannot have a zero length
 10-04 15:43:17.867 25151 25151 E SpannableStringBuilder: SPAN_EXCLUSIVE_EXCLUSIVE spans cannot have a zero length
-10-04 15:43:17.867  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.867  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.867 25151 25151 D gti.InputConnection: endBatchEdit
 10-04 15:43:17.867  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.867 25151 25151 D gti.InputConnection: setSelection: 9:9
@@ -1675,7 +1675,7 @@
 10-04 15:43:17.869 25151 25151 D gti.InputConnection: endBatchEdit
 10-04 15:43:17.869 25151 25151 D gti.InputConnection: setImeConsumesInput: false
 10-04 15:43:17.869  1243  1835 I Delight5Decoder: Delight5DecoderWrapper.setKeyboardLayout():511 setKeyboardLayout()
-10-04 15:43:17.869  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.869  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.869  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.873 25151 25151 W RemoteInputConnectionImpl: getSurroundingText on inactive InputConnection
 10-04 15:43:17.874 25151 25151 W RemoteInputConnectionImpl: getTextBeforeCursor on inactive InputConnection
@@ -1683,7 +1683,7 @@
 10-04 15:43:17.880 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_UP, keyCode=KEYCODE_M, scanCode=0, metaState=0, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
 10-04 15:43:17.881 25151 25151 D gti.InputConnection: processKeyEvent(key=41) text=M7FinalEm
 10-04 15:43:17.881  1243  1243 I KeyboardHeightUtil: KeyboardHeightUtil.calculateMaxKeyboardBodyHeight():45 leave 281 height for app when ime window height:1794, header height:116 and isFullscreenMode:false, so the max keyboard body height is:1397
-10-04 15:43:17.881  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.881  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.882  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.886  1243  1243 I StylusModule: StylusModule.onUpdateToolType():770 Update tool type = 0
 10-04 15:43:17.886  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 176<183, inputStateId=157, lastInputStateId=163
@@ -1767,15 +1767,15 @@
 10-04 15:43:17.942 25151 25151 D gti.InputConnection: processKeyEvent(key=49) text=M7FinalEmu
 10-04 15:43:17.942  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 178<186, inputStateId=159, lastInputStateId=166
 10-04 15:43:17.947  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 181<186, inputStateId=162, lastInputStateId=166
-10-04 15:43:17.947  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.947  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.947  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.952  1243  1243 I StylusModule: StylusModule.onUpdateToolType():770 Update tool type = 0
-10-04 15:43:17.952  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.952  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.952  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.953  1243  1243 I NormalModeController: NormalModeController.getKeyboardBodyViewHolderPaddingBottom():104 currentPrimeKeyboardType:SOFT systemPaddingBottom:-1
 10-04 15:43:17.953 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_DOWN, keyCode=KEYCODE_L, scanCode=0, metaState=0, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
 10-04 15:43:17.953  1243  1835 I Delight5Decoder: Delight5DecoderWrapper.setKeyboardLayout():511 setKeyboardLayout()
-10-04 15:43:17.953  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:17.953  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:17.953  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:17.954 25151 25151 D gti.InputConnection: processKeyEvent(key=40) text=M7FinalEmu
 10-04 15:43:17.954 25151 25151 D gti.InputConnection: setComposingRegion: 11:22
@@ -1943,7 +1943,7 @@
 10-04 15:43:18.054  1243  1243 I StylusModule: StylusModule.onUpdateToolType():770 Update tool type = 0
 10-04 15:43:18.054 25151 25151 D gti.InputConnection: onKey: KeyEvent { action=ACTION_DOWN, keyCode=KEYCODE_T, scanCode=0, metaState=0, flags=0x0, repeatCount=0, eventTime=1577557109000, downTime=1577557109000, deviceId=-1, source=0x101, displayId=-1 }
 10-04 15:43:18.054  1243  1243 I KeyboardHeightUtil: KeyboardHeightUtil.calculateMaxKeyboardBodyHeight():45 leave 281 height for app when ime window height:1794, header height:116 and isFullscreenMode:false, so the max keyboard body height is:1397
-10-04 15:43:18.054  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.054  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.054 25151 25151 D gti.InputConnection: processKeyEvent(key=48) text=M7FinalEmula
 10-04 15:43:18.055 25151 25151 D gti.InputConnection: setComposingRegion: 13:26
 10-04 15:43:18.055  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
@@ -1961,12 +1961,12 @@
 10-04 15:43:18.057 25151 25151 D gti.InputConnection: endBatchEdit
 10-04 15:43:18.057 25151 25151 D gti.InputConnection: setImeConsumesInput: false
 10-04 15:43:18.057  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 186<196, inputStateId=167, lastInputStateId=176
-10-04 15:43:18.058  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.058  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.058  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:18.058  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.058  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.058  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.058  1243  1243 I NormalModeController: NormalModeController.getKeyboardBodyViewHolderPaddingBottom():104 currentPrimeKeyboardType:SOFT systemPaddingBottom:-1
-10-04 15:43:18.058  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.058  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.058  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.061 25151 25151 W RemoteInputConnectionImpl: getSurroundingText on inactive InputConnection
 10-04 15:43:18.062  1243  1835 I Delight5Decoder: Delight5DecoderWrapper.setKeyboardLayout():511 setKeyboardLayout()
@@ -2044,16 +2044,16 @@
 10-04 15:43:18.106 25151 25151 E SpannableStringBuilder: SPAN_EXCLUSIVE_EXCLUSIVE spans cannot have a zero length
 10-04 15:43:18.106 25151 25151 D gti.InputConnection: endBatchEdit
 10-04 15:43:18.107  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 191<201, inputStateId=172, lastInputStateId=181
-10-04 15:43:18.107  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.107  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.107  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.107 25151 25151 D gti.InputConnection: setSelection: 14:14
-10-04 15:43:18.107  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.107  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.107  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.107 25151 25151 D gti.InputConnection: getEditable
 10-04 15:43:18.107  1243  1243 I NormalModeController: NormalModeController.getKeyboardBodyViewHolderPaddingBottom():104 currentPrimeKeyboardType:SOFT systemPaddingBottom:-1
 10-04 15:43:18.107 25151 25151 D gti.InputConnection: processKeyEvent: exit, text=M7FinalEmulato
 10-04 15:43:18.108 25151 25151 D gti.InputConnection: immUpdateSelection: 14,14. -1,-1
-10-04 15:43:18.108  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.108  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.108  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.109 25151 25151 D gti.InputConnection: closeConnection
 10-04 15:43:18.109 25151 25151 D gti.InputConnection: finishComposingText
@@ -2131,9 +2131,9 @@
 10-04 15:43:18.173  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 193<206, inputStateId=174, lastInputStateId=186
 10-04 15:43:18.173 25151 25151 D gti.InputConnection: processKeyEvent(key=46) text=M7FinalEmulato
 10-04 15:43:18.173  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 196<206, inputStateId=177, lastInputStateId=186
-10-04 15:43:18.173  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.173  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.174  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:18.174  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.174  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.174 25151 25151 D gti.InputConnection: setComposingRegion: 15:30
 10-04 15:43:18.174  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.174 25151 25151 D gti.InputConnection: getEditable
@@ -2145,7 +2145,7 @@
 10-04 15:43:18.174 25151 25151 D gti.InputConnection: getEditable
 10-04 15:43:18.174 25151 25151 D gti.InputConnection: processKeyEvent: exit, text=M7FinalEmulator
 10-04 15:43:18.174  1243  1835 I Delight5Decoder: Delight5DecoderWrapper.setKeyboardLayout():511 setKeyboardLayout()
-10-04 15:43:18.174  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.174  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.174 25151 25151 D gti.InputConnection: immUpdateSelection: 15,15. -1,-1
 10-04 15:43:18.174  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.174 25151 25151 D gti.InputConnection: closeConnection
@@ -2220,16 +2220,16 @@
 10-04 15:43:18.211  1243  1243 I VoiceImeExtension: VoiceImeExtension.shouldStartVoiceInputAutomaticallyInCurrentInputBox():415 No private IME option set to start voice input.
 10-04 15:43:18.211  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 198<211, inputStateId=179, lastInputStateId=191
 10-04 15:43:18.213  1243  1243 I KeyboardHeightUtil: KeyboardHeightUtil.calculateMaxKeyboardBodyHeight():45 leave 281 height for app when ime window height:1794, header height:116 and isFullscreenMode:false, so the max keyboard body height is:1397
-10-04 15:43:18.213  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.213  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.213  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.218  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 201<211, inputStateId=182, lastInputStateId=191
-10-04 15:43:18.218  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.218  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.219  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:18.219  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.219  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.219  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.219  1243  1243 I NormalModeController: NormalModeController.getKeyboardBodyViewHolderPaddingBottom():104 currentPrimeKeyboardType:SOFT systemPaddingBottom:-1
 10-04 15:43:18.220  1243  1835 I Delight5Decoder: Delight5DecoderWrapper.setKeyboardLayout():511 setKeyboardLayout()
-10-04 15:43:18.220  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.220  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.220  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.223 25151 25151 W RemoteInputConnectionImpl: getSurroundingText on inactive InputConnection
 10-04 15:43:18.225 25151 25151 W RemoteInputConnectionImpl: getTextBeforeCursor on inactive InputConnection
@@ -2299,13 +2299,13 @@
 10-04 15:43:18.265  1243  1243 I ImeTracker: com.google.android.inputmethod.latin:b7a544e3: onRequestHide at ORIGIN_IME reason HIDE_SOFT_INPUT_BY_BACK_KEY fromUser true
 10-04 15:43:18.267  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 203<216, inputStateId=184, lastInputStateId=196
 10-04 15:43:18.269  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 206<216, inputStateId=187, lastInputStateId=196
-10-04 15:43:18.269  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.269  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.270  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:18.270  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.270  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.270  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.270  1243  1243 I NormalModeController: NormalModeController.getKeyboardBodyViewHolderPaddingBottom():104 currentPrimeKeyboardType:SOFT systemPaddingBottom:-1
 10-04 15:43:18.271  1243  1835 I Delight5Decoder: Delight5DecoderWrapper.setKeyboardLayout():511 setKeyboardLayout()
-10-04 15:43:18.271  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.271  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.271  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.272 25151 25151 W RemoteInputConnectionImpl: getSurroundingText on inactive InputConnection
 10-04 15:43:18.273 25151 25151 W RemoteInputConnectionImpl: getTextBeforeCursor on inactive InputConnection
@@ -2373,25 +2373,25 @@
 10-04 15:43:18.309  1243  1243 I VoiceImeExtension: VoiceImeExtension.shouldStartVoiceInputAutomaticallyInCurrentInputBox():415 No private IME option set to start voice input.
 10-04 15:43:18.310  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 208<221, inputStateId=189, lastInputStateId=201
 10-04 15:43:18.311  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 211<221, inputStateId=192, lastInputStateId=201
-10-04 15:43:18.311  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.311  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.311  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:18.311  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.311  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.311  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.311  1243  1243 I NormalModeController: NormalModeController.getKeyboardBodyViewHolderPaddingBottom():104 currentPrimeKeyboardType:SOFT systemPaddingBottom:-1
-10-04 15:43:18.312  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.312  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.312  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.313  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 213<221, inputStateId=194, lastInputStateId=201
 10-04 15:43:18.314  1243  1243 I KeyboardHeightUtil: KeyboardHeightUtil.calculateMaxKeyboardBodyHeight():45 leave 281 height for app when ime window height:1794, header height:116 and isFullscreenMode:false, so the max keyboard body height is:1397
-10-04 15:43:18.314  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.314  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.314  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.321  1243  1243 W InputContextProxy: InputContextProxy.applyClientDiffInternal():940 Ignore [FetchSuggestions] diff due to stale request: 216<221, inputStateId=197, lastInputStateId=201
-10-04 15:43:18.321  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.321  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.321  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:18.321  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.321  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.321  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:18.322  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.322  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.322  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:18.323  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInputView():2393 
+10-04 15:43:18.323  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInputView():2393
 10-04 15:43:18.328 25151 25151 D InsetsController: hide(ime(), fromIme=true)
 10-04 15:43:18.333 25151 25151 D gti.InputConnection: Request cursor updates: 0
 10-04 15:43:18.335  1243  1243 W TooltipLifecycleManager: TooltipLifecycleManager.dismissTooltips():152 Tooltip with id spell_check_add_to_dictionary not found in tooltipManager.
@@ -2405,19 +2405,19 @@
 10-04 15:43:18.342  1243  1243 I GoogleInputMethodService: GoogleInputMethodService$1.onKeyboardViewShown():494 onKeyboardViewShown: keyboardType=prime, keyboardViewType=HEADER keyboardView=com.google.android.libraries.inputmethod.widgets.SoftKeyboardView{8abf653 V.E...... ......ID 0,0-1080,116}
 10-04 15:43:18.342  1243  1243 I GoogleInputMethodService: GoogleInputMethodService$1.onKeyboardViewShown():494 onKeyboardViewShown: keyboardType=prime, keyboardViewType=BODY keyboardView=com.google.android.libraries.inputmethod.widgets.SoftKeyboardView{1cd6c6b V.E...... ........ 0,0-1080,630}
 10-04 15:43:18.343  1243  1243 I NewLanguagePromptExtension: NewLanguagePromptExtension$1.onKeyboardViewShown():94 Not show new language banner: not prime keyboard, or the extension not activated.
-10-04 15:43:18.343  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.343  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.344  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
-10-04 15:43:18.344  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.344  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.344  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.344  1243  1243 I InputBundle: InputBundle.consumeEvent():880 Skip consuming an event as imeStatus is 0
-10-04 15:43:18.344  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.344  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.344  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.345 25151 25151 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:43:18.348  1243  1243 I KeyboardHeightUtil: KeyboardHeightUtil.calculateMaxKeyboardBodyHeight():45 leave 281 height for app when ime window height:1794, header height:116 and isFullscreenMode:false, so the max keyboard body height is:1397
-10-04 15:43:18.356  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113 
+10-04 15:43:18.356  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notifyWithWindow():113
 10-04 15:43:18.356  1243  1243 I WindowMetricsNotification: WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 0 - 1080, 1920), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=1920, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=1920, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
 10-04 15:43:18.358   835   885 D WindowManagerShell: onKeepClearAreasChanged: restricted={}, unrestricted={}
-10-04 15:43:18.360   448   989 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:43:18.360   448   989 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:43:18.367 25151 25151 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:43:18.374 25151 25170 I Unity   : Handle cmd APP_CMD_SOFTWARE_KB_VIS_CHANGED(6)
 10-04 15:43:18.375 25151 25170 I Unity   :     Keyboard Visible = False
@@ -2496,7 +2496,7 @@
 10-04 15:43:25.159  1070  1070 D OverviewCommandHelper: clearing pending commands - size: 0
 10-04 15:43:25.159 25151 25151 I Unity   : onPause
 10-04 15:43:25.160  1070  1070 D StatsLog: LAUNCHER_ONRESUME
-10-04 15:43:25.161   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:43:25.161   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:43:25.164   599   621 V GameManagerService: Game power mode OFF (first non-game in foreground)
 10-04 15:43:25.165   835   885 D WindowManagerShell: onActivityRestartAttempt: ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}
 10-04 15:43:25.167 25151 25151 I Unity   : pauseUnity
@@ -2535,8 +2535,8 @@
 10-04 15:43:25.201  1070  1138 D QuickstepModelDelegate: notifyAppTargetEvent action=1 launchLocation=workspace/0/[-1,-1]/[1,1]
 10-04 15:43:25.202  1070  1070 I TopTaskTracker: onTaskMovedToFront: (moved taskInfo to front) taskId=9, baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.google.android.apps.nexuslauncher/.NexusLauncherActivity }
 10-04 15:43:25.208  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:43:25.208  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:43:25.208  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:43:25.208  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:43:25.208  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:43:25.208  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:25.210  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:25.211  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
@@ -2589,7 +2589,7 @@
 10-04 15:43:25.321  1070  1436 D EGL_emulation: app_time_stats: avg=1067.72ms min=3.86ms max=8444.77ms count=8
 10-04 15:43:25.366   599   715 I ImeTracker: com.google.android.apps.nexuslauncher:45c2c287: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
 10-04 15:43:25.371   599   715 I ImeTracker: com.google.android.apps.nexuslauncher:45c2c287: onCancelled at PHASE_SERVER_SHOULD_HIDE
-10-04 15:43:25.385  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157 
+10-04 15:43:25.385  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157
 10-04 15:43:25.390  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 0, locked = false
 10-04 15:43:25.391  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=com.google.android.apps.nexuslauncher, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
 10-04 15:43:25.391  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 1, locked = false
@@ -2696,7 +2696,7 @@
 10-04 15:43:27.603 26473 26473 I app_process: Using CollectorTypeCMC GC.
 10-04 15:43:27.645 26473 26473 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
 10-04 15:43:27.650 26473 26473 D nativeloader: Load libicu_jni.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
-10-04 15:43:27.650 26473 26473 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded. 
+10-04 15:43:27.650 26473 26473 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded.
 10-04 15:43:27.650 26473 26473 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt75l.dat
 10-04 15:43:27.651 26473 26473 D nativeloader: Load libjavacore.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
 10-04 15:43:27.651 26473 26473 D nativeloader: Load libopenjdk.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
@@ -2732,7 +2732,7 @@
 10-04 15:43:27.690   835   885 D WindowManagerShell: setLauncherKeepClearAreaHeight: visible=false, height=459
 10-04 15:43:27.690   599  2090 I AppsFilter: interaction: PackageSetting{5cad2cc com.android.microdroid.empty_payload/10185} -> PackageSetting{fecb195 com.DefaultCompany.urp_2d/10209} BLOCKED
 10-04 15:43:27.692  1070  1070 I TopTaskTracker: onTaskMovedToFront: (moved taskInfo to front) taskId=22, baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.DefaultCompany.urp_2d/com.unity3d.player.UnityPlayerGameActivity }
-10-04 15:43:27.694   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:43:27.694   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:43:27.697   599   775 I AppWidgetServiceImpl: Received broadcast: android.intent.action.PACKAGE_UNSTOPPED on user 0
 10-04 15:43:27.697   599   775 I AppWidgetServiceImpl: Updating package stopped masked state for uid 10209 package com.DefaultCompany.urp_2d isStopped false
 10-04 15:43:27.699 26473 26473 I Monkey  : ## Network stats: elapsed time=14ms (0ms mobile, 0ms wifi, 14ms not connected)
@@ -2811,7 +2811,7 @@
 10-04 15:43:28.360  1243  1691 I ProtoXDBBufferWrapper: ProtoXDBBufferWrapper.flushToStorage():158 Flushed 30 data item(s) to storage.
 10-04 15:43:28.426 26496 26496 I IL2CPP  : JNI_OnLoad
 10-04 15:43:28.427 26496 26496 V Unity   : Context Type: GameActivity
-10-04 15:43:28.429 26496 26496 D Unity   : CommandLine:  
+10-04 15:43:28.429 26496 26496 D Unity   : CommandLine:
 10-04 15:43:28.438 26496 26496 W WindowOnBackDispatcher: OnBackInvokedCallback is not enabled for the application.
 10-04 15:43:28.438 26496 26496 W WindowOnBackDispatcher: Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
 10-04 15:43:28.439 26496 26496 I GameActivity: Looking for library libgame.so
@@ -2823,7 +2823,7 @@
 10-04 15:43:28.491 26496 26606 I Unity   : Handle cmd APP_CMD_START(11)
 10-04 15:43:28.493 26496 26496 I Unity   : onResume
 10-04 15:43:28.496 26496 26606 I Unity   : Handle cmd APP_CMD_RESUME(12)
-10-04 15:43:28.499   599  2092 W WindowManager: Failed looking up window session=Session{211272d 26496:u0a10209} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.updateRequestedVisibleTypes:755 android.view.IWindowSession$Stub.onTransact:1078 
+10-04 15:43:28.499   599  2092 W WindowManager: Failed looking up window session=Session{211272d 26496:u0a10209} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.updateRequestedVisibleTypes:755 android.view.IWindowSession$Stub.onTransact:1078
 10-04 15:43:28.517 26496 26496 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:43:28.519 26496 26606 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
 10-04 15:43:28.521   599  2092 D CoreBackPreview: Window{2f039f3 u0 com.DefaultCompany.urp_2d/com.unity3d.player.UnityPlayerGameActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@74d0ee5, mPriority=0, mIsAnimationCallback=false}
@@ -2831,7 +2831,7 @@
 10-04 15:43:28.523 26496 26606 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
 10-04 15:43:28.524 26496 26606 I Unity   : Handle cmd APP_CMD_CONTENT_RECT_CHANGED(5)
 10-04 15:43:28.526 26496 26606 I Unity   : Handle cmd APP_CMD_INIT_WINDOW(1)
-10-04 15:43:28.531   448   520 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:43:28.531   448   520 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:43:28.539   176   176 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
 10-04 15:43:28.539 26496 26496 I Gralloc4: mapper 4.x is not supported
 10-04 15:43:28.522     0     0 I servicemanager: Caller(pid=26496,uid=10209,sid=u:r:untrusted_app:s0:c209,c256,c512,c768) Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest. No alternative instances declared in VINTF.
@@ -2890,7 +2890,7 @@
 10-04 15:43:28.607   599   715 I ImeTracker: com.DefaultCompany.urp_2d:cdf90260: onCancelled at PHASE_SERVER_SHOULD_HIDE
 10-04 15:43:28.608  1070  1513 D OneSearchSuggestProvider: Shut down the binder channel
 10-04 15:43:28.610  1070  2162 I IPCThreadState: oneway function results for code 2 on binder at 0x787f24e21310 will be dropped but finished with status UNKNOWN_TRANSACTION
-10-04 15:43:28.612  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157 
+10-04 15:43:28.612  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157
 10-04 15:43:28.614   397   464 I netd    : tetherGetStats() -> {[]} <0.35ms>
 10-04 15:43:28.620  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 0, locked = false
 10-04 15:43:28.620  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=com.DefaultCompany.urp_2d, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
@@ -2925,15 +2925,15 @@
 10-04 15:43:29.250 26496 26606 D Unity   : Found 2 interfaces on host :
 10-04 15:43:29.250 26496 26606 D Unity   :  0) 10.0.2.15
 10-04 15:43:29.250 26496 26606 D Unity   :  1) 10.0.2.16
-10-04 15:43:29.250 26496 26606 D Unity   : 
+10-04 15:43:29.250 26496 26606 D Unity   :
 10-04 15:43:29.254 26496 26606 D Unity   : Player connection [132476479051968]  Target information:
-10-04 15:43:29.254 26496 26606 D Unity   : 
-10-04 15:43:29.254 26496 26606 D Unity   : Player connection [132476479051968]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 3601300713 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:43:29.254 26496 26606 D Unity   : 
-10-04 15:43:29.254 26496 26606 D Unity   : Player connection [132476479051968]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 3601300713 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:43:29.254 26496 26606 D Unity   : 
+10-04 15:43:29.254 26496 26606 D Unity   :
+10-04 15:43:29.254 26496 26606 D Unity   : Player connection [132476479051968]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 3601300713 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:43:29.254 26496 26606 D Unity   :
+10-04 15:43:29.254 26496 26606 D Unity   : Player connection [132476479051968]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 3601300713 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:43:29.254 26496 26606 D Unity   :
 10-04 15:43:29.254 26496 26606 D Unity   : Player connection [132476479051968] Started UDP target info broadcast (1) on [225.0.0.222:54997].
-10-04 15:43:29.254 26496 26606 D Unity   : 
+10-04 15:43:29.254 26496 26606 D Unity   :
 10-04 15:43:29.270 26496 26514 I tCompany.urp_2d: Compiler allocated 5174KB to compile void android.view.ViewRootImpl.performTraversals()
 10-04 15:43:29.295 26496 26606 D Unity   : Input System module state changed to: Initialized.
 10-04 15:43:29.312 26496 26496 V GameActivity: onImeInsetsChanged from Text Listener
@@ -3003,7 +3003,7 @@
 10-04 15:43:29.489 26496 26606 D Unity   : OPENGL LOG: Creating OpenGL ES 3.0 graphics device ; Context level  <OpenGL ES 3.0> ; Context handle -186900384
 10-04 15:43:29.501 26496 26606 D Unity   : [EGL] Attaching window :0x787d54db0750
 10-04 15:43:29.505 26496 26606 D Unity   : Requested framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[on], samples[1]
-10-04 15:43:29.506 26496 26606 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0] 
+10-04 15:43:29.506 26496 26606 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0]
 10-04 15:43:29.519 26496 26606 D nativeloader: Load liblibswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): dlopen failed: library "liblibswappywrapper.so" not found
 10-04 15:43:29.521 26496 26606 D nativeloader: Load /data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/lib/arm64/libswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): ok
 10-04 15:43:29.522 26496 26606 I SwappyWrapper: SwappyWrapperInit() succeeded. Build: Sun Oct  4 05:35:58 2026
@@ -3020,9 +3020,9 @@
 10-04 15:43:29.749 26496 26606 D Unity   : [Physics::Module] Integration Version: 1.0.0
 10-04 15:43:29.749 26496 26606 D Unity   : [Physics::Module] Threading Mode: Multi-Threaded
 10-04 15:43:29.978 26496 26606 I IL2CPP  : Locale en-US
-10-04 15:43:30.017 26496 26606 D Unity   : ERROR: Shader 
+10-04 15:43:30.017 26496 26606 D Unity   : ERROR: Shader
 10-04 15:43:30.018 26496 26606 D Unity   : Hidden/CoreSRP/CoreCopy shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
-10-04 15:43:30.125 26496 26606 D Unity   : ERROR: Shader 
+10-04 15:43:30.125 26496 26606 D Unity   : ERROR: Shader
 10-04 15:43:30.125 26496 26606 D Unity   : Hidden/Universal/HDRDebugView shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
 10-04 15:43:30.212 26496 26606 D Unity   : PlayerInitEngineGraphics OK
 10-04 15:43:30.237 26496 26606 I Unity   : SetGameState: isLoading: false, mode: UNKNOWN, label: -1, quality: 2
@@ -3129,7 +3129,7 @@
 10-04 15:43:43.443   599   695 D ActivityManager: freezing 1338 com.google.android.gms
 10-04 15:43:43.443   599  2092 I AppWidgetServiceImpl: startListening() 0
 10-04 15:43:43.443  1070  1070 D StatsLog: LAUNCHER_ONRESUME
-10-04 15:43:43.444   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:43:43.444   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:43:43.445  1070  1070 D NexusLauncherModelDelegate: notifySmartspaceEvent: SmartspaceTargetEvent{mSmartspaceTarget=null, mSmartspaceActionId='null', mEventType=6}
 10-04 15:43:43.445   835   885 D WindowManagerShell: setLauncherKeepClearAreaHeight: visible=true, height=459
 10-04 15:43:43.446   397   464 I netd    : tetherGetStats() -> {[]} <0.54ms>
@@ -3271,8 +3271,8 @@
 10-04 15:43:43.531   474   474 I adbd    : Remote process closed the socket (on MSG_PEEK)
 10-04 15:43:43.535   599   965 W InputManager-JNI: Input channel object '2f039f3 com.DefaultCompany.urp_2d/com.unity3d.player.UnityPlayerGameActivity (client)' was disposed without first being removed with the input manager!
 10-04 15:43:43.536  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:43:43.536  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:43:43.536  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:43:43.536  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:43:43.536  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:43:43.536  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:43.536  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:43.537  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
@@ -3292,7 +3292,7 @@
 10-04 15:43:43.561   991   991 D CarrierSvcBindHelper: No carrier app for: 0
 10-04 15:43:43.562   599   715 I ImeTracker: com.google.android.apps.nexuslauncher:40135220: onCancelled at PHASE_SERVER_SHOULD_HIDE
 10-04 15:43:43.562   599   623 W ActivityManager: setHasOverlayUi called on unknown pid: 26496
-10-04 15:43:43.572  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157 
+10-04 15:43:43.572  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157
 10-04 15:43:43.574  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 0, locked = false
 10-04 15:43:43.574  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=com.google.android.apps.nexuslauncher, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
 10-04 15:43:43.575  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 1, locked = false
@@ -3318,7 +3318,7 @@
 10-04 15:43:43.657  1070  1070 D SsBaseTemplateCard: Passed-in item info is null
 10-04 15:43:43.657  1070  1070 I SsBaseTemplateCard: Secondary card pane is null
 10-04 15:43:43.671 27755 27755 D nativeloader: Load libicu_jni.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
-10-04 15:43:43.672 27755 27755 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded. 
+10-04 15:43:43.672 27755 27755 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded.
 10-04 15:43:43.672 27755 27755 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt75l.dat
 10-04 15:43:43.672  1045  2172 I ChimeraSrvcProxy: NullBinder for android.net.action.RECOMMEND_NETWORKS triggering remote TransactionTooLargeException due to Service without Chimera impl
 10-04 15:43:43.672  1045  2172 W .gms.persistent: Large reply transaction of 1056768 bytes, interface descriptor , code 1
@@ -3488,7 +3488,7 @@
 10-04 15:43:44.322 27785 27785 D nativeloader: Load /data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/lib/arm64/libmain.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): ok
 10-04 15:43:44.572 27785 27785 I IL2CPP  : JNI_OnLoad
 10-04 15:43:44.573 27785 27785 V Unity   : Context Type: GameActivity
-10-04 15:43:44.577 27785 27785 D Unity   : CommandLine:  
+10-04 15:43:44.577 27785 27785 D Unity   : CommandLine:
 10-04 15:43:44.588 27785 27785 W WindowOnBackDispatcher: OnBackInvokedCallback is not enabled for the application.
 10-04 15:43:44.588 27785 27785 W WindowOnBackDispatcher: Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
 10-04 15:43:44.590 27785 27785 I GameActivity: Looking for library libgame.so
@@ -3500,11 +3500,11 @@
 10-04 15:43:44.645 27785 27785 I Unity   : onResume
 10-04 15:43:44.646 27785 27893 I Unity   : Handle cmd APP_CMD_START(11)
 10-04 15:43:44.648 27785 27893 I Unity   : Handle cmd APP_CMD_RESUME(12)
-10-04 15:43:44.653   599   616 W WindowManager: Failed looking up window session=Session{3469cf 27785:u0a10209} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.updateRequestedVisibleTypes:755 android.view.IWindowSession$Stub.onTransact:1078 
+10-04 15:43:44.653   599   616 W WindowManager: Failed looking up window session=Session{3469cf 27785:u0a10209} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.updateRequestedVisibleTypes:755 android.view.IWindowSession$Stub.onTransact:1078
 10-04 15:43:44.666 27785 27785 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:43:44.667 27785 27893 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
 10-04 15:43:44.667   599   616 D CoreBackPreview: Window{4000265 u0 com.DefaultCompany.urp_2d/com.unity3d.player.UnityPlayerGameActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@737d3eb, mPriority=0, mIsAnimationCallback=false}
-10-04 15:43:44.670   448   519 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:43:44.670   448   519 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:43:44.671 27785 27785 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:43:44.671 27785 27893 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
 10-04 15:43:44.672 27785 27893 I Unity   : Handle cmd APP_CMD_CONTENT_RECT_CHANGED(5)
@@ -3553,7 +3553,7 @@
 10-04 15:43:44.757 27785 27785 I Unity   : resumeUnity
 10-04 15:43:44.760   599   715 I ImeTracker: com.DefaultCompany.urp_2d:3f27c241: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
 10-04 15:43:44.762   599   715 I ImeTracker: com.DefaultCompany.urp_2d:3f27c241: onCancelled at PHASE_SERVER_SHOULD_HIDE
-10-04 15:43:44.773  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157 
+10-04 15:43:44.773  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157
 10-04 15:43:44.774  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 0, locked = false
 10-04 15:43:44.774  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=com.DefaultCompany.urp_2d, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
 10-04 15:43:44.775  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 1, locked = false
@@ -3602,15 +3602,15 @@
 10-04 15:43:45.353 27785 27893 D Unity   : Found 2 interfaces on host :
 10-04 15:43:45.353 27785 27893 D Unity   :  0) 10.0.2.15
 10-04 15:43:45.353 27785 27893 D Unity   :  1) 10.0.2.16
-10-04 15:43:45.353 27785 27893 D Unity   : 
+10-04 15:43:45.353 27785 27893 D Unity   :
 10-04 15:43:45.357 27785 27893 D Unity   : Player connection [132476522944704]  Target information:
-10-04 15:43:45.357 27785 27893 D Unity   : 
-10-04 15:43:45.357 27785 27893 D Unity   : Player connection [132476522944704]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 3463328172 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:43:45.357 27785 27893 D Unity   : 
-10-04 15:43:45.357 27785 27893 D Unity   : Player connection [132476522944704]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 3463328172 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:43:45.357 27785 27893 D Unity   : 
+10-04 15:43:45.357 27785 27893 D Unity   :
+10-04 15:43:45.357 27785 27893 D Unity   : Player connection [132476522944704]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 3463328172 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:43:45.357 27785 27893 D Unity   :
+10-04 15:43:45.357 27785 27893 D Unity   : Player connection [132476522944704]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 3463328172 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:43:45.357 27785 27893 D Unity   :
 10-04 15:43:45.357 27785 27893 D Unity   : Player connection [132476522944704] Started UDP target info broadcast (1) on [225.0.0.222:54997].
-10-04 15:43:45.357 27785 27893 D Unity   : 
+10-04 15:43:45.357 27785 27893 D Unity   :
 10-04 15:43:45.417 27785 27893 D Unity   : Input System module state changed to: Initialized.
 10-04 15:43:45.439 27785 27801 I tCompany.urp_2d: Compiler allocated 5174KB to compile void android.view.ViewRootImpl.performTraversals()
 10-04 15:43:45.443 27785 27785 V GameActivity: onImeInsetsChanged from Text Listener
@@ -3682,7 +3682,7 @@
 10-04 15:43:45.618 27785 27893 D Unity   : OPENGL LOG: Creating OpenGL ES 3.0 graphics device ; Context level  <OpenGL ES 3.0> ; Context handle -186895344
 10-04 15:43:45.630 27785 27893 D Unity   : [EGL] Attaching window :0x787d54db0750
 10-04 15:43:45.634 27785 27893 D Unity   : Requested framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[on], samples[1]
-10-04 15:43:45.635 27785 27893 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0] 
+10-04 15:43:45.635 27785 27893 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0]
 10-04 15:43:45.647 27785 27893 D nativeloader: Load liblibswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): dlopen failed: library "liblibswappywrapper.so" not found
 10-04 15:43:45.649 27785 27893 D nativeloader: Load /data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/lib/arm64/libswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): ok
 10-04 15:43:45.650 27785 27893 I SwappyWrapper: SwappyWrapperInit() succeeded. Build: Sun Oct  4 05:35:58 2026
@@ -3699,9 +3699,9 @@
 10-04 15:43:45.890 27785 27893 D Unity   : [Physics::Module] Integration Version: 1.0.0
 10-04 15:43:45.890 27785 27893 D Unity   : [Physics::Module] Threading Mode: Multi-Threaded
 10-04 15:43:46.116 27785 27893 I IL2CPP  : Locale en-US
-10-04 15:43:46.153 27785 27893 D Unity   : ERROR: Shader 
+10-04 15:43:46.153 27785 27893 D Unity   : ERROR: Shader
 10-04 15:43:46.153 27785 27893 D Unity   : Hidden/CoreSRP/CoreCopy shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
-10-04 15:43:46.259 27785 27893 D Unity   : ERROR: Shader 
+10-04 15:43:46.259 27785 27893 D Unity   : ERROR: Shader
 10-04 15:43:46.259 27785 27893 D Unity   : Hidden/Universal/HDRDebugView shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
 10-04 15:43:46.342 27785 27893 D Unity   : PlayerInitEngineGraphics OK
 10-04 15:43:46.365 27785 27893 I Unity   : SetGameState: isLoading: false, mode: UNKNOWN, label: -1, quality: 2
@@ -3802,7 +3802,7 @@
 10-04 15:43:57.557 27785 27785 I Unity   : onPause
 10-04 15:43:57.559 27785 27785 I Unity   : pauseUnity
 10-04 15:43:57.560  1070  1070 D OverviewCommandHelper: clearing pending commands - size: 0
-10-04 15:43:57.560   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:43:57.560   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:43:57.562  1070  1070 D NexusLauncherModelDelegate: notifySmartspaceEvent: SmartspaceTargetEvent{mSmartspaceTarget=null, mSmartspaceActionId='null', mEventType=6}
 10-04 15:43:57.562   599   621 V GameManagerService: Game power mode OFF (first non-game in foreground)
 10-04 15:43:57.566 27785 27893 I Unity   : Handle cmd APP_CMD_PAUSE(14)
@@ -3869,8 +3869,8 @@
 10-04 15:43:57.636   835   885 V WindowManagerShell:  animated by com.android.wm.shell.transition.RemoteTransitionHandler@e985489
 10-04 15:43:57.639  1070  1138 D QuickstepModelDelegate: notifyAppTargetEvent action=1 launchLocation=workspace/0/[-1,-1]/[1,1]
 10-04 15:43:57.641  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:43:57.641  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:43:57.641  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:43:57.641  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:43:57.641  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:43:57.641  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:57.641  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:57.642  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
@@ -3889,7 +3889,7 @@
 10-04 15:43:57.687   599   965 W ProcessStats: Tracking association SourceState{7629a0c com.google.android.apps.nexuslauncher/10179 BTop #3228} whose proc state 2 is better than process ProcessState{5089deb com.google.android.googlequicksearchbox:search/10144 pkg=com.google.android.googlequicksearchbox} proc state 14 (3 skipped)
 10-04 15:43:57.721   599   715 I ImeTracker: com.google.android.apps.nexuslauncher:dba3bfef: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
 10-04 15:43:57.726   599   715 I ImeTracker: com.google.android.apps.nexuslauncher:dba3bfef: onCancelled at PHASE_SERVER_SHOULD_HIDE
-10-04 15:43:57.751  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157 
+10-04 15:43:57.751  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157
 10-04 15:43:57.754  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 0, locked = false
 10-04 15:43:57.755  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=com.google.android.apps.nexuslauncher, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
 10-04 15:43:57.755  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 1, locked = false
@@ -3974,7 +3974,7 @@
 10-04 15:43:58.660 28994 28994 I app_process: Using CollectorTypeCMC GC.
 10-04 15:43:58.703 28994 28994 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
 10-04 15:43:58.708 28994 28994 D nativeloader: Load libicu_jni.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
-10-04 15:43:58.708 28994 28994 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded. 
+10-04 15:43:58.708 28994 28994 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded.
 10-04 15:43:58.708 28994 28994 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt75l.dat
 10-04 15:43:58.708 28994 28994 D nativeloader: Load libjavacore.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
 10-04 15:43:58.709 28994 28994 D nativeloader: Load libopenjdk.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
@@ -4013,20 +4013,20 @@
 10-04 15:43:58.752   599   615 D CoreBackPreview: Window{9ebdd67 u0 Splash Screen com.DefaultCompany.urp_2d}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@bea5080, mPriority=0, mIsAnimationCallback=false}
 10-04 15:43:58.753  1282  1301 I AiAiEcho: Settings changed for uri: content://settings/secure/device_state_rotation_lock
 10-04 15:43:58.755  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:43:58.755  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:43:58.755  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:43:58.755  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:43:58.755  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:43:58.755  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:58.755  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:58.755  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
 10-04 15:43:58.755  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:43:58.755  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:43:58.755  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:43:58.755  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:43:58.755  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:43:58.755  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:58.756  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:58.756  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
 10-04 15:43:58.756  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:43:58.756  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:43:58.756  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:43:58.756  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:43:58.756  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:43:58.756  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:58.756  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:58.757  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
@@ -4037,8 +4037,8 @@
 10-04 15:43:58.757  1282  1538 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
 10-04 15:43:58.757  1070  1070 D SsBaseTemplateCard: No text view can be set up
 10-04 15:43:58.758  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:43:58.758  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:43:58.758  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:43:58.758  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:43:58.758  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:43:58.758  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:58.758  1070  1070 D SsBaseTemplateCard: Passed-in item info is null
 10-04 15:43:58.758  1070  1070 D SsBaseTemplateCard: Passed-in item info is null
@@ -4049,17 +4049,17 @@
 10-04 15:43:58.759 28994 28994 I AndroidRuntime: VM exiting with result code 0.
 10-04 15:43:58.759  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
 10-04 15:43:58.759  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:43:58.759  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:43:58.759  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:43:58.759  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:43:58.759  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:43:58.759  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:58.759  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:58.760  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
 10-04 15:43:58.760  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:43:58.760  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:43:58.760  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:43:58.760  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:43:58.760  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:43:58.760  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:43:58.760  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
-10-04 15:43:58.761   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:43:58.761   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:43:58.761   398   398 D Zygote  : Forked child process 29016
 10-04 15:43:58.764  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
 10-04 15:43:58.766  1282  1538 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface media_data_manager with targets# 0 (types=[])
@@ -4146,7 +4146,7 @@
 10-04 15:43:59.219 29016 29016 D nativeloader: Load /data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/lib/arm64/libmain.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): ok
 10-04 15:43:59.352 29016 29016 I IL2CPP  : JNI_OnLoad
 10-04 15:43:59.352 29016 29016 V Unity   : Context Type: GameActivity
-10-04 15:43:59.357 29016 29016 D Unity   : CommandLine:  
+10-04 15:43:59.357 29016 29016 D Unity   : CommandLine:
 10-04 15:43:59.367 29016 29016 W WindowOnBackDispatcher: OnBackInvokedCallback is not enabled for the application.
 10-04 15:43:59.367 29016 29016 W WindowOnBackDispatcher: Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
 10-04 15:43:59.369 29016 29016 I GameActivity: Looking for library libgame.so
@@ -4158,11 +4158,11 @@
 10-04 15:43:59.429 29016 29097 I Unity   : Handle cmd APP_CMD_START(11)
 10-04 15:43:59.432 29016 29016 I Unity   : onResume
 10-04 15:43:59.436 29016 29097 I Unity   : Handle cmd APP_CMD_RESUME(12)
-10-04 15:43:59.440   599  2091 W WindowManager: Failed looking up window session=Session{20f390c 29016:u0a10209} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.updateRequestedVisibleTypes:755 android.view.IWindowSession$Stub.onTransact:1078 
+10-04 15:43:59.440   599  2091 W WindowManager: Failed looking up window session=Session{20f390c 29016:u0a10209} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.updateRequestedVisibleTypes:755 android.view.IWindowSession$Stub.onTransact:1078
 10-04 15:43:59.451 29016 29016 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:43:59.452 29016 29097 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
 10-04 15:43:59.453   599   670 D CoreBackPreview: Window{603b46a u0 com.DefaultCompany.urp_2d/com.unity3d.player.UnityPlayerGameActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@4fcd9f8, mPriority=0, mIsAnimationCallback=false}
-10-04 15:43:59.456   448   583 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:43:59.456   448   583 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:43:59.458 29016 29016 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:43:59.459 29016 29097 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
 10-04 15:43:59.461 29016 29097 I Unity   : Handle cmd APP_CMD_CONTENT_RECT_CHANGED(5)
@@ -4223,7 +4223,7 @@
 10-04 15:43:59.543   599   670 I AppWidgetServiceImpl: setAppWidgetHidden() 0
 10-04 15:43:59.545  1070  1070 D StatsLog: LAUNCHER_GOOGLE_SEARCH_RESTORE_LIST_SIZE_AFTER_ACTIVITY_RESTART
 10-04 15:43:59.547  1070  1513 D OneSearchSuggestProvider: Shut down the binder channel
-10-04 15:43:59.558  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157 
+10-04 15:43:59.558  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157
 10-04 15:43:59.559  1070  1084 I IPCThreadState: oneway function results for code 2 on binder at 0x787f24e17830 will be dropped but finished with status UNKNOWN_TRANSACTION
 10-04 15:43:59.561   599   621 V GameManagerService: Game power mode ON (only games in foreground)
 10-04 15:43:59.570  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 0, locked = false
@@ -4254,14 +4254,14 @@
 10-04 15:43:59.979  1045  2710 I FontLog : Pulling font file for id = 24, cache size = 5 [CONTEXT service_id=132 ]
 10-04 15:43:59.986  1045  2710 I FontLog : Pulling font file for id = 24, cache size = 5 [CONTEXT service_id=132 ]
 10-04 15:44:00.004  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:44:00.007  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:44:00.007  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:44:00.007  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:44:00.007  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:44:00.007  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:00.007  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:00.007  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
 10-04 15:44:00.007  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:44:00.007  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:44:00.007  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:44:00.007  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:44:00.007  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:44:00.007  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:00.007  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:00.007  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
@@ -4281,15 +4281,15 @@
 10-04 15:44:00.217 29016 29097 D Unity   : Found 2 interfaces on host :
 10-04 15:44:00.217 29016 29097 D Unity   :  0) 10.0.2.15
 10-04 15:44:00.218 29016 29097 D Unity   :  1) 10.0.2.16
-10-04 15:44:00.218 29016 29097 D Unity   : 
+10-04 15:44:00.218 29016 29097 D Unity   :
 10-04 15:44:00.226 29016 29097 D Unity   : Player connection [132476332640448]  Target information:
-10-04 15:44:00.226 29016 29097 D Unity   : 
-10-04 15:44:00.227 29016 29097 D Unity   : Player connection [132476332640448]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 246581777 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:44:00.227 29016 29097 D Unity   : 
-10-04 15:44:00.227 29016 29097 D Unity   : Player connection [132476332640448]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 246581777 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:44:00.227 29016 29097 D Unity   : 
+10-04 15:44:00.226 29016 29097 D Unity   :
+10-04 15:44:00.227 29016 29097 D Unity   : Player connection [132476332640448]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 246581777 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:44:00.227 29016 29097 D Unity   :
+10-04 15:44:00.227 29016 29097 D Unity   : Player connection [132476332640448]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 246581777 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:44:00.227 29016 29097 D Unity   :
 10-04 15:44:00.228 29016 29097 D Unity   : Player connection [132476332640448] Started UDP target info broadcast (1) on [225.0.0.222:54997].
-10-04 15:44:00.228 29016 29097 D Unity   : 
+10-04 15:44:00.228 29016 29097 D Unity   :
 10-04 15:44:00.279 29016 29097 D Unity   : Input System module state changed to: Initialized.
 10-04 15:44:00.295 29016 29016 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:44:00.304 29016 29097 D Unity   : [Physics::Module] Initialized fallback backend.
@@ -4358,7 +4358,7 @@
 10-04 15:44:00.477 29016 29097 D Unity   : OPENGL LOG: Creating OpenGL ES 3.0 graphics device ; Context level  <OpenGL ES 3.0> ; Context handle -187029696
 10-04 15:44:00.489 29016 29097 D Unity   : [EGL] Attaching window :0x787d54db0750
 10-04 15:44:00.494 29016 29097 D Unity   : Requested framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[on], samples[1]
-10-04 15:44:00.495 29016 29097 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0] 
+10-04 15:44:00.495 29016 29097 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0]
 10-04 15:44:00.509 29016 29097 D nativeloader: Load liblibswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): dlopen failed: library "liblibswappywrapper.so" not found
 10-04 15:44:00.511 29016 29097 D nativeloader: Load /data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/lib/arm64/libswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): ok
 10-04 15:44:00.512 29016 29097 I SwappyWrapper: SwappyWrapperInit() succeeded. Build: Sun Oct  4 05:35:58 2026
@@ -4376,9 +4376,9 @@
 10-04 15:44:00.770 29016 29097 D Unity   : [Physics::Module] Integration Version: 1.0.0
 10-04 15:44:00.770 29016 29097 D Unity   : [Physics::Module] Threading Mode: Multi-Threaded
 10-04 15:44:01.061 29016 29097 I IL2CPP  : Locale en-US
-10-04 15:44:01.098 29016 29097 D Unity   : ERROR: Shader 
+10-04 15:44:01.098 29016 29097 D Unity   : ERROR: Shader
 10-04 15:44:01.098 29016 29097 D Unity   : Hidden/CoreSRP/CoreCopy shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
-10-04 15:44:01.203 29016 29097 D Unity   : ERROR: Shader 
+10-04 15:44:01.203 29016 29097 D Unity   : ERROR: Shader
 10-04 15:44:01.203 29016 29097 D Unity   : Hidden/Universal/HDRDebugView shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
 10-04 15:44:01.285 29016 29097 D Unity   : PlayerInitEngineGraphics OK
 10-04 15:44:01.308 29016 29097 I Unity   : SetGameState: isLoading: false, mode: UNKNOWN, label: -1, quality: 2
@@ -4462,7 +4462,7 @@
 10-04 15:44:10.506  1070  1070 D StatsLog: LAUNCHER_ONRESUME
 10-04 15:44:10.507   835   885 D WindowManagerShell: setLauncherKeepClearAreaHeight: visible=true, height=459
 10-04 15:44:10.508  1070  1138 D QuickstepModelDelegate: notifyAppTargetEvent action=1 launchLocation=workspace/0/[-1,-1]/[1,1]
-10-04 15:44:10.511   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:44:10.511   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:44:10.511  1070  1070 D NexusLauncherModelDelegate: notifySmartspaceEvent: SmartspaceTargetEvent{mSmartspaceTarget=null, mSmartspaceActionId='null', mEventType=6}
 10-04 15:44:10.514   599   775 I AppWidgetServiceImpl: Received broadcast: android.intent.action.PACKAGE_RESTARTED on user 0
 10-04 15:44:10.514   599   775 I AppWidgetServiceImpl: Updating package stopped masked state for uid 10209 package com.DefaultCompany.urp_2d isStopped true
@@ -4518,8 +4518,8 @@
 10-04 15:44:10.568   835   885 V WindowManagerShell:  Delegate animation for (#41) to RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@3fe392b, appThread = android.app.IApplicationThread$Stub$Proxy@aeba188, debugName = QuickstepLaunchHome }
 10-04 15:44:10.572   991   991 D CarrierSvcBindHelper: No carrier app for: 0
 10-04 15:44:10.572  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:44:10.573  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:44:10.573  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:44:10.573  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:44:10.573  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:44:10.573  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:10.573  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:10.573  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
@@ -4538,7 +4538,7 @@
 10-04 15:44:10.585   599   715 W IPCThreadState: Sending oneway calls to frozen process.
 10-04 15:44:10.585   599   715 W IPCThreadState: Sending oneway calls to frozen process.
 10-04 15:44:10.589   599   623 W ProcessStats: Tracking association SourceState{33789fc com.google.android.googlequicksearchbox:search/10144 BTop #3259} whose proc state 2 is better than process ProcessState{eb720ba com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/10144 pkg=com.google.android.googlequicksearchbox} proc state 14 (18 skipped)
-10-04 15:44:10.593  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157 
+10-04 15:44:10.593  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157
 10-04 15:44:10.597  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 0, locked = false
 10-04 15:44:10.597  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=com.google.android.apps.nexuslauncher, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
 10-04 15:44:10.598  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 1, locked = false
@@ -4556,15 +4556,15 @@
 10-04 15:44:10.634  1472  1472 I A       : (REDACTED) Created gRPC endpoint for service %s
 10-04 15:44:10.641   599   599 W Looper  : Slow dispatch took 104ms main h=android.app.ActivityThread$H c=android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0@4194493 m=0
 10-04 15:44:10.642  1070  1078 W s.nexuslauncher: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk' with 1 weak references
-10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release. 
-10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release. 
-10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release. 
-10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release. 
-10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release. 
-10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release. 
-10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release. 
-10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release. 
-10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release. 
+10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release.
+10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release.
+10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release.
+10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release.
+10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release.
+10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release.
+10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release.
+10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release.
+10-04 15:44:10.642  1070  1078 W System  : A resource failed to call release.
 10-04 15:44:10.644  1070  1070 D SsBaseTemplateCard: No text view can be set up
 10-04 15:44:10.644  1070  1070 D SsBaseTemplateCard: Passed-in item info is null
 10-04 15:44:10.644  1070  1070 D SsBaseTemplateCard: Passed-in item info is null
@@ -4582,7 +4582,7 @@
 10-04 15:44:10.686   599   634 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10209/pid_29016
 10-04 15:44:10.702 29906 29906 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
 10-04 15:44:10.713 29906 29906 D nativeloader: Load libicu_jni.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
-10-04 15:44:10.713 29906 29906 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded. 
+10-04 15:44:10.713 29906 29906 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded.
 10-04 15:44:10.713 29906 29906 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt75l.dat
 10-04 15:44:10.713 29906 29906 D nativeloader: Load libjavacore.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
 10-04 15:44:10.714 29906 29906 D nativeloader: Load libopenjdk.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
@@ -4744,7 +4744,7 @@
 10-04 15:44:11.446  1070  1070 D NexusLauncherModelDelegate: notifySmartspaceEvent: SmartspaceTargetEvent{mSmartspaceTarget=null, mSmartspaceActionId='null', mEventType=7}
 10-04 15:44:11.457 29937 29937 I IL2CPP  : JNI_OnLoad
 10-04 15:44:11.457 29937 29937 V Unity   : Context Type: GameActivity
-10-04 15:44:11.459 29937 29937 D Unity   : CommandLine:  
+10-04 15:44:11.459 29937 29937 D Unity   : CommandLine:
 10-04 15:44:11.470 29937 29937 W WindowOnBackDispatcher: OnBackInvokedCallback is not enabled for the application.
 10-04 15:44:11.470 29937 29937 W WindowOnBackDispatcher: Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
 10-04 15:44:11.472 29937 29937 I GameActivity: Looking for library libgame.so
@@ -4756,10 +4756,10 @@
 10-04 15:44:11.543 29937 29937 I Unity   : onResume
 10-04 15:44:11.546 29937 30015 I Unity   : Handle cmd APP_CMD_START(11)
 10-04 15:44:11.553 29937 30015 I Unity   : Handle cmd APP_CMD_RESUME(12)
-10-04 15:44:11.558   599   615 W WindowManager: Failed looking up window session=Session{a4e0cdb 29937:u0a10209} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.updateRequestedVisibleTypes:755 android.view.IWindowSession$Stub.onTransact:1078 
+10-04 15:44:11.558   599   615 W WindowManager: Failed looking up window session=Session{a4e0cdb 29937:u0a10209} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.updateRequestedVisibleTypes:755 android.view.IWindowSession$Stub.onTransact:1078
 10-04 15:44:11.583 29937 29937 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:44:11.584   599   611 I system_server: NativeAlloc concurrent mark compact GC freed 20MB AllocSpace bytes, 62(1612KB) LOS objects, 47% free, 26MB/50MB, paused 13.763ms,1.396ms total 133.461ms
-10-04 15:44:11.584   599   612 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:44:11.584   599   612 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:44:11.586 29937 30015 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
 10-04 15:44:11.586   599   613 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /product/app/talkback/talkback.apk' with 1 weak references
 10-04 15:44:11.586   599   613 W system_server: ApkAssets: Deleting an ApkAssets object '/vendor/overlay/EmulatorTalkBackOverlay/EmulatorTalkBackOverlay.apk' with 1 weak references
@@ -4769,7 +4769,7 @@
 10-04 15:44:11.590   599   613 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /product/app/LatinIMEGooglePrebuilt/LatinIMEGooglePrebuilt.apk' with 1 weak references
 10-04 15:44:11.591   599   613 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk' with 1 weak references
 10-04 15:44:11.592 29937 29937 V GameActivity: onImeInsetsChanged from Text Listener
-10-04 15:44:11.592   448   520 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:44:11.592   448   520 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:44:11.593   599   613 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /product/app/PrebuiltGmail/PrebuiltGmail.apk' with 1 weak references
 10-04 15:44:11.593 29937 30015 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
 10-04 15:44:11.595   599   613 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /product/app/Drive/Drive.apk' with 1 weak references
@@ -4834,7 +4834,7 @@
 10-04 15:44:11.706  1070  1513 D OneSearchSuggestProvider: Shut down the binder channel
 10-04 15:44:11.706  1070  1070 D StatsLog: LAUNCHER_GOOGLE_SEARCH_RESTORE_LIST_SIZE_AFTER_ACTIVITY_RESTART
 10-04 15:44:11.707  1070  1083 I IPCThreadState: oneway function results for code 2 on binder at 0x787f24df9e30 will be dropped but finished with status UNKNOWN_TRANSACTION
-10-04 15:44:11.708  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157 
+10-04 15:44:11.708  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157
 10-04 15:44:11.711  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 0, locked = false
 10-04 15:44:11.711  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=com.DefaultCompany.urp_2d, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
 10-04 15:44:11.711  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 1, locked = false
@@ -4870,15 +4870,15 @@
 10-04 15:44:12.329 29937 30015 D Unity   : Found 2 interfaces on host :
 10-04 15:44:12.329 29937 30015 D Unity   :  0) 10.0.2.15
 10-04 15:44:12.330 29937 30015 D Unity   :  1) 10.0.2.16
-10-04 15:44:12.330 29937 30015 D Unity   : 
+10-04 15:44:12.330 29937 30015 D Unity   :
 10-04 15:44:12.331 29937 30015 D Unity   : Player connection [132476518529216]  Target information:
-10-04 15:44:12.331 29937 30015 D Unity   : 
-10-04 15:44:12.331 29937 30015 D Unity   : Player connection [132476518529216]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 2247749588 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:44:12.331 29937 30015 D Unity   : 
-10-04 15:44:12.331 29937 30015 D Unity   : Player connection [132476518529216]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 2247749588 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:44:12.331 29937 30015 D Unity   : 
+10-04 15:44:12.331 29937 30015 D Unity   :
+10-04 15:44:12.331 29937 30015 D Unity   : Player connection [132476518529216]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 2247749588 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:44:12.331 29937 30015 D Unity   :
+10-04 15:44:12.331 29937 30015 D Unity   : Player connection [132476518529216]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 2247749588 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:44:12.331 29937 30015 D Unity   :
 10-04 15:44:12.331 29937 30015 D Unity   : Player connection [132476518529216] Started UDP target info broadcast (1) on [225.0.0.222:54997].
-10-04 15:44:12.331 29937 30015 D Unity   : 
+10-04 15:44:12.331 29937 30015 D Unity   :
 10-04 15:44:12.361 29937 30015 D Unity   : Input System module state changed to: Initialized.
 10-04 15:44:12.376 29937 30015 D Unity   : [Physics::Module] Initialized fallback backend.
 10-04 15:44:12.377 29937 30015 D Unity   : [Physics::Module] Id: 0xdecafbad
@@ -4947,7 +4947,7 @@
 10-04 15:44:12.551 29937 30015 D Unity   : OPENGL LOG: Creating OpenGL ES 3.0 graphics device ; Context level  <OpenGL ES 3.0> ; Context handle -187023360
 10-04 15:44:12.563 29937 30015 D Unity   : [EGL] Attaching window :0x787d54db0750
 10-04 15:44:12.568 29937 30015 D Unity   : Requested framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[on], samples[1]
-10-04 15:44:12.570 29937 30015 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0] 
+10-04 15:44:12.570 29937 30015 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0]
 10-04 15:44:12.582 29937 30015 D nativeloader: Load liblibswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): dlopen failed: library "liblibswappywrapper.so" not found
 10-04 15:44:12.584 29937 30015 D nativeloader: Load /data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/lib/arm64/libswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): ok
 10-04 15:44:12.585 29937 30015 I SwappyWrapper: SwappyWrapperInit() succeeded. Build: Sun Oct  4 05:35:58 2026
@@ -4965,9 +4965,9 @@
 10-04 15:44:12.861 29937 30015 D Unity   : [Physics::Module] Integration Version: 1.0.0
 10-04 15:44:12.861 29937 30015 D Unity   : [Physics::Module] Threading Mode: Multi-Threaded
 10-04 15:44:13.185 29937 30015 I IL2CPP  : Locale en-US
-10-04 15:44:13.221 29937 30015 D Unity   : ERROR: Shader 
+10-04 15:44:13.221 29937 30015 D Unity   : ERROR: Shader
 10-04 15:44:13.221 29937 30015 D Unity   : Hidden/CoreSRP/CoreCopy shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
-10-04 15:44:13.326 29937 30015 D Unity   : ERROR: Shader 
+10-04 15:44:13.326 29937 30015 D Unity   : ERROR: Shader
 10-04 15:44:13.326 29937 30015 D Unity   : Hidden/Universal/HDRDebugView shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
 10-04 15:44:13.418 29937 30015 D Unity   : PlayerInitEngineGraphics OK
 10-04 15:44:13.443 29937 30015 I Unity   : SetGameState: isLoading: false, mode: UNKNOWN, label: -1, quality: 2
@@ -5081,15 +5081,15 @@
 10-04 15:44:20.352 25224 25229 I hw-BpHwBinder: onLastStrongRef automatically unlinking death recipients
 10-04 15:44:20.352   521   832 I hw-BpHwBinder: onLastStrongRef automatically unlinking death recipients
 10-04 15:44:20.352   521   832 I hw-BpHwBinder: onLastStrongRef automatically unlinking death recipients
-10-04 15:44:20.364 25224 25237 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:44:20.364 25224 25237 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:44:20.372   599  2136 I ActivityManager: Broadcasting: Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }
 10-04 15:44:20.372   599  2136 I ActivityManager: Enqueued broadcast Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }: 0
 10-04 15:44:20.373   599   616 W JobInfo : Job 'com.google.android.providers.media.module/com.android.providers.media.MediaService#-300' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
 10-04 15:44:20.377   599   620 I ActivityManager: Broadcast completed: result=0
 10-04 15:44:20.380  1312  1642 I MediaProvider: Begin Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x1400010 cmp=com.google.android.providers.media.module/com.android.providers.media.MediaService }
 10-04 15:44:20.382 25224 25224 D ScreenRecord: success
-10-04 15:44:20.388 25224 25224 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
-10-04 15:44:20.389 25224 25224 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:44:20.388 25224 25224 I BpBinder: onLastStrongRef automatically unlinking death recipients:
+10-04 15:44:20.389 25224 25224 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:44:20.390   521   832 D BufferPoolAccessor2.0: Destruction - bufferpool2 0x79acc0fa9188 cached: 0/0M, 0/0% in use; allocs: 1621, 100% recycled; transfers: 1621, 99% unfetched
 10-04 15:44:20.484  1312  1642 I MediaProvider: End Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x1400010 cmp=com.google.android.providers.media.module/com.android.providers.media.MediaService }
 10-04 15:44:20.498  1312  1502 D WM-SystemJobScheduler: Scheduling work ID 06035ea3-b05b-4962-a7dd-74fbce50aca3Job ID 10
@@ -5107,7 +5107,7 @@
 10-04 15:44:20.522   599   750 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
 10-04 15:44:20.522   599   750 D InetDiagMessage: Destroyed live tcp sockets for uids={20209} in 1ms
 10-04 15:44:20.523   835   885 V WindowManagerShell: Transition requested (#43): android.os.BinderProxy@7362d19 TransitionRequestInfo { type = CLOSE, triggerTask = TaskInfo{userId=0 taskId=25 displayId=0 isRunning=false baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.DefaultCompany.urp_2d/com.unity3d.player.UnityPlayerGameActivity } baseActivity=null topActivity=null origActivity=null realActivity=ComponentInfo{com.DefaultCompany.urp_2d/com.unity3d.player.UnityPlayerGameActivity} numActivities=0 lastActiveTime=1631344 supportsMultiWindow=true resizeMode=2 isResizeable=true minWidth=400 minHeight=300 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@e2501de} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=null launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=true isVisible=true isVisibleRequested=true isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= falseisLetterboxEducationEnabled= false isLetterboxDoubleTapEnabled= false topActivityEligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false cameraCompatTaskInfo=CameraCompatTaskInfo { cameraCompatControlState=hidden freeformCameraCompatMode=inactive}}}, pipTask = null, remoteTransition = null, displayChange = null, flags = 0, debugId = 43 }
-10-04 15:44:20.527   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:44:20.527   448   448 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:44:20.528   599   615 I AppWidgetServiceImpl: startListening() 0
 10-04 15:44:20.529   448   566 W IPCThreadState: Sending oneway calls to frozen process.
 10-04 15:44:20.531  1070  1070 D VRI[NexusLauncherActivity]: visibilityChanged oldVisibility=false newVisibility=true
@@ -5153,8 +5153,8 @@
 10-04 15:44:20.568   599   986 W InputManager-JNI: Input channel object 'a311a51 com.DefaultCompany.urp_2d/com.unity3d.player.UnityPlayerGameActivity (client)' was disposed without first being removed with the input manager!
 10-04 15:44:20.569   599  1434 I ImeTracker: com.DefaultCompany.urp_2d:89f70c80: onRequestHide at ORIGIN_SERVER reason HIDE_REMOVE_CLIENT fromUser false
 10-04 15:44:20.569  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:44:20.569  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:44:20.569  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:44:20.569  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:44:20.569  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:44:20.569  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:20.569  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:20.569  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
@@ -5209,7 +5209,7 @@
 10-04 15:44:20.615   599   715 I ImeTracker: com.google.android.apps.nexuslauncher:378c5dd0: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
 10-04 15:44:20.615   599   715 I ImeTracker: com.google.android.apps.nexuslauncher:378c5dd0: onCancelled at PHASE_SERVER_SHOULD_HIDE
 10-04 15:44:20.615  1338 30662 I GmscoreIpa: Starting mediastore instant index [CONTEXT service_id=255 ]
-10-04 15:44:20.616  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157 
+10-04 15:44:20.616  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157
 10-04 15:44:20.622  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 0, locked = false
 10-04 15:44:20.622  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=com.google.android.apps.nexuslauncher, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
 10-04 15:44:20.626  1045 25064 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.ipa.base.IpaGcmTaskService finished executing. cause:9 result: 1 elapsed_millis: 103 uptime_millis: 103 exec_start_elapsed_seconds: 1640 [CONTEXT service_id=218 ]
@@ -5241,7 +5241,7 @@
 10-04 15:44:20.693 30664 30664 I app_process: Using CollectorTypeCMC GC.
 10-04 15:44:20.749 30664 30664 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
 10-04 15:44:20.756 30664 30664 D nativeloader: Load libicu_jni.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
-10-04 15:44:20.756 30664 30664 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded. 
+10-04 15:44:20.756 30664 30664 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded.
 10-04 15:44:20.756 30664 30664 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt75l.dat
 10-04 15:44:20.757 30664 30664 D nativeloader: Load libjavacore.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
 10-04 15:44:20.757 30664 30664 D nativeloader: Load libopenjdk.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
@@ -5279,22 +5279,22 @@
 10-04 15:44:20.816  1070  1070 D StatsLog: LAUNCHER_SPLIT_SELECTION_EXIT_INTERRUPTED
 10-04 15:44:20.816   835   885 D WindowManagerShell: setLauncherKeepClearAreaHeight: visible=false, height=459
 10-04 15:44:20.818  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:44:20.818  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:44:20.818  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:44:20.818  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:44:20.818  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:44:20.818  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:20.818   599  2136 I AppsFilter: interaction: PackageSetting{5cad2cc com.android.microdroid.empty_payload/10185} -> PackageSetting{534547d com.DefaultCompany.urp_2d/10209} BLOCKED
 10-04 15:44:20.818  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:20.819  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
 10-04 15:44:20.819   398   398 D Zygote  : Forked child process 30676
 10-04 15:44:20.819  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:44:20.819  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:44:20.819  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:44:20.819  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:44:20.819  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:44:20.819  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:20.819  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:20.819  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
 10-04 15:44:20.820  1282  1538 I AiAiEcho: Predicting[0]:  [CONTEXT sampling_count=5 ]
-10-04 15:44:20.820  1282  1538 I AiAiEcho: EchoTargets: 
-10-04 15:44:20.820  1282  1538 I AiAiEcho: Filtered by AiAi flag check: 
+10-04 15:44:20.820  1282  1538 I AiAiEcho: EchoTargets:
+10-04 15:44:20.820  1282  1538 I AiAiEcho: Filtered by AiAi flag check:
 10-04 15:44:20.820  1282  1538 I AiAiEcho: [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:20.820  1282  1538 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
 10-04 15:44:20.821  1282  1538 I AiAiEcho: #remoteViewsTwiddler: feature disabled.
@@ -5417,7 +5417,7 @@
 10-04 15:44:21.214 30676 30676 D nativeloader: Load /data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/lib/arm64/libmain.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): ok
 10-04 15:44:21.539 30676 30676 I IL2CPP  : JNI_OnLoad
 10-04 15:44:21.539 30676 30676 V Unity   : Context Type: GameActivity
-10-04 15:44:21.544 30676 30676 D Unity   : CommandLine:  
+10-04 15:44:21.544 30676 30676 D Unity   : CommandLine:
 10-04 15:44:21.553 30676 30676 W WindowOnBackDispatcher: OnBackInvokedCallback is not enabled for the application.
 10-04 15:44:21.553 30676 30676 W WindowOnBackDispatcher: Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
 10-04 15:44:21.554 30676 30676 I GameActivity: Looking for library libgame.so
@@ -5429,11 +5429,11 @@
 10-04 15:44:21.608 30676 30676 I Unity   : onResume
 10-04 15:44:21.608 30676 30693 I Unity   : Handle cmd APP_CMD_START(11)
 10-04 15:44:21.610 30676 30693 I Unity   : Handle cmd APP_CMD_RESUME(12)
-10-04 15:44:21.614   599  2136 W WindowManager: Failed looking up window session=Session{2cc4af6 30676:u0a10209} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.updateRequestedVisibleTypes:755 android.view.IWindowSession$Stub.onTransact:1078 
+10-04 15:44:21.614   599  2136 W WindowManager: Failed looking up window session=Session{2cc4af6 30676:u0a10209} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.updateRequestedVisibleTypes:755 android.view.IWindowSession$Stub.onTransact:1078
 10-04 15:44:21.635 30676 30676 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:44:21.636 30676 30693 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
 10-04 15:44:21.636   599  2136 D CoreBackPreview: Window{a6ad164 u0 com.DefaultCompany.urp_2d/com.unity3d.player.UnityPlayerGameActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@4ea2082, mPriority=0, mIsAnimationCallback=false}
-10-04 15:44:21.639   448   519 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-04 15:44:21.639   448   519 I BpBinder: onLastStrongRef automatically unlinking death recipients:
 10-04 15:44:21.640 30676 30676 V GameActivity: onImeInsetsChanged from Text Listener
 10-04 15:44:21.640 30676 30693 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
 10-04 15:44:21.641 30676 30693 I Unity   : Handle cmd APP_CMD_CONTENT_RECT_CHANGED(5)
@@ -5482,7 +5482,7 @@
 10-04 15:44:21.712 30676 30676 I Unity   : resumeUnity
 10-04 15:44:21.715   599   715 I ImeTracker: com.DefaultCompany.urp_2d:a120f3bc: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
 10-04 15:44:21.715   599   715 I ImeTracker: com.DefaultCompany.urp_2d:a120f3bc: onCancelled at PHASE_SERVER_SHOULD_HIDE
-10-04 15:44:21.718  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157 
+10-04 15:44:21.718  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3157
 10-04 15:44:21.719  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 0, locked = false
 10-04 15:44:21.719  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=com.DefaultCompany.urp_2d, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
 10-04 15:44:21.720  1243  1243 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 1, locked = false
@@ -5597,15 +5597,15 @@
 10-04 15:44:22.361 30676 30693 D Unity   : Found 2 interfaces on host :
 10-04 15:44:22.361 30676 30693 D Unity   :  0) 10.0.2.15
 10-04 15:44:22.361 30676 30693 D Unity   :  1) 10.0.2.16
-10-04 15:44:22.361 30676 30693 D Unity   : 
+10-04 15:44:22.361 30676 30693 D Unity   :
 10-04 15:44:22.366 30676 30693 D Unity   : Player connection [132476489681088]  Target information:
-10-04 15:44:22.366 30676 30693 D Unity   : 
-10-04 15:44:22.366 30676 30693 D Unity   : Player connection [132476489681088]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 2900349098 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:44:22.366 30676 30693 D Unity   : 
-10-04 15:44:22.367 30676 30693 D Unity   : Player connection [132476489681088]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 2900349098 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:44:22.367 30676 30693 D Unity   : 
+10-04 15:44:22.366 30676 30693 D Unity   :
+10-04 15:44:22.366 30676 30693 D Unity   : Player connection [132476489681088]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 2900349098 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:44:22.366 30676 30693 D Unity   :
+10-04 15:44:22.367 30676 30693 D Unity   : Player connection [132476489681088]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 2900349098 [EditorId] 671763511 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:44:22.367 30676 30693 D Unity   :
 10-04 15:44:22.369 30676 30693 D Unity   : Player connection [132476489681088] Started UDP target info broadcast (1) on [225.0.0.222:54997].
-10-04 15:44:22.369 30676 30693 D Unity   : 
+10-04 15:44:22.369 30676 30693 D Unity   :
 10-04 15:44:22.388 30676 30693 D Unity   : Input System module state changed to: Initialized.
 10-04 15:44:22.402 30676 30693 D Unity   : [Physics::Module] Initialized fallback backend.
 10-04 15:44:22.402 30676 30693 D Unity   : [Physics::Module] Id: 0xdecafbad
@@ -5674,7 +5674,7 @@
 10-04 15:44:22.486 30676 30693 D Unity   : OPENGL LOG: Creating OpenGL ES 3.0 graphics device ; Context level  <OpenGL ES 3.0> ; Context handle -186904272
 10-04 15:44:22.493 30676 30693 D Unity   : [EGL] Attaching window :0x787d54db0750
 10-04 15:44:22.494 30676 30693 D Unity   : Requested framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[on], samples[1]
-10-04 15:44:22.496 30676 30693 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0] 
+10-04 15:44:22.496 30676 30693 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0]
 10-04 15:44:22.517 30676 30693 D nativeloader: Load liblibswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): dlopen failed: library "liblibswappywrapper.so" not found
 10-04 15:44:22.520 30676 30693 D nativeloader: Load /data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/lib/arm64/libswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~t0kh4eQKopL1a9zMRDxp_g==/com.DefaultCompany.urp_2d-wcusphyrkm3Sr_ZKS1zTYg==/base.apk): ok
 10-04 15:44:22.521 30676 30693 I SwappyWrapper: SwappyWrapperInit() succeeded. Build: Sun Oct  4 05:35:58 2026
@@ -5698,9 +5698,9 @@
 10-04 15:44:22.677 30676 30693 D Unity   : [Physics::Module] Integration Version: 1.0.0
 10-04 15:44:22.677 30676 30693 D Unity   : [Physics::Module] Threading Mode: Multi-Threaded
 10-04 15:44:22.899 30676 30693 I IL2CPP  : Locale en-US
-10-04 15:44:22.938 30676 30693 D Unity   : ERROR: Shader 
+10-04 15:44:22.938 30676 30693 D Unity   : ERROR: Shader
 10-04 15:44:22.938 30676 30693 D Unity   : Hidden/CoreSRP/CoreCopy shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
-10-04 15:44:23.042 30676 30693 D Unity   : ERROR: Shader 
+10-04 15:44:23.042 30676 30693 D Unity   : ERROR: Shader
 10-04 15:44:23.042 30676 30693 D Unity   : Hidden/Universal/HDRDebugView shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
 10-04 15:44:23.136 30676 30693 D Unity   : PlayerInitEngineGraphics OK
 10-04 15:44:23.161 30676 30693 I Unity   : SetGameState: isLoading: false, mode: UNKNOWN, label: -1, quality: 2

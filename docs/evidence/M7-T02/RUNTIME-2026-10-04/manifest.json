@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "createdUtc": "2026-10-04T08:55:34.338014+00:00",
+  "createdUtc": "2026-10-04T08:57:36.450626+00:00",
   "repository": "https://github.com/vitoo16/Startup",
   "branch": "feat/m7-t02-lifecycle-device-gate",
   "startingHead": "79b3f0bc35ff9c32e45b51fe04715d253bd3abd5",
@@ -33,6 +33,12 @@
       "path": ".gitattributes",
       "bytes": 95,
       "sha256": "c4cff81930e34e74fb4cb602e9a33b1245acbd6cc92ca9b676cd3af5f2dce741",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 96,
+      "sha256": "f710799c2e45c4045deddb099e703925de555d34428d046d5df9d48615d098d3",
       "role": "final verification/tooling/diagnostic"
     },
     {
@@ -97,26 +103,26 @@
     },
     {
       "path": "android/api35-crash.log",
-      "bytes": 2,
-      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "role": "retained baseline/diagnostic"
     },
     {
       "path": "android/api35-launch-resumed.log",
-      "bytes": 17364,
-      "sha256": "0c8a654726131a6df739a15e540db1f1f44ade195509de80f5c28197c466c503",
+      "bytes": 17189,
+      "sha256": "7942dd7792fc6a328c56bb494e49bdc5664559f6f63a47fa501a8b4c8ca93dce",
       "role": "retained baseline/diagnostic"
     },
     {
       "path": "android/api35-launch.log",
-      "bytes": 2,
-      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "role": "retained baseline/diagnostic"
     },
     {
       "path": "android/api35-properties.log",
-      "bytes": 33820,
-      "sha256": "4c79e455c1db2c393e4eb8608fc3445b8c088d900e3340bc3032247e9152202f",
+      "bytes": 33152,
+      "sha256": "dfa9e2f80ee8d17beb93817fc9e180fdf0bfdf7a0e57c0ff3755f2d16d1a3f49",
       "role": "retained baseline/diagnostic"
     },
     {
@@ -265,32 +271,32 @@
     },
     {
       "path": "android/files-after-recovery.log",
-      "bytes": 564,
-      "sha256": "180c89c3cc0fa86d6dde6b4bcc713da947c7774d50876fa9381e4c125148b0f1",
+      "bytes": 547,
+      "sha256": "426d975297041ad6b7525b80cb8824360e1b183e1596660a29ab6b5b6446ce13",
       "role": "retained baseline/diagnostic"
     },
     {
       "path": "android/files-before-recovery.log",
-      "bytes": 446,
-      "sha256": "827031b9f6744bca877c2aa239f4fead26fec86a700471c370ca64f6db7f1d0f",
+      "bytes": 431,
+      "sha256": "c4cf1868aca7b087fe3ab22e46bf08ef94b1575b55565d02b7a19918539dd15b",
       "role": "retained baseline/diagnostic"
     },
     {
       "path": "android/files-fault-fixtures.log",
-      "bytes": 557,
-      "sha256": "996c6541368d9d5425fb7b057d4bd7ebb154a82ad8c483c2ab502c029b43d43d",
+      "bytes": 540,
+      "sha256": "1c7c81a89b1785d73186b5abd0f2fc42d89955984bc318dfb89953b7e8fbf26e",
       "role": "retained baseline/diagnostic"
     },
     {
       "path": "android/launch-crash.log",
-      "bytes": 3451,
-      "sha256": "3b9e5d1f90ac70753bb1cee2d4ce5d98b58ed8de7269aa334ca6e492e3834a76",
+      "bytes": 3417,
+      "sha256": "af39f097e3ba8b233139cfdc9538e020279ae00d6ee3cbb1f33815a91cfd2c0a",
       "role": "retained baseline/diagnostic"
     },
     {
       "path": "android/launch.log",
-      "bytes": 4622,
-      "sha256": "a3ae73584a8074673db953eec164f08e29638997aaad9e9b9724b0b69d258c45",
+      "bytes": 4568,
+      "sha256": "030f6a7bf2c9ecb4d595700761962f7d4883d06a2d0243b96db0c355f0c1bb2f",
       "role": "retained baseline/diagnostic"
     },
     {
@@ -307,8 +313,8 @@
     },
     {
       "path": "android/lifecycle-runtime.log",
-      "bytes": 140771,
-      "sha256": "bea2dcf22474c199e2abb20786236fe731feac3356faf331651e66f77f47b7b1",
+      "bytes": 139358,
+      "sha256": "4c465685390780f3fcd6c2569703d99148770ecc5f07e733dbb70413204bfa9d",
       "role": "retained baseline/diagnostic"
     },
     {
@@ -385,8 +391,8 @@
     },
     {
       "path": "android-final/attempt-launcher-too-early/journey.log",
-      "bytes": 1715,
-      "sha256": "102d0a08ec1ab75507bcd705c1bcc05312224a89dc3caca4ae2908bcd87b1258",
+      "bytes": 1676,
+      "sha256": "78c64375a1bfab0ab314b37017e40f75a0c23d762307805e8d2b03d521247ea5",
       "role": "final verification/tooling/diagnostic"
     },
     {
@@ -463,8 +469,8 @@
     },
     {
       "path": "android-final/attempt-splash-too-early/journey.log",
-      "bytes": 2463,
-      "sha256": "ccece0be1181fd7aa95d10938fac64286ab89148d03c6c9939e784957bc09d65",
+      "bytes": 2417,
+      "sha256": "dcdb10772c806729c8ef25065dd6a9aca6a39aefb70ae6caa4d4cb2e805e39bf",
       "role": "final verification/tooling/diagnostic"
     },
     {
@@ -637,8 +643,8 @@
     },
     {
       "path": "android-final/files-after-recovery.log",
-      "bytes": 546,
-      "sha256": "cb071c1626ff063dcbbca4d50dee219905865a503f65c958e8de8c2c3dab75fd",
+      "bytes": 538,
+      "sha256": "5347abd4b598231473fd26487eef7248afee619381d6e8250713d4d427f42289",
       "role": "final verification/tooling/diagnostic"
     },
     {
@@ -649,8 +655,8 @@
     },
     {
       "path": "android-final/journey.log",
-      "bytes": 6364,
-      "sha256": "2f1e88be3e713671430da20f05d41341f24382b7e9330571f2d0d51fe47fdbf7",
+      "bytes": 6249,
+      "sha256": "d1437c02c1d891f3d833a53a3dc9d2a41e8acb4f85126ae970fe5fedf6e72646",
       "role": "final verification/tooling/diagnostic"
     },
     {
@@ -667,8 +673,8 @@
     },
     {
       "path": "android-final/logcat.txt",
-      "bytes": 1523109,
-      "sha256": "1e2057d498bc62af72b176d13290943b306fbb80b4052cd641ef20f4bf622e64",
+      "bytes": 1514491,
+      "sha256": "a042c58461de507d4a4f43306514542d7acfc4b1b62e00a86a986ca39181cc24",
       "role": "final verification/tooling/diagnostic"
     },
     {
@@ -685,26 +691,26 @@
     },
     {
       "path": "android-final/resume.log",
-      "bytes": 1872,
-      "sha256": "ca55ae3ebdb3cc640415cd80aa4f02847af45ace72c2a1ebed028aa150093cc9",
+      "bytes": 1809,
+      "sha256": "628ec24f20a09472228a51e775c56517709bca9d34bf1bbdcac34d6197e15a1a",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "android-final/startup-logcat.txt",
-      "bytes": 1064050,
-      "sha256": "d92199a93bf379c5932631d2e55614c1a3c82941733c4d5dad6fcd3b78a5220b",
+      "bytes": 1058038,
+      "sha256": "7c0a1e19e11d909a78c8b763593489598724bbdd13faff935bf3799305df9236",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "android-final/video-decode-vfr-muxer.log",
-      "bytes": 2,
-      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "android-final/video-decode.log",
-      "bytes": 2,
-      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "role": "final verification/tooling/diagnostic"
     },
     {
@@ -757,98 +763,98 @@
     },
     {
       "path": "logs/android-build.log",
-      "bytes": 1684201,
-      "sha256": "b576119e596f551d486ef9f7484841d6cc37bd6652e2defb12a6fdaca09ce86f",
+      "bytes": 1666546,
+      "sha256": "8fb099e621ed197d1d7ab7161f7b9409fd53d0b27436e01ea2810a0bb741e314",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/android-final-build.log",
-      "bytes": 523751,
-      "sha256": "5cadc3019dda7954eadf0e6d40fb6b79bf8cb03d04d45b1c30a9cda9d3034888",
+      "bytes": 516373,
+      "sha256": "17a8ffb9389031cb4cc3a9663eee2ef9416860ff8f67fee85015a36d03531a3b",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/android-x86_64-build.log",
-      "bytes": 81181,
-      "sha256": "f3c1a7412242e197198027f28fff3171b8a2366f53b2968bb69cc30bfc696c27",
+      "bytes": 80222,
+      "sha256": "e5df08ec4500259208d387f7ba4ab4a6942b6d24e5065836100533791aedfe68",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/editmode-final.log",
-      "bytes": 39814,
-      "sha256": "5131c1f0733e32b00e7bedafec115156eaafd6dd7962fdaa1483213920b5651d",
+      "bytes": 39276,
+      "sha256": "33c9ebbc1c6b9f50a8610ca7f28205a6738cae5e7139bcc03e46a1b10366263a",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/fatal-failing.log",
-      "bytes": 96346,
-      "sha256": "2c962f6d5faff3983d7c8acdf981cabd95515f620c15577dbfe139e04d85bf25",
+      "bytes": 95234,
+      "sha256": "018c2d96c3f534e1b59e08d8e396246b9aca254ad127706fef62bfa9ce36733a",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/fatal-repair.log",
-      "bytes": 36479,
-      "sha256": "83ebbc79a2002e4c70e7323bcf987ac94009b43cefb84ac0af0f3977b83876e2",
+      "bytes": 35965,
+      "sha256": "9e4bce42e81a6e0ef00b959c32e012d1c2fe15a56cae8a46bdcba93be470a137",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/import.log",
-      "bytes": 39308,
-      "sha256": "2667b73f88ee653bec9cef7926f3e4a589826e264b043bc318390348b8b9b17e",
+      "bytes": 38730,
+      "sha256": "f22074f131a2f3f65aaf4c9fb6564aad1634b8c71079cea71b7b0ab023775584",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/nextday-visual-failing.log",
-      "bytes": 59916,
-      "sha256": "1fea0e38d678b68e4a8cfa6335f4cc0336f6e77a00040ae7c016c7bd900d7e40",
+      "bytes": 59168,
+      "sha256": "4915d5c1a1158c54334fa5004aab477bd88d309ca53609cae281104bd25c99cf",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/playmode-final.log",
-      "bytes": 283271,
-      "sha256": "7d345f5bf0da7a6db1f45c2517db9efa9ecba90c2f6a7a1f72f6179771099673",
+      "bytes": 281038,
+      "sha256": "776e9c3667601945367dabefe0c83937e7fa5cdc437fcc0b96f254d82a4e48df",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/playmode-shared.log",
-      "bytes": 265093,
-      "sha256": "fc39e9117d54b4befa53fb6e01dab3a642ce000e0c997bcee4daeeaf7574f0cb",
+      "bytes": 262974,
+      "sha256": "73ed74651dc9ebb6ea5b2fda2d0887a37bf7866dfbda9948fc47e06aa54616ff",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/playmode-unobserved.log",
-      "bytes": 260750,
-      "sha256": "2ffb874d33e2cd233af33a68609b0ec950b9cbd085c0d91ecb8b5ebf092840cd",
+      "bytes": 258658,
+      "sha256": "d6ac9d4d7e24c9b50d8aad83b1166c3266a210d2d6b3ebe1ce24b633e27a7505",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/playmode.log",
-      "bytes": 268954,
-      "sha256": "61d82273bfc8a8f6c57c0c3173a1d663dc89b191daca662d3149f9cf32b531da",
+      "bytes": 266804,
+      "sha256": "9b628621308a9d2b9ce742aeb8f6541dcbb01b5191826ccbf403d9eb9e92378c",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/regression.log",
-      "bytes": 13089,
-      "sha256": "36a5a259cf20eb0f65c971a3fb2d1ef0192b59040de0568b5615d55722575d59",
+      "bytes": 12893,
+      "sha256": "736b979ada520e7207ccae81a4c400f8d4314d665df95debcca5c109e9a48ab6",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/windows-documentation-closeout-missing-artifacts.log",
-      "bytes": 278,
-      "sha256": "095a805ed87a9d0af473adf7d2f136186be0888479c11e796f6f05c5eeae443c",
+      "bytes": 275,
+      "sha256": "5177ae203b7bbdb42387aee0e9ba37d15725943bd77e78cb75a298163d4fe204",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/windows-documentation-final.log",
-      "bytes": 277,
-      "sha256": "85955eefb7f5c6db60f3b6bd455ab845b1a677648368c4dd486a896c85136e57",
+      "bytes": 272,
+      "sha256": "146d96ce2b3a39163cb91914b8b0c293a0ec30bdbf5192bba2724a3c50072c79",
       "role": "final verification/tooling/diagnostic"
     },
     {
       "path": "logs/windows-documentation.log",
-      "bytes": 277,
-      "sha256": "64dfd61be572033bea64a0991ae1ba7246e14154a985be4257de14c60ed6ee70",
+      "bytes": 272,
+      "sha256": "e70ca3265f1c7f33e1960f6f4c6bf3e5bff22f3870c3966d87a221aee21b827f",
       "role": "final verification/tooling/diagnostic"
     },
     {

@@ -1,7 +1,7 @@
 --------- beginning of main
 10-04 15:17:25.025  2337  2337 I Unity   : applyWindowUIChanges fullScreen = true, renderOutsideSafeArea = true
 10-04 15:17:25.468  2337  2337 V Unity   : Context Type: GameActivity
-10-04 15:17:25.471  2337  2337 D Unity   : CommandLine:  
+10-04 15:17:25.471  2337  2337 D Unity   : CommandLine:
 10-04 15:17:25.492  2337  2472 I Unity   : UnityApplication::CreateInstance
 10-04 15:17:25.492  2337  2472 I Unity   : GameActivity Package Version '4.4.0'
 10-04 15:17:25.495  2337  2472 I Unity   : Starting Game Loop
@@ -65,15 +65,15 @@
 10-04 15:17:27.307  2337  2472 D Unity   : Found 2 interfaces on host :
 10-04 15:17:27.308  2337  2472 D Unity   :  0) 10.0.2.15
 10-04 15:17:27.308  2337  2472 D Unity   :  1) 10.0.2.16
-10-04 15:17:27.308  2337  2472 D Unity   : 
+10-04 15:17:27.308  2337  2472 D Unity   :
 10-04 15:17:27.312  2337  2472 D Unity   : Player connection [132476414372032]  Target information:
-10-04 15:17:27.312  2337  2472 D Unity   : 
-10-04 15:17:27.312  2337  2472 D Unity   : Player connection [132476414372032]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 511941544 [EditorId] 1623866242 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:17:27.312  2337  2472 D Unity   : 
-10-04 15:17:27.312  2337  2472 D Unity   : Player connection [132476414372032]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 511941544 [EditorId] 1623866242 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life" 
-10-04 15:17:27.312  2337  2472 D Unity   : 
+10-04 15:17:27.312  2337  2472 D Unity   :
+10-04 15:17:27.312  2337  2472 D Unity   : Player connection [132476414372032]  * "[IP] 10.0.2.15 [Port] 55000 [Flags] 2 [Guid] 511941544 [EditorId] 1623866242 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:17:27.312  2337  2472 D Unity   :
+10-04 15:17:27.312  2337  2472 D Unity   : Player connection [132476414372032]  * "[IP] 10.0.2.16 [Port] 55000 [Flags] 2 [Guid] 511941544 [EditorId] 1623866242 [Version] 1048832 [Id] AndroidPlayer(11,Google_sdk_gphone64_x86_64@10.0.2.16) [Debug] 0 [PackageName] AndroidPlayer [ProjectName] Startup Life"
+10-04 15:17:27.312  2337  2472 D Unity   :
 10-04 15:17:27.313  2337  2472 D Unity   : Player connection [132476414372032] Started UDP target info broadcast (1) on [225.0.0.222:54997].
-10-04 15:17:27.313  2337  2472 D Unity   : 
+10-04 15:17:27.313  2337  2472 D Unity   :
 10-04 15:17:27.442  2337  2472 D Unity   : Input System module state changed to: Initialized.
 10-04 15:17:27.488  2337  2472 D Unity   : [Physics::Module] Initialized fallback backend.
 10-04 15:17:27.488  2337  2472 D Unity   : [Physics::Module] Id: 0xdecafbad
@@ -128,7 +128,7 @@
 10-04 15:17:27.771  2337  2472 D Unity   : OPENGL LOG: Creating OpenGL ES 3.0 graphics device ; Context level  <OpenGL ES 3.0> ; Context handle -186886992
 10-04 15:17:27.786  2337  2472 D Unity   : [EGL] Attaching window :0x787d54db0750
 10-04 15:17:27.789  2337  2472 D Unity   : Requested framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[on], samples[1]
-10-04 15:17:27.790  2337  2472 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0] 
+10-04 15:17:27.790  2337  2472 D Unity   : Created framebuffer: resolution[1080x1920], rgba[8/8/8/8], depth+stencil[24/8], samples[0]
 10-04 15:17:27.839  2337  2472 D Unity   : SwappyWrapper: InitSwappyWrapper() succeeded.
 10-04 15:17:27.859  2337  2472 D Unity   : [EGL] Attaching window :0x787d54db0750
 10-04 15:17:27.860  2337  2472 D Unity   : Initialize engine version: 6000.3.25f1 (e1dba0a9aba4)
@@ -138,9 +138,9 @@
 10-04 15:17:29.110  2337  2472 D Unity   : [Physics::Module] SDK Version: 4.1.2
 10-04 15:17:29.110  2337  2472 D Unity   : [Physics::Module] Integration Version: 1.0.0
 10-04 15:17:29.110  2337  2472 D Unity   : [Physics::Module] Threading Mode: Multi-Threaded
-10-04 15:17:29.958  2337  2472 D Unity   : ERROR: Shader 
+10-04 15:17:29.958  2337  2472 D Unity   : ERROR: Shader
 10-04 15:17:29.958  2337  2472 D Unity   : Hidden/CoreSRP/CoreCopy shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
-10-04 15:17:30.269  2337  2472 D Unity   : ERROR: Shader 
+10-04 15:17:30.269  2337  2472 D Unity   : ERROR: Shader
 10-04 15:17:30.269  2337  2472 D Unity   : Hidden/Universal/HDRDebugView shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
 10-04 15:17:30.449  2337  2472 D Unity   : PlayerInitEngineGraphics OK
 10-04 15:17:30.496  2337  2472 I Unity   : SetGameState: isLoading: false, mode: UNKNOWN, label: -1, quality: 2

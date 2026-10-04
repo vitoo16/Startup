@@ -1,0 +1,5 @@
+Documentation validation passed.
+Canonical source parity: 4/4
+Task ledger: 49 unique expected IDs; reconciled complete set: M0-T01, M2-T02, M3-T02, M6-T01, M6-T02, M7-T01
+Task requirements: exact approved dependencies and expanded skills
+Markdown links checked: 322 files

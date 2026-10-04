@@ -3,7 +3,7 @@
 --------- beginning of system
 10-04 05:41:14.648  6230  6230 I Unity   : applyWindowUIChanges fullScreen = true, renderOutsideSafeArea = true
 10-04 05:41:15.186  6230  6230 V Unity   : Context Type: GameActivity
-10-04 05:41:15.198  6230  6230 D Unity   : CommandLine:  
+10-04 05:41:15.198  6230  6230 D Unity   : CommandLine:
 10-04 05:41:15.265  6230  6255 I Unity   : UnityApplication::CreateInstance
 10-04 05:41:15.266  6230  6255 I Unity   : GameActivity Package Version '4.4.0'
 10-04 05:41:15.381  6230  6255 I Unity   : Starting Game Loop
