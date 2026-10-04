@@ -1,0 +1,11 @@
+{
+  "file": "lifecycle-emulator.mp4",
+  "bytes": 10730894,
+  "sha256": "c425ceec7ba4265cb9e93c68edb4647d5881dc9cf798813981b78028cc9b265f",
+  "durationSeconds": 64.7481,
+  "width": 1080.0,
+  "height": 1920.0,
+  "fullDecodeExit": 0,
+  "decodeMethod": "Every input frame decoded; output timestamps normalized only in discarded raw output to avoid VFR/null-muxer quantization. Original MP4 unchanged.",
+  "decoderPackage": "imageio-ffmpeg 0.6.0, installed only in task scratch"
+}

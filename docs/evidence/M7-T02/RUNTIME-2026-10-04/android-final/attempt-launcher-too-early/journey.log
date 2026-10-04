@@ -1,0 +1,39 @@
+Performing Streamed Install
+
+Success
+
+
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=41ms (0ms mobile, 0ms wifi, 41ms not connected)
+
+
+Traceback (most recent call last):
+  File "<USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\run_android_final.py", line 47, in <module>
+    tap(540,780); created=checkpoint('A-created'); assert created['Revision']==1
+                          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "<USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\run_android_final.py", line 12, in checkpoint
+    s=p.save(name); p.screenshot(name); return s
+      ^^^^^^^^^^^^
+  File "<USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\android_probe.py", line 22, in save
+    env = json.loads(raw)
+          ^^^^^^^^^^^^^^^
+  File "<USER>\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<USER>\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\json\decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<USER>\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\json\decoder.py", line 356, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)

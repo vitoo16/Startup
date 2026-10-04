@@ -1,0 +1,16 @@
+{
+  "head": "57418f618cb2122ba8f71b6d82975184a14f7870",
+  "serial": "emulator-5560",
+  "adbPort": 5038,
+  "A": "PASS",
+  "B": "PASS",
+  "C": "PASS",
+  "D": "PASS",
+  "ERecovery": "PASS",
+  "EFatalVisual": "PASS: both actual emulator screenshots inspected; readable Vietnamese message; no Creation/Life panel",
+  "wallClock": "PASS: full checkpoint unchanged after actual background wait",
+  "physicalAndroid": "NOT RUN",
+  "iOS": "NOT RUN",
+  "execution": "A-D and E-next-write executed by run_android_final.py; E remainder completed by resume_android_final.py after correcting only the external harness comparison",
+  "apkSha256": "2f44d1afa0888df89cacb8ca67bbd1442f2f0129897f96ba9788be7bf5d7aa5c"
+}

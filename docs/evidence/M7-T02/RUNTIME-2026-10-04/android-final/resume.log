@@ -1,0 +1,63 @@
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=66ms (0ms mobile, 0ms wifi, 66ms not connected)
+
+
+{"label": "E-second-reload", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 17, "date": "2026-09-02", "minute": 0, "cursor": 0, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/op/17", "xp": null, "course": {"Completed": false, "DefinitionId": "communication-basics", "InstanceId": "run-5ee7513f1d5d49ff83fa10556f833b18/course/7", "ProgressUnits": 600000}, "cash": 1800000, "claims": 1}
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=20ms (0ms mobile, 0ms wifi, 20ms not connected)
+
+
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=11ms (0ms mobile, 0ms wifi, 11ms not connected)
+
+
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=19ms (0ms mobile, 0ms wifi, 19ms not connected)
+
+
+{"label": "Z-restored-valid", "run": "run-5ee7513f1d5d49ff83fa10556f833b18", "revision": 17, "date": "2026-09-02", "minute": 0, "cursor": 0, "activity": "run-5ee7513f1d5d49ff83fa10556f833b18/op/17", "xp": null, "course": {"Completed": false, "DefinitionId": "communication-basics", "InstanceId": "run-5ee7513f1d5d49ff83fa10556f833b18/course/7", "ProgressUnits": 600000}, "cash": 1800000, "claims": 1}
+E resumed checks passed; all A-E state assertions passed on the repair head

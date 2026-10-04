@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="11" result="Failed(Child)" total="11" passed="9" failed="2" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-03 22:23:13Z" end-time="2026-10-03 22:23:28Z" duration="15.0542107">
+  <test-suite type="TestSuite" id="1022" name="Startup Life" fullname="Startup Life" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-03 22:23:13Z" end-time="2026-10-03 22:23:28Z" duration="15.054211" total="11" passed="9" failed="2" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1015" name="StartupLife.Tests.PlayMode.dll" fullname="<PROJECT>/Library/ScriptAssemblies/StartupLife.Tests.PlayMode.dll" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-03 22:23:13Z" end-time="2026-10-03 22:23:28Z" duration="15.049644" total="11" passed="9" failed="2" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="33220" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1016" name="StartupLife" fullname="StartupLife" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-03 22:23:13Z" end-time="2026-10-03 22:23:28Z" duration="15.049110" total="11" passed="9" failed="2" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1017" name="Tests" fullname="StartupLife.Tests" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-03 22:23:13Z" end-time="2026-10-03 22:23:28Z" duration="15.048753" total="11" passed="9" failed="2" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1018" name="PlayMode" fullname="StartupLife.Tests.PlayMode" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-03 22:23:13Z" end-time="2026-10-03 22:23:28Z" duration="15.048407" total="11" passed="9" failed="2" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1001" name="FirstPlayableFlowTests" fullname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" classname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-03 22:23:13Z" end-time="2026-10-03 22:23:23Z" duration="9.929033" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1002" name="CreateWorkStudyAndAdvanceDayThroughViews" fullname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests.CreateWorkStudyAndAdvanceDayThroughViews" methodname="CreateWorkStudyAndAdvanceDayThroughViews" classname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" runstate="Runnable" seed="1676661765" result="Passed" start-time="2026-10-03 22:23:13Z" end-time="2026-10-03 22:23:23Z" duration="9.920940" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[StartupLifeM7Visual] 01-character-creation 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0000 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 02-life-developer 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0001 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 03-work-playback 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0002 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0003 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0004 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0005 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0006 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0007 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0008 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0009 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0010 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0011 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0012 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0013 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0014 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0015 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0016 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0017 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0018 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0019 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0020 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0021 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0022 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0023 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0024 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0025 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0026 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0027 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0028 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0029 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0030 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0031 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0032 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0033 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0034 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 04-evening-study 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0035 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 05-day-summary 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0036 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 06-simulated-notched-safe-area 1080x1920; UI-inclusive camera capture; simulatedNotch=True
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1003" name="FirstPlayableLifecycleTests" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" testcasecount="9" result="Failed" site="Child" start-time="2026-10-03 22:23:23Z" end-time="2026-10-03 22:23:28Z" duration="4.950773" total="9" passed="7" failed="2" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1006" name="AcknowledgedWorkCueDoesNotReplayAfterRestart" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AcknowledgedWorkCueDoesNotReplayAfterRestart" methodname="AcknowledgedWorkCueDoesNotReplayAfterRestart" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="1275757970" result="Passed" start-time="2026-10-03 22:23:23Z" end-time="2026-10-03 22:23:24Z" duration="0.841564" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1011" name="BothInvalidSavesFailWithoutStartingNewRun" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.BothInvalidSavesFailWithoutStartingNewRun" methodname="BothInvalidSavesFailWithoutStartingNewRun" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="313049330" result="Passed" start-time="2026-10-03 22:23:24Z" end-time="2026-10-03 22:23:24Z" duration="0.364080" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1009" name="CorruptPrimaryRecoversBackupAndAllowsNextWrite" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.CorruptPrimaryRecoversBackupAndAllowsNextWrite" methodname="CorruptPrimaryRecoversBackupAndAllowsNextWrite" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="563828421" result="Failed" start-time="2026-10-03 22:23:24Z" end-time="2026-10-03 22:23:24Z" duration="0.358532" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  Expected: Committed
+  But was:  PersistenceFailed
+]]></message>
+                  <stack-trace><![CDATA[at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests+<CorruptPrimaryRecoversBackupAndAllowsNextWrite>d__8.MoveNext () [0x00108] in <PROJECT>\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:259
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@bd7f943e9647\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:44
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1004" name="FreshLaunchWithoutSaveShowsCharacterCreation" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.FreshLaunchWithoutSaveShowsCharacterCreation" methodname="FreshLaunchWithoutSaveShowsCharacterCreation" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="776841073" result="Passed" start-time="2026-10-03 22:23:24Z" end-time="2026-10-03 22:23:24Z" duration="0.164182" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1007" name="MidCourseRestartRestoresExactProgressAndCompletesOnce" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.MidCourseRestartRestoresExactProgressAndCompletesOnce" methodname="MidCourseRestartRestoresExactProgressAndCompletesOnce" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="1098225346" result="Failed" start-time="2026-10-03 22:23:24Z" end-time="2026-10-03 22:23:25Z" duration="0.814415" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  Expected: 1020
+  But was:  660
+]]></message>
+                  <stack-trace><![CDATA[at StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests+<MidCourseRestartRestoresExactProgressAndCompletesOnce>d__6.MoveNext () [0x003fe] in <PROJECT>\Assets\StartupLife\Tests\PlayMode\FirstPlayableLifecycleTests.cs:194
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@bd7f943e9647\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:44
+]]></stack-trace>
+                </failure>
+                <output><![CDATA[[StartupLifeM7Visual] M7-T02/03-course-before-restart 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] M7-T02/04-course-after-restore 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+]]></output>
+              </test-case>
+              <test-case id="1008" name="NextDayRestartDoesNotRecommitBoundary" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.NextDayRestartDoesNotRecommitBoundary" methodname="NextDayRestartDoesNotRecommitBoundary" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="1102481331" result="Passed" start-time="2026-10-03 22:23:25Z" end-time="2026-10-03 22:23:26Z" duration="0.680908" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[StartupLifeM7Visual] M7-T02/05-next-day-before-restart 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] M7-T02/06-next-day-after-restore 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+]]></output>
+              </test-case>
+              <test-case id="1005" name="PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards" methodname="PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="935962576" result="Passed" start-time="2026-10-03 22:23:26Z" end-time="2026-10-03 22:23:27Z" duration="0.803636" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[StartupLifeM7Visual] M7-T02/01-work-before-pause 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] M7-T02/02-work-restored-before-ack 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+]]></output>
+              </test-case>
+              <test-case id="1012" name="RealElapsedPauseDoesNotAdvanceSimulation" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.RealElapsedPauseDoesNotAdvanceSimulation" methodname="RealElapsedPauseDoesNotAdvanceSimulation" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="1733439204" result="Passed" start-time="2026-10-03 22:23:27Z" end-time="2026-10-03 22:23:27Z" duration="0.574737" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1010" name="UnreadablePrimaryFailsClosedWithoutUsingBackup" fullname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.UnreadablePrimaryFailsClosedWithoutUsingBackup" methodname="UnreadablePrimaryFailsClosedWithoutUsingBackup" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" runstate="Runnable" seed="1063146422" result="Passed" start-time="2026-10-03 22:23:27Z" end-time="2026-10-03 22:23:28Z" duration="0.346452" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1013" name="MobileBaselineTests" fullname="StartupLife.Tests.PlayMode.MobileBaselineTests" classname="StartupLife.Tests.PlayMode.MobileBaselineTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-03 22:23:28Z" end-time="2026-10-03 22:23:28Z" duration="0.167589" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1014" name="BaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage" fullname="StartupLife.Tests.PlayMode.MobileBaselineTests.BaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage" methodname="BaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage" classname="StartupLife.Tests.PlayMode.MobileBaselineTests" runstate="Runnable" seed="701304602" result="Passed" start-time="2026-10-03 22:23:28Z" end-time="2026-10-03 22:23:28Z" duration="0.166876" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: <USER>/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

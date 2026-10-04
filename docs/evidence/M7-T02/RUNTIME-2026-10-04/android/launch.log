@@ -1,0 +1,52 @@
+--------- beginning of kernel
+--------- beginning of main
+--------- beginning of system
+10-04 05:41:14.648  6230  6230 I Unity   : applyWindowUIChanges fullScreen = true, renderOutsideSafeArea = true
+10-04 05:41:15.186  6230  6230 V Unity   : Context Type: GameActivity
+10-04 05:41:15.198  6230  6230 D Unity   : CommandLine:  
+10-04 05:41:15.265  6230  6255 I Unity   : UnityApplication::CreateInstance
+10-04 05:41:15.266  6230  6255 I Unity   : GameActivity Package Version '4.4.0'
+10-04 05:41:15.381  6230  6255 I Unity   : Starting Game Loop
+10-04 05:41:15.420  6230  6230 I Unity   : onResume
+10-04 05:41:15.437  6230  6255 I Unity   : Handle cmd APP_CMD_START(11)
+10-04 05:41:15.441  6230  6255 I Unity   : Handle cmd APP_CMD_RESUME(12)
+10-04 05:41:15.495  6230  6255 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+10-04 05:41:15.512  6230  6255 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+10-04 05:41:15.519  6230  6255 I Unity   : Handle cmd APP_CMD_CONTENT_RECT_CHANGED(5)
+10-04 05:41:15.525  6230  6255 I Unity   : Handle cmd APP_CMD_INIT_WINDOW(1)
+10-04 05:41:16.006  6230  6255 I Unity   : MemoryManager: Using 'Dynamic Heap' Allocator.
+10-04 05:41:16.154  6230  6255 D Unity   : [UnityMemory] Configuration Parameters - Can be set up in boot.config
+10-04 05:41:16.156  6230  6255 D Unity   :     "memorysetup-allocator-temp-initial-block-size-main=262144"
+10-04 05:41:16.156  6230  6255 D Unity   :     "memorysetup-allocator-temp-initial-block-size-worker=262144"
+10-04 05:41:16.156  6230  6255 D Unity   :     "memorysetup-temp-allocator-size-background-worker=32768"
+10-04 05:41:16.156  6230  6255 D Unity   :     "memorysetup-temp-allocator-size-job-worker=262144"
+10-04 05:41:16.157  6230  6255 D Unity   :     "memorysetup-temp-allocator-size-preload-manager=262144"
+10-04 05:41:16.157  6230  6255 D Unity   :     "memorysetup-remapper-allocator-initial-capacity=32768"
+10-04 05:41:16.157  6230  6255 D Unity   :     "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+10-04 05:41:16.157  6230  6255 D Unity   :     "memorysetup-temp-allocator-size-audio-worker=65536"
+10-04 05:41:16.157  6230  6255 D Unity   :     "memorysetup-temp-allocator-size-cloud-worker=32768"
+10-04 05:41:16.157  6230  6255 D Unity   :     "memorysetup-bucket-allocator-granularity=16"
+10-04 05:41:16.157  6230  6255 D Unity   :     "memorysetup-bucket-allocator-bucket-count=8"
+10-04 05:41:16.157  6230  6255 D Unity   :     "memorysetup-bucket-allocator-block-size=4194304"
+10-04 05:41:16.157  6230  6255 D Unity   :     "memorysetup-bucket-allocator-block-count=1"
+10-04 05:41:16.157  6230  6255 D Unity   :     "memorysetup-main-allocator-block-size=16777216"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-thread-allocator-block-size=16777216"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-gfx-main-allocator-block-size=16777216"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-gfx-thread-allocator-block-size=16777216"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-cache-allocator-block-size=4194304"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-typetree-allocator-block-size=2097152"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-profiler-bucket-allocator-granularity=16"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-profiler-bucket-allocator-bucket-count=8"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-profiler-bucket-allocator-block-size=4194304"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-profiler-bucket-allocator-block-count=1"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-profiler-allocator-block-size=16777216"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-profiler-editor-allocator-block-size=1048576"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-temp-allocator-size-main=4194304"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-job-temp-allocator-block-size=2097152"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-job-temp-allocator-block-size-background=1048576"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+10-04 05:41:16.158  6230  6255 D Unity   :     "memorysetup-temp-allocator-size-gfx=262144"
+10-04 05:41:16.389  6230  6230 I Unity   : windowFocusChanged: true
+10-04 05:41:16.389  6230  6230 I Unity   : applyWindowUIChanges fullScreen = true, renderOutsideSafeArea = true
+10-04 05:41:16.390  6230  6230 I Unity   : resumeUnity
+--------- beginning of crash

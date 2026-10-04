@@ -1,0 +1,1479 @@
+{
+  "schemaVersion": 1,
+  "createdUtc": "2026-10-04T08:54:19.190709+00:00",
+  "repository": "https://github.com/vitoo16/Startup",
+  "branch": "feat/m7-t02-lifecycle-device-gate",
+  "startingHead": "79b3f0bc35ff9c32e45b51fe04715d253bd3abd5",
+  "testedRuntimeHead": "57418f618cb2122ba8f71b6d82975184a14f7870",
+  "evidenceCommit": "Resolve with git log: evidence/docs-only commit following testedRuntimeHead; manifest does not hash itself.",
+  "saveVersion": 1,
+  "persistedFieldsChanged": false,
+  "migrationRequired": false,
+  "emulator": {
+    "avd": "StartupLife_M7T02_API35",
+    "serial": "emulator-5560",
+    "adbPort": 5038,
+    "android": "15/API 35",
+    "profile": "Pixel 2",
+    "abi": "x86_64 with ARM64 translation"
+  },
+  "gates": {
+    "UnityEditor": "PASS",
+    "EditMode": "8/8 PASS",
+    "PlayMode": "11/11 PASS",
+    "AndroidEmulatorAThroughE": "PASS",
+    "physicalAndroid": "NOT RUN",
+    "iOS": "NOT RUN — external Mac/iOS route unavailable",
+    "M7T02": "NOT CLOSED",
+    "M8": "NOT READY",
+    "GateB": "NOT SAFE"
+  },
+  "artifacts": [
+    {
+      "path": "android/A-api35-creation.png",
+      "bytes": 12508,
+      "sha256": "6ff125d57ec7336906151d05f1fd472e578201626814dce86566fad0579d1cfb",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/A-api35-fresh.png",
+      "bytes": 42691,
+      "sha256": "e0a1c0991053657c1a989c3eebeb1e8f4a8eb3eb38f9d4244d87491c38249388",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/A-api35-ready.png",
+      "bytes": 96392,
+      "sha256": "7436f61b88394ae19a808018156a2844fc4520856fd4c6e1e0e894947353b249",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/A-created.png",
+      "bytes": 95288,
+      "sha256": "f7f09d84f4a21f569a84a7602fee116a9dfd6ec2cb2a2cd1c53da9db2627bddf",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/A-created.save.json",
+      "bytes": 2389,
+      "sha256": "a4fa3c1dd0ec5f769d36d275c37a34f8f2e3abb3c85bfc45dfc8d9a0a11303bd",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/A-employed.save.json",
+      "bytes": 3201,
+      "sha256": "ad1e47c7351aaca901c2c634a0fef6d46e7e2d7f61d650fc921f1ea63e042042",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/A-fresh.png",
+      "bytes": 528418,
+      "sha256": "43ae9d0faa11b130f74168ede4547d8ab4a11fa974375aba341fbe0996ce20b0",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/A-keyboard.png",
+      "bytes": 179055,
+      "sha256": "ba4647e1161d3d831db66c885fd3e4fd5c13f271b1efb431ecbc76f5dc1162c8",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/A-life.png",
+      "bytes": 172788,
+      "sha256": "39690ea7657858a1a03c7e8b583c2d526e74cbc031325875c67891741de4eaed",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/A-name-entered.png",
+      "bytes": 180595,
+      "sha256": "a4e8858932ca95f4dc5fd2908bb5b266be8c4b45204d9ff632ff4704c125720c",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/api35-crash.log",
+      "bytes": 2,
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/api35-launch-resumed.log",
+      "bytes": 17364,
+      "sha256": "0c8a654726131a6df739a15e540db1f1f44ade195509de80f5c28197c466c503",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/api35-launch.log",
+      "bytes": 2,
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/api35-properties.log",
+      "bytes": 33820,
+      "sha256": "4c79e455c1db2c393e4eb8608fc3445b8c088d900e3340bc3032247e9152202f",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/B-after-wait.save.json",
+      "bytes": 4757,
+      "sha256": "266ac41f3c513c6bd4fb90951e58f812fafc979dbedc07ff26f1350ad0e78e5a",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/B-background.png",
+      "bytes": 1241539,
+      "sha256": "8f385c5f49059a20ebf97abcc514e8eb756d9ca30977309354553c1be299de7c",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/B-background.save.json",
+      "bytes": 4757,
+      "sha256": "266ac41f3c513c6bd4fb90951e58f812fafc979dbedc07ff26f1350ad0e78e5a",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/B-before-work.save.json",
+      "bytes": 3201,
+      "sha256": "ad1e47c7351aaca901c2c634a0fef6d46e7e2d7f61d650fc921f1ea63e042042",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/B-restored-acknowledged.save.json",
+      "bytes": 5165,
+      "sha256": "e97ced6de31b9202ed023b2ee206ce850c1b30ca9f04fd87cc484529842d60b7",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/B-restored.png",
+      "bytes": 182567,
+      "sha256": "3c10036634a9e3f7238e6723b9c19cc404d26dcc7c693d9710d5ec7a76c31756",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/B-shift-complete.save.json",
+      "bytes": 8238,
+      "sha256": "231f5afbeaa8ba90bc344c1666d073c0bb30ecc6bad068df1412cb0b5177ba05",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/build-provenance.json",
+      "bytes": 3820,
+      "sha256": "81d95b536e6caff310c86154bac41c59fd0a59cbf4c21b739adf39de1d1d643a",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/build-x86_64-provenance.json",
+      "bytes": 3820,
+      "sha256": "84a08690e1f24f82f80a20a5d4bc11401b36e132932636af411b09e9eac43c5d",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/C-after-restore.png",
+      "bytes": 181818,
+      "sha256": "155acab1fbaed5d17ae416e8eb166dd49b782d41315f47a0b097794950454876",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/C-after-restore.save.json",
+      "bytes": 9434,
+      "sha256": "d92275523fbd12edc4b4525fafbd85f51b3f3dda9b342a2c3148ff15307774df",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/C-before-restart.png",
+      "bytes": 172145,
+      "sha256": "6a44b2bd9fff9493ca9a0ada9dd415be9ad2a82fb7853c6ec1efda45c3073eff",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/C-before-restart.save.json",
+      "bytes": 9434,
+      "sha256": "d92275523fbd12edc4b4525fafbd85f51b3f3dda9b342a2c3148ff15307774df",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/commands.ndjson",
+      "bytes": 21049,
+      "sha256": "e3d841fc7ca5d12cef6b97f5784bf1e575b933ced71db155e75eb0835cc73f40",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/D-after-restore.png",
+      "bytes": 182687,
+      "sha256": "bb87da3c6c5fee0c90bc80c03ea2cbfcc8cce28dadb460ffd03f1340971377e4",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/D-after-restore.save.json",
+      "bytes": 11038,
+      "sha256": "017242340a3314b54fbdee8f8e1b7e635e98c00199a931bde989a87f73e15f4e",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/D-before-restart.png",
+      "bytes": 69670,
+      "sha256": "f8d3073784d2b994db4e8b1dc0c8107f8546a06e1d8c139bdb8b2f86a45eef52",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/D-before-restart.save.json",
+      "bytes": 11038,
+      "sha256": "017242340a3314b54fbdee8f8e1b7e635e98c00199a931bde989a87f73e15f4e",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/E-both-invalid-fatal.png",
+      "bytes": 49046,
+      "sha256": "890cea73c553a1ae2feae5d792d09612bf74f6961a47654675690784ac3bfc51",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/E-next-write.save.json",
+      "bytes": 11458,
+      "sha256": "177c287775420cd7b02e583ef5582a694bef224a935aaf35bbf46ca25573e6ca",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/E-recovered-before-write.png",
+      "bytes": 182687,
+      "sha256": "bb87da3c6c5fee0c90bc80c03ea2cbfcc8cce28dadb460ffd03f1340971377e4",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/E-second-reload.png",
+      "bytes": 173799,
+      "sha256": "a18797d607342c076e649147edde9fdcc317414a423c3106d817d4d3bd0151b8",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/E-second-reload.save.json",
+      "bytes": 11458,
+      "sha256": "177c287775420cd7b02e583ef5582a694bef224a935aaf35bbf46ca25573e6ca",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/E-unreadable-fatal.png",
+      "bytes": 47238,
+      "sha256": "0ff964eeb5e475cf13833a37088472eec76b17adf5470c5445497bcdc6f593c5",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/files-after-recovery.log",
+      "bytes": 564,
+      "sha256": "180c89c3cc0fa86d6dde6b4bcc713da947c7774d50876fa9381e4c125148b0f1",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/files-before-recovery.log",
+      "bytes": 446,
+      "sha256": "827031b9f6744bca877c2aa239f4fead26fec86a700471c370ca64f6db7f1d0f",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/files-fault-fixtures.log",
+      "bytes": 557,
+      "sha256": "996c6541368d9d5425fb7b057d4bd7ebb154a82ad8c483c2ab502c029b43d43d",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/launch-crash.log",
+      "bytes": 3451,
+      "sha256": "3b9e5d1f90ac70753bb1cee2d4ce5d98b58ed8de7269aa334ca6e492e3834a76",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/launch.log",
+      "bytes": 4622,
+      "sha256": "a3ae73584a8074673db953eec164f08e29638997aaad9e9b9724b0b69d258c45",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/lifecycle-emulator.metadata.json",
+      "bytes": 218,
+      "sha256": "6de813f4f116e2eafa7b4d9fe1a97463b3eced71f7c6472695802c12962fb11e",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/lifecycle-emulator.mp4",
+      "bytes": 10960810,
+      "sha256": "f90e86909630a513f922e3222341a26f0714fb2539cf52fa1aa20e2bee7ce57b",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/lifecycle-runtime.log",
+      "bytes": 140771,
+      "sha256": "bea2dcf22474c199e2abb20786236fe731feac3356faf331651e66f77f47b7b1",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/M7RuntimeEmulatorBuild.cs",
+      "bytes": 1509,
+      "sha256": "377806f421554cc020f1834a1b7aeca030ad6424952b7889d37713d88297f789",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/M7RuntimeEvidenceBuild.cs",
+      "bytes": 1400,
+      "sha256": "4a1b699872c717a64600b9db1067c89f6e967fe2b025cbea3a22fee0fed89ee8",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android/observed-states.ndjson",
+      "bytes": 76138,
+      "sha256": "f4f7f40f2793ae2b47838ce54425b1720fa61ceb228bdfcc1dfbcc6e3dface6d",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "android-final/A-created.png",
+      "bytes": 173575,
+      "sha256": "1a443590abe7983655a803cc2e432d515719ff7525385d9e6e1ce11e3a2bb61f",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/A-created.save.json",
+      "bytes": 2401,
+      "sha256": "6761c82b11f18db29c7eee40826aa48b9cf990645174db23a673aff47a29e386",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/A-creation.png",
+      "bytes": 96194,
+      "sha256": "ca66f81fe98c00e6056df96952e9bea8f166d8122647a8dbafdb279b97471e5f",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/A-employed.png",
+      "bytes": 183327,
+      "sha256": "1efff95be8d1ac278408a2b08d8e5a456333fbc73a3ba52b52dfb6aad1e28184",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/A-employed.save.json",
+      "bytes": 3213,
+      "sha256": "c4a27bb9e0a76d721da728b1561b2f69ae08b82d59e4cfbca1d9f6e3a678feb3",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/acceptance.json",
+      "bytes": 715,
+      "sha256": "090862142fb03063ca8ba1098ffc253a04dc4a9b7563288ee2257eeb0bc25adc",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-launcher-too-early/A-creation.png",
+      "bytes": 12508,
+      "sha256": "6ff125d57ec7336906151d05f1fd472e578201626814dce86566fad0579d1cfb",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-launcher-too-early/commands.ndjson",
+      "bytes": 2702,
+      "sha256": "dc9639ec73e47a177e10a5ca6b494e24af07d3abf576ea0331d1f2e1e9944f10",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-launcher-too-early/current.png",
+      "bytes": 1241708,
+      "sha256": "6f06fd2fad54399bb60eeb074fdf13448400f6a3bd0924871327da8af5f1afc0",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-launcher-too-early/journey.log",
+      "bytes": 1715,
+      "sha256": "102d0a08ec1ab75507bcd705c1bcc05312224a89dc3caca4ae2908bcd87b1258",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/A-created.png",
+      "bytes": 174146,
+      "sha256": "1139087f086fc1d670be21ce478b58815bf406cbb9fc953e2d73453e8ad3f77d",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/A-created.save.json",
+      "bytes": 2401,
+      "sha256": "7131dc51e30f4536bdc70d1da00d16c51c6154d516466a2567f2a96836ac1fd6",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/A-creation.png",
+      "bytes": 12508,
+      "sha256": "6ff125d57ec7336906151d05f1fd472e578201626814dce86566fad0579d1cfb",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/A-employed.png",
+      "bytes": 183810,
+      "sha256": "3abbfa208f0e8358fb4c6da5ea31e6274baeb0332dc188f724cc14c05e384e1c",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/A-employed.save.json",
+      "bytes": 3213,
+      "sha256": "556251f8a77b27399d5113dedaf3a5ca45c17c0290b6708119da7f7d13837199",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/B-after-wait.save.json",
+      "bytes": 4769,
+      "sha256": "ba0fda17d4873d9b32ff5c077a630e5ccf8a1b690455df261a2adcd4646084ec",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/B-background.png",
+      "bytes": 196529,
+      "sha256": "3c37028d225e7d954c0c28f01848b32ba2da239a74ae3b4911d1f4c3cc2d2b33",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/B-background.save.json",
+      "bytes": 4769,
+      "sha256": "ba0fda17d4873d9b32ff5c077a630e5ccf8a1b690455df261a2adcd4646084ec",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/B-before-work.save.json",
+      "bytes": 3213,
+      "sha256": "556251f8a77b27399d5113dedaf3a5ca45c17c0290b6708119da7f7d13837199",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/B-restored-acknowledged.png",
+      "bytes": 42424,
+      "sha256": "f3dcc93f531e5d34ee02090be82421f9280ab4e0d29cf00a15c32a82280b1a2f",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/B-restored-acknowledged.save.json",
+      "bytes": 4769,
+      "sha256": "ba0fda17d4873d9b32ff5c077a630e5ccf8a1b690455df261a2adcd4646084ec",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/commands.ndjson",
+      "bytes": 7735,
+      "sha256": "8edd42a75c334c6be49828113b48113cc26ae979bb33ad5f4b16e31996f61e3d",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/journey.log",
+      "bytes": 2463,
+      "sha256": "ccece0be1181fd7aa95d10938fac64286ab89148d03c6c9939e784957bc09d65",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/attempt-splash-too-early/observed-states.ndjson",
+      "bytes": 18877,
+      "sha256": "0dc67c146402dba1dd58813b1a8229c0736d9a8049c5eed064c980be61c80c4d",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-after-ack-restart.png",
+      "bytes": 181559,
+      "sha256": "bfc585ef04a8b4884b40e0ece8f8d0f063d068944530a6ac07de420953bb3396",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-after-ack-restart.save.json",
+      "bytes": 8250,
+      "sha256": "4e7b9ee7ceea0542013e7bb7e217e43f091e6aaa8606e4c004b7b34ecf8825fe",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-after-wait.save.json",
+      "bytes": 4769,
+      "sha256": "dc3a0b854035e2caae148d7dfbd138162ec8b7e7636255cc648e895cc033d719",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-background.png",
+      "bytes": 173746,
+      "sha256": "e6c7bd56d7d07b844e1a4c5f701b80b0bab5ef4e1f5e2358e4fc39dcfc00cfb0",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-background.save.json",
+      "bytes": 4769,
+      "sha256": "dc3a0b854035e2caae148d7dfbd138162ec8b7e7636255cc648e895cc033d719",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-before-work.save.json",
+      "bytes": 3213,
+      "sha256": "c4a27bb9e0a76d721da728b1561b2f69ae08b82d59e4cfbca1d9f6e3a678feb3",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-restored-acknowledged.png",
+      "bytes": 184289,
+      "sha256": "5abb5c544874de00b7ffddd036beeb718d7c9550b12ab3b181dbd9e166cd9a55",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-restored-acknowledged.save.json",
+      "bytes": 5177,
+      "sha256": "69978be392ed603d766c790c164530612dcb02976af53ac29fee03f694027c87",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-shift-complete.png",
+      "bytes": 188097,
+      "sha256": "1ca10dc42b25ad0ce7e4d976594c9c232941e58c864661c537dc4cda12741ff8",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/B-shift-complete.save.json",
+      "bytes": 8250,
+      "sha256": "4e7b9ee7ceea0542013e7bb7e217e43f091e6aaa8606e4c004b7b34ecf8825fe",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/build-provenance.json",
+      "bytes": 3820,
+      "sha256": "4ffdcd5653d2292239157896f51b58d0d1bf5bd7b9930ae569f718eb5ec3d3a1",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/C-after-restore.png",
+      "bytes": 183487,
+      "sha256": "244140c89956e97817e4f7fa3195a87440e5b64c36dbf2c35532d13fe7c372fb",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/C-after-restore.save.json",
+      "bytes": 9446,
+      "sha256": "76bd95800ebb00db87207b9d1fe6f97facabcd70cd0f57d321ba46851816fda4",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/C-before-restart.png",
+      "bytes": 173748,
+      "sha256": "234202b2795be001b043d3cfa0975d340aafe4c625118b68755fed544ff95fd2",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/C-before-restart.save.json",
+      "bytes": 9446,
+      "sha256": "76bd95800ebb00db87207b9d1fe6f97facabcd70cd0f57d321ba46851816fda4",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/commands.ndjson",
+      "bytes": 22899,
+      "sha256": "8c545c8a81ddcff898ecf80b4460b25b20050cd5fb8794af8706e52fb8f2aab1",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/D-after-restore.png",
+      "bytes": 184253,
+      "sha256": "1308fc323f184df8a003de0bd74ab1f6074b86e75217aa4dcd7e8d3cc5375b64",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/D-after-restore.save.json",
+      "bytes": 11050,
+      "sha256": "27a381b685a34c5a5de93ff2ca253a145e26328d54fd9559dbd3ef625b0cee4c",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/D-before-restart.png",
+      "bytes": 69680,
+      "sha256": "a4a406beee727777a57df888217ecff6339f8b35081ad2018ae8bc4e7edb5d08",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/D-before-restart.save.json",
+      "bytes": 11050,
+      "sha256": "27a381b685a34c5a5de93ff2ca253a145e26328d54fd9559dbd3ef625b0cee4c",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-both-invalid-fatal.png",
+      "bytes": 31929,
+      "sha256": "fb889fa6c289e8e8b0434f344f296655ca11fc68795934507a5c83ed3bd9dd9e",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-next-write.png",
+      "bytes": 176611,
+      "sha256": "5be50afe0f05278e994cbf08b5cd4f2b1400946f3e4f3ca19d61b0a8e71ce736",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-next-write.save.json",
+      "bytes": 11470,
+      "sha256": "ee1e065669b9c8a11c05eb97f9b3225da432ef6e73847c56bb0dde694b77b2ca",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-recovered-before-write.png",
+      "bytes": 184253,
+      "sha256": "1308fc323f184df8a003de0bd74ab1f6074b86e75217aa4dcd7e8d3cc5375b64",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-second-reload.png",
+      "bytes": 175621,
+      "sha256": "0014e64ff331d05b18b394aabff5f76285a4053401a27c033a8c47489952b37a",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-second-reload.save.json",
+      "bytes": 11470,
+      "sha256": "ee1e065669b9c8a11c05eb97f9b3225da432ef6e73847c56bb0dde694b77b2ca",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/E-unreadable-fatal.png",
+      "bytes": 30098,
+      "sha256": "e741900b0280b72056eefbfd480862bfdbd0dd7584a6b3c7fb119a99a65865fd",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/files-after-recovery.log",
+      "bytes": 546,
+      "sha256": "cb071c1626ff063dcbbca4d50dee219905865a503f65c958e8de8c2c3dab75fd",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/inspect-current.png",
+      "bytes": 43465,
+      "sha256": "cee89a6b13ae420b3d2c791da9433e060ba85c0070ffe7fcbfc245dcb1061205",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/journey.log",
+      "bytes": 6364,
+      "sha256": "2f1e88be3e713671430da20f05d41341f24382b7e9330571f2d0d51fe47fdbf7",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/lifecycle-emulator.metadata.json",
+      "bytes": 487,
+      "sha256": "e97c1b2a16386b4c4e9ac09bc3f20a2700a61e1cd98d6a79003b7a16b4e92bb2",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/lifecycle-emulator.mp4",
+      "bytes": 10730894,
+      "sha256": "c425ceec7ba4265cb9e93c68edb4647d5881dc9cf798813981b78028cc9b265f",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/logcat.txt",
+      "bytes": 1523109,
+      "sha256": "1e2057d498bc62af72b176d13290943b306fbb80b4052cd641ef20f4bf622e64",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/M7RuntimeEvidenceBuild.cs",
+      "bytes": 1402,
+      "sha256": "4ddc71285a4d690d61612bcc82dda2ab8cb7abe5cab4e06941088463ee52d597",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/observed-states.ndjson",
+      "bytes": 91863,
+      "sha256": "a480c07131fb76935601cedd973de4d988b58d9549a18273b81d8a5259723b61",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/resume.log",
+      "bytes": 1872,
+      "sha256": "ca55ae3ebdb3cc640415cd80aa4f02847af45ace72c2a1ebed028aa150093cc9",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/startup-logcat.txt",
+      "bytes": 1064050,
+      "sha256": "d92199a93bf379c5932631d2e55614c1a3c82941733c4d5dad6fcd3b78a5220b",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/video-decode-vfr-muxer.log",
+      "bytes": 2,
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/video-decode.log",
+      "bytes": 2,
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/video-frame-begin.png",
+      "bytes": 78284,
+      "sha256": "b1e6d623d52c5f2248fe57250e084b6370fb043a852197ab87b33e31cdd8c8cf",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/video-frame-end.png",
+      "bytes": 147192,
+      "sha256": "29677068afe1a7a3b796f763051abef0a80fa7d649b521088a437f1659ac8f8f",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/video-frame-middle.png",
+      "bytes": 41460,
+      "sha256": "0425910e46adb3b1a0a853baa0ce8a97d00f311acedd76ab60f334046b28dbc7",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/Z-restored-valid.png",
+      "bytes": 175621,
+      "sha256": "0014e64ff331d05b18b394aabff5f76285a4053401a27c033a8c47489952b37a",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "android-final/Z-restored-valid.save.json",
+      "bytes": 11470,
+      "sha256": "ee1e065669b9c8a11c05eb97f9b3225da432ef6e73847c56bb0dde694b77b2ca",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "editmode-final-results.xml",
+      "bytes": 12112,
+      "sha256": "a137e641fd609bc0f6469414f0637540173105a06da08348a0b2e5f6e810dae1",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "editmode-results.xml",
+      "bytes": 9682,
+      "sha256": "27dc14cd81c3cb0f0c0c7f5a67c31f00a83ecc389282c5ab306eaa1f012d1c67",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "fatal-failing.xml",
+      "bytes": 13720,
+      "sha256": "c9cf90adf2e58ea58656f6bfe999b8956075ef64695804fec62b0c3219e5d91c",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/android-build.log",
+      "bytes": 1684201,
+      "sha256": "b576119e596f551d486ef9f7484841d6cc37bd6652e2defb12a6fdaca09ce86f",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/android-final-build.log",
+      "bytes": 523751,
+      "sha256": "5cadc3019dda7954eadf0e6d40fb6b79bf8cb03d04d45b1c30a9cda9d3034888",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/android-x86_64-build.log",
+      "bytes": 81181,
+      "sha256": "f3c1a7412242e197198027f28fff3171b8a2366f53b2968bb69cc30bfc696c27",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/editmode-final.log",
+      "bytes": 39814,
+      "sha256": "5131c1f0733e32b00e7bedafec115156eaafd6dd7962fdaa1483213920b5651d",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/fatal-failing.log",
+      "bytes": 96346,
+      "sha256": "2c962f6d5faff3983d7c8acdf981cabd95515f620c15577dbfe139e04d85bf25",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/fatal-repair.log",
+      "bytes": 36479,
+      "sha256": "83ebbc79a2002e4c70e7323bcf987ac94009b43cefb84ac0af0f3977b83876e2",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/import.log",
+      "bytes": 39308,
+      "sha256": "2667b73f88ee653bec9cef7926f3e4a589826e264b043bc318390348b8b9b17e",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/nextday-visual-failing.log",
+      "bytes": 59916,
+      "sha256": "1fea0e38d678b68e4a8cfa6335f4cc0336f6e77a00040ae7c016c7bd900d7e40",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/playmode-final.log",
+      "bytes": 283271,
+      "sha256": "7d345f5bf0da7a6db1f45c2517db9efa9ecba90c2f6a7a1f72f6179771099673",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/playmode-shared.log",
+      "bytes": 265093,
+      "sha256": "fc39e9117d54b4befa53fb6e01dab3a642ce000e0c997bcee4daeeaf7574f0cb",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/playmode-unobserved.log",
+      "bytes": 260750,
+      "sha256": "2ffb874d33e2cd233af33a68609b0ec950b9cbd085c0d91ecb8b5ebf092840cd",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/playmode.log",
+      "bytes": 268954,
+      "sha256": "61d82273bfc8a8f6c57c0c3173a1d663dc89b191daca662d3149f9cf32b531da",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/regression.log",
+      "bytes": 13089,
+      "sha256": "36a5a259cf20eb0f65c971a3fb2d1ef0192b59040de0568b5615d55722575d59",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/windows-documentation-closeout-missing-artifacts.log",
+      "bytes": 278,
+      "sha256": "095a805ed87a9d0af473adf7d2f136186be0888479c11e796f6f05c5eeae443c",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/windows-documentation-final.log",
+      "bytes": 277,
+      "sha256": "85955eefb7f5c6db60f3b6bd455ab845b1a677648368c4dd486a896c85136e57",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "logs/windows-documentation.log",
+      "bytes": 277,
+      "sha256": "64dfd61be572033bea64a0991ae1ba7246e14154a985be4257de14c60ed6ee70",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "nextday-visual-failing.xml",
+      "bytes": 5392,
+      "sha256": "5a01701343e0b2f4b7c3dcb2547dcfeba34954c8f8f7ba28928198059a1b0f75",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "playmode-final-results.xml",
+      "bytes": 18277,
+      "sha256": "0eeaf22598ba023a1e75ef719606be8561e2b23f548fafff9a29f4abd55d4d76",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "playmode-results.xml",
+      "bytes": 20036,
+      "sha256": "58f783c45b44e2fafff3cffbc4abeae3fa3321fb8b6e1cdcc55f118e23a75689",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "playmode-shared-results.xml",
+      "bytes": 17965,
+      "sha256": "5f55e54cc955d03dc89eab973ebac1d23717d7235bc419d050d22efd0cbcc4af",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "playmode-unobserved-results.xml",
+      "bytes": 17857,
+      "sha256": "f2ef270619d023ee0695098fe771737e8e81785e068abcd085d5788651c9901e",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "regression/astra-foundation-highs-report.json",
+      "bytes": 2659,
+      "sha256": "5b3e2a345512b326ed97e7bd799d3df9002c5fc3fc3403bf828186d86825f3e1",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "regression/astra-m2-restore-invariants-report.json",
+      "bytes": 4218,
+      "sha256": "1f18535bb37830a75ec87afba13ee96f09b8aa782f25d57d096335ed91e3e22d",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "regression/content-catalog-report.json",
+      "bytes": 974,
+      "sha256": "822861835f21067dc93b972775d919bf550cf3730cb36a2cf9c4a980ef65be42",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "regression/ContentBridge.json",
+      "bytes": 1794,
+      "sha256": "91aaedf9fe3498f75cbbf61a0bc070f8a74b3f10c3390a7c410a52594a257b61",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "regression/FirstPlayableShell.json",
+      "bytes": 7311,
+      "sha256": "bcb0d00f9affa3cb0e0161fc55ad553840c53430136b393b4ec19610b048060c",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "regression/M1ApiContract.json",
+      "bytes": 5499,
+      "sha256": "7d3682134cd82a33ab5b3f7469eed016126e6a8d4f0afdc488f325c963ce5c83",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "regression/presentation-adapter-report.json",
+      "bytes": 132,
+      "sha256": "9d844af4bd5e4fe6e25feaf8cdf465144b46df777d7e7be541307fbaf6418f57",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "regression/RepositorySecurity.json",
+      "bytes": 4307,
+      "sha256": "4d574fa7ed4d6fe11a403f9f9cc56bad5165004794ff672de7cb7507151b35bc",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "regression/simulation-report.json",
+      "bytes": 6031,
+      "sha256": "95939f221625541d95d6ef19514d381e657ebb826f183316a376d05ad56375ee",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "regression/UnityFoundation.json",
+      "bytes": 4998,
+      "sha256": "221088b90a63e94a7a66f2a7944f4ae3cfb700f08cd8e04a1ce16bf00154e36a",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "regression/UnityRunnerContract.json",
+      "bytes": 5269,
+      "sha256": "03a3cb48b82ff10248c728d235e6b0f5bc9e265de740e142341213d7abe391c5",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "rejected/05-next-day-stale-view.png",
+      "bytes": 142618,
+      "sha256": "dadd2036c35f9ce7da919f8886a939ca157068b1d4b0c06a668e3956f109d645",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 17172,
+      "sha256": "16cb09ac90b30dbffdd39841d69bc345c91bdf19a0bb3b3ccbefe9c61e56bc63",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-164fd67c04414dbc94e68bf030d08978-1.json",
+      "bytes": 2403,
+      "sha256": "a793146441b832ca7545ec7275b0b60bac0da1b769dc5328a209086bb45558bd",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-164fd67c04414dbc94e68bf030d08978-2.json",
+      "bytes": 3215,
+      "sha256": "61b8f581b7e03f788e9975de828128eda3e679776b71b33d7d7535c3723c6c54",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-164fd67c04414dbc94e68bf030d08978-3.json",
+      "bytes": 3619,
+      "sha256": "637b248d3abf585b585148e9d0094672e9aed16bfcd59e228f3e9d8cd00bc2cd",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-164fd67c04414dbc94e68bf030d08978-4.json",
+      "bytes": 4019,
+      "sha256": "71f348163de2160fb2fea5da222c7a909294e700c4f21ed33f845a9f422b016b",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-164fd67c04414dbc94e68bf030d08978-5.json",
+      "bytes": 4771,
+      "sha256": "8dc38339c860d4a3630dda664ec09e243edc2baf848cb513867fbeb10a63cd89",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-164fd67c04414dbc94e68bf030d08978-6.json",
+      "bytes": 5179,
+      "sha256": "d74c34c905aa1808c0a98ae213fc68ea926b09eb4a06b2d047f29a97a9eb9d60",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-1.json",
+      "bytes": 2379,
+      "sha256": "e27806789739181b6ca087f4c5d9d0667c21aaba72dad05a0eb9dd1c73c3b44e",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-10.json",
+      "bytes": 6800,
+      "sha256": "a61d8671b6eafe532473a3b904c4cbac93a8294760da48346a4aed9c9a000625",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-11.json",
+      "bytes": 7816,
+      "sha256": "290afdfc67bb6e63ee3a80939168a9a0ffad4c4ec195f6ef388cb6e34de0fe05",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-12.json",
+      "bytes": 8232,
+      "sha256": "4edd27f264032741d3b9c197b1da31eeeb4e771cf74d21253e1f832da6f007c9",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-13.json",
+      "bytes": 9008,
+      "sha256": "f895fba2c9ab61a5b5e6ec5a17322be355b6c5a3ea9e770416bd065264ec5fb9",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-14.json",
+      "bytes": 9812,
+      "sha256": "f29f7b21ad41fff7a5b5661d00abba606711f5318a943152eebe4a1dc44ad5e7",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-2.json",
+      "bytes": 3191,
+      "sha256": "e6eec21e25535ce1f4dc7edd4ce4cb591a92b94b0e34a6eb2bbdc1a0ad81cff2",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-3.json",
+      "bytes": 3595,
+      "sha256": "bf5ab55194e6776d7fdc919786a0b85cec5aa914735fbd4091aeecd4da94021a",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-4.json",
+      "bytes": 3995,
+      "sha256": "a1d14dde7be1abe1a44c7293b3d1b61ed648867da93e1f372853621722c69b8f",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-5.json",
+      "bytes": 4751,
+      "sha256": "52db5c0d963e9f9a5ce57529988ff0df145707772ec7daaafd2f73ad0365820a",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-6.json",
+      "bytes": 5159,
+      "sha256": "c0a2868fd8de11ccef256ab6571a67b4f867dacf068a603e76c7cc9ad2c5a1da",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-7.json",
+      "bytes": 5571,
+      "sha256": "5931b8d0fc7b6d60d29c0cabfcb575d3f1991de911f197217342ababfdbedd4f",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-8.json",
+      "bytes": 5979,
+      "sha256": "5138fa1c683d3c00c853fdca19d476ab217ef13e925ac2bb9085d9ad1fc7cbb3",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1825da8aabe049789877f5946d8c5345-9.json",
+      "bytes": 6387,
+      "sha256": "dce16689b23ad00cc9edc7c0eb7e40178e7824c8e4fede308fe3f42da97c697c",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-1ac79fac9ea946669738ea1612fc8600-1.json",
+      "bytes": 2387,
+      "sha256": "930c082e69272321bc7a6b2070b32eee98137172aa955a627b1b2fd4c2a77c92",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-2b647021f4594812a17386e108a62272-1.json",
+      "bytes": 2407,
+      "sha256": "481d30f594efc11cb646f1799a56eaa28da6f62ee85a4988d8d2b56139c615de",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-2b647021f4594812a17386e108a62272-2.json",
+      "bytes": 3219,
+      "sha256": "79520055c918e7cd83f09bc6c8b78e6a32ae80ac8751c7639244d6c8daf41f9f",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-1.json",
+      "bytes": 2399,
+      "sha256": "6594878253b2fef9d9c468854503bcc0233f549e943e34347bc58dcca02a1297",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-10.json",
+      "bytes": 6820,
+      "sha256": "47b02b594d3fa64d0502586cfe218be65798526710d2d0beaebc442adb7f4919",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-11.json",
+      "bytes": 7824,
+      "sha256": "03e7b84fe2591ba187b74bb22c24703bf2019a665de2a72e72a611d8cb26673c",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-12.json",
+      "bytes": 8236,
+      "sha256": "69f953cfcbaa5b2067c583607883da2683bc06ae33f672fe123eabe1c3e2341e",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-2.json",
+      "bytes": 3211,
+      "sha256": "b3fff161ebb15856d33bd31709aead411db3e4328ef68a75b98dfe4e35e51de3",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-3.json",
+      "bytes": 3615,
+      "sha256": "535e809a1bd3f166911f8697b050ac9711bd42af4d90e8356144c5a5f3264af7",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-4.json",
+      "bytes": 4015,
+      "sha256": "10857d6c59697688c5edadbc21394a02308cf65d4d48dfa94fd50f01a38e2114",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-5.json",
+      "bytes": 4771,
+      "sha256": "19ec010a8057107ec3704fb110db4aed9bf0c9bd2f64d3ae6c7f762252baa967",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-6.json",
+      "bytes": 5179,
+      "sha256": "6264bc91528fedbb8ab3b24f064233b6a68e922a33e2d4e12af0ac1c76f83957",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-7.json",
+      "bytes": 5591,
+      "sha256": "c5a87e0b9fc206968d16f3627a0c6561b3fbf34c81c1b32ffc18ac7bd7012ccd",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-8.json",
+      "bytes": 5999,
+      "sha256": "e076e1dc7ee24ef8caa32b902f4dd04ff8c0f6492f3176dc8b1f7ba70aa5292b",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-52f9ee4eff8c40a48a248b1d998a88d6-9.json",
+      "bytes": 6407,
+      "sha256": "a762e45a60bd85389f3c1c0d2c910a7567d622f7efa82ce0ee74b037d412993c",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-6bd7c1ddbb714e529858bd512a129731-1.json",
+      "bytes": 2391,
+      "sha256": "f128b2fb500adb8654fff2e5ca6e4c72a70b8828aac394ae821c10e83e4e8647",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-6bd7c1ddbb714e529858bd512a129731-2.json",
+      "bytes": 3203,
+      "sha256": "b41d6bc2b3830bf52dc5f0b37688e930d57c07fd9a9e923dcd66712881344b92",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-1.json",
+      "bytes": 2395,
+      "sha256": "c093bd43ce3af8c450093b5e3cdb5344b31a0def0b0c08cd6a919886f32ea262",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-10.json",
+      "bytes": 6816,
+      "sha256": "0b543e6d47ace44b5e7166b73d8ac6fd66855dfada2d752f0ce27d412d092b5f",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-11.json",
+      "bytes": 7820,
+      "sha256": "6113273493573aa9110faa9c162aeb2dae1b546a0a05bdfa7f83d74640e10974",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-12.json",
+      "bytes": 8232,
+      "sha256": "423ef4cbe096eefcfd0262b308c308173bcb0ec8eca24bba93f2e233f003b14c",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-13.json",
+      "bytes": 9112,
+      "sha256": "31a40e9ca800b2cb6f67e3f4a130352b2c1fe8ce6825e721c19c1b14239734ad",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-14.json",
+      "bytes": 9432,
+      "sha256": "b58ef803ae7fb17eb3ca517fbcb26d866dd4039275b10e54782c1714a9db43b5",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-15.json",
+      "bytes": 9748,
+      "sha256": "4b493c3a39c46b2ea28bcf44e2c2bd6f45f56c7cda7cadeb672667274ef9ad67",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-16.json",
+      "bytes": 10064,
+      "sha256": "083fd2e0c6bfb11bd4955f8d8cc26520927c8a5435b318bec6b02e456fa9e636",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-17.json",
+      "bytes": 10380,
+      "sha256": "3d66bf8488afc7158a97dacf1c5e3c31672f9577c6116c599a637774e496b10d",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-18.json",
+      "bytes": 10696,
+      "sha256": "2c766b60ee2433686fcca905b47e2c938c66357f7d08091109ef0358410601b4",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-19.json",
+      "bytes": 11512,
+      "sha256": "aea2e1b05f1308bd060a5884104dca87758333a4e53654be4bd9a09e744230a4",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-2.json",
+      "bytes": 3211,
+      "sha256": "4cf78b99d35e276d0698d846218e706145bf17142f59a299f77c60e54935cd86",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-20.json",
+      "bytes": 11892,
+      "sha256": "c3aceeb332105cfb9ee486f581527d5a1bab1986001efcb14cdb7658d43996d5",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-21.json",
+      "bytes": 12296,
+      "sha256": "fbdcefd1a67c97688ad8f56210f172474238c9d328d6bf652d01aa39c99033d0",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-22.json",
+      "bytes": 12728,
+      "sha256": "79b086f7696370c35ffafeb0817fe0e67b32ff0cf5322c377382d798ee1e9fa7",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-23.json",
+      "bytes": 13140,
+      "sha256": "5088dc9ca167ccb0aace29d1e05ac1430d1811719448cbe77f1942625e26b7ff",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-24.json",
+      "bytes": 13564,
+      "sha256": "0b4ec7e416b051866c226052c47b326e096808e3778ae5a295e1f06e01e39889",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-25.json",
+      "bytes": 13980,
+      "sha256": "81a1a3c3c7016d89286cd6dd24a61dad393a8561cae7c436cf54c360c5a21884",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-26.json",
+      "bytes": 14380,
+      "sha256": "dc05d8cbeba80d0cfc17fab6ca10a6847d84fc1660dc75d98021966d07aa5b3a",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-27.json",
+      "bytes": 14792,
+      "sha256": "9a25cf8c383dc4f9e266211af9ea245c4fb33c68be4b09e8b779dbdcdbacedb4",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-28.json",
+      "bytes": 15812,
+      "sha256": "801fda0aace7ff7369a4a81cb2e9d69fd519c2088dc1800d9fefa585680d4b63",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-29.json",
+      "bytes": 16228,
+      "sha256": "a41188c14bb716436fd4f56ae0c31c87d8204d0542700175cc3f1232c2305aa5",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-3.json",
+      "bytes": 3611,
+      "sha256": "306c54fd838bf1c7c4f0273cb679c02a1242906793a6ffeeaec90f35c1666f81",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-30.json",
+      "bytes": 16664,
+      "sha256": "5a17c6231c907c2a1fbf872c3fda330e3d6b8b34a596c945b7f47340e559550a",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-4.json",
+      "bytes": 4015,
+      "sha256": "97c5a816ef5753e874269a87139ce2468cc47eed89d569a746e790d79bb5c174",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-5.json",
+      "bytes": 4767,
+      "sha256": "533f688d5256303a26981a5d46e0d83d014f4dbac84003d7f4bf727945b20576",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-6.json",
+      "bytes": 5175,
+      "sha256": "9b31310d079cead49ab763f8803dc5b5655093278012b66f21c8b0068640f5ba",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-7.json",
+      "bytes": 5587,
+      "sha256": "2a9a9b5ee26d0a067a327c3a7f0c64742bde1ec6c03b88db2efee8856e91cbde",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-8.json",
+      "bytes": 5995,
+      "sha256": "42273732040d03ad4611d247da8cca60871c5580a4053cec228590b3c89db597",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-9de1b407fb7a4a8aac65205291888c44-9.json",
+      "bytes": 6403,
+      "sha256": "3a7c17e43fa4e5a9f5c33cbd1caf295dbb4c71daed8f7bef93e236380a2eeecc",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-a1edd37080ff4f22b561c62727f363c8-1.json",
+      "bytes": 2399,
+      "sha256": "6f3c8592132bac7a67fd7156987a81a350d9c4fb57293d4bcb817990b7ff3758",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-a1edd37080ff4f22b561c62727f363c8-2.json",
+      "bytes": 3211,
+      "sha256": "c5209b13242ccf0c575dd9da755cba87ea6a1d6c2b08851de8600a8ba83e3020",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "shared-observed-saves/run-a1edd37080ff4f22b561c62727f363c8-3.json",
+      "bytes": 3655,
+      "sha256": "64c528f92f84b8c34f9b757f8e1455504f26b4afb56cd8f21499d90d8f5b3a8d",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "tooling/android_probe.py",
+      "bytes": 4736,
+      "sha256": "79a5ecff4d778fe7d795782c566193d72c2ad0a2f7d25d2caf17617b8378fbbd",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "tooling/observe_shared.py",
+      "bytes": 2824,
+      "sha256": "328efe919fd72994e0fce0d7cf3a525c3c08a74143d88dca32bcb95541597274",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "tooling/resume_android_final.py",
+      "bytes": 1886,
+      "sha256": "ebd7f71b934c09d607edb3754e0c155095c3001948f4ebba9dfa4adf4801df12",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "tooling/run_android_final.py",
+      "bytes": 5618,
+      "sha256": "63059794c8c7f00adf50e845f7200e3651c2b433026504f36317b1521b5ceada",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "tooling/verify_video.py",
+      "bytes": 1558,
+      "sha256": "93a36d6e7a6bbe2ab850ad5ca2e71eae0cb3425d78a5684227529d86a8998dae",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "tooling/video_metadata.py",
+      "bytes": 1546,
+      "sha256": "6704948283bd5bd3aa66265e59e5d342515af127ebc36bcc63dd3f961f01b335",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "unity-observed-states.ndjson",
+      "bytes": 77474,
+      "sha256": "0a195348f04c87dc14a6196097eaddf7e7b2b7a6cc90820f978e7e253c8d8bbd",
+      "role": "retained baseline/diagnostic"
+    },
+    {
+      "path": "visuals/01-work-before-pause.png",
+      "bytes": 142291,
+      "sha256": "489350c5e1f7f17eb86d0c1278870fb2e9dfd18bd65125bb4b36919bf88c9687",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/02-work-restored-before-ack.png",
+      "bytes": 142418,
+      "sha256": "d0130d3aa0e317d0eb4943309fd14f4d4422fc11af8d4ed728a64e586662d7df",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/03-course-before-restart.png",
+      "bytes": 142270,
+      "sha256": "03c9619bd2c01f1b3f4f4e62b06b5c56cf4381e199f9c0e208a9b87570f6d778",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/04-course-after-restore.png",
+      "bytes": 141732,
+      "sha256": "edcf1832b51a23be9779f082c29cf979c266bbff326470fd09bb841583a8a8d3",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/05-next-day-before-restart.png",
+      "bytes": 143883,
+      "sha256": "b6b699809f835ee4dc202ebce2dde4abd36e06b347be0e2f642568cfc93e84c8",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/06-next-day-after-restore.png",
+      "bytes": 138725,
+      "sha256": "1b8616e659f5521d608b103e0e39a1b6d979bc35daf55462ab9e74537b8a4990",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/07-unreadable-fatal.png",
+      "bytes": 46024,
+      "sha256": "d514799642df444f4a89039e9b8760669a2c3c8ca1faac8344dc1eadd13527d4",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "visuals/08-both-invalid-fatal.png",
+      "bytes": 47942,
+      "sha256": "f4be991bf8d7dfeaf06f2e65915eb422f2c0acc3fc02c50046373f35a323b19f",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "windows-documentation-final-receipt.json",
+      "bytes": 255,
+      "sha256": "c1357f71211952b92c717f5128327cf1b5de14436700d99089acc2b0914baea3",
+      "role": "final verification/tooling/diagnostic"
+    },
+    {
+      "path": "windows-documentation-receipt.json",
+      "bytes": 220,
+      "sha256": "5db0da07e0315c32c7b8e6f773d27ff679f82b5f453b4a890f6b76aecc1e4c48",
+      "role": "retained baseline/diagnostic"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+Performing Streamed Install
+
+Success
+
+
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=34ms (0ms mobile, 0ms wifi, 34ms not connected)
+
+
+{"label": "A-created", "run": "run-dc62626c50e9413fbcaa191586f9301c", "revision": 1, "date": "2026-09-01", "minute": 0, "cursor": 0, "activity": "run-dc62626c50e9413fbcaa191586f9301c/op/1", "xp": null, "course": null, "cash": 2000000, "claims": 0}
+{"label": "A-employed", "run": "run-dc62626c50e9413fbcaa191586f9301c", "revision": 2, "date": "2026-09-01", "minute": 0, "cursor": 0, "activity": "run-dc62626c50e9413fbcaa191586f9301c/op/2", "xp": 0, "course": null, "cash": 2000000, "claims": 0}
+Traceback (most recent call last):
+  File "<USER>\.codex\visualizations\2026\10\03\01a101e2-7e60-7a21-997e-c93dc46c9888\m7-t02-runtime\run_android_final.py", line 49, in <module>
+    assert paused['PlaybackCursor']==0 and acknowledged['PlaybackCursor']==1
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+{"label": "B-before-work", "run": "run-dc62626c50e9413fbcaa191586f9301c", "revision": 2, "date": "2026-09-01", "minute": 0, "cursor": 0, "activity": "run-dc62626c50e9413fbcaa191586f9301c/op/2", "xp": 0, "course": null, "cash": 2000000, "claims": 0}
+{"label": "B-background", "run": "run-dc62626c50e9413fbcaa191586f9301c", "revision": 5, "date": "2026-09-01", "minute": 660, "cursor": 0, "activity": "run-dc62626c50e9413fbcaa191586f9301c/activity/2026-09-01/540", "xp": 10, "course": null, "cash": 2000000, "claims": 0}
+{"label": "B-after-wait", "run": "run-dc62626c50e9413fbcaa191586f9301c", "revision": 5, "date": "2026-09-01", "minute": 660, "cursor": 0, "activity": "run-dc62626c50e9413fbcaa191586f9301c/activity/2026-09-01/540", "xp": 10, "course": null, "cash": 2000000, "claims": 0}
+  bash arg: -p
+
+  bash arg: com.DefaultCompany.urp_2d
+
+  bash arg: -c
+
+  bash arg: android.intent.category.LAUNCHER
+
+  bash arg: 1
+
+Events injected: 1
+
+## Network stats: elapsed time=13ms (0ms mobile, 0ms wifi, 13ms not connected)
+
+
+{"label": "B-restored-acknowledged", "run": "run-dc62626c50e9413fbcaa191586f9301c", "revision": 5, "date": "2026-09-01", "minute": 660, "cursor": 0, "activity": "run-dc62626c50e9413fbcaa191586f9301c/activity/2026-09-01/540", "xp": 10, "course": null, "cash": 2000000, "claims": 0}

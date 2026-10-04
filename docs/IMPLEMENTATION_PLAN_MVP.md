@@ -500,7 +500,7 @@ Unity documents that local iOS application builds require Xcode on macOS; Window
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `unity-game-director`, `unity-gameplay-systems`, `unity-mcp-bridge`, `unity-qa-release`, `unity-debug-profiler`, `ui`, `ui-ugui`, `unity-ui-designer`, `vietnam-art-direction`, `unity-cli`, `unity-localization`. **Dependencies:** M7-T01.  
   **Implementation/systems:** Wire autosaves and lifecycle checkpoints; restore current activities and presentation cursors without recommitting outcomes.  
   **Acceptance/tests:** Fresh launch, app pause during work, mid-course restart, next-day continuation, and backup recovery pass in Editor and on Android. iOS smoke remains current.  
-  **Visual:** Before/after restore capture and full-loop recording. **Save:** Lifecycle integration; migration if checkpoint fields change. **Evidence:** Device/PlayMode results; Astra audits Gate A.
+  **Visual:** Before/after restore capture and full-loop recording. **Save:** Lifecycle integration; migration if checkpoint fields change. **Evidence:** Device/PlayMode results; Astra audits Gate A. [Local runtime acceptance, 2026-10-04](evidence/M7-T02/RUNTIME-2026-10-04/REPORT.md): Unity and dedicated emulator verified; physical Android and current iOS smoke remain unexecuted. Checkbox remains open.
 
 ### M8 — Business lifecycle and compatibility
 
