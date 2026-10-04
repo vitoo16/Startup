@@ -148,7 +148,7 @@ internal static class Program
         foreach (var month in new[] { false, true }) foreach (var partial in new[] { false, true })
         {
             var checkpoint = HistoricalCheckpoint(month, partial);
-            var serializer = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator());
+            var serializer = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
             Equal(LoadStatus.Valid, serializer.DeserializeAndValidate(checkpoint).Status);
             var f = new Fixture(state: serializer.DeserializeAndValidate(checkpoint).State!, persisted: checkpoint);
             foreach (var root in new[] { "abc", "$batch/3:abc", "fresh" })
@@ -170,7 +170,7 @@ internal static class Program
         foreach (var owner in new[] { "abc", "$batch/3:abc" }) foreach (var month in new[] { false, true })
         {
             var checkpoint = HistoricalCheckpoint(month, false);
-            var state = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator()).DeserializeAndValidate(checkpoint).State!;
+            var state = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration()).DeserializeAndValidate(checkpoint).State!;
             var expected = state.Receipts.Where(x => x.ParentPayload.Length > 0).OrderBy(x => x.Revision).ToArray();
             var f = new Fixture(state: state, persisted: checkpoint, owners: Owners(owner));
             var request = new CommandEnvelope("run", owner, 2, new GameCommand(CommandKind.AdvanceBoundary));
@@ -197,7 +197,7 @@ internal static class Program
         foreach (var owner in new[] { "abc", "$batch/3:abc" }) foreach (var month in new[] { false, true })
         {
             var checkpoint = HistoricalCheckpoint(month, true);
-            var state = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator()).DeserializeAndValidate(checkpoint).State!;
+            var state = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration()).DeserializeAndValidate(checkpoint).State!;
             var f = new Fixture(state: state, persisted: checkpoint, owners: Owners(owner));
             var request = new CommandEnvelope("run", owner, 2, new GameCommand(CommandKind.AdvanceBoundary));
             var resumed = Advance(f, request, month);
@@ -231,7 +231,7 @@ internal static class Program
     private static void HistoricalOwnershipFailureSafety()
     {
         var checkpoint = HistoricalCheckpoint(false, true);
-        var state = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator()).DeserializeAndValidate(checkpoint).State!;
+        var state = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration()).DeserializeAndValidate(checkpoint).State!;
         var bindings = Owners("abc");
         var f = new Fixture(state: state, persisted: checkpoint, owners: bindings);
         bindings["$batch/3:abc/"] = "$batch/3:abc";
@@ -256,10 +256,10 @@ internal static class Program
     {
         foreach (var month in new[] { false, true })
         {
-            var state = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator()).DeserializeAndValidate(HistoricalCheckpoint(month, true)).State!;
+            var state = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration()).DeserializeAndValidate(HistoricalCheckpoint(month, true)).State!;
             foreach (var receipt in state.Receipts.Where(x => x.ParentPayload.Length > 0))
                 receipt.CommandId = "legacy/" + receipt.CommandId.Substring(receipt.CommandId.LastIndexOf('/') + 1);
-            var checkpoint = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator()).Serialize(state);
+            var checkpoint = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration()).Serialize(state);
             var f = new Fixture(state: state, persisted: checkpoint);
             var request = new CommandEnvelope("run", "legacy", 2, new GameCommand(CommandKind.AdvanceBoundary));
             var resumed = Advance(f, request, month);
@@ -307,11 +307,11 @@ internal static class Program
     private static void TruncatedSkillsRemainCorrupt()
     {
         var catalog = Catalog();
-        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator());
+        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var backup = CreateCharacterCheckpoint(catalog);
         var truncated = serializer.DeserializeAndValidate(backup).State!;
         truncated.Skills.Clear();
-        var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(truncated), 1, truncated.Revision);
+        var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(truncated), SaveSchema.CurrentVersion, truncated.Revision);
         Equal(LoadStatus.Corrupt, serializer.DeserializeAndValidate(bytes).Status);
         var directory = Path.Combine(Path.GetTempPath(), "StartupLifeAstraChecks", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
@@ -340,7 +340,7 @@ internal static class Program
             foreach (var partial in new[] { false, true })
             {
                 var catalog = Catalog();
-                var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator());
+                var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
                 var checkpoint = HistoricalCheckpoint(month, partial);
                 var path = SavePath(checkpoint);
                 var original = serializer.DeserializeAndValidate(checkpoint).State!;
@@ -404,7 +404,7 @@ internal static class Program
         foreach (var phase in new[] { "before-replace", "after-replace", "before-compatibility-backup" })
         {
             var catalog = Catalog();
-            var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator());
+            var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
             var checkpoint = HistoricalCheckpoint(false, false);
             var path = SavePath(checkpoint);
             File.WriteAllBytes(path + ".backup", checkpoint);
@@ -445,7 +445,7 @@ internal static class Program
     private static void CompatibilityWriteRestrictions()
     {
         var catalog = Catalog();
-        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator());
+        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var expected = HistoricalCheckpoint(false, false);
         var path = SavePath(expected);
         var store = new AtomicFileSaveStore(path, serializer);
@@ -453,7 +453,7 @@ internal static class Program
         changed.Cash++;
         // The public serializer now rejects forged cash before storage. Build an adversarial envelope
         // directly so this H1 test still reaches the compatibility-store full-checkpoint guard.
-        var forgedCash = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(changed), 1, changed.Revision);
+        var forgedCash = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(changed), SaveSchema.CurrentVersion, changed.Revision);
         Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, forgedCash));
         Bytes(expected, File.ReadAllBytes(path));
         changed = serializer.DeserializeAndValidate(expected).State!;
@@ -476,7 +476,7 @@ internal static class Program
         differentBackup.Cash++;
         // F1 makes same-generation forged gameplay semantically invalid. Keep raw checksummed bytes here
         // to prove an invalid/different backup is never mistaken for a pending ownership mirror.
-        var differentBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(differentBackup), 1, differentBackup.Revision);
+        var differentBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(differentBackup), SaveSchema.CurrentVersion, differentBackup.Revision);
         File.WriteAllBytes(path + ".backup", differentBytes);
         Equal("", store.Read().Reason);
         True(GameSession.TryRestore(catalog, serializer, store, out _, out _));
@@ -486,7 +486,7 @@ internal static class Program
     private static void CrossFieldCorruptionRemainsCorrupt()
     {
         var catalog = Catalog();
-        var original = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator()).DeserializeAndValidate(HistoricalCheckpoint(false, true)).State!;
+        var original = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration()).DeserializeAndValidate(HistoricalCheckpoint(false, true)).State!;
         var mutations = new Action<GameState>[]
         {
             s => { s.Employment!.Xp = -1; s.Employment.DefinitionRevision = "unavailable"; },
@@ -500,7 +500,7 @@ internal static class Program
             s => s.CompletedCourses.Add(new CourseState { DefinitionId = "missing-course", InstanceId = "old", ProgressUnits = -1 })
         };
         foreach (var mutation in mutations)
-            foreach (var serializer in new[] { new JsonSaveSerializer(CatalogWithoutSkills(), GameSession.CreateRestoreValidator()), new JsonSaveSerializer(Catalog("v2"), GameSession.CreateRestoreValidator()) })
+            foreach (var serializer in new[] { new JsonSaveSerializer(CatalogWithoutSkills(), GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration()), new JsonSaveSerializer(Catalog("v2"), GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration()) })
             {
                 var state = CloneState(original);
                 mutation(state);
@@ -512,11 +512,11 @@ internal static class Program
         var sceneState = CloneState(original);
         sceneState.Scheduler.Deck.Add("missing-scene");
         sceneState.Receipts[0].MinutesConsumed = -1;
-        Equal(LoadStatus.Corrupt, DeserializeRaw(new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator()), sceneState).Status);
+        Equal(LoadStatus.Corrupt, DeserializeRaw(new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration()), sceneState).Status);
         var corrupt = CloneState(original);
         corrupt.Employment!.Xp = -1;
-        var missing = new JsonSaveSerializer(CatalogWithoutSkills(), GameSession.CreateRestoreValidator());
-        var path = SavePath(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(corrupt), 1, corrupt.Revision));
+        var missing = new JsonSaveSerializer(CatalogWithoutSkills(), GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
+        var path = SavePath(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(corrupt), SaveSchema.CurrentVersion, corrupt.Revision));
         var backup = GameSession.NewState(CatalogWithoutSkills(), "backup", 54321, new SimDate(2026, 9, 7));
         File.WriteAllBytes(path + ".backup", missing.Serialize(backup));
         Equal(LoadStatus.RecoveredBackup, new AtomicFileSaveStore(path, missing).Read().Status);
@@ -525,7 +525,7 @@ internal static class Program
     private static void InvalidHistoricalOwnershipFailsClosed()
     {
         var catalog = Catalog();
-        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator());
+        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var state = serializer.DeserializeAndValidate(HistoricalCheckpoint(false, true)).State!;
         state.Receipts.Last().CommandId = "abc/0";
         var checkpoint = serializer.Serialize(state);
@@ -540,7 +540,7 @@ internal static class Program
     private static void UnsupportedCareerRevisionIsPreserved()
     {
         var oldCatalog = Catalog("v1");
-        var oldSerializer = new JsonSaveSerializer(oldCatalog, GameSession.CreateRestoreValidator());
+        var oldSerializer = new JsonSaveSerializer(oldCatalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var initial = GameSession.NewState(oldCatalog, "run", 12345, new SimDate(2026, 9, 7));
         var memory = new MemoryStore(oldSerializer, null);
         var session = new GameSession(initial, oldCatalog, oldSerializer, memory);
@@ -549,7 +549,7 @@ internal static class Program
         var unsupportedPrimary = session.ExportCheckpoint();
 
         var newCatalog = Catalog("v2");
-        var newSerializer = new JsonSaveSerializer(newCatalog, GameSession.CreateRestoreValidator());
+        var newSerializer = new JsonSaveSerializer(newCatalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var direct = newSerializer.DeserializeAndValidate(unsupportedPrimary);
         Equal(LoadStatus.UnsupportedContent, direct.Status);
         Equal("save.content_revision", direct.Reason);
@@ -563,7 +563,7 @@ internal static class Program
         var oldCatalog = Catalog();
         var unsupportedPrimary = CreateCharacterCheckpoint(oldCatalog);
         var newCatalog = CatalogWithoutSkills();
-        var serializer = new JsonSaveSerializer(newCatalog, GameSession.CreateRestoreValidator());
+        var serializer = new JsonSaveSerializer(newCatalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var result = serializer.DeserializeAndValidate(unsupportedPrimary);
         Equal(LoadStatus.UnsupportedContent, result.Status);
         Equal("save.content_id", result.Reason);
@@ -575,7 +575,7 @@ internal static class Program
         var unsupportedPrimary = CreateCheckpointWithConsumedCareerScene(oldCatalog);
 
         var missingSceneCatalog = Catalog(sceneId: "meeting");
-        var missingSerializer = new JsonSaveSerializer(missingSceneCatalog, GameSession.CreateRestoreValidator());
+        var missingSerializer = new JsonSaveSerializer(missingSceneCatalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var missing = missingSerializer.DeserializeAndValidate(unsupportedPrimary);
         Equal(LoadStatus.UnsupportedContent, missing.Status);
         Equal("save.content_id", missing.Reason);
@@ -583,7 +583,7 @@ internal static class Program
         var validBackup = CreateCharacterCheckpoint(missingSceneCatalog);
         AssertUnsupportedPrimaryPreserved(missingSerializer, unsupportedPrimary, validBackup, "save.content_id");
 
-        var foreignSceneSerializer = new JsonSaveSerializer(CatalogWithForeignCoding(), GameSession.CreateRestoreValidator());
+        var foreignSceneSerializer = new JsonSaveSerializer(CatalogWithForeignCoding(), GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var wrongCareer = foreignSceneSerializer.DeserializeAndValidate(unsupportedPrimary);
         Equal(LoadStatus.Corrupt, wrongCareer.Status);
     }
@@ -592,8 +592,8 @@ internal static class Program
     {
         var oldCatalog = Catalog("v1");
         var checkpoint = CreateEmployedCheckpoint(oldCatalog);
-        var state = new JsonSaveSerializer(oldCatalog, GameSession.CreateRestoreValidator()).DeserializeAndValidate(checkpoint).State!;
-        var newSerializer = new JsonSaveSerializer(Catalog("v2"), GameSession.CreateRestoreValidator());
+        var state = new JsonSaveSerializer(oldCatalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration()).DeserializeAndValidate(checkpoint).State!;
+        var newSerializer = new JsonSaveSerializer(Catalog("v2"), GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
 
         var emptyCareer = CloneState(state);
         emptyCareer.Employment!.CareerId = "";
@@ -619,7 +619,7 @@ internal static class Program
 
     private static byte[] CreateCharacterCheckpoint(ContentCatalog catalog)
     {
-        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator());
+        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var initial = GameSession.NewState(catalog, "run", 12345, new SimDate(2026, 9, 7));
         var session = new GameSession(initial, catalog, serializer, new MemoryStore(serializer, null));
         Equal(CommandStatus.Committed, session.Execute(new CommandEnvelope("run", "create", 0, new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female"))).Status);
@@ -628,7 +628,7 @@ internal static class Program
 
     private static byte[] CreateEmployedCheckpoint(ContentCatalog catalog)
     {
-        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator());
+        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var initial = GameSession.NewState(catalog, "run", 12345, new SimDate(2026, 9, 7));
         var session = new GameSession(initial, catalog, serializer, new MemoryStore(serializer, null));
         Equal(CommandStatus.Committed, session.Execute(new CommandEnvelope("run", "create", 0, new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female"))).Status);
@@ -638,7 +638,7 @@ internal static class Program
 
     private static byte[] CreateCheckpointWithConsumedCareerScene(ContentCatalog catalog)
     {
-        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator());
+        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var initial = GameSession.NewState(catalog, "run", 12345, new SimDate(2026, 9, 7));
         var session = new GameSession(initial, catalog, serializer, new MemoryStore(serializer, null));
         Equal(CommandStatus.Committed, session.Execute(new CommandEnvelope("run", "create", 0, new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female"))).Status);
@@ -650,7 +650,7 @@ internal static class Program
     }
 
     private static LoadResult DeserializeRaw(JsonSaveSerializer serializer, GameState state) =>
-        serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision));
+        serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), SaveSchema.CurrentVersion, state.Revision));
 
     private static GameState CloneState(GameState state) => JsonSaveSerializer.ReadObject<GameState>(JsonSaveSerializer.WriteObject(state));
 
@@ -716,7 +716,7 @@ internal static class Program
         public Fixture(ContentCatalog? catalog = null, GameState? state = null, byte[]? persisted = null, IReadOnlyDictionary<string, string>? owners = null)
         {
             Catalog = catalog ?? Program.Catalog();
-            Serializer = new JsonSaveSerializer(Catalog, GameSession.CreateRestoreValidator());
+            Serializer = new JsonSaveSerializer(Catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
             var initial = state ?? GameSession.NewState(Catalog, "run", 12345, new SimDate(2026, 9, 7));
             Store = new MemoryStore(Serializer, persisted);
             Session = new GameSession(initial, Catalog, Serializer, Store, owners);
@@ -773,7 +773,7 @@ internal static class Program
     private static void Bytes(byte[] expected, byte[] actual) => True(expected.SequenceEqual(actual));
     private static void SameStateExceptReceiptIds(byte[] expected, byte[] actual)
     {
-        var serializer = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator());
+        var serializer = new JsonSaveSerializer(Catalog(), GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var oldState = serializer.DeserializeAndValidate(expected).State!;
         var newState = serializer.DeserializeAndValidate(actual).State!;
         Equal(oldState.Receipts.Count, newState.Receipts.Count);
