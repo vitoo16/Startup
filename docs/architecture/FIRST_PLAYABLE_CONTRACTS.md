@@ -194,23 +194,43 @@ These are acceptance cases to implement, **not test results**:
 | Four businesses + study + kiosk | no minute or cash spent twice; iteration-order-independent result |
 | Future/corrupt/migrated saves | preservation, explicit diagnostic, deterministic supported continuation |
 
-## 12. Provisional work during external provisioning
+## 12. Platform sequencing and external provisioning
 
-**Architecture decision, amended 2026-09-30:** permit staged Windows Unity and Android work while the Mac/iOS portion of M0-T04 remains externally blocked. M0-T04 is retained as a full acceptance dependency; its external portion need not prevent reversible implementation and platform-specific verification of the first playable. This allowance changes work order only. It does not exclude iOS, reduce MVP scope, remove a task dependency from the ledger, or lower any acceptance criterion.
+### Historical staging policy — 2026-09-30
 
-The reported installation/licensing progress is not baseline evidence. Proceed in these stages under one declared implementation owner (currently primary Codex following the explicit takeover; do not claim the unavailable Sol model performed the work):
+The project originally permitted staged Windows Unity and Android work while the Mac/iOS portion of M0-T04 remained externally blocked, but retained missing iOS evidence as a blocker for full M7 acceptance. That policy was correct for the evidence state at the time and remains historical provenance for the work that followed.
 
-1. **Engine-free preparation:** while the Editor is unavailable, author isolated Core/Simulation/Application/Infrastructure source and a .NET scenario harness against these contracts. Keep scene/UI integration outside this stage. Its reports prove only the exercised .NET behavior.
-2. **Windows baseline:** execute M0-T03 after its available prerequisites are verified. Confirm the actual installed `6000.3.25f1` Editor, resolved/pinned packages, clean project import/compile, portrait Universal 2D/URP, uGUI/TMP, Vietnamese glyphs, safe area, metadata, and baseline screenshot. Installation completion or an active license alone does not satisfy this stage. Establish the local M0-T04 test/build entrypoints with honest failure exits and retained smoke-test reports; use the documented Editor/CLI fallback if MCP is unavailable and record its status separately.
-3. **Provisional first playable integration:** after the Windows baseline is evidenced, integrate the reviewed simulation through the Application command/snapshot boundary into a minimal Unity shell. Work through M1–M7 in their functional order; prove the relevant pure behavior in Unity EditMode before wiring dependent gameplay, then run PlayMode input/playback/save-resume cases and collect portrait visual evidence. Android build/test work proceeds once matching Android modules/toolchain are verified; physical-device checks require an actual available device. An Editor screenshot or APK build is not a physical-device pass.
+The useful staging rules remain:
 
-This permits the first playable's Developer workday, evening study, salary/payday, and save/resume integration using the approved small development placeholders. It does not authorize bypassing missing core behavior, migration coverage, content validation, Vietnamese art direction, or asset gates to make a convincing shell. Load each task's required skills before its implementation. Keep scene/prefab/asset edits in the Editor or generated Editor scripts; maintain one owner per affected system. The pure simulation remains independent of scenes and balance data remains outside presentation code.
+1. **Engine-free preparation:** isolated Core/Simulation/Application/Infrastructure work may be verified without a live Editor, but such reports prove only the exercised engine-free behavior.
+2. **Windows baseline:** the pinned Unity Editor/packages, clean import/compile, portrait Universal 2D/URP, uGUI/TMP, Vietnamese glyphs, safe area, and local test/build entrypoints require actual evidence.
+3. **Provisional first playable integration:** Unity EditMode/PlayMode and Android execution must be labeled by the platform actually exercised. Android emulator execution is not physical-device evidence.
 
-Record the downstream work as **provisional implementation — external dependency verification pending** with separate .NET, Unity EditMode, Unity PlayMode, Android build, Android device, and iOS evidence. Retain original test fixtures and replay the same cases on each applicable platform. M0-T04 and the full M1–M7 milestone gates remain unchecked pending their complete dependency/evidence review; the overall first playable must not be called accepted. M0-T03 may be assessed only against its own complete stated acceptance evidence. The implementation-ledger owner records partial results and the Mac/iOS external blocker without treating it as a failed game behavior or a passed platform test.
+The historical rule that missing iOS subcriteria necessarily kept M7-T02 and downstream implementation blocked is superseded only by the owner-authorized amendment below. Other staging, evidence, architecture, and release constraints remain in force.
 
-When a Mac/iOS route becomes available, pin the matching Editor/packages, establish the missing M0-T04 baseline/CI/build route, and rerun the complete relevant first-playable and save/serializer/IL2CPP/lifecycle matrix on the required iPhone before closing the blocked acceptance dependency. Any platform-specific fixes require affected cross-platform regressions. No dual-platform, release-candidate, or milestone-completion claim is allowed on Android-only evidence.
+### Owner-authorized amendment — Windows/Android-first acceptance, ADR-010
 
-Sequencing amendment closeout: skills used are the previously loaded session orchestrator, gameplay guardian, gameplay/director, MCP bridge, QA release, debug profiler, and economy skills. Validation: compared this allowance against M0-T03/M0-T04 and M1–M7 dependencies and evidence requirements; no acceptance text or ledger checkbox changed. Visual evidence: none. Save impact: none. Files changed by this amendment: this contract only. Known limitations: actual Editor/import/test/build/device results still require evidence; Mac/iOS remains external. Commit: none by this reviewer.
+**ADR-010 is authoritative for current platform sequencing.** iOS remains a required later platform/release target. Its execution and acceptance are temporarily deferred because matching Mac/iOS infrastructure is unavailable.
+
+M7-T02 may close using its verified Editor and Android acceptance. Android emulator execution satisfies **M7-T02's Android criterion**; physical Android remains an uncompleted platform/device requirement under **M18-T01**. iOS execution is **DEFERRED — NOT RUN**, never PASS, and is owned by **M18-T02**.
+
+This amendment supersedes the earlier provisional-only/full-acceptance dependency restriction **solely where deferred iOS subcriteria would block Windows/Android task closure or downstream implementation**.
+
+The following remain explicit:
+
+- M0-T04 remains incomplete. Its Mac/iOS runner, matching Unity module/toolchain, and build-route obligations are deferred prerequisites that must be evidenced before M18-T02 can close.
+- No unrelated prerequisite is waived.
+- No other task automatically closes.
+- M8-T01 may begin only after ADR-010 plus the M7-T02 ledger/evidence reconciliation merges.
+- M18-T01 remains open for physical Android lifecycle, safe-area, touch, restart, storage, and layout/device-matrix evidence.
+- M18-T02 remains open for Unity iOS export, Xcode/IL2CPP, signing, serializer/AOT/stripping, persistence/lifecycle, and physical-iPhone evidence.
+- M18-T02 and downstream release gates remain blocked until real iOS evidence exists.
+- Android or Editor evidence cannot substitute for iOS evidence.
+- Any later iOS-specific fix requires the affected cross-platform regressions.
+- SaveVersion, persisted fields, M1 frozen APIs, gameplay architecture, save architecture, lifecycle architecture, and deterministic simulation are unchanged.
+
+For current M7-T02 status and provenance, see [ADR-010](../adr/ADR-010-windows-android-first-ios-acceptance-deferral.md), the [M7-T02 reconciliation](../evidence/M7-T02/RECONCILIATION.md), the [runtime report](../evidence/M7-T02/RUNTIME-2026-10-04/REPORT.md), and the [publication record](../evidence/M7-T02/RUNTIME-2026-10-04/publication/PUBLICATION.md).
+
 
 ## Architecture review evidence — 2026-09-30
 
