@@ -432,7 +432,23 @@ internal static class Program
             var f = new Fixture();
             var fixture = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "synthetic-v0.json"));
             var migrated = f.Serializer.DeserializeAndValidate(fixture);
-            if (migrated.Status != LoadStatus.Valid) throw new Exception("Synthetic v0 migration failed: " + migrated.Status + " / " + migrated.Reason);
+            if (migrated.Status != LoadStatus.Valid)
+            {
+                try
+                {
+                    var envelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(fixture);
+                    var payload = Convert.FromBase64String(envelope.PayloadBase64);
+                    var historical = new SyntheticV0Migration().Migrate(payload);
+                    var currentPayload = new V1ToV2Migration().Migrate(historical);
+                    var projected = JsonSaveSerializer.ReadObject<GameState>(currentPayload);
+                    StateValidation.Validate(projected, f.Content, GameSession.CreateRestoreValidator());
+                }
+                catch (Exception detail)
+                {
+                    throw new Exception("Synthetic v0 migration failed: " + migrated.Status + " / " + migrated.Reason + " / " + detail);
+                }
+                throw new Exception("Synthetic v0 migration failed without direct validation detail: " + migrated.Status + " / " + migrated.Reason);
+            }
             Equal(SaveSchema.CurrentVersion, migrated.State!.SaveVersion);
             var current = f.Serializer.DeserializeAndValidate(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "current-v1.json")));
             Equal(LoadStatus.Valid, current.Status); Equal(current.State!.Name, migrated.State.Name); Equal(current.State.Cash, migrated.State.Cash);
