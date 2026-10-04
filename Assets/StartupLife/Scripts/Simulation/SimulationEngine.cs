@@ -418,6 +418,7 @@ namespace StartupLife.Simulation
             Require(Same(state.Arrears, replay.Arrears, (a, b) => a.Id == b.Id && a.DueIso == b.DueIso && a.Amount == b.Amount), "arrear provenance");
             Require(Same(state.Ledger, replay.Ledger, (a, b) => a.Id == b.Id && a.OperationId == b.OperationId && a.Category == b.Category &&
                 a.AttributionId == b.AttributionId && a.Amount == b.Amount && a.CashDelta == b.CashDelta), "ledger provenance");
+            Require(Same(state.Businesses, replay.Businesses, BusinessEquals), "business provenance");
             Require(state.History.SequenceEqual(replay.History), "committed history");
             // PendingChoiceId, event RNG and presentation fields have separate contracts; no new M1 rules here.
         }
@@ -426,7 +427,8 @@ namespace StartupLife.Simulation
             state.Skills.All(x => content.Skills.ContainsKey(x.Id)) &&
             state.PreviousEmployment.Concat(state.Employment == null ? Array.Empty<EmploymentState>() : new[] { state.Employment }).All(x =>
                 content.Careers.TryGetValue(x.CareerId, out var career) && career.Revision == x.DefinitionRevision) &&
-            state.CompletedCourses.Concat(state.Course == null ? Array.Empty<CourseState>() : new[] { state.Course }).All(x => content.Courses.ContainsKey(x.DefinitionId));
+            state.CompletedCourses.Concat(state.Course == null ? Array.Empty<CourseState>() : new[] { state.Course }).All(x => content.Courses.ContainsKey(x.DefinitionId)) &&
+            state.Businesses.All(x => content.Businesses.TryGetValue(x.DefinitionId, out var business) && business.Revision == x.DefinitionRevision);
 
         private static void ValidateKnownScheduler(GameState state, ContentCatalog content)
         {
@@ -512,5 +514,10 @@ namespace StartupLife.Simulation
             a.Xp == b.Xp && a.Rank == b.Rank && a.ScenesToday == b.ScenesToday && a.WorkDateIso == b.WorkDateIso;
         private static bool CourseEquals(CourseState? a, CourseState? b) =>
             a == null || b == null ? a == b : a.InstanceId == b.InstanceId && a.DefinitionId == b.DefinitionId && a.ProgressUnits == b.ProgressUnits && a.Completed == b.Completed;
+        private static bool BusinessEquals(BusinessState a, BusinessState b) =>
+            a.InstanceId == b.InstanceId && a.DefinitionId == b.DefinitionId && a.DefinitionRevision == b.DefinitionRevision &&
+            a.OpenedIso == b.OpenedIso && a.OpenedMinute == b.OpenedMinute && a.ClosedIso == b.ClosedIso &&
+            a.ClosedMinute == b.ClosedMinute && a.PricingPosture == b.PricingPosture &&
+            a.InitialInvestment == b.InitialInvestment && a.ReinvestedAmount == b.ReinvestedAmount;
     }
 }
