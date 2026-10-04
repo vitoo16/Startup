@@ -18,7 +18,9 @@ $requiredFiles = @(
     'docs/AI_PRODUCTION_WORKFLOW.md',
     'docs/SKILLS_MANIFEST.md',
     'docs/IMPLEMENTATION_PLAN_MVP.md',
-    'docs/evidence/M0-T01/SESSION.md'
+    'docs/evidence/M0-T01/SESSION.md',
+    'docs/adr/ADR-010-windows-android-first-ios-acceptance-deferral.md',
+    'docs/evidence/M7-T02/RECONCILIATION.md'
 )
 
 foreach ($relativePath in $requiredFiles) {
@@ -94,7 +96,7 @@ if (Test-Path -LiteralPath $ledgerPath -PathType Leaf) {
     }
 
     $checkedTaskIds = @($taskMatches | Where-Object { $_.Groups['status'].Value -eq 'x' } | ForEach-Object { $_.Groups['id'].Value })
-    $expectedCompletedTaskIds = @('M0-T01', 'M2-T02', 'M3-T02', 'M6-T01', 'M6-T02', 'M7-T01')
+    $expectedCompletedTaskIds = @('M0-T01', 'M2-T02', 'M3-T02', 'M6-T01', 'M6-T02', 'M7-T01', 'M7-T02')
     $completedTaskDiff = @(Compare-Object -ReferenceObject $expectedCompletedTaskIds -DifferenceObject $checkedTaskIds)
     if ($completedTaskDiff.Count -ne 0) {
         Add-Failure "Completed task set differs from reconciled ledger. Expected: $($expectedCompletedTaskIds -join ', '); actual: $($checkedTaskIds -join ', ')"
@@ -243,6 +245,34 @@ if (Test-Path -LiteralPath $ledgerPath -PathType Leaf) {
     $legacyRows = [regex]::Matches($ledger, '(?m)^\| M[0-8] — .+ \| .+ \|$')
     if ($legacyRows.Count -ne 9) {
         Add-Failure "Expected 9 legacy M0-M8 mapping rows, found $($legacyRows.Count)"
+    }
+
+    if (-not $ledger.Contains('M7-T02 closes under ADR-010')) {
+        Add-Failure 'Ledger does not record M7-T02 closure under ADR-010'
+    }
+    if (-not $ledger.Contains('M18-T02 — iOS lifecycle, signing, and IL2CPP QA')) {
+        Add-Failure 'Ledger does not retain M18-T02 as the later iOS owner'
+    }
+}
+
+$adr010Path = Join-Path $repositoryRoot 'docs/adr/ADR-010-windows-android-first-ios-acceptance-deferral.md'
+$reconciliationPath = Join-Path $repositoryRoot 'docs/evidence/M7-T02/RECONCILIATION.md'
+if ((Test-Path -LiteralPath $adr010Path -PathType Leaf) -and (Test-Path -LiteralPath $reconciliationPath -PathType Leaf)) {
+    $adr010 = [IO.File]::ReadAllText($adr010Path)
+    $reconciliation = [IO.File]::ReadAllText($reconciliationPath)
+
+    if (-not $adr010.Contains('M18-T02')) {
+        Add-Failure 'ADR-010 does not assign later iOS acceptance to M18-T02'
+    }
+    if (-not $reconciliation.Contains('iOS: DEFERRED — NOT RUN')) {
+        Add-Failure 'M7-T02 reconciliation does not preserve deferred iOS as NOT RUN'
+    }
+    if (-not $reconciliation.Contains('Physical Android: NOT RUN — owned by M18-T01')) {
+        Add-Failure 'M7-T02 reconciliation does not preserve physical Android ownership under M18-T01'
+    }
+    if (($adr010 -match '(?im)^.*\biOS\b.*\bPASS\b') -or
+        ($reconciliation -match '(?im)^.*\biOS\b.*\bPASS\b')) {
+        Add-Failure 'Deferred iOS must not be represented as PASS'
     }
 }
 

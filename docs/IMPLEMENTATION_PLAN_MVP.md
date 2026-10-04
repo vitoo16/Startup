@@ -10,14 +10,12 @@ The first delivery gate is a small playable Developer workday with evening study
 
 ### ACTIVE_STATUS
 
-- **Active milestone:** M0 — Repository and Unity foundation.
-- **Completed:** M0-T01 — Canonical documentation and task ledger.
-- **In progress:** M0-T02 — skill installation and local tooling checks pass; Unity 6.3 compatibility remains unverified. See [tooling evidence](evidence/M0-T02/SESSION.md).
-- **In progress:** M0-T03 — Unity 6000.3.25f1 is installed and licensed. A real bundled Universal 2D project was initialized and imported without overwriting existing files; package versions were resolved through Unity's Package Manager. Portrait UI, compilation, and visual verification are in progress.
-- **Prepared ahead of external gates:** M1-T01 contracts/ADRs and an isolated M1–M6 backend subset. Four engine-free libraries compile under .NET Standard 2.1; 35 .NET behavior checks pass. These are not Unity task-completion results. See [provisional evidence](evidence/PROVISIONAL-FIRST-PLAYABLE/SESSION.md).
-- **External gates:** User confirmed no Mac host. iOS builds, signing, and iPhone QA are unavailable. The pinned 6000.3.25f1 Editor and active license pass 39/39 tooling checks. Android/iOS module installation encountered Unity Hub's install lock; modules and device builds remain unverified.
-- **Owner availability:** Both GPT-5.6 Sol workers hit an account usage limit; primary Codex explicitly took over incomplete implementation. Astra reviewed architecture. Gemini was not available or used.
-- **All other tasks:** Not started. No further roadmap checkbox is complete; dependency acceptance and platform gates remain authoritative.
+- **Current phase:** M7-T02 is **CLOSED under ADR-010 revised acceptance** after verified Editor + Android-emulator lifecycle/persistence acceptance and owner-authorized iOS deferral.
+- **M8-T01:** **READY AFTER THIS RECONCILIATION MERGES**. M8 has not started and no M8 implementation is included here.
+- **iOS:** **DEFERRED — NOT RUN — owned by M18-T02**. Missing Mac/Xcode/iPhone infrastructure is not represented as PASS.
+- **Physical Android:** **NOT RUN — owned by M18-T01**. Android emulator evidence from M7-T02 does not satisfy the physical-device gate.
+- **M0-T04:** **OPEN — deferred Mac/iOS prerequisite work remains**. Only those deferred iOS subcriteria cease to block current Windows/Android functional task progression under ADR-010; unrelated prerequisites remain required.
+- **Save/schema:** SaveVersion 1; persisted fields unchanged; migration none for this reconciliation.
 - **Evidence root:** `docs/evidence/<TASK-ID>/`.
 
 ### CURRENT_STATE
@@ -382,6 +380,9 @@ M13 can progress alongside M8–M12 under separate art ownership. Content drafts
   **Acceptance/tests:** EditMode/PlayMode smoke reports and Android/iOS baseline builds exist; failure exits fail CI; logs/artifacts are retained. Remote access, licenses, signing, and physical devices are external provisioning gates, never assumed available.  
   **Visual:** Baseline running on Android and iPhone. **Save:** None. **Evidence:** Runner/build manifests, reports, device captures.
 
+  **ADR-010 phase note:** Mac/iOS provisioning and execution are **DEFERRED — NOT RUN**. Only those deferred subcriteria cease to block current Windows/Android functional task progression. All other applicable prerequisites remain required. Full M0-T04 completion is not implied; its deferred iOS obligations must be evidenced before M18-T02 acceptance.
+
+
 Unity documents that local iOS application builds require Xcode on macOS; Windows alone cannot complete that build route. [Unity iOS environment setup](https://docs.unity3d.com/6000.3/Documentation/Manual/ios-environment-setup.html)
 
 ### M1 — Core architecture and save foundation
@@ -496,11 +497,12 @@ Unity documents that local iOS application builds require Xcode on macOS; Window
   **Acceptance/tests:** PlayMode journey completes without state writes from views; clock, salary accrual, XP, skill/course progress, and summary agree with simulation.  
   **Visual:** Portrait captures and a workday/evening recording, including a notched safe area. **Save:** None beyond existing state. **Evidence:** PlayMode report and playback captures.
 
-- [ ] **M7-T02 — First playable persistence and device gate**  
+- [x] **M7-T02 — First playable persistence and device gate**  
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `unity-game-director`, `unity-gameplay-systems`, `unity-mcp-bridge`, `unity-qa-release`, `unity-debug-profiler`, `ui`, `ui-ugui`, `unity-ui-designer`, `vietnam-art-direction`, `unity-cli`, `unity-localization`. **Dependencies:** M7-T01.  
   **Implementation/systems:** Wire autosaves and lifecycle checkpoints; restore current activities and presentation cursors without recommitting outcomes.  
-  **Acceptance/tests:** Fresh launch, app pause during work, mid-course restart, next-day continuation, and backup recovery pass in Editor and on Android. iOS smoke remains current.  
-  **Visual:** Before/after restore capture and full-loop recording. **Save:** Lifecycle integration; migration if checkpoint fields change. **Evidence:** Device/PlayMode results; Astra audits Gate A. [Local runtime acceptance, 2026-10-04](evidence/M7-T02/RUNTIME-2026-10-04/REPORT.md): Unity and dedicated emulator verified; physical Android and current iOS smoke remain unexecuted. Checkbox remains open.
+  **Acceptance/tests:** Fresh launch, app pause during work, mid-course restart, next-day continuation, and backup recovery pass in Editor and on Android. Verified Android emulator execution satisfies this task's Android criterion. iOS verification is deferred to M18-T02, with infrastructure prerequisites under M0-T04, and does not block M7-T02 during the current Windows/Android-first implementation phase. Physical Android acceptance remains owned by M18-T01. Neither deferred iOS nor physical Android is claimed passed.  
+  **Visual:** Existing verified before/after restore captures and full-loop recording. **Save:** SaveVersion 1; no persisted-field change or migration. **Evidence:** Existing runtime acceptance and Gate B audit, reconciled under [ADR-010](adr/ADR-010-windows-android-first-ios-acceptance-deferral.md) and [M7-T02 reconciliation](evidence/M7-T02/RECONCILIATION.md). Editor and Android emulator acceptance passed; lifecycle architecture and evidence provenance are clean. **iOS: DEFERRED — NOT RUN. Physical Android: NOT RUN.** M7-T02 closes under ADR-010; M8-T01 becomes dependency-ready after this reconciliation merges.
+
 
 ### M8 — Business lifecycle and compatibility
 
@@ -700,15 +702,17 @@ Unity’s documented package lines pair 2D Animation 13.x and PSD Importer 12.x 
 
 - [ ] **M18-T01 — Android lifecycle and layout QA**  
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `unity-cli`, `unity-debug-profiler`, `unity-mcp-bridge`, `unity-qa-release`, `unity-localization`, `ui`, `ui-ugui`, `unity-ui-designer`, `vietnam-art-direction`, `localization`. **Dependencies:** M17-T02.  
-  **Implementation/systems:** Resolve physical Android issues across compact, tall/notched, and baseline mid-range devices.  
-  **Acceptance/tests:** Safe areas, touch targets, interruption, low-memory restart, low storage, day/month rollover, and four-business saves pass.  
-  **Visual:** Device screenshots and lifecycle recordings. **Save:** Fixes require migrations if state changes. **Evidence:** Device/OS/build matrix and logs.
+  **Implementation/systems:** Execute and resolve physical Android device QA across compact, tall/notched, and baseline mid-range devices, including lifecycle interruption, safe areas, touch, cold restart/recovery, storage behavior, and the layout/device matrix.  
+  **Acceptance/tests:** Physical-device safe areas, touch targets, pause/resume lifecycle, restart/recovery, low-memory restart, low storage, day/month rollover, storage, and four-business saves pass across the required device/layout matrix. Android emulator M7 evidence does not complete M18-T01.  
+  **Visual:** Physical-device screenshots and lifecycle recordings. **Save:** Fixes require migrations if state changes. **Evidence:** Device/OS/build matrix and logs.
+
 
 - [ ] **M18-T02 — iOS lifecycle, signing, and IL2CPP QA**  
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `unity-cli`, `unity-debug-profiler`, `unity-mcp-bridge`, `unity-qa-release`, `unity-localization`, `ui`, `ui-ugui`, `unity-ui-designer`, `vietnam-art-direction`, `localization`. **Dependencies:** M18-T01, M0-T04.  
-  **Implementation/systems:** Build/archive on the Mac host and resolve iPhone lifecycle, stripping, fonts, safe-area, and persistence issues.  
-  **Acceptance/tests:** Physical iPhone full arc and interrupted restores pass; serializer/content types survive IL2CPP stripping; matching Unity/package pins are verified.  
-  **Visual:** iPhone captures and restart recordings. **Save:** Fixes require migrations if state changes. **Evidence:** Archive/build logs and device matrix.
+  **Implementation/systems:** Complete the deferred M0-T04 Mac/iOS route; verify matching Unity iOS modules/packages; export the Unity iOS project; build with Xcode/IL2CPP; resolve physical-iPhone lifecycle, stripping, fonts, safe-area, persistence, signing, and device-specific issues.  
+  **Acceptance/tests:** Require Unity iOS export; Xcode/IL2CPP build; physical iPhone fresh launch; save/load; pause/resume during work; mid-course cold restart; next-day continuation; backup recovery; the founder/full gameplay arc where applicable; and serializer/content types surviving stripping. Android/Editor evidence cannot substitute for this acceptance. Missing iOS infrastructure keeps M18-T02 open.  
+  **Visual:** Physical iPhone captures and restart/lifecycle recordings. **Save:** Fixes require migrations if state changes. **Evidence:** Unity export, Xcode/archive/build logs, stripping/serializer evidence, and physical-iPhone device matrix. **Status:** iOS remains **DEFERRED — NOT RUN** until this evidence exists.
+
 
 - [ ] **M18-T03 — Performance and memory gate**  
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `unity-cli`, `unity-debug-profiler`, `unity-mcp-bridge`, `unity-qa-release`, `unity-localization`, `manage-sprite-atlas`, `optimize-audio`. **Dependencies:** M18-T02.  

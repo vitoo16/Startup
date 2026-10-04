@@ -1,6 +1,41 @@
 # M7-T02 — First playable persistence and device gate
 
-## Current local execution addendum — 2026-10-04
+## Current status addendum — ADR-010 reconciliation
+
+### Historical status
+
+Before ADR-010, the published M7-T02 status was:
+
+`IMPLEMENTED — EXTERNAL ACCEPTANCE BLOCKER: iOS`
+
+with physical Android also unexecuted. Under the policy in force at that time, the checkbox remained open and M8 remained blocked. The runtime report's Gate B conclusion is retained as historical evidence; no iOS or physical-Android execution is retroactively claimed.
+
+### New policy status
+
+After the owner-authorized [ADR-010](../../adr/ADR-010-windows-android-first-ios-acceptance-deferral.md) and this [reconciliation](RECONCILIATION.md):
+
+`M7-T02 CLOSED under revised owner-authorized acceptance`
+
+The iOS criterion was **moved, not passed**.
+
+- **iOS: DEFERRED — NOT RUN — owned by M18-T02**
+- **Physical Android: NOT RUN — owned by M18-T01**
+- M0-T04 remains open for deferred Mac/iOS prerequisite work.
+- M8-T01 becomes dependency-ready only after the ADR-010 + ledger/evidence reconciliation merges; M8 has not started.
+- SaveVersion remains 1; no persisted field or migration changed.
+
+Evidence/provenance:
+
+- [ADR-010](../../adr/ADR-010-windows-android-first-ios-acceptance-deferral.md)
+- [Reconciliation](RECONCILIATION.md)
+- [Runtime report](RUNTIME-2026-10-04/REPORT.md)
+- [Publication report](RUNTIME-2026-10-04/publication/PUBLICATION.md)
+- Gate B historical conclusion is recorded in the runtime report.
+
+Everything below this addendum is retained as historical implementation/runtime evidence. Any wording there that says the task is unchecked or M8 is blocked describes the pre-ADR-010 policy and is superseded only for the revised acceptance/dependency status above.
+
+
+## Historical runtime status — 2026-10-04
 
 The [runtime acceptance report](RUNTIME-2026-10-04/REPORT.md) supersedes the historical
 NOT RUN entries below for Windows validation, Unity import/tests, portrait captures,
@@ -10,7 +45,7 @@ remain NOT RUN. M7-T02 remains unchecked; M8 remains NOT READY.
 
 The original GitHub implementation session below is retained as historical evidence.
 
-## Follow-up publication
+## Historical follow-up publication status
 
 The [publication record](RUNTIME-2026-10-04/publication/PUBLICATION.md) records transplantation
 onto the latest verified main, runtime-tree equality, fresh engine-free checks and evidence
