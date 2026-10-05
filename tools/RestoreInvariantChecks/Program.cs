@@ -438,7 +438,8 @@ internal static class Program
     private static void RejectBeforePublication(Fixture fixture, GameState state)
     {
         var before = fixture.Session.ExportCheckpoint();
-        var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), 1, state.Revision);
+        Equal(LoadStatus.Valid, fixture.Serializer.DeserializeAndValidate(before).Status);
+        var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(state), SaveSchema.CurrentVersion, state.Revision);
         Equal(LoadStatus.Corrupt, fixture.Serializer.DeserializeAndValidate(bytes).Status);
         var store = new MemoryStore(fixture.Serializer, bytes);
         True(!GameSession.TryRestore(fixture.Catalog, fixture.Serializer, store, out var restored, out var result));
