@@ -219,8 +219,7 @@ namespace StartupLife.Simulation
                 Fail("business.invalid_investment");
             if (state.Cash < command.Amount) Fail("economy.insufficient_cash");
             if (definition.OperationMode == BusinessOperationMode.ManagerOperable) Fail("business.manager_unsupported");
-            if (state.Employment != null && definition.OperationMode == BusinessOperationMode.FullTimeRequired)
-                Fail("business.employment_incompatible");
+            // Employment and operating eligibility are deferred to M8-T02.
 
             _ = checked(state.Cash - command.Amount);
             _ = checked(state.NextEntity + 2);

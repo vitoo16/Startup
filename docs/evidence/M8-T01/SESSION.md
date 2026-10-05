@@ -585,3 +585,61 @@ Repository execution: GitHub source and Actions; no local checkout changes.
 `SAFE TO SEND TEST-ONLY PR TO ASTRA FINAL SOURCE RE-AUDIT`
 
 Do not merge PR #26 automatically. Do not start M8-T02.
+
+
+---
+
+## M8-T01 employment launch scope correction
+
+Date: 2026-10-06 (+07:00)  
+Executor: Codex (current session; no model switch claimed)  
+Starting merged main: `dbdb41f051814ac6e7fc13f27115940a59dd6fcb`  
+Proposed branch: `codex/m8-t01-defer-employment-eligibility` (not created)
+
+### Finding and authorized boundary
+
+The final source audit identified the employment-dependent `FullTimeRequired` launch
+rejection as a MEDIUM scope violation. The user explicitly classified it as outside
+M8-T01 and requested the correction. Employment, operating-window and required-owner-minute
+eligibility belong to M8-T02, which remains blocked on final M8-T01 Unity acceptance.
+
+### Correction and regression
+
+`SimulationEngine.LaunchBusiness` now validates ownership/investment without the
+employment-dependent launch rejection. The existing manager-unsupported rejection and
+ownership, active-count/type, investment, cash and arrears guards are retained.
+
+The launch regression now proves that an otherwise valid FullTimeRequired launch while
+employed commits, charges the exact investment, consumes zero minutes, preserves employment
+and the simulation instant, and survives a byte-identical cold restore. This is an ownership
+checkpoint only: operating windows, owner minutes, business demand, revenue and daily
+settlement remain unimplemented.
+
+### Verification and session closeout
+
+Owner model: Codex (current implementation executor).  
+Skills used: startup-life-session-orchestrator; startup-life-gameplay-guardian;
+unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge;
+unity-qa-release. Community skills loaded at pinned revision
+`dafb97ef00f94e64e42e6260bc6b3af74cc83dad`.  
+Acceptance criteria: remove the employment launch scope violation; prove employed ownership,
+conservation/no-time-advance and restore; preserve save/parser/H1 and accepted business contracts.  
+Tests: local isolated snapshot BusinessOwnershipChecks 26/26; SimulationChecks 49/49;
+AstraFoundationChecks 20/20; RestoreInvariantChecks 35/35; PresentationChecks 11/11;
+ContentCatalogChecks 8/8: all PASS. M1 public API static gate: 31/31 PASS. .NET Standard production
+assemblies and the local .NET 10 test runner build with 0 warnings/errors. The host has SDK 10
+only, so the scratch runner target was changed to net10.0 solely for local verification;
+repository project targets remain unchanged. Local NuGet vulnerability lookup was disabled
+because network access is unavailable; repository CI remains authoritative for the unchanged
+.NET 8 runner. Changed-head repository CI: NOT RUN; GitHub publication awaits explicit approval.  
+Visual evidence: not applicable; no UI/scene/asset change.  
+Save impact: no persisted-field change; SaveVersion remains 2; no new migration.
+Existing v0/v1/v2 migration, H1 normalization and parser containment are retained.  
+Known limitations: final changed-head Unity import/compile, EditMode and PlayMode acceptance
+remain pending. M8-T01 remains unchecked; M8-T02 is not started.  
+Files changed: `Assets/StartupLife/Scripts/Simulation/SimulationEngine.cs`;
+`tools/BusinessOwnershipChecks/Program.cs`; `docs/evidence/M8-T01/SESSION.md` (append only).  
+Repository execution: isolated verification snapshot; the user's older Unity checkout and its
+existing changes are preserved. GitHub source-upload auto-review rejected external publication
+without destination-specific approval. No GitHub branch, commit or PR was created.
+Commit: none; the reviewable patch is prepared for the exact starting merged main.

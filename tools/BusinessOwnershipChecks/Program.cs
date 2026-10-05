@@ -144,7 +144,22 @@ internal static class Program
 
         var employed = Ready(cash: 1000, businesses: new[] { FullTimeDefinition }, includeCareer: true);
         Equal(CommandStatus.Committed, employed.Execute("job", new GameCommand(CommandKind.AcceptJob, "developer")).Status);
-        ExpectRejectedUnchanged(employed, BusinessCommands.Launch(FullTimeDefinition.Id, FullTimeDefinition.Revision, 100), "business.employment_incompatible");
+        // M8-T01 owns investment/ownership only; employment eligibility is deferred to M8-T02.
+        var employedBefore = employed.State();
+        var employedLaunch = employed.Execute("fulltime-ownership",
+            BusinessCommands.Launch(FullTimeDefinition.Id, FullTimeDefinition.Revision, 100));
+        Equal(CommandStatus.Committed, employedLaunch.Status);
+        Equal(0, employedLaunch.MinutesConsumed);
+        var employedAfter = employed.State();
+        Equal(900L, employedAfter.Cash);
+        Equal(employedBefore.Employment!.InstanceId, employedAfter.Employment!.InstanceId);
+        Equal(employedBefore.DateIso, employedAfter.DateIso);
+        Equal(employedBefore.Minute, employedAfter.Minute);
+        True(employedAfter.Businesses.Single().IsActive);
+        var restoredEmployed = employed.Restore();
+        Bytes(employed.Checkpoint(), restoredEmployed.Checkpoint());
+        Equal(900L, restoredEmployed.State().Cash);
+        Equal(employedBefore.Employment.InstanceId, restoredEmployed.State().Employment!.InstanceId);
 
         var arrearsState = ReadyArrearsState(Freelance);
         var engine = new SimulationEngine(arrearsState.catalog);
