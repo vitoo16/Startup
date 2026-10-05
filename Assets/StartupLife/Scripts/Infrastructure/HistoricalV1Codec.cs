@@ -66,7 +66,12 @@ namespace StartupLife.Infrastructure
             // whitespace and JSON escapes cannot hide the v2-only Businesses member.
             using (var reader = JsonReaderWriterFactory.CreateJsonReader(payload, XmlDictionaryReaderQuotas.Max))
             {
-                if (!reader.Read() || reader.NodeType != XmlNodeType.Element)
+                // JsonReaderWriterFactory may be positioned on the root element immediately.
+                // Only advance when it is still before the document; otherwise an unconditional
+                // Read() would skip the root and make the first property look like the root.
+                if (reader.NodeType == XmlNodeType.None && !reader.Read())
+                    throw new ArgumentException("Invalid frozen v1 JSON root.");
+                if (reader.NodeType != XmlNodeType.Element)
                     throw new ArgumentException("Invalid frozen v1 JSON root.");
                 var rootDepth = reader.Depth;
                 while (reader.Read())
