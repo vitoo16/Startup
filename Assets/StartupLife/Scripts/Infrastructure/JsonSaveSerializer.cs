@@ -74,17 +74,18 @@ namespace StartupLife.Infrastructure
                     return new LoadResult(LoadStatus.Corrupt, reason: "save.checksum", sourceSchemaVersion: sourceVersion);
 
                 var version = sourceVersion;
-                if (version == 0)
+                GameState state;
+                try
                 {
-                    try { HistoricalV1Codec.ValidatePayload(payload, 0); }
-                    catch (Exception e) when (IsValidationFailure(e))
-                    { return new LoadResult(LoadStatus.Corrupt, reason: "save.invalid", sourceSchemaVersion: sourceVersion); }
+                    state = ValidateStage(payload, version, envelope.Generation);
                 }
-                else if (version == SaveSchema.HistoricalV1)
+                catch (SaveStageException e)
                 {
-                    try { HistoricalV1Codec.ValidatePayload(payload, SaveSchema.HistoricalV1); }
-                    catch (Exception e) when (IsValidationFailure(e))
-                    { return new LoadResult(LoadStatus.Corrupt, reason: "save.invalid", sourceSchemaVersion: sourceVersion); }
+                    return new LoadResult(LoadStatus.Corrupt, reason: e.ReasonKey, sourceSchemaVersion: sourceVersion);
+                }
+                catch (Exception e) when (IsValidationFailure(e))
+                {
+                    return new LoadResult(LoadStatus.Corrupt, reason: "save.invalid", sourceSchemaVersion: sourceVersion);
                 }
 
                 while (version < SaveSchema.CurrentVersion)
@@ -95,15 +96,7 @@ namespace StartupLife.Infrastructure
                     {
                         payload = migration.Migrate(payload);
                         version = migration.ToVersion;
-                        if (version == SaveSchema.HistoricalV1)
-                            HistoricalV1Codec.ValidatePayload(payload, SaveSchema.HistoricalV1);
-                        else if (version == SaveSchema.CurrentVersion)
-                        {
-                            var migrated = ReadObject<GameState>(payload);
-                            if (migrated.SaveVersion != SaveSchema.CurrentVersion || migrated.Businesses == null)
-                                throw new ArgumentException("Invalid current migration stage.");
-                        }
-                        else throw new ArgumentException("Unsupported migration stage.");
+                        state = ValidateStage(payload, version, envelope.Generation);
                     }
                     catch (Exception e) when (IsValidationFailure(e))
                     {
@@ -111,18 +104,48 @@ namespace StartupLife.Infrastructure
                     }
                 }
 
-                var state = ReadObject<GameState>(payload);
-                if (state.SaveVersion != version)
-                    return new LoadResult(LoadStatus.Corrupt, reason: "save.schema_mismatch", sourceSchemaVersion: sourceVersion);
-                if (state.Revision != envelope.Generation)
-                    return new LoadResult(LoadStatus.Corrupt, reason: "save.generation", sourceSchemaVersion: sourceVersion);
-                StateValidation.Validate(state, content, restoreValidator);
                 return new LoadResult(LoadStatus.Valid, state, sourceSchemaVersion: sourceVersion);
             }
             catch (ContentCompatibilityException e)
             { return new LoadResult(LoadStatus.UnsupportedContent, reason: e.ReasonKey); }
             catch (Exception e) when (IsValidationFailure(e))
             { return new LoadResult(LoadStatus.Corrupt, reason: "save.invalid"); }
+        }
+
+        private GameState ValidateStage(byte[] payload, int version, long generation)
+        {
+            GameState state;
+            if (version == 0)
+            {
+                HistoricalV1Codec.ValidatePayload(payload, 0);
+                var historical = HistoricalV1Codec.PromoteSyntheticV0ToV1(payload);
+                state = HistoricalV1Codec.DecodeToCurrent(historical);
+            }
+            else if (version == SaveSchema.HistoricalV1)
+            {
+                HistoricalV1Codec.ValidatePayload(payload, SaveSchema.HistoricalV1);
+                state = HistoricalV1Codec.DecodeToCurrent(payload);
+            }
+            else if (version == SaveSchema.CurrentVersion)
+            {
+                state = ReadObject<GameState>(payload);
+                if (state.SaveVersion != SaveSchema.CurrentVersion)
+                    throw new SaveStageException("save.schema_mismatch", "Payload SaveVersion differs from its schema stage.");
+                if (state.Businesses == null)
+                    throw new ArgumentException("Current save stage requires Businesses.");
+            }
+            else throw new ArgumentException("Unsupported migration stage.");
+
+            if (state.Revision != generation)
+                throw new SaveStageException("save.generation", "Envelope generation differs from payload revision.");
+            StateValidation.Validate(state, content, restoreValidator);
+            return state;
+        }
+
+        private sealed class SaveStageException : ArgumentException
+        {
+            public string ReasonKey { get; }
+            public SaveStageException(string reasonKey, string message) : base(message) { ReasonKey = reasonKey; }
         }
 
         private static bool IsValidationFailure(Exception e) =>
