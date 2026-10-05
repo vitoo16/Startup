@@ -5,7 +5,20 @@ using System.Globalization;
 
 namespace StartupLife.Core
 {
-    public enum CommandKind { CreateCharacter, AcceptJob, AdvanceBoundary, PurchaseCourse, Study, Resign, AcknowledgePlayback }
+    public enum CommandKind
+    {
+        CreateCharacter = 0,
+        AcceptJob = 1,
+        AdvanceBoundary = 2,
+        PurchaseCourse = 3,
+        Study = 4,
+        Resign = 5,
+        AcknowledgePlayback = 6,
+        LaunchBusiness = 7,
+        ReinvestBusiness = 8,
+        SetBusinessPricing = 9,
+        CloseBusiness = 10
+    }
     public sealed class GameCommand
     {
         public CommandKind Kind { get; }
@@ -14,7 +27,9 @@ namespace StartupLife.Core
         public string AppearanceId { get; }
         public int Amount { get; }
         public GameCommand(CommandKind kind, string contentId = "", int amount = 0, string name = "", string appearanceId = "")
-        { Kind = kind; ContentId = contentId; Amount = amount; Name = name; AppearanceId = appearanceId; }
+        {
+            Kind = kind; ContentId = contentId ?? ""; Amount = amount; Name = name ?? ""; AppearanceId = appearanceId ?? "";
+        }
         public string CanonicalPayload => ((int)Kind).ToString(CultureInfo.InvariantCulture) + ":" + Field(ContentId) + Field(Name) + Field(AppearanceId) + Amount.ToString(CultureInfo.InvariantCulture);
         private static string Field(string value) => value.Length.ToString(CultureInfo.InvariantCulture) + ":" + value;
         public static GameCommand ParseCanonicalPayload(string payload)
@@ -184,7 +199,12 @@ namespace StartupLife.Core
         public LoadStatus Status { get; }
         public GameState? State { get; }
         public string Reason { get; }
-        public LoadResult(LoadStatus status, GameState? state = null, string reason = "") { Status = status; State = state; Reason = reason; }
+        public int SourceSchemaVersion { get; }
+        public LoadResult(LoadStatus status, GameState? state = null, string reason = "", int sourceSchemaVersion = -1)
+        {
+            Status = status; State = state; Reason = reason;
+            SourceSchemaVersion = sourceSchemaVersion >= 0 ? sourceSchemaVersion : (state?.SaveVersion ?? -1);
+        }
     }
     public enum WriteStatus { Committed, Failed, Ambiguous }
     public interface ISaveStore
@@ -224,6 +244,10 @@ namespace StartupLife.Core
         int FromVersion { get; }
         int ToVersion { get; }
         byte[] Migrate(byte[] payload);
+    }
+    public interface ISaveCompatibilitySerializer
+    {
+        byte[] SerializeForSchema(GameState state, int schemaVersion);
     }
     public sealed class RuleFailure : Exception
     {

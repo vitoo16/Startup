@@ -25,6 +25,10 @@ namespace StartupLife.Simulation
                 case CommandKind.Study: return Study(candidate, command.Amount);
                 case CommandKind.AdvanceBoundary: return AdvanceBoundary(candidate, operationId);
                 case CommandKind.Resign: Resign(candidate); break;
+                case CommandKind.LaunchBusiness: LaunchBusiness(candidate, command, operationId); break;
+                case CommandKind.ReinvestBusiness: ReinvestBusiness(candidate, command, operationId); break;
+                case CommandKind.SetBusinessPricing: SetBusinessPricing(candidate, command, operationId); break;
+                case CommandKind.CloseBusiness: CloseBusiness(candidate, command, operationId); break;
                 case CommandKind.AcknowledgePlayback:
                     if (command.ContentId != candidate.CurrentActivity || command.Amount < candidate.PlaybackCursor) Fail("playback.stale");
                     candidate.PlaybackCursor = command.Amount; break;
@@ -200,6 +204,108 @@ namespace StartupLife.Simulation
             course.Completed = true; state.CompletedCourses.Add(course); state.Course = null; state.CurrentCue = "course.completed";
             state.History.Add("course.completed:" + definition.Id);
         }
+        private void LaunchBusiness(GameState state, GameCommand command, string operation)
+        {
+            if (!ContentId.IsValid(command.ContentId) || command.Name.Length != 0 || string.IsNullOrWhiteSpace(command.AppearanceId))
+                Fail("business.invalid_payload");
+            if (!content.Businesses.TryGetValue(command.ContentId, out var definition)) Fail("content.missing");
+            if (definition!.Revision != command.AppearanceId) Fail("business.definition_revision");
+            if (state.Businesses.Count(x => x.IsActive) >= 4) Fail("business.active_limit");
+            if (state.Businesses.Where(x => x.IsActive).Any(x =>
+                content.Businesses.TryGetValue(x.DefinitionId, out var existing) && existing.Type == definition.Type))
+                Fail("business.type_active");
+            if (state.Arrears.Count > 0) Fail("economy.arrears");
+            if (command.Amount < definition.MinimumStartupInvestment || command.Amount > definition.MaximumStartupInvestment)
+                Fail("business.invalid_investment");
+            if (state.Cash < command.Amount) Fail("economy.insufficient_cash");
+            if (definition.OperationMode == BusinessOperationMode.ManagerOperable) Fail("business.manager_unsupported");
+            if (state.Employment != null && definition.OperationMode == BusinessOperationMode.FullTimeRequired)
+                Fail("business.employment_incompatible");
+
+            _ = checked(state.Cash - command.Amount);
+            _ = checked(state.NextEntity + 2);
+            var business = new BusinessState
+            {
+                InstanceId = state.NewEntity("business"),
+                DefinitionId = definition.Id,
+                DefinitionRevision = definition.Revision,
+                OpenedIso = state.DateIso,
+                OpenedMinute = state.Minute,
+                PricingPosture = definition.DefaultPricingPosture,
+                InitialInvestment = command.Amount,
+                ReinvestedAmount = 0
+            };
+            state.Cash = checked(state.Cash - command.Amount);
+            state.Businesses.Add(business);
+            Entry(state, operation, "business.launch", -checked((long)command.Amount), command.Amount, business.InstanceId);
+            state.History.Add(BusinessHistory.Encode("business.launched", operation, business.InstanceId, state.DateIso,
+                state.Minute, command.Amount, business.PricingPosture));
+            state.CurrentCue = "business.launched";
+        }
+
+        private void ReinvestBusiness(GameState state, GameCommand command, string operation)
+        {
+            if (string.IsNullOrWhiteSpace(command.ContentId) || command.Name.Length != 0 || command.AppearanceId.Length != 0)
+                Fail("business.invalid_payload");
+            if (command.Amount <= 0) Fail("business.invalid_reinvestment");
+            var business = state.Businesses.SingleOrDefault(x => x.InstanceId == command.ContentId);
+            if (business == null) Fail("business.not_found");
+            if (!business!.IsActive) Fail("business.closed");
+            if (!content.Businesses.TryGetValue(business.DefinitionId, out var definition) ||
+                definition!.Revision != business.DefinitionRevision) Fail("business.definition_revision");
+            if (command.Amount < definition.MinimumReinvestment || command.Amount > definition.MaximumReinvestment)
+                Fail("business.invalid_reinvestment");
+            if (state.Arrears.Count > 0) Fail("economy.arrears");
+            if (state.Cash < command.Amount) Fail("economy.insufficient_cash");
+
+            var reinvested = checked(business.ReinvestedAmount + command.Amount);
+            _ = checked(business.InitialInvestment + reinvested);
+            _ = checked(state.Cash - command.Amount);
+            _ = checked(state.NextEntity + 1);
+            state.Cash = checked(state.Cash - command.Amount);
+            business.ReinvestedAmount = reinvested;
+            Entry(state, operation, "business.reinvest", -checked((long)command.Amount), command.Amount, business.InstanceId);
+            state.History.Add(BusinessHistory.Encode("business.reinvested", operation, business.InstanceId, state.DateIso,
+                state.Minute, command.Amount, business.PricingPosture));
+            state.CurrentCue = "business.reinvested";
+        }
+
+        private void SetBusinessPricing(GameState state, GameCommand command, string operation)
+        {
+            if (string.IsNullOrWhiteSpace(command.ContentId) || command.Name.Length != 0 || command.AppearanceId.Length != 0)
+                Fail("business.invalid_payload");
+            if (!Enum.IsDefined(typeof(PricingPosture), command.Amount)) Fail("business.invalid_payload");
+            var business = state.Businesses.SingleOrDefault(x => x.InstanceId == command.ContentId);
+            if (business == null) Fail("business.not_found");
+            if (!business!.IsActive) Fail("business.closed");
+            if (!content.Businesses.TryGetValue(business.DefinitionId, out var definition) ||
+                definition!.Revision != business.DefinitionRevision) Fail("business.definition_revision");
+            var pricing = (PricingPosture)command.Amount;
+            if (!definition.AllowedPricingPostures.Contains(pricing)) Fail("business.invalid_payload");
+            if (business.PricingPosture == pricing) Fail("business.pricing_unchanged");
+            business.PricingPosture = pricing;
+            state.History.Add(BusinessHistory.Encode("business.pricing_changed", operation, business.InstanceId, state.DateIso,
+                state.Minute, 0, pricing));
+            state.CurrentCue = "business.pricing_changed";
+        }
+
+        private void CloseBusiness(GameState state, GameCommand command, string operation)
+        {
+            if (string.IsNullOrWhiteSpace(command.ContentId) || command.Amount != 0 ||
+                command.Name.Length != 0 || command.AppearanceId.Length != 0)
+                Fail("business.invalid_payload");
+            var business = state.Businesses.SingleOrDefault(x => x.InstanceId == command.ContentId);
+            if (business == null) Fail("business.not_found");
+            if (!business!.IsActive) Fail("business.closed");
+            if (!content.Businesses.TryGetValue(business.DefinitionId, out var definition) ||
+                definition!.Revision != business.DefinitionRevision) Fail("business.definition_revision");
+            business.ClosedIso = state.DateIso;
+            business.ClosedMinute = state.Minute;
+            state.History.Add(BusinessHistory.Encode("business.closed", operation, business.InstanceId, state.DateIso,
+                state.Minute, 0, business.PricingPosture));
+            state.CurrentCue = "business.closed";
+        }
+
         private void SettleNewDate(GameState state, string operation)
         {
             var date = state.Date;
@@ -312,6 +418,7 @@ namespace StartupLife.Simulation
             Require(Same(state.Arrears, replay.Arrears, (a, b) => a.Id == b.Id && a.DueIso == b.DueIso && a.Amount == b.Amount), "arrear provenance");
             Require(Same(state.Ledger, replay.Ledger, (a, b) => a.Id == b.Id && a.OperationId == b.OperationId && a.Category == b.Category &&
                 a.AttributionId == b.AttributionId && a.Amount == b.Amount && a.CashDelta == b.CashDelta), "ledger provenance");
+            Require(Same(state.Businesses, replay.Businesses, BusinessEquals), "business provenance");
             Require(state.History.SequenceEqual(replay.History), "committed history");
             // PendingChoiceId, event RNG and presentation fields have separate contracts; no new M1 rules here.
         }
@@ -320,7 +427,8 @@ namespace StartupLife.Simulation
             state.Skills.All(x => content.Skills.ContainsKey(x.Id)) &&
             state.PreviousEmployment.Concat(state.Employment == null ? Array.Empty<EmploymentState>() : new[] { state.Employment }).All(x =>
                 content.Careers.TryGetValue(x.CareerId, out var career) && career.Revision == x.DefinitionRevision) &&
-            state.CompletedCourses.Concat(state.Course == null ? Array.Empty<CourseState>() : new[] { state.Course }).All(x => content.Courses.ContainsKey(x.DefinitionId));
+            state.CompletedCourses.Concat(state.Course == null ? Array.Empty<CourseState>() : new[] { state.Course }).All(x => content.Courses.ContainsKey(x.DefinitionId)) &&
+            state.Businesses.All(x => content.Businesses.TryGetValue(x.DefinitionId, out var business) && business.Revision == x.DefinitionRevision);
 
         private static void ValidateKnownScheduler(GameState state, ContentCatalog content)
         {
@@ -406,5 +514,10 @@ namespace StartupLife.Simulation
             a.Xp == b.Xp && a.Rank == b.Rank && a.ScenesToday == b.ScenesToday && a.WorkDateIso == b.WorkDateIso;
         private static bool CourseEquals(CourseState? a, CourseState? b) =>
             a == null || b == null ? a == b : a.InstanceId == b.InstanceId && a.DefinitionId == b.DefinitionId && a.ProgressUnits == b.ProgressUnits && a.Completed == b.Completed;
+        private static bool BusinessEquals(BusinessState a, BusinessState b) =>
+            a.InstanceId == b.InstanceId && a.DefinitionId == b.DefinitionId && a.DefinitionRevision == b.DefinitionRevision &&
+            a.OpenedIso == b.OpenedIso && a.OpenedMinute == b.OpenedMinute && a.ClosedIso == b.ClosedIso &&
+            a.ClosedMinute == b.ClosedMinute && a.PricingPosture == b.PricingPosture &&
+            a.InitialInvestment == b.InitialInvestment && a.ReinvestedAmount == b.ReinvestedAmount;
     }
 }

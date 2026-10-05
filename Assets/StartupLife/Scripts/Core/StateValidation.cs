@@ -82,17 +82,19 @@ namespace StartupLife.Core
                 if (committedToday.Today != expectedScenes)
                     throw new ArgumentException("Committed work activities do not match today's work cursor.");
             }
+            CheckContent(() => BusinessStateValidation.ValidateContent(s, c));
             if (restoreValidator != null) CheckContent(() => restoreValidator.Validate(s, c));
             if (incompatibility != null) throw incompatibility;
         }
 
         private static IReadOnlyList<ActivityStamp> ValidateStructure(GameState s)
         {
-            if (s.SaveVersion != 1 || string.IsNullOrWhiteSpace(s.RunId) ||
+            if (s.SaveVersion != SaveSchema.CurrentVersion || string.IsNullOrWhiteSpace(s.RunId) ||
                 s.Revision < 0 || s.NextEntity < 1 || s.NextOperation < 1 || s.Minute < 0 || s.Minute >= 1440 ||
                 s.Cash < 0 || s.SchedulerRng == 0 || s.EventRng == 0 || s.RngVersion != "xorshift32-v1" || s.PlaybackCursor < 0)
                 throw new ArgumentException("Invalid save root.");
             _ = s.Date;
+            BusinessStateValidation.ValidateStructure(s);
 
             if (s.Name.Length > 0)
             {
@@ -172,6 +174,7 @@ namespace StartupLife.Core
             foreach (var employment in s.PreviousEmployment) Employment(employment);
             if (s.Course != null) Issued(s.Course.InstanceId, "course");
             foreach (var course in s.CompletedCourses) Issued(course.InstanceId, "course");
+            foreach (var business in s.Businesses) Issued(business.InstanceId, "business");
             foreach (var claim in s.Claims) Issued(claim.Id, "claim");
             foreach (var arrear in s.Arrears) Issued(arrear.Id, "arrear");
             foreach (var ledger in s.Ledger) Issued(ledger.Id, "transaction");
@@ -180,7 +183,7 @@ namespace StartupLife.Core
                 if (ledger.Category == "arrear.settlement") Reference(ledger.AttributionId, "arrear");
                 if (ledger.Category == "salary.accrual" && !employmentIds.Contains(ledger.AttributionId))
                     throw new ArgumentException("Salary ledger has no owning employment.");
-                foreach (var kind in new[] { "employment", "employer", "course", "claim", "arrear", "transaction" })
+                foreach (var kind in new[] { "employment", "employer", "course", "business", "claim", "arrear", "transaction" })
                     if (ledger.AttributionId.StartsWith(s.RunId + "/" + kind + "/", StringComparison.Ordinal)) Reference(ledger.AttributionId, kind);
             }
             foreach (var grant in s.Grants)

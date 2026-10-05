@@ -51,7 +51,8 @@ namespace StartupLife.Presentation
                 var serializer = new JsonSaveSerializer(
                     content,
                     GameSession.CreateRestoreValidator(),
-                    new SyntheticV0Migration());
+                    new SyntheticV0Migration(),
+                    new V1ToV2Migration());
                 var path = Path.Combine(UnityEngine.Application.persistentDataPath, saveFileName);
                 var store = new AtomicFileSaveStore(path, serializer);
 

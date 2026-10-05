@@ -27,15 +27,16 @@ namespace StartupLife.Infrastructure
                     var prior = ReadFile(primary + ".backup");
                     // A crash may have promoted ownership in primary before mirroring it in backup.
                     // Only a provably identical generation with historical child IDs qualifies for repair.
-                    if (prior.Status == LoadStatus.Valid && prior.State!.Revision == first.State!.Revision &&
+                    if (prior.Status == LoadStatus.Valid && prior.SourceSchemaVersion == first.SourceSchemaVersion &&
+                        prior.State!.Revision == first.State!.Revision &&
                         !prior.State.Receipts.Select(x => x.CommandId).SequenceEqual(first.State.Receipts.Select(x => x.CommandId)) &&
-                        IdentityOnlyChange(prior.State, first.State))
-                        return new LoadResult(LoadStatus.Valid, first.State, BatchReceiptIdentity.BackupRepairReason);
+                        IdentityOnlyChange(prior.State, first.State, first.SourceSchemaVersion))
+                        return new LoadResult(LoadStatus.Valid, first.State, BatchReceiptIdentity.BackupRepairReason, first.SourceSchemaVersion);
                     return first;
                 }
                 if (first.Status == LoadStatus.Unreadable || first.Status == LoadStatus.FutureVersion || first.Status == LoadStatus.UnsupportedContent) return first;
                 var backup = ReadFile(primary + ".backup");
-                if (backup.Status == LoadStatus.Valid) return new LoadResult(LoadStatus.RecoveredBackup, backup.State, "save.recovered_backup");
+                if (backup.Status == LoadStatus.Valid) return new LoadResult(LoadStatus.RecoveredBackup, backup.State, "save.recovered_backup", backup.SourceSchemaVersion);
                 if (backup.Status == LoadStatus.Unreadable || backup.Status == LoadStatus.FutureVersion || backup.Status == LoadStatus.UnsupportedContent) return backup;
                 return first.Status == LoadStatus.Missing && backup.Status == LoadStatus.Missing ? first : new LoadResult(LoadStatus.Corrupt, reason: "save.unrecoverable");
             }
@@ -53,10 +54,19 @@ namespace StartupLife.Infrastructure
         public WriteStatus CommitReceiptCompatibility(byte[] expectedCheckpoint, byte[] normalizedCheckpoint)
         {
             var expected = serializer.DeserializeAndValidate(expectedCheckpoint);
-            if (expected.Status != LoadStatus.Valid) return WriteStatus.Failed;
+            var normalized = serializer.DeserializeAndValidate(normalizedCheckpoint);
+            if (expected.Status != LoadStatus.Valid || normalized.Status != LoadStatus.Valid ||
+                expected.SourceSchemaVersion != normalized.SourceSchemaVersion) return WriteStatus.Failed;
             return CommitCore(normalizedCheckpoint, expected.State!.Revision, expectedCheckpoint);
         }
-        private bool IdentityOnlyChange(GameState expected, GameState candidate)
+        private byte[] SerializeForSchema(GameState state, int schemaVersion)
+        {
+            if (serializer is ISaveCompatibilitySerializer compatibility)
+                return compatibility.SerializeForSchema(state, schemaVersion);
+            if (schemaVersion != SaveSchema.CurrentVersion) throw new ArgumentException("Serializer cannot preserve historical schema.");
+            return serializer.Serialize(state);
+        }
+        private bool IdentityOnlyChange(GameState expected, GameState candidate, int schemaVersion)
         {
             if (expected.Receipts.Count != candidate.Receipts.Count) return false;
             var ids = candidate.Receipts.Select(x => x.CommandId).ToArray();
@@ -67,7 +77,7 @@ namespace StartupLife.Infrastructure
                     if (ids[i] != expected.Receipts[i].CommandId && !BatchReceiptIdentity.IsLegacyReplacement(expected.Receipts[i], ids[i])) return false;
                     candidate.Receipts[i].CommandId = expected.Receipts[i].CommandId;
                 }
-                return serializer.Serialize(expected).SequenceEqual(serializer.Serialize(candidate));
+                return SerializeForSchema(expected, schemaVersion).SequenceEqual(SerializeForSchema(candidate, schemaVersion));
             }
             finally { for (var i = 0; i < ids.Length; i++) candidate.Receipts[i].CommandId = ids[i]; }
         }
@@ -84,7 +94,9 @@ namespace StartupLife.Infrastructure
                     using (var fileGate = new FileStream(primary + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
                     {
                         var candidate = serializer.DeserializeAndValidate(validatedBytes);
-                        if (candidate.Status != LoadStatus.Valid || candidate.State!.Revision !=
+                        if (candidate.Status != LoadStatus.Valid ||
+                            (expectedCheckpoint == null && candidate.SourceSchemaVersion != SaveSchema.CurrentVersion) ||
+                            candidate.State!.Revision !=
                             (expectedCheckpoint == null ? checked(expectedRevision + 1) : expectedRevision)) return WriteStatus.Failed;
                         var previous = Read();
                         if (previous.Status != LoadStatus.Valid && previous.Status != LoadStatus.RecoveredBackup && !(previous.Status == LoadStatus.Missing && expectedRevision == 0)) return WriteStatus.Failed;
@@ -93,8 +105,11 @@ namespace StartupLife.Infrastructure
                         {
                             var expected = serializer.DeserializeAndValidate(expectedCheckpoint);
                             if (previous.State == null || expected.Status != LoadStatus.Valid ||
-                                !serializer.Serialize(previous.State).SequenceEqual(serializer.Serialize(expected.State!)) ||
-                                !IdentityOnlyChange(expected.State!, candidate.State)) return WriteStatus.Failed;
+                                previous.SourceSchemaVersion != expected.SourceSchemaVersion ||
+                                candidate.SourceSchemaVersion != expected.SourceSchemaVersion ||
+                                !SerializeForSchema(previous.State, expected.SourceSchemaVersion).SequenceEqual(
+                                    SerializeForSchema(expected.State!, expected.SourceSchemaVersion)) ||
+                                !IdentityOnlyChange(expected.State!, candidate.State!, expected.SourceSchemaVersion)) return WriteStatus.Failed;
                         }
                         using (var file = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
                         { file.Write(validatedBytes, 0, validatedBytes.Length); file.Flush(true); }

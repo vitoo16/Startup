@@ -8,7 +8,7 @@ using StartupLife.Simulation;
 
 namespace StartupLife.Application
 {
-    public sealed class GameSession : IGameCommands
+    public sealed class GameSession : IGameCommands, IBusinessReadModel
     {
         // Historical callers and pre-PR6 children were capped at 256 characters. PR6 children began "$batch/".
         // Starting with 257 '$' characters excludes both namespaces, including PR6 children longer than 256.
@@ -21,6 +21,7 @@ namespace StartupLife.Application
         private readonly object gate = new object();
         private readonly Dictionary<string, string> legacyBatchOwners;
         private bool recoveryRequired;
+        private int sourceSchemaVersion = SaveSchema.CurrentVersion;
         // Bindings must come from trusted save provenance, never from the caller's retry request.
         // Key: ambiguous persisted child prefix (e.g. "$batch/3:abc/"); value: its actual caller root.
         public GameSession(GameState initial, ContentCatalog catalog, ISaveSerializer saveSerializer, ISaveStore saveStore,
@@ -29,6 +30,10 @@ namespace StartupLife.Application
             content = catalog; serializer = saveSerializer; store = saveStore; simulation = new SimulationEngine(catalog);
             this.legacyBatchOwners = CopyLegacyOwners(legacyBatchOwners);
             state = Clone(initial);
+            var persisted = store.Read();
+            if ((persisted.Status == LoadStatus.Valid || persisted.Status == LoadStatus.RecoveredBackup) &&
+                persisted.State != null && persisted.State.RunId == state.RunId && persisted.State.Revision == state.Revision)
+                sourceSchemaVersion = persisted.SourceSchemaVersion;
         }
         private static Dictionary<string, string> CopyLegacyOwners(IReadOnlyDictionary<string, string>? bindings)
         {
@@ -51,11 +56,12 @@ namespace StartupLife.Application
             result = store.Read();
             if (result.Status != LoadStatus.Valid && result.Status != LoadStatus.RecoveredBackup) return false;
             var restored = new GameSession(result.State!, catalog, serializer, store, legacyBatchOwners);
+            restored.sourceSchemaVersion = result.SourceSchemaVersion;
             var ownershipFailure = restored.PrepareReceiptOwnership(result.Reason == BatchReceiptIdentity.BackupRepairReason);
             if (ownershipFailure.Length > 0)
             { result = new LoadResult(LoadStatus.RecoveryRequired, reason: ownershipFailure); return false; }
             result = new LoadResult(result.Status, restored.Clone(restored.state),
-                result.Reason == BatchReceiptIdentity.BackupRepairReason ? "" : result.Reason);
+                result.Reason == BatchReceiptIdentity.BackupRepairReason ? "" : result.Reason, restored.sourceSchemaVersion);
             session = restored;
             return true;
         }
@@ -67,6 +73,12 @@ namespace StartupLife.Application
         }
         public static IRestoreStateValidator CreateRestoreValidator() => new SimulationRestoreValidator();
         public GameSnapshot Snapshot() { lock (gate) return new GameSnapshot(state, content); }
+        public BusinessPortfolioSnapshot ReadBusinesses()
+        {
+            lock (gate)
+                return new BusinessPortfolioSnapshot(new GameSnapshot(state, content),
+                    state.Businesses.Select(x => new BusinessSnapshot(x, content.Businesses[x.DefinitionId])).ToArray());
+        }
         public byte[] ExportCheckpoint() { lock (gate) return serializer.Serialize(state); }
         public CommandResult Execute(CommandEnvelope command)
         {
@@ -119,7 +131,8 @@ namespace StartupLife.Application
             if ((verified.Status != LoadStatus.Valid && verified.Status != LoadStatus.RecoveredBackup) || verified.State!.Revision != candidate.Revision ||
                 !verified.State.Receipts.Any(x => x.CommandId == receipt.CommandId && x.OperationId == receipt.OperationId && x.Payload == receipt.Payload))
             { recoveryRequired = true; return Result(CommandStatus.RecoveryRequired, "save.recovery_required"); }
-            state = candidate; return new CommandResult(CommandStatus.Committed, "", state.Revision, receipt.OperationId, receipt.MinutesConsumed, outcome);
+            state = candidate; sourceSchemaVersion = SaveSchema.CurrentVersion;
+            return new CommandResult(CommandStatus.Committed, "", state.Revision, receipt.OperationId, receipt.MinutesConsumed, outcome);
         }
         public LoadResult Recover(IReadOnlyDictionary<string, string>? legacyBatchOwners = null)
         {
@@ -130,7 +143,7 @@ namespace StartupLife.Application
                 if (restored.Status == LoadStatus.Valid || restored.Status == LoadStatus.RecoveredBackup)
                 {
                     if (bindings == null && restored.State!.RunId != state.RunId) this.legacyBatchOwners.Clear();
-                    state = Clone(restored.State!); recoveryRequired = false;
+                    state = Clone(restored.State!); sourceSchemaVersion = restored.SourceSchemaVersion; recoveryRequired = false;
                     if (bindings != null)
                     {
                         this.legacyBatchOwners.Clear();
@@ -139,7 +152,7 @@ namespace StartupLife.Application
                     var ownershipFailure = PrepareReceiptOwnership(restored.Reason == BatchReceiptIdentity.BackupRepairReason);
                     if (ownershipFailure.Length > 0) return new LoadResult(LoadStatus.RecoveryRequired, reason: ownershipFailure);
                     return new LoadResult(restored.Status, Clone(state),
-                        restored.Reason == BatchReceiptIdentity.BackupRepairReason ? "" : restored.Reason);
+                        restored.Reason == BatchReceiptIdentity.BackupRepairReason ? "" : restored.Reason, sourceSchemaVersion);
                 }
                 return restored;
             }
@@ -219,14 +232,16 @@ namespace StartupLife.Application
             if (!repairBackup && !state.Receipts.Any(receipt => receipt.ParentPayload.Length > 0 &&
                 !receipt.CommandId.StartsWith(InternalBatchPrefix, StringComparison.Ordinal))) return "";
             if (!(store is ISaveCompatibilityStore compatibilityStore)) return "save.compatibility_store_required";
-            var expected = serializer.Serialize(state);
+            if (!(serializer is ISaveCompatibilitySerializer compatibilitySerializer)) return "save.compatibility_store_required";
+            byte[] expected;
             GameState candidate;
             byte[] normalized;
             try
             {
+                expected = compatibilitySerializer.SerializeForSchema(state, sourceSchemaVersion);
                 candidate = Clone(state);
                 NormalizeBatchReceipts(candidate);
-                normalized = serializer.Serialize(candidate);
+                normalized = compatibilitySerializer.SerializeForSchema(candidate, sourceSchemaVersion);
             }
             catch (ArgumentException) { return "save.batch_identity_invalid"; }
             var write = compatibilityStore.CommitReceiptCompatibility(expected, normalized);
@@ -234,7 +249,8 @@ namespace StartupLife.Application
             if (write == WriteStatus.Ambiguous) { recoveryRequired = true; return "save.recovery_required"; }
             var verified = store.Read();
             if ((verified.Status != LoadStatus.Valid && verified.Status != LoadStatus.RecoveredBackup) ||
-                !normalized.SequenceEqual(serializer.Serialize(verified.State!)))
+                verified.SourceSchemaVersion != sourceSchemaVersion ||
+                !normalized.SequenceEqual(compatibilitySerializer.SerializeForSchema(verified.State!, sourceSchemaVersion)))
             { recoveryRequired = true; return "save.recovery_required"; }
             state = candidate;
             legacyBatchOwners.Clear();
