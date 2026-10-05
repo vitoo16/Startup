@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.Json;
+using System.Xml;
 using StartupLife.Application;
 using StartupLife.Core;
 using StartupLife.Infrastructure;
@@ -33,7 +35,7 @@ internal static class Program
         Check("F3 intrinsic business history provenance survives unrelated missing content", BusinessHistoryProvenanceWithoutUnrelatedContent);
         Check("M8 restore intrinsically validates business command payloads before content compatibility", IntrinsicBusinessCommandPayloadPrecedesContentCompatibility);
         Check("M8 intrinsically corrupt business primary recovers valid backup", IntrinsicBusinessCorruptionRecoversBackup);
-        Check("M8 malformed frozen v1 is contained and recovers valid backup", MalformedFrozenV1IsContainedAndRecoversBackup);
+        Check("M8 malformed-token frozen v1 reader throws and serializer recovers valid backup", MalformedFrozenV1IsContainedAndRecoversBackup);
         Check("F4 ordinary commits require physical current schema", OrdinaryCommitSchemaBoundary);
         Check("F5 migration source and intermediate stages validate before the next step", MigrationStageValidation);
         Check("F8 LaunchBusiness retry matrix returns original committed semantics", LaunchRetryMatrix);
@@ -646,7 +648,22 @@ internal static class Program
         var catalog = LegacyCatalog();
         var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(),
             new SyntheticV0Migration(), new V1ToV2Migration());
-        var malformedPayload = Encoding.UTF8.GetBytes("{\"SaveVersion\":1,\"Receipts\":[");
+        // This payload is intentionally malformed at token level, not truncated at EOF,
+        // so XmlDictionaryReader throws during frozen-v1 root-member inspection.
+        var malformedPayload = Encoding.UTF8.GetBytes("{\"SaveVersion\":1,\"Receipts\":[?]}");
+        Throws<XmlException>(() =>
+        {
+            using var reader = JsonReaderWriterFactory.CreateJsonReader(malformedPayload, XmlDictionaryReaderQuotas.Max);
+            reader.MoveToContent();
+            reader.ReadStartElement();
+            Equal("SaveVersion", reader.LocalName);
+            reader.Skip();
+            Equal("Receipts", reader.LocalName);
+            reader.Skip(); // The invalid array-item token throws before any DTO deserialization.
+        });
+        Console.WriteLine("PROOF malformed-token root-member reader: XmlException before DTO deserialization");
+        // Removing the production XmlException translation makes this same exception escape
+        // DeserializeAndValidate before DTO decoding, failing the Corrupt assertion below.
         var primary = JsonSaveSerializer.Wrap(malformedPayload, SaveSchema.HistoricalV1, 0);
         Equal(LoadStatus.Corrupt, serializer.DeserializeAndValidate(primary).Status);
 
