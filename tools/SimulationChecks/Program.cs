@@ -380,8 +380,9 @@ internal static class Program
         Check("root playback cue and cursor forgery are corrupt before restore publication", () =>
         {
             var f = new Fixture(); f.Create(); f.Accept(); f.Evening();
+            Equal(LoadStatus.Valid, f.Serializer.DeserializeAndValidate(f.Session.ExportCheckpoint()).Status);
             var cueState = f.State(); cueState.CurrentCue = "forged.root.cue";
-            var cueBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(cueState), 1, cueState.Revision);
+            var cueBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(cueState), SaveSchema.CurrentVersion, cueState.Revision);
             Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(cueBytes).Status);
             var cueStore = new MemoryStore(f.Serializer, cueBytes);
             True(!GameSession.TryRestore(f.Content, f.Serializer, cueStore, out var cueSession, out var cueLoad));
@@ -389,8 +390,9 @@ internal static class Program
 
             var activity = f.Session.Snapshot().CurrentActivityId;
             f.SendOk(new GameCommand(CommandKind.AcknowledgePlayback, activity, 10), "root-cursor-source");
+            Equal(LoadStatus.Valid, f.Serializer.DeserializeAndValidate(f.Session.ExportCheckpoint()).Status);
             var cursorState = f.State(); Equal(10, cursorState.PlaybackCursor); cursorState.PlaybackCursor = 0;
-            var cursorBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(cursorState), 1, cursorState.Revision);
+            var cursorBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(cursorState), SaveSchema.CurrentVersion, cursorState.Revision);
             Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(cursorBytes).Status);
             var cursorStore = new MemoryStore(f.Serializer, cursorBytes);
             True(!GameSession.TryRestore(f.Content, f.Serializer, cursorStore, out var cursorSession, out var cursorLoad));
@@ -420,11 +422,12 @@ internal static class Program
         Check("committed non-boundary cue forgery is corrupt before outcome publication", () =>
         {
             var f = new Fixture(); f.Create(); f.Accept(); f.Buy("cue-source");
+            Equal(LoadStatus.Valid, f.Serializer.DeserializeAndValidate(f.Session.ExportCheckpoint()).Status);
             var forged = f.State();
             var receipt = forged.Receipts.Single(x => x.CommandId == "cue-source");
             Equal("course.purchased", receipt.Cue);
             receipt.Cue = "forged.cue";
-            var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(forged), 1, forged.Revision);
+            var bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(forged), SaveSchema.CurrentVersion, forged.Revision);
             Equal(LoadStatus.Corrupt, f.Serializer.DeserializeAndValidate(bytes).Status);
         });
         Check("synthetic v0 migration and current continuation", () =>
