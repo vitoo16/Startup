@@ -83,6 +83,7 @@ namespace StartupLife.Infrastructure
                 {
                     return new LoadResult(LoadStatus.Corrupt, reason: e.ReasonKey, sourceSchemaVersion: sourceVersion);
                 }
+                catch (ContentCompatibilityException) { throw; }
                 catch (Exception e) when (IsValidationFailure(e))
                 {
                     return new LoadResult(LoadStatus.Corrupt, reason: "save.invalid", sourceSchemaVersion: sourceVersion);
@@ -98,6 +99,7 @@ namespace StartupLife.Infrastructure
                         version = migration.ToVersion;
                         state = ValidateStage(payload, version, envelope.Generation);
                     }
+                    catch (ContentCompatibilityException) { throw; }
                     catch (Exception e) when (IsValidationFailure(e))
                     {
                         return new LoadResult(LoadStatus.Corrupt, reason: "save.migration_invalid", sourceSchemaVersion: sourceVersion);
