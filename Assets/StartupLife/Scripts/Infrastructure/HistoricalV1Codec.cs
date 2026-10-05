@@ -62,22 +62,37 @@ namespace StartupLife.Infrastructure
         {
             // DataContractJsonSerializer may populate ExtensionData even on a self-roundtrip, so
             // ExtensionDataObject is not a reliable unknown-member detector for this frozen JSON
-            // wire contract. Inspect decoded root member names instead of raw text so legal
-            // whitespace and JSON escapes cannot hide the v2-only Businesses member.
+            // wire contract. Walk only the root object's direct children through the same JSON→XML
+            // infoset reader used by DataContractJsonSerializer. Escaped JSON member names are
+            // represented by WCF as <a:item xmlns:a="item" item="decoded-name">.
             using (var reader = JsonReaderWriterFactory.CreateJsonReader(payload, XmlDictionaryReaderQuotas.Max))
             {
-                // JsonReaderWriterFactory may be positioned on the root element immediately.
-                // Only advance when it is still before the document; otherwise an unconditional
-                // Read() would skip the root and make the first property look like the root.
-                if (reader.NodeType == XmlNodeType.None && !reader.Read())
-                    throw new ArgumentException("Invalid frozen v1 JSON root.");
+                reader.MoveToContent();
                 if (reader.NodeType != XmlNodeType.Element)
                     throw new ArgumentException("Invalid frozen v1 JSON root.");
+
                 var rootDepth = reader.Depth;
-                while (reader.Read())
-                    if (reader.NodeType == XmlNodeType.Element && reader.Depth == rootDepth + 1 &&
-                        string.Equals(reader.LocalName, "Businesses", StringComparison.Ordinal))
-                        throw new ArgumentException("Frozen v1 cannot carry business state.");
+                if (reader.IsEmptyElement) return;
+                reader.ReadStartElement();
+                while (!reader.EOF && !(reader.NodeType == XmlNodeType.EndElement && reader.Depth == rootDepth))
+                {
+                    if (reader.NodeType == XmlNodeType.Element && reader.Depth == rootDepth + 1)
+                    {
+                        var memberName = reader.LocalName;
+                        if (string.Equals(reader.LocalName, "item", StringComparison.Ordinal) &&
+                            string.Equals(reader.NamespaceURI, "item", StringComparison.Ordinal))
+                        {
+                            var mappedName = reader.GetAttribute("item");
+                            if (mappedName != null) memberName = mappedName;
+                        }
+
+                        if (string.Equals(memberName, "Businesses", StringComparison.Ordinal))
+                            throw new ArgumentException("Frozen v1 cannot carry business state.");
+
+                        reader.Skip();
+                    }
+                    else if (!reader.Read()) break;
+                }
             }
         }
 
