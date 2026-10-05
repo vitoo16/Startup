@@ -25,7 +25,8 @@ internal static class Program
         Check("H1 internal IDs exclude historical callers including delimiter and maximum-length roots", InternalNamespaceIsDisjoint);
         Check("H1 trusted recovery persists completed/partial day/month owners before retry", DurableHistoricalRestore);
         Check("H1 compatibility recovery failures and replacement ambiguity preserve exactly-once results", HistoricalRestoreFaults);
-        Check("H1 compatibility writes reject gameplay changes and competing owner resolutions", CompatibilityWriteRestrictions);
+        Check("H1 compatibility writes reject same-schema gameplay, direct-ID, and competing-owner changes", CompatibilityWriteRestrictions);
+        Check("H1 mixed-schema compatibility normalization is rejected separately", MixedSchemaCompatibilityIsRejected);
         Check("H1 malformed ownership groups fail closed without rewriting the checkpoint", InvalidHistoricalOwnershipFailsClosed);
         Check("H2 unsupported career revision does not fall back to backup or overwrite primary", UnsupportedCareerRevisionIsPreserved);
         Check("H2 missing saved skill is unsupported content", MissingSavedSkillIsUnsupported);
@@ -450,40 +451,75 @@ internal static class Program
         var catalog = Catalog();
         var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
         var expected = HistoricalCheckpoint(false, false);
+        var expectedEnvelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(expected);
+        Equal(SaveSchema.HistoricalV1, expectedEnvelope.SchemaVersion);
         var path = SavePath(expected);
+        File.WriteAllBytes(path + ".backup", expected);
         var store = new AtomicFileSaveStore(path, serializer);
-        var changed = serializer.DeserializeAndValidate(expected).State!;
-        changed.Cash++;
-        // The public serializer now rejects forged cash before storage. Build an adversarial envelope
-        // directly so this H1 test still reaches the compatibility-store full-checkpoint guard.
-        var forgedCash = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(changed), SaveSchema.CurrentVersion, changed.Revision);
-        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, forgedCash));
+        var compatibility = (ISaveCompatibilitySerializer)serializer;
+
+        var gameplay = serializer.DeserializeAndValidate(expected).State!;
+        gameplay.PendingChoiceId = "alternate-choice";
+        var gameplayV1 = compatibility.SerializeForSchema(gameplay, SaveSchema.HistoricalV1);
+        var gameplayLoad = serializer.DeserializeAndValidate(gameplayV1);
+        Equal(LoadStatus.Valid, gameplayLoad.Status);
+        Equal(SaveSchema.HistoricalV1, gameplayLoad.SourceSchemaVersion);
+        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, gameplayV1));
         Bytes(expected, File.ReadAllBytes(path));
-        changed = serializer.DeserializeAndValidate(expected).State!;
-        changed.Receipts.Single(x => x.CommandId == "job").CommandId = "renamed-direct";
-        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, serializer.Serialize(changed)));
+        Bytes(expected, File.ReadAllBytes(path + ".backup"));
+
+        var direct = serializer.DeserializeAndValidate(expected).State!;
+        direct.Receipts.Single(x => x.CommandId == "job").CommandId = "renamed-direct";
+        var directV1 = compatibility.SerializeForSchema(direct, SaveSchema.HistoricalV1);
+        var directLoad = serializer.DeserializeAndValidate(directV1);
+        Equal(LoadStatus.Valid, directLoad.Status);
+        Equal(SaveSchema.HistoricalV1, directLoad.SourceSchemaVersion);
+        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, directV1));
         Bytes(expected, File.ReadAllBytes(path));
+        Bytes(expected, File.ReadAllBytes(path + ".backup"));
 
         True(GameSession.TryRestore(catalog, serializer, store, out var imported, out _, Owners("abc")));
         var durable = File.ReadAllBytes(path);
+        var durableBackup = File.ReadAllBytes(path + ".backup");
+        Equal(SaveSchema.HistoricalV1, JsonSaveSerializer.ReadObject<SaveEnvelope>(durable).SchemaVersion);
+        Equal(expectedEnvelope.Generation, JsonSaveSerializer.ReadObject<SaveEnvelope>(durable).Generation);
+        SameStateExceptReceiptIds(expected, durable);
+        Bytes(durable, durableBackup);
+
         var competitor = serializer.DeserializeAndValidate(expected).State!;
         var index = 0;
         foreach (var receipt in competitor.Receipts.Where(x => x.ParentPayload.Length > 0))
             receipt.CommandId = BatchReceiptIdentity.InternalPrefix + "12:$batch/3:abc/" + index++;
-        // Same revision, different proposed owner: full-checkpoint comparison must reject the stale import.
-        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, serializer.Serialize(competitor)));
+        var competitorV1 = compatibility.SerializeForSchema(competitor, SaveSchema.HistoricalV1);
+        var competitorLoad = serializer.DeserializeAndValidate(competitorV1);
+        Equal(LoadStatus.Valid, competitorLoad.Status);
+        Equal(SaveSchema.HistoricalV1, competitorLoad.SourceSchemaVersion);
+        // The expected checkpoint is now stale because durable ownership was resolved to abc.
+        Equal(WriteStatus.Failed, store.CommitReceiptCompatibility(expected, competitorV1));
         Bytes(durable, File.ReadAllBytes(path));
-        Equal(WriteStatus.Failed, store.Commit(serializer.Serialize(competitor), competitor.Revision));
-        Bytes(durable, File.ReadAllBytes(path));
+        Bytes(durableBackup, File.ReadAllBytes(path + ".backup"));
+
         var differentBackup = serializer.DeserializeAndValidate(expected).State!;
-        differentBackup.Cash++;
-        // F1 makes same-generation forged gameplay semantically invalid. Keep raw checksummed bytes here
-        // to prove an invalid/different backup is never mistaken for a pending ownership mirror.
-        var differentBytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(differentBackup), SaveSchema.CurrentVersion, differentBackup.Revision);
+        differentBackup.PendingChoiceId = "backup-alternate";
+        var differentBytes = compatibility.SerializeForSchema(differentBackup, SaveSchema.HistoricalV1);
         File.WriteAllBytes(path + ".backup", differentBytes);
         Equal("", store.Read().Reason);
         True(GameSession.TryRestore(catalog, serializer, store, out _, out _));
         Bytes(differentBytes, File.ReadAllBytes(path + ".backup"));
+    }
+
+    private static void MixedSchemaCompatibilityIsRejected()
+    {
+        var catalog = Catalog();
+        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
+        var expected = HistoricalCheckpoint(false, false);
+        var path = SavePath(expected);
+        File.WriteAllBytes(path + ".backup", expected);
+        var current = serializer.Serialize(serializer.DeserializeAndValidate(expected).State!);
+        Equal(SaveSchema.CurrentVersion, JsonSaveSerializer.ReadObject<SaveEnvelope>(current).SchemaVersion);
+        Equal(WriteStatus.Failed, new AtomicFileSaveStore(path, serializer).CommitReceiptCompatibility(expected, current));
+        Bytes(expected, File.ReadAllBytes(path));
+        Bytes(expected, File.ReadAllBytes(path + ".backup"));
     }
 
     private static void CrossFieldCorruptionRemainsCorrupt()
