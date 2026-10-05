@@ -325,3 +325,144 @@ Engine-free CI run **#108** on correction implementation/test head
 `SAFE TO RE-SEND PR #24 TO ASTRA IMPLEMENTATION AUDIT`
 
 Do not merge PR #24. Do not start M8-T02.
+
+
+---
+
+## Post-merge restore-boundary corrections
+
+Date: 2026-10-05  
+Owner model: GPT-5.6 Sol  
+Merged starting main: `669ad94d192d10079846741214775e304f008b41`  
+Branch: `fix/m8-t01-restore-boundary`  
+Follow-up PR: **#25 — `fix: harden M8 restore-boundary validation`**  
+Save impact: **none — SaveVersion remains 2**
+
+PR #24 was already merged before this correction pass. It was not reopened or reused.
+
+### Required workflow / skills
+
+Loaded before editing:
+
+- `startup-life-session-orchestrator`;
+- `startup-life-gameplay-guardian`;
+- `unity-game-director`;
+- `unity-gameplay-systems`;
+- `unity-mcp-bridge`;
+- `unity-qa-release`;
+- `unity-game-economy`.
+
+The community Unity skills remain pinned to
+`tea-x-random/unity-game-skills@dafb97ef00f94e64e42e6260bc6b3af74cc83dad`.
+
+### Finding A — intrinsic business command payload validation
+
+Persisted business receipts are now structurally validated before content compatibility can
+short-circuit restore classification.
+
+The intrinsic rules enforced independently of `ContentCatalog` are:
+
+- `LaunchBusiness`: nonempty definition `ContentId`, positive startup `Amount`, empty `Name`,
+  and nonempty exact revision `AppearanceId`; the existing launch provenance/content checks remain.
+- `ReinvestBusiness`: nonempty business instance `ContentId`, `Amount > 0`, empty `Name`,
+  empty `AppearanceId`.
+- `SetBusinessPricing`: nonempty business instance `ContentId`, a defined `PricingPosture`
+  integer, empty `Name`, empty `AppearanceId`.
+- `CloseBusiness`: nonempty business instance `ContentId`, `Amount == 0`, empty `Name`,
+  empty `AppearanceId`.
+
+The helper is content-independent and runs from
+`BusinessStateValidation.ValidateStructure` before catalog compatibility classification.
+
+Focused regressions prove:
+
+- closure `Amount = 1` → **Corrupt** with complete content and with unrelated start/background content unavailable;
+- closure nonempty `Name` → **Corrupt** under both content conditions;
+- closure nonempty `AppearanceId` → **Corrupt** under both content conditions;
+- reinvest nonempty `Name` or `AppearanceId` independently → **Corrupt** under both content conditions;
+- pricing nonempty `Name` or `AppearanceId` independently → **Corrupt** under both content conditions.
+
+A file/store-level regression uses a checksum-valid intrinsically corrupt closure receipt as
+primary, a valid checkpoint as backup, and a catalog where unrelated character-start content is
+unavailable. Primary classifies **Corrupt**, backup classifies **Valid**, and
+`AtomicFileSaveStore.Read()` returns **RecoveredBackup**. Primary and backup bytes remain unchanged
+during the read.
+
+### Finding B — malformed frozen-v1 parsing containment
+
+`HistoricalV1Codec.RejectImpossibleV1WireMembers` now catches only
+`System.Xml.XmlException` from the JSON→XML infoset reader and translates it to the existing
+validation-family `ArgumentException`.
+
+There is no broad `Exception` catch and fatal/runtime failures are not swallowed.
+
+Focused regressions prove:
+
+- schema-1 envelope + matching checksum + malformed JSON payload →
+  `DeserializeAndValidate(...)` returns **Corrupt**;
+- no `XmlException` escapes the serializer validation boundary;
+- malformed frozen-v1 primary + valid backup →
+  `AtomicFileSaveStore.Read()` returns **RecoveredBackup**;
+- corrupt primary bytes are not rewritten during read;
+- valid backup bytes are not overwritten.
+
+### Save/H1 and accepted business contracts
+
+Unchanged:
+
+- `SaveSchema.CurrentVersion == 2`;
+- synthetic v0 → frozen historical v1 → v2;
+- historical v1 → v2;
+- current v2 → v2;
+- H1 normalization remains same physical schema, same revision, receipt-ID-only;
+- first normal commit after v1 restore remains in-memory v2 → revision +1 → physical v2.
+
+Accepted business semantics are unchanged: launch, reinvest, pricing, closure, one active per type,
+maximum four active, no closure refund, arrears launch/reinvest block, closure allowed with arrears,
+ledger attribution, global entity allocation, and immutable business read model.
+
+Frozen M1 types/API remain untouched.
+
+### Focused and full engine-free regression
+
+Engine-free CI run **#111** on source/test head
+`9c997599c4e547f5d1a581a4d7a9c004f5e61ab0` passed.
+
+Focused new checks:
+
+- intrinsic business payload corruption before compatibility: **PASS**;
+- intrinsically corrupt primary + valid backup recovery: **PASS**;
+- malformed frozen-v1 containment + backup recovery: **PASS**.
+
+Full regression:
+
+- documentation validation: **PASS**;
+- Simulation: **49/49 PASS**;
+- Business ownership: **26/26 PASS** (previous merged-main baseline **23/23**);
+- H1/H2/R2: **20/20 PASS**;
+- M2 restore/provenance: **35/35 PASS**;
+- Presentation adapter: **11/11 PASS**;
+- Content catalog: **8/8 PASS**;
+- Static Unity foundation: **31/31 PASS**;
+- frozen M1 public API: **31/31 PASS**;
+- Content bridge: **8/8 PASS**;
+- M7 static: **43/43 PASS**;
+- Unity runner contract static: **30/30 PASS**;
+- repository security/release hygiene: **28/28 PASS**;
+- .NET builds: **0 warnings / 0 errors**;
+- clean-worktree gate: **PASS**.
+
+### Unity / acceptance status
+
+No final changed-head Unity acceptance was performed in this correction pass. The source correction
+must go through Astra source re-audit first.
+
+`FINAL M8-T01 UNITY ACCEPTANCE: PENDING SOURCE RE-AUDIT`
+
+`M8-T01 SOURCE CORRECTED — ASTRA RE-AUDIT REQUIRED`
+
+`M8-T02 NOT READY — blocked by M8-T01`
+
+`SAFE TO SEND FOLLOW-UP PR TO ASTRA SOURCE RE-AUDIT`
+
+Do not merge PR #25. Do not start M8-T02.
