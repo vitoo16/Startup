@@ -14,14 +14,6 @@ $contentReportPath = Join-Path $reportDirectory 'content-catalog-report.json'
 $presentationReportPath = Join-Path $reportDirectory 'presentation-adapter-report.json'
 $businessReportPath = Join-Path $reportDirectory 'm8-business-ownership-report.json'
 
-# Temporary focused-only validation on this unmerged branch; restored before final full CI.
-& $DotnetPath build "$startupRoot/tools/BusinessOwnershipChecks/BusinessOwnershipChecks.csproj" --configuration Release --nologo
-if ($LASTEXITCODE -ne 0) { throw 'Focused M8 parser containment build failed.' }
-& $DotnetPath run --project "$startupRoot/tools/BusinessOwnershipChecks/BusinessOwnershipChecks.csproj" --configuration Release --no-build -- $businessReportPath
-if ($LASTEXITCODE -ne 0) { throw 'Focused M8 parser containment regression failed.' }
-Write-Output 'FOCUSED VALIDATION ONLY: BusinessOwnershipChecks. Full engine-free runner will be restored after this passes.'
-return
-
 & $DotnetPath build "$startupRoot/tools/SimulationChecks/SimulationChecks.csproj" --configuration Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Provisional .NET build failed.' }
 & $DotnetPath run --project "$startupRoot/tools/SimulationChecks/SimulationChecks.csproj" --configuration Release --no-build -- $ReportPath
