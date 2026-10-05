@@ -65,34 +65,41 @@ namespace StartupLife.Infrastructure
             // wire contract. Walk only the root object's direct children through the same JSON→XML
             // infoset reader used by DataContractJsonSerializer. Escaped JSON member names are
             // represented by WCF as <a:item xmlns:a="item" item="decoded-name">.
-            using (var reader = JsonReaderWriterFactory.CreateJsonReader(payload, XmlDictionaryReaderQuotas.Max))
+            try
             {
-                reader.MoveToContent();
-                if (reader.NodeType != XmlNodeType.Element)
-                    throw new ArgumentException("Invalid frozen v1 JSON root.");
-
-                var rootDepth = reader.Depth;
-                if (reader.IsEmptyElement) return;
-                reader.ReadStartElement();
-                while (!reader.EOF && !(reader.NodeType == XmlNodeType.EndElement && reader.Depth == rootDepth))
+                using (var reader = JsonReaderWriterFactory.CreateJsonReader(payload, XmlDictionaryReaderQuotas.Max))
                 {
-                    if (reader.NodeType == XmlNodeType.Element && reader.Depth == rootDepth + 1)
+                    reader.MoveToContent();
+                    if (reader.NodeType != XmlNodeType.Element)
+                        throw new ArgumentException("Invalid frozen v1 JSON root.");
+
+                    var rootDepth = reader.Depth;
+                    if (reader.IsEmptyElement) return;
+                    reader.ReadStartElement();
+                    while (!reader.EOF && !(reader.NodeType == XmlNodeType.EndElement && reader.Depth == rootDepth))
                     {
-                        var memberName = reader.LocalName;
-                        if (string.Equals(reader.LocalName, "item", StringComparison.Ordinal) &&
-                            string.Equals(reader.NamespaceURI, "item", StringComparison.Ordinal))
+                        if (reader.NodeType == XmlNodeType.Element && reader.Depth == rootDepth + 1)
                         {
-                            var mappedName = reader.GetAttribute("item");
-                            if (mappedName != null) memberName = mappedName;
+                            var memberName = reader.LocalName;
+                            if (string.Equals(reader.LocalName, "item", StringComparison.Ordinal) &&
+                                string.Equals(reader.NamespaceURI, "item", StringComparison.Ordinal))
+                            {
+                                var mappedName = reader.GetAttribute("item");
+                                if (mappedName != null) memberName = mappedName;
+                            }
+
+                            if (string.Equals(memberName, "Businesses", StringComparison.Ordinal))
+                                throw new ArgumentException("Frozen v1 cannot carry business state.");
+
+                            reader.Skip();
                         }
-
-                        if (string.Equals(memberName, "Businesses", StringComparison.Ordinal))
-                            throw new ArgumentException("Frozen v1 cannot carry business state.");
-
-                        reader.Skip();
+                        else if (!reader.Read()) break;
                     }
-                    else if (!reader.Read()) break;
                 }
+            }
+            catch (XmlException e)
+            {
+                throw new ArgumentException("Malformed frozen v1 JSON.", e);
             }
         }
 
