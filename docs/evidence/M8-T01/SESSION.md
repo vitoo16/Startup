@@ -643,3 +643,35 @@ Repository execution: isolated verification snapshot; the user's older Unity che
 existing changes are preserved. GitHub source-upload auto-review rejected external publication
 without destination-specific approval. No GitHub branch, commit or PR was created.
 Commit: none; the reviewable patch is prepared for the exact starting merged main.
+
+
+### Publication and .NET 8 verification after explicit approval
+
+The user subsequently authorized uploading these three files to `vitoo16/Startup`,
+creating the branch and a draft PR, and running CI without merging.
+Draft [PR #27](https://github.com/vitoo16/Startup/pull/27) was created on
+`codex/m8-t01-defer-employment-eligibility`.
+Implementation/test source commit: `d6fbcede8dbef9071c342c66274fb23edbf595dd`.
+Base remains `dbdb41f051814ac6e7fc13f27115940a59dd6fcb`.
+
+After network access became available, all six isolated runner project targets were
+restored to their original net8.0 setting and rebuilt with normal NuGet audit enabled.
+Tests: BusinessOwnership **26/26**, Simulation **49/49**, H1/H2/R2 **20/20**,
+M2 restore/provenance **35/35**, Presentation **11/11**, Content **8/8**:
+**149/149 PASS on .NET 8**, with **0 build warnings/errors**.
+The employed launch regression passes with exact investment debit, no time advancement,
+employment retention and byte-identical cold restore.
+
+GitHub [Engine-free CI run 37364655512](https://github.com/vitoo16/Startup/actions/runs/37364655512)
+was triggered for the implementation source head and was still **QUEUED** at closeout;
+there is no CI-pass claim. The PR body/checks report later changed-head CI status.
+This evidence-only follow-up does not alter the tested production/test blobs.
+
+Skills used: same pinned skills listed above.  
+Visual evidence: not applicable; no UI/scene/asset change.  
+Save impact: none; SaveVersion remains 2.  
+Known limitations: GitHub runner execution and final changed-head Unity import/compile,
+EditMode and PlayMode remain pending; M8-T01 remains open and M8-T02 is not started.  
+Files changed: exactly the three paths listed above; no workflow/runner project changes.  
+Repository execution: GitHub branch and draft PR created after explicit authorization;
+the user's older local checkout remains untouched. No merge was performed.
