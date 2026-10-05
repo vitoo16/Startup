@@ -3,7 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
+using System.Runtime.Serialization.Json;
+using System.Xml;
 using StartupLife.Core;
 
 namespace StartupLife.Infrastructure
@@ -61,11 +62,18 @@ namespace StartupLife.Infrastructure
         {
             // DataContractJsonSerializer may populate ExtensionData even on a self-roundtrip, so
             // ExtensionDataObject is not a reliable unknown-member detector for this frozen JSON
-            // wire contract. Reject the concrete v2-only persisted member at the wire boundary;
-            // receipt parsing below independently rejects command ordinals that did not exist in v1.
-            var json = Encoding.UTF8.GetString(payload);
-            if (json.IndexOf("\"Businesses\":", StringComparison.Ordinal) >= 0)
-                throw new ArgumentException("Frozen v1 cannot carry business state.");
+            // wire contract. Inspect decoded root member names instead of raw text so legal
+            // whitespace and JSON escapes cannot hide the v2-only Businesses member.
+            using (var reader = JsonReaderWriterFactory.CreateJsonReader(payload, XmlDictionaryReaderQuotas.Max))
+            {
+                if (!reader.Read() || reader.NodeType != XmlNodeType.Element)
+                    throw new ArgumentException("Invalid frozen v1 JSON root.");
+                var rootDepth = reader.Depth;
+                while (reader.Read())
+                    if (reader.NodeType == XmlNodeType.Element && reader.Depth == rootDepth + 1 &&
+                        string.Equals(reader.LocalName, "Businesses", StringComparison.Ordinal))
+                        throw new ArgumentException("Frozen v1 cannot carry business state.");
+            }
         }
 
         private static void Validate(V1GameState dto, int expectedVersion)
