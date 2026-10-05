@@ -94,7 +94,9 @@ namespace StartupLife.Infrastructure
                     using (var fileGate = new FileStream(primary + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
                     {
                         var candidate = serializer.DeserializeAndValidate(validatedBytes);
-                        if (candidate.Status != LoadStatus.Valid || candidate.State!.Revision !=
+                        if (candidate.Status != LoadStatus.Valid ||
+                            (expectedCheckpoint == null && candidate.SourceSchemaVersion != SaveSchema.CurrentVersion) ||
+                            candidate.State!.Revision !=
                             (expectedCheckpoint == null ? checked(expectedRevision + 1) : expectedRevision)) return WriteStatus.Failed;
                         var previous = Read();
                         if (previous.Status != LoadStatus.Valid && previous.Status != LoadStatus.RecoveredBackup && !(previous.Status == LoadStatus.Missing && expectedRevision == 0)) return WriteStatus.Failed;
