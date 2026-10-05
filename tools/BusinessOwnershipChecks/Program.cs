@@ -27,6 +27,17 @@ internal static class Program
         Check("M8 conservation, ledger attribution, entity order, and read model", ConservationAndReadModel);
         Check("M8 save v1/v0 migration and v2 roundtrip matrix", MigrationCases);
         Check("M8 H1 v1 schema-preserving normalization and first v2 commit", H1CompatibilityCases);
+        Check("F1 frozen v1 rejects whitespace and escaped Businesses members", FrozenV1MemberDetection);
+        Check("F1 H1 restore preserves bytes when frozen v1 wire is impossible", FrozenV1H1BytesPreserved);
+        Check("F2 unavailable business content cannot mask known business corruption", BusinessContentCompatibilityPrecedence);
+        Check("F3 intrinsic business history provenance survives unrelated missing content", BusinessHistoryProvenanceWithoutUnrelatedContent);
+        Check("F4 ordinary commits require physical current schema", OrdinaryCommitSchemaBoundary);
+        Check("F5 migration source and intermediate stages validate before the next step", MigrationStageValidation);
+        Check("F8 LaunchBusiness retry matrix returns original committed semantics", LaunchRetryMatrix);
+        Check("F8 ReinvestBusiness retry matrix returns original committed semantics", ReinvestRetryMatrix);
+        Check("F8 SetBusinessPricing retry matrix returns original committed semantics", PricingRetryMatrix);
+        Check("F8 CloseBusiness retry matrix returns original committed semantics", CloseRetryMatrix);
+        Check("F8 business command IDs preserve hostile ownership rules", BusinessCommandOwnershipHostility);
         Check("M8 restore rejects corrupt business state before content compatibility", RestoreBusinessCorruption);
         Check("M8 unavailable business revision is unsupported content", UnsupportedBusinessRevision);
 
@@ -423,6 +434,421 @@ internal static class Program
         Throws<ArgumentException>(() => ((ISaveCompatibilitySerializer)businessSerializer).SerializeForSchema(businessState, SaveSchema.HistoricalV1));
     }
 
+
+    private static void FrozenV1MemberDetection()
+    {
+        var serializer = new JsonSaveSerializer(MigrationCatalog(), GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+        var historical = FixtureBytes("current-v1.json");
+        foreach (var member in new[]
+        {
+            "\"Businesses\" : [{\"DefinitionId\":\"future\"}]",
+            "\"\\u0042usinesses\":[{\"DefinitionId\":\"future\"}]"
+        })
+        {
+            var candidate = InjectRootMember(historical, member);
+            var load = serializer.DeserializeAndValidate(candidate);
+            Equal(LoadStatus.Corrupt, load.Status);
+        }
+    }
+
+    private static void FrozenV1H1BytesPreserved()
+    {
+        var catalog = LegacyCatalog();
+        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+        foreach (var member in new[]
+        {
+            "\"Businesses\" : [{\"DefinitionId\":\"future\"}]",
+            "\"\\u0042usinesses\":[{\"DefinitionId\":\"future\"}]"
+        })
+        {
+            var impossible = InjectRootMember(FixtureBytes("pr6-day-completed.json"), member);
+            var directory = Path.Combine(Path.GetTempPath(), "StartupLifeM8F1", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(directory);
+            var path = Path.Combine(directory, "save.json");
+            File.WriteAllBytes(path, impossible);
+            File.WriteAllBytes(path + ".backup", impossible);
+            var store = new AtomicFileSaveStore(path, serializer);
+            True(!GameSession.TryRestore(catalog, serializer, store, out var session, out var load,
+                new Dictionary<string, string>(StringComparer.Ordinal) { ["$batch/3:abc/"] = "abc" }));
+            Equal<GameSession?>(null, session);
+            Equal(LoadStatus.Corrupt, load.Status);
+            Bytes(impossible, File.ReadAllBytes(path));
+            Bytes(impossible, File.ReadAllBytes(path + ".backup"));
+        }
+    }
+
+    private static void BusinessContentCompatibilityPrecedence()
+    {
+        var a = Definition("test.business.a", BusinessType.FreelanceService);
+        var b = Definition("test.business.b", BusinessType.OnlineStore);
+        var strictB = Definition(b.Id, b.Type, startMin: 200, startMax: 1000);
+
+        var active = Ready(cash: 5000, businesses: new[] { a, b });
+        Launch(active, 100, a);
+        Launch(active, 100, b);
+        var checkpoint = active.Checkpoint();
+
+        var missingA = new JsonSaveSerializer(BusinessCatalog(5000, new[] { strictB }), GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+        Equal(LoadStatus.Corrupt, missingA.DeserializeAndValidate(checkpoint).Status);
+
+        var incompatibleA = new BusinessDefinition(a.Id, "fixture-r2", a.NameKey, a.Type, a.OperationMode,
+            a.MinimumStartupInvestment, a.MaximumStartupInvestment, a.AllowedPricingPostures,
+            a.DefaultPricingPosture, a.MinimumReinvestment, a.MaximumReinvestment);
+        var incompatible = new JsonSaveSerializer(BusinessCatalog(5000, new[] { incompatibleA, strictB }), GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+        Equal(LoadStatus.Corrupt, incompatible.DeserializeAndValidate(checkpoint).Status);
+
+        var missingAValidB = new JsonSaveSerializer(BusinessCatalog(5000, new[] { b }), GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+        Equal(LoadStatus.UnsupportedContent, missingAValidB.DeserializeAndValidate(checkpoint).Status);
+
+        var closed = Ready(cash: 5000, businesses: new[] { a, b });
+        Launch(closed, 100, a);
+        var aId = closed.State().Businesses.Single().InstanceId;
+        Equal(CommandStatus.Committed, closed.Execute("close-a", BusinessCommands.Close(aId)).Status);
+        Launch(closed, 100, b);
+        Equal(LoadStatus.Corrupt, missingA.DeserializeAndValidate(closed.Checkpoint()).Status);
+    }
+
+    private static void BusinessHistoryProvenanceWithoutUnrelatedContent()
+    {
+        var missingStartCatalog = BusinessCatalogWithoutStart(new[] { Freelance });
+        var missingStart = new JsonSaveSerializer(missingStartCatalog, GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+
+        var reinvest = Ready(cash: 3000);
+        Launch(reinvest, 100);
+        var id = reinvest.State().Businesses.Single().InstanceId;
+        Equal(CommandStatus.Committed, reinvest.Execute("reinvest-provenance", BusinessCommands.Reinvest(id, 10)).Status);
+        var timestamp = reinvest.State();
+        RewriteBusinessHistory(timestamp, "business.reinvested", record =>
+            BusinessHistory.Encode(record.Action, record.OperationId, record.InstanceId, "2099-01-01",
+                record.Minute, record.Amount, record.Pricing));
+        Equal(LoadStatus.Corrupt, Raw(reinvest.Serializer, timestamp).Status);
+        Equal(LoadStatus.Corrupt, Raw(missingStart, timestamp).Status);
+
+        var pricing = Ready(cash: 3000);
+        Launch(pricing, 100);
+        id = pricing.State().Businesses.Single().InstanceId;
+        Equal(CommandStatus.Committed, pricing.Execute("price-provenance",
+            BusinessCommands.SetPricing(id, PricingPosture.Premium)).Status);
+        var noOp = pricing.State();
+        noOp.Businesses.Single().PricingPosture = PricingPosture.Standard;
+        var priceReceipt = noOp.Receipts.Single(x =>
+            GameCommand.ParseCanonicalPayload(x.Payload).Kind == CommandKind.SetBusinessPricing);
+        priceReceipt.Payload = BusinessCommands.SetPricing(id, PricingPosture.Standard).CanonicalPayload;
+        RewriteBusinessHistory(noOp, "business.pricing_changed", record =>
+            BusinessHistory.Encode(record.Action, record.OperationId, record.InstanceId, record.DateIso,
+                record.Minute, record.Amount, PricingPosture.Standard));
+        Equal(LoadStatus.Corrupt, Raw(pricing.Serializer, noOp).Status);
+        Equal(LoadStatus.Corrupt, Raw(missingStart, noOp).Status);
+
+        var closure = Ready(cash: 3000);
+        Launch(closure, 100);
+        id = closure.State().Businesses.Single().InstanceId;
+        Equal(CommandStatus.Committed, closure.Execute("advance-before-close", new GameCommand(CommandKind.AdvanceBoundary)).Status);
+        Equal(480, closure.State().Minute);
+        Equal(CommandStatus.Committed, closure.Execute("close-provenance", BusinessCommands.Close(id)).Status);
+        var wrongClosureTime = closure.State();
+        wrongClosureTime.Businesses.Single().ClosedMinute = 0;
+        RewriteBusinessHistory(wrongClosureTime, "business.closed", record =>
+            BusinessHistory.Encode(record.Action, record.OperationId, record.InstanceId, record.DateIso,
+                0, record.Amount, record.Pricing));
+        Equal(LoadStatus.Corrupt, Raw(closure.Serializer, wrongClosureTime).Status);
+        Equal(LoadStatus.Corrupt, Raw(missingStart, wrongClosureTime).Status);
+    }
+
+    private static void OrdinaryCommitSchemaBoundary()
+    {
+        var catalog = LegacyCatalog();
+        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+        var fixture = new Fixture(catalog);
+        Equal(CommandStatus.Committed, fixture.Execute("create",
+            new GameCommand(CommandKind.CreateCharacter, "fresh", 25, "An", "base.female")).Status);
+        var stateV1Generation = fixture.State();
+        Equal(1L, stateV1Generation.Revision);
+        var currentV1Generation = serializer.Serialize(stateV1Generation);
+        var historicalV1Generation = ((ISaveCompatibilitySerializer)serializer)
+            .SerializeForSchema(stateV1Generation, SaveSchema.HistoricalV1);
+        var syntheticState = Clone(stateV1Generation);
+        syntheticState.SaveVersion = 0;
+        var syntheticV0Generation = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(syntheticState), 0, syntheticState.Revision);
+        Equal(LoadStatus.Valid, serializer.DeserializeAndValidate(syntheticV0Generation).Status);
+
+        var rejectedV1Path = NewSavePath("ordinary-v1");
+        Equal(WriteStatus.Failed, new AtomicFileSaveStore(rejectedV1Path, serializer).Commit(historicalV1Generation, 0));
+        True(!File.Exists(rejectedV1Path));
+
+        var rejectedV0Path = NewSavePath("ordinary-v0");
+        Equal(WriteStatus.Failed, new AtomicFileSaveStore(rejectedV0Path, serializer).Commit(syntheticV0Generation, 0));
+        True(!File.Exists(rejectedV0Path));
+
+        var currentPath = NewSavePath("ordinary-v2");
+        Equal(WriteStatus.Committed, new AtomicFileSaveStore(currentPath, serializer).Commit(currentV1Generation, 0));
+        Equal(SaveSchema.CurrentVersion, JsonSaveSerializer.ReadObject<SaveEnvelope>(File.ReadAllBytes(currentPath)).SchemaVersion);
+
+        Equal(CommandStatus.Committed, fixture.Execute("job", new GameCommand(CommandKind.AcceptJob, "developer")).Status);
+        var stateGeneration2 = fixture.State();
+        var historicalGeneration2 = ((ISaveCompatibilitySerializer)serializer)
+            .SerializeForSchema(stateGeneration2, SaveSchema.HistoricalV1);
+        var before = File.ReadAllBytes(currentPath);
+        Equal(WriteStatus.Failed, new AtomicFileSaveStore(currentPath, serializer).Commit(historicalGeneration2, 1));
+        Bytes(before, File.ReadAllBytes(currentPath));
+
+        var syntheticGeneration2 = Clone(stateGeneration2);
+        syntheticGeneration2.SaveVersion = 0;
+        var v0Generation2 = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(syntheticGeneration2), 0, syntheticGeneration2.Revision);
+        Equal(LoadStatus.Valid, serializer.DeserializeAndValidate(v0Generation2).Status);
+        Equal(WriteStatus.Failed, new AtomicFileSaveStore(currentPath, serializer).Commit(v0Generation2, 1));
+        Bytes(before, File.ReadAllBytes(currentPath));
+
+        var compatibilityV1Path = NewSavePath("compat-v1");
+        File.WriteAllBytes(compatibilityV1Path, historicalV1Generation);
+        var compatibilityV1 = new AtomicFileSaveStore(compatibilityV1Path, serializer);
+        Equal(WriteStatus.Committed, compatibilityV1.CommitReceiptCompatibility(historicalV1Generation, historicalV1Generation));
+        Equal(SaveSchema.HistoricalV1, JsonSaveSerializer.ReadObject<SaveEnvelope>(File.ReadAllBytes(compatibilityV1Path)).SchemaVersion);
+        Equal(SaveSchema.HistoricalV1, JsonSaveSerializer.ReadObject<SaveEnvelope>(File.ReadAllBytes(compatibilityV1Path + ".backup")).SchemaVersion);
+
+        var compatibilityV2Path = NewSavePath("compat-v2");
+        File.WriteAllBytes(compatibilityV2Path, currentV1Generation);
+        Equal(WriteStatus.Committed, new AtomicFileSaveStore(compatibilityV2Path, serializer)
+            .CommitReceiptCompatibility(currentV1Generation, currentV1Generation));
+        Equal(SaveSchema.CurrentVersion, JsonSaveSerializer.ReadObject<SaveEnvelope>(File.ReadAllBytes(compatibilityV2Path)).SchemaVersion);
+    }
+
+    private static void MigrationStageValidation()
+    {
+        var catalog = MigrationCatalog();
+        var source = FixtureBytes("current-v1.json");
+        var envelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(source);
+        var payload = Convert.FromBase64String(envelope.PayloadBase64);
+        var invalidSourcePayload = RewriteRootRevisionPayload(payload, envelope.Generation + 1);
+        var invalidSource = JsonSaveSerializer.Wrap(invalidSourcePayload, SaveSchema.HistoricalV1, envelope.Generation);
+        var sourceRepair = new RepairingV1ToV2Migration(envelope.Generation);
+        var sourceSerializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(), sourceRepair);
+        Equal(LoadStatus.Corrupt, sourceSerializer.DeserializeAndValidate(invalidSource).Status);
+        Equal(0, sourceRepair.Calls);
+
+        var v0 = FixtureBytes("synthetic-v0.json");
+        var v0Envelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(v0);
+        var invalidIntermediate = new InvalidIntermediateV0ToV1Migration();
+        var intermediateRepair = new RepairingV1ToV2Migration(v0Envelope.Generation);
+        var intermediateSerializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(),
+            invalidIntermediate, intermediateRepair);
+        Equal(LoadStatus.Corrupt, intermediateSerializer.DeserializeAndValidate(v0).Status);
+        Equal(1, invalidIntermediate.Calls);
+        Equal(0, intermediateRepair.Calls);
+
+        var builtIn = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+        var builtInLoad = builtIn.DeserializeAndValidate(v0);
+        Equal(LoadStatus.Valid, builtInLoad.Status);
+        Equal(SaveSchema.CurrentVersion, builtInLoad.State!.SaveVersion);
+    }
+
+    private static void LaunchRetryMatrix()
+    {
+        var fixture = Ready(cash: 3000);
+        AssertBusinessRetryMatrix(fixture, "retry-launch",
+            BusinessCommands.Launch(Freelance.Id, Freelance.Revision, 100),
+            current => current.Execute("later-launch-price",
+                BusinessCommands.SetPricing(current.State().Businesses.Single().InstanceId, PricingPosture.Premium)));
+    }
+
+    private static void ReinvestRetryMatrix()
+    {
+        var fixture = Ready(cash: 3000);
+        Launch(fixture, 100);
+        var id = fixture.State().Businesses.Single().InstanceId;
+        AssertBusinessRetryMatrix(fixture, "retry-reinvest", BusinessCommands.Reinvest(id, 10),
+            current => current.Execute("later-reinvest-price", BusinessCommands.SetPricing(id, PricingPosture.Premium)));
+    }
+
+    private static void PricingRetryMatrix()
+    {
+        var fixture = Ready(cash: 3000);
+        Launch(fixture, 100);
+        var id = fixture.State().Businesses.Single().InstanceId;
+        AssertBusinessRetryMatrix(fixture, "retry-pricing", BusinessCommands.SetPricing(id, PricingPosture.Premium),
+            current => current.Execute("later-pricing-reinvest", BusinessCommands.Reinvest(id, 10)));
+    }
+
+    private static void CloseRetryMatrix()
+    {
+        var fixture = Ready(cash: 3000);
+        Launch(fixture, 100);
+        var id = fixture.State().Businesses.Single().InstanceId;
+        AssertBusinessRetryMatrix(fixture, "retry-close", BusinessCommands.Close(id),
+            current => current.Execute("later-close-launch", BusinessCommands.Launch(Freelance.Id, Freelance.Revision, 100)));
+    }
+
+    private static void BusinessCommandOwnershipHostility()
+    {
+        var launch = Ready(cash: 3000);
+        Equal(CommandStatus.Committed, launch.Execute("same-launch",
+            BusinessCommands.Launch(Freelance.Id, Freelance.Revision, 100)).Status);
+        AssertIdConflictUnchanged(launch, "same-launch", BusinessCommands.Launch(Freelance.Id, Freelance.Revision, 101));
+
+        var reinvest = Ready(cash: 3000); Launch(reinvest, 100);
+        var id = reinvest.State().Businesses.Single().InstanceId;
+        Equal(CommandStatus.Committed, reinvest.Execute("same-reinvest", BusinessCommands.Reinvest(id, 10)).Status);
+        AssertIdConflictUnchanged(reinvest, "same-reinvest", BusinessCommands.Reinvest(id, 11));
+
+        var pricing = Ready(cash: 3000); Launch(pricing, 100);
+        id = pricing.State().Businesses.Single().InstanceId;
+        Equal(CommandStatus.Committed, pricing.Execute("same-pricing", BusinessCommands.SetPricing(id, PricingPosture.Premium)).Status);
+        AssertIdConflictUnchanged(pricing, "same-pricing", BusinessCommands.SetPricing(id, PricingPosture.Budget));
+
+        var close = Ready(cash: 3000); Launch(close, 100);
+        id = close.State().Businesses.Single().InstanceId;
+        Equal(CommandStatus.Committed, close.Execute("same-close", BusinessCommands.Close(id)).Status);
+        AssertIdConflictUnchanged(close, "same-close", new GameCommand(CommandKind.CloseBusiness, id, 1));
+
+        var directRoot = Ready(cash: 3000);
+        Equal(CommandStatus.Committed, directRoot.Execute("business-root",
+            BusinessCommands.Launch(Freelance.Id, Freelance.Revision, 100)).Status);
+        var directBytes = directRoot.Checkpoint();
+        var blockedBatch = directRoot.Session.AdvanceDay(new CommandEnvelope("run", "business-root",
+            directRoot.Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary)));
+        Equal("InvalidRequest", blockedBatch.StopReason);
+        Bytes(directBytes, directRoot.Checkpoint());
+
+        var batchRoot = Ready(cash: 3000);
+        var batch = batchRoot.Session.AdvanceDay(new CommandEnvelope("run", "business-batch",
+            batchRoot.Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary)));
+        Equal("TargetReached", batch.StopReason);
+        var batchBytes = batchRoot.Checkpoint();
+        var blockedDirect = batchRoot.Session.Execute(new CommandEnvelope("run", "business-batch",
+            batchRoot.Session.Snapshot().Revision, BusinessCommands.Launch(Freelance.Id, Freelance.Revision, 100)));
+        Equal(CommandStatus.Rejected, blockedDirect.Status);
+        Equal("command.id_conflict", blockedDirect.ReasonKey);
+        Bytes(batchBytes, batchRoot.Checkpoint());
+
+        var disjoint = Ready(cash: 3000);
+        Equal(CommandStatus.Committed, disjoint.Execute("business-child/0",
+            BusinessCommands.Launch(Freelance.Id, Freelance.Revision, 100)).Status);
+        var rootBatch = disjoint.Session.AdvanceDay(new CommandEnvelope("run", "business-child",
+            disjoint.Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary)));
+        Equal("TargetReached", rootBatch.StopReason);
+    }
+
+    private static void AssertBusinessRetryMatrix(Fixture fixture, string commandId, GameCommand command,
+        Func<Fixture, CommandResult> laterCommit)
+    {
+        var original = fixture.Execute(commandId, command);
+        Equal(CommandStatus.Committed, original.Status);
+        True(original.Outcome != null);
+        var committed = fixture.Checkpoint();
+        var priorRevision = original.Outcome!.PriorRevision;
+
+        var immediate = fixture.ExecuteAt(commandId, command, priorRevision);
+        AssertEquivalentOutcome(original, immediate);
+        Bytes(committed, fixture.Checkpoint());
+
+        var cold = fixture.Restore();
+        Bytes(committed, cold.Checkpoint());
+        var coldRetry = cold.ExecuteAt(commandId, command, priorRevision);
+        AssertEquivalentOutcome(original, coldRetry);
+        Bytes(committed, cold.Checkpoint());
+
+        var later = laterCommit(cold);
+        Equal(CommandStatus.Committed, later.Status);
+        var afterLater = cold.Checkpoint();
+        var lateRetry = cold.ExecuteAt(commandId, command, priorRevision);
+        AssertEquivalentOutcome(original, lateRetry);
+        // Byte identity covers cash, ledger, history, businesses, entity/operation counters,
+        // receipts, and revision, so a retry cannot duplicate any committed side effect.
+        Bytes(afterLater, cold.Checkpoint());
+    }
+
+    private static void AssertEquivalentOutcome(CommandResult original, CommandResult retry)
+    {
+        Equal(CommandStatus.AlreadyCommitted, retry.Status);
+        Equal(original.Revision, retry.Revision);
+        Equal(original.OperationId, retry.OperationId);
+        Equal(original.MinutesConsumed, retry.MinutesConsumed);
+        True(original.Outcome != null && retry.Outcome != null);
+        var expected = original.Outcome!;
+        var actual = retry.Outcome!;
+        Equal(expected.OperationId, actual.OperationId);
+        Equal(expected.CommandId, actual.CommandId);
+        Equal(expected.ActivityId, actual.ActivityId);
+        Equal(expected.PriorRevision, actual.PriorRevision);
+        Equal(expected.Revision, actual.Revision);
+        Equal(expected.Start, actual.Start);
+        Equal(expected.End, actual.End);
+        Equal(expected.MinutesConsumed, actual.MinutesConsumed);
+        Equal(expected.Cue, actual.Cue);
+        Equal(expected.PlaybackCursor, actual.PlaybackCursor);
+        Equal(expected.CashDelta, actual.CashDelta);
+        Equal(expected.EmploymentId, actual.EmploymentId);
+        Equal(expected.CareerXpDelta, actual.CareerXpDelta);
+        Equal(expected.PriorRank, actual.PriorRank);
+        Equal(expected.NewRank, actual.NewRank);
+        True(expected.HistoryEntries.SequenceEqual(actual.HistoryEntries));
+        True(expected.GrantedIds.SequenceEqual(actual.GrantedIds));
+        True(expected.LedgerEntries.Select(x => (x.Id, x.Category, x.CashDelta, x.Amount, x.AttributionId))
+            .SequenceEqual(actual.LedgerEntries.Select(x => (x.Id, x.Category, x.CashDelta, x.Amount, x.AttributionId))));
+        True(expected.SkillDeltas.Select(x => (x.SkillId, x.ExposureDelta, x.PriorLevel, x.NewLevel, x.PriorGrantedLevel, x.NewGrantedLevel))
+            .SequenceEqual(actual.SkillDeltas.Select(x => (x.SkillId, x.ExposureDelta, x.PriorLevel, x.NewLevel, x.PriorGrantedLevel, x.NewGrantedLevel))));
+    }
+
+    private static void AssertIdConflictUnchanged(Fixture fixture, string commandId, GameCommand changed)
+    {
+        var before = fixture.Checkpoint();
+        var result = fixture.Session.Execute(new CommandEnvelope("run", commandId, fixture.Session.Snapshot().Revision, changed));
+        Equal(CommandStatus.Rejected, result.Status);
+        Equal("command.id_conflict", result.ReasonKey);
+        Bytes(before, fixture.Checkpoint());
+    }
+
+    private static byte[] InjectRootMember(byte[] checkpoint, string member)
+    {
+        var envelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(checkpoint);
+        var payload = Encoding.UTF8.GetString(Convert.FromBase64String(envelope.PayloadBase64));
+        var close = payload.LastIndexOf('}');
+        True(close >= 0);
+        var injected = payload.Insert(close, "," + member);
+        return JsonSaveSerializer.Wrap(Encoding.UTF8.GetBytes(injected), envelope.SchemaVersion, envelope.Generation);
+    }
+
+    private static byte[] RewriteRootRevisionPayload(byte[] payload, long revision)
+    {
+        using var document = JsonDocument.Parse(payload);
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            foreach (var property in document.RootElement.EnumerateObject())
+            {
+                writer.WritePropertyName(property.Name);
+                if (property.NameEquals("Revision")) writer.WriteNumberValue(revision);
+                else property.Value.WriteTo(writer);
+            }
+            writer.WriteEndObject();
+        }
+        return stream.ToArray();
+    }
+
+    private static void RewriteBusinessHistory(GameState state, string action, Func<BusinessHistoryRecord, string> rewrite)
+    {
+        var index = state.History.FindIndex(x => x.StartsWith(action + ":", StringComparison.Ordinal));
+        True(index >= 0);
+        True(BusinessHistory.TryParse(state.History[index], out var record) && record != null);
+        state.History[index] = rewrite(record!);
+    }
+
+    private static string NewSavePath(string name)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "StartupLifeM8Audit", name + "-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        return Path.Combine(directory, "save.json");
+    }
+
     private static void RestoreBusinessCorruption()
     {
         var f = Ready(cash: 1000); Launch(f, 100); var valid = f.State();
@@ -488,6 +914,11 @@ internal static class Program
             new[] { new CharacterStartDefinition("fresh", cash, 10000, "base.female") }, businesses,
             new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
     }
+
+    private static ContentCatalog BusinessCatalogWithoutStart(IEnumerable<BusinessDefinition> businesses) =>
+        new ContentCatalog("business.fixture.v1", Array.Empty<SkillDefinition>(), Array.Empty<CareerDefinition>(),
+            Array.Empty<CourseDefinition>(), Array.Empty<CharacterStartDefinition>(), businesses,
+            new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
 
     private static ContentCatalog MigrationCatalog()
     {
@@ -635,6 +1066,42 @@ internal static class Program
             }
             else if (previous.Status != LoadStatus.Valid || previous.State!.Revision != expectedRevision) return WriteStatus.Failed;
             bytes = (byte[])candidate.Clone(); return WriteStatus.Committed;
+        }
+    }
+
+    private sealed class RepairingV1ToV2Migration : ISaveMigration
+    {
+        private readonly long targetRevision;
+        public int Calls { get; private set; }
+        public int FromVersion => SaveSchema.HistoricalV1;
+        public int ToVersion => SaveSchema.CurrentVersion;
+        public RepairingV1ToV2Migration(long targetRevision) { this.targetRevision = targetRevision; }
+        public byte[] Migrate(byte[] payload)
+        {
+            Calls++;
+            var current = JsonSaveSerializer.ReadObject<GameState>(new V1ToV2Migration().Migrate(payload));
+            current.Revision = targetRevision;
+            return JsonSaveSerializer.WriteObject(current);
+        }
+    }
+
+    private sealed class InvalidIntermediateV0ToV1Migration : ISaveMigration
+    {
+        public int Calls { get; private set; }
+        public int FromVersion => 0;
+        public int ToVersion => SaveSchema.HistoricalV1;
+        public byte[] Migrate(byte[] payload)
+        {
+            Calls++;
+            var historical = new SyntheticV0Migration().Migrate(payload);
+            var projected = HistoricalPayloadRevision(historical);
+            return RewriteRootRevisionPayload(historical, checked(projected + 1));
+        }
+
+        private static long HistoricalPayloadRevision(byte[] payload)
+        {
+            using var document = JsonDocument.Parse(payload);
+            return document.RootElement.GetProperty("Revision").GetInt64();
         }
     }
 
