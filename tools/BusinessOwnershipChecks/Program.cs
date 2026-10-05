@@ -31,6 +31,9 @@ internal static class Program
         Check("F1 H1 restore preserves bytes when frozen v1 wire is impossible", FrozenV1H1BytesPreserved);
         Check("F2 unavailable business content cannot mask known business corruption", BusinessContentCompatibilityPrecedence);
         Check("F3 intrinsic business history provenance survives unrelated missing content", BusinessHistoryProvenanceWithoutUnrelatedContent);
+        Check("M8 restore intrinsically validates business command payloads before content compatibility", IntrinsicBusinessCommandPayloadPrecedesContentCompatibility);
+        Check("M8 intrinsically corrupt business primary recovers valid backup", IntrinsicBusinessCorruptionRecoversBackup);
+        Check("M8 malformed frozen v1 is contained and recovers valid backup", MalformedFrozenV1IsContainedAndRecoversBackup);
         Check("F4 ordinary commits require physical current schema", OrdinaryCommitSchemaBoundary);
         Check("F5 migration source and intermediate stages validate before the next step", MigrationStageValidation);
         Check("F8 LaunchBusiness retry matrix returns original committed semantics", LaunchRetryMatrix);
@@ -559,6 +562,124 @@ internal static class Program
                 0, record.Amount, record.Pricing));
         Equal(LoadStatus.Corrupt, Raw(closure.Serializer, wrongClosureTime).Status);
         Equal(LoadStatus.Corrupt, Raw(missingStart, wrongClosureTime).Status);
+    }
+
+    private static void IntrinsicBusinessCommandPayloadPrecedesContentCompatibility()
+    {
+        var missingStartCatalog = BusinessCatalogWithoutStart(new[] { Freelance });
+        var missingStart = new JsonSaveSerializer(missingStartCatalog, GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+
+        var closure = Ready(cash: 3000);
+        Launch(closure, 100);
+        var id = closure.State().Businesses.Single().InstanceId;
+        Equal(CommandStatus.Committed, closure.Execute("close-intrinsic", BusinessCommands.Close(id)).Status);
+        var closed = closure.State();
+        foreach (var command in new[]
+        {
+            new GameCommand(CommandKind.CloseBusiness, id, 1),
+            new GameCommand(CommandKind.CloseBusiness, id, 0, "unused"),
+            new GameCommand(CommandKind.CloseBusiness, id, 0, "", "unused")
+        })
+            AssertIntrinsicBusinessPayloadCorrupt(closure.Serializer, missingStart, closed, CommandKind.CloseBusiness, command);
+
+        var reinvest = Ready(cash: 3000);
+        Launch(reinvest, 100);
+        id = reinvest.State().Businesses.Single().InstanceId;
+        Equal(CommandStatus.Committed, reinvest.Execute("reinvest-intrinsic", BusinessCommands.Reinvest(id, 10)).Status);
+        var reinvested = reinvest.State();
+        foreach (var command in new[]
+        {
+            new GameCommand(CommandKind.ReinvestBusiness, id, 10, "unused"),
+            new GameCommand(CommandKind.ReinvestBusiness, id, 10, "", "unused")
+        })
+            AssertIntrinsicBusinessPayloadCorrupt(reinvest.Serializer, missingStart, reinvested, CommandKind.ReinvestBusiness, command);
+
+        var pricing = Ready(cash: 3000);
+        Launch(pricing, 100);
+        id = pricing.State().Businesses.Single().InstanceId;
+        Equal(CommandStatus.Committed, pricing.Execute("pricing-intrinsic",
+            BusinessCommands.SetPricing(id, PricingPosture.Premium)).Status);
+        var priced = pricing.State();
+        foreach (var command in new[]
+        {
+            new GameCommand(CommandKind.SetBusinessPricing, id, (int)PricingPosture.Premium, "unused"),
+            new GameCommand(CommandKind.SetBusinessPricing, id, (int)PricingPosture.Premium, "", "unused")
+        })
+            AssertIntrinsicBusinessPayloadCorrupt(pricing.Serializer, missingStart, priced, CommandKind.SetBusinessPricing, command);
+    }
+
+    private static void IntrinsicBusinessCorruptionRecoversBackup()
+    {
+        var missingStartCatalog = BusinessCatalogWithoutStart(new[] { Freelance });
+        var serializer = new JsonSaveSerializer(missingStartCatalog, GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+
+        var closure = Ready(cash: 3000);
+        Launch(closure, 100);
+        var id = closure.State().Businesses.Single().InstanceId;
+        Equal(CommandStatus.Committed, closure.Execute("close-recovery", BusinessCommands.Close(id)).Status);
+        var corrupt = WithReceiptCommand(closure.State(), CommandKind.CloseBusiness,
+            new GameCommand(CommandKind.CloseBusiness, id, 1));
+        var primary = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(corrupt),
+            SaveSchema.CurrentVersion, corrupt.Revision);
+        Equal(LoadStatus.Corrupt, serializer.DeserializeAndValidate(primary).Status);
+
+        var backupState = GameSession.NewState(missingStartCatalog, "backup-run", 98765, new SimDate(2026, 9, 2));
+        var backup = serializer.Serialize(backupState);
+        Equal(LoadStatus.Valid, serializer.DeserializeAndValidate(backup).Status);
+
+        var path = NewSavePath("intrinsic-corrupt-recovery");
+        File.WriteAllBytes(path, primary);
+        File.WriteAllBytes(path + ".backup", backup);
+        var primaryBefore = File.ReadAllBytes(path);
+        var backupBefore = File.ReadAllBytes(path + ".backup");
+        var recovered = new AtomicFileSaveStore(path, serializer).Read();
+        Equal(LoadStatus.RecoveredBackup, recovered.Status);
+        Equal("backup-run", recovered.State!.RunId);
+        Bytes(primaryBefore, File.ReadAllBytes(path));
+        Bytes(backupBefore, File.ReadAllBytes(path + ".backup"));
+    }
+
+    private static void MalformedFrozenV1IsContainedAndRecoversBackup()
+    {
+        var catalog = LegacyCatalog();
+        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+        var malformedPayload = Encoding.UTF8.GetBytes("{\"SaveVersion\":1,\"Receipts\":[");
+        var primary = JsonSaveSerializer.Wrap(malformedPayload, SaveSchema.HistoricalV1, 0);
+        Equal(LoadStatus.Corrupt, serializer.DeserializeAndValidate(primary).Status);
+
+        var backupState = GameSession.NewState(catalog, "v1-backup-run", 45678, new SimDate(2026, 9, 2));
+        var backup = serializer.Serialize(backupState);
+        Equal(LoadStatus.Valid, serializer.DeserializeAndValidate(backup).Status);
+
+        var path = NewSavePath("malformed-v1-recovery");
+        File.WriteAllBytes(path, primary);
+        File.WriteAllBytes(path + ".backup", backup);
+        var primaryBefore = File.ReadAllBytes(path);
+        var backupBefore = File.ReadAllBytes(path + ".backup");
+        var recovered = new AtomicFileSaveStore(path, serializer).Read();
+        Equal(LoadStatus.RecoveredBackup, recovered.Status);
+        Equal("v1-backup-run", recovered.State!.RunId);
+        Bytes(primaryBefore, File.ReadAllBytes(path));
+        Bytes(backupBefore, File.ReadAllBytes(path + ".backup"));
+    }
+
+    private static void AssertIntrinsicBusinessPayloadCorrupt(JsonSaveSerializer full, JsonSaveSerializer missingStart,
+        GameState source, CommandKind kind, GameCommand command)
+    {
+        var corrupt = WithReceiptCommand(source, kind, command);
+        Equal(LoadStatus.Corrupt, Raw(full, corrupt).Status);
+        Equal(LoadStatus.Corrupt, Raw(missingStart, corrupt).Status);
+    }
+
+    private static GameState WithReceiptCommand(GameState source, CommandKind kind, GameCommand command)
+    {
+        var corrupt = Clone(source);
+        var receipt = corrupt.Receipts.Single(x => GameCommand.ParseCanonicalPayload(x.Payload).Kind == kind);
+        receipt.Payload = command.CanonicalPayload;
+        return corrupt;
     }
 
     private static void OrdinaryCommitSchemaBoundary()

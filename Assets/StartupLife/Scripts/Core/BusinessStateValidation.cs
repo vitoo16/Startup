@@ -77,6 +77,7 @@ namespace StartupLife.Core
                     (int)command.Kind <= (int)CommandKind.CloseBusiness;
                 if (businessCommand)
                 {
+                    ValidateIntrinsicBusinessCommandPayload(command);
                     if (receipt.MinutesConsumed != 0) throw new ArgumentException("Business command advanced time.");
                     if (!businessReceiptOperations.Add(receipt.OperationId) ||
                         !byOperation.TryGetValue(receipt.OperationId, out var operationRecords) || operationRecords.Length != 1)
@@ -167,6 +168,34 @@ namespace StartupLife.Core
                     !pricing.TryGetValue(business.InstanceId, out var finalPricing) || finalPricing != business.PricingPosture ||
                     business.IsActive == closed.Contains(business.InstanceId))
                     throw new ArgumentException("Business state does not reconstruct from committed operations.");
+            }
+        }
+
+        private static void ValidateIntrinsicBusinessCommandPayload(GameCommand command)
+        {
+            switch (command.Kind)
+            {
+                case CommandKind.LaunchBusiness:
+                    if (string.IsNullOrEmpty(command.ContentId) || command.Amount <= 0 ||
+                        command.Name.Length != 0 || string.IsNullOrEmpty(command.AppearanceId))
+                        throw new ArgumentException("Invalid intrinsic business launch payload.");
+                    break;
+                case CommandKind.ReinvestBusiness:
+                    if (string.IsNullOrEmpty(command.ContentId) || command.Amount <= 0 ||
+                        command.Name.Length != 0 || command.AppearanceId.Length != 0)
+                        throw new ArgumentException("Invalid intrinsic business reinvest payload.");
+                    break;
+                case CommandKind.SetBusinessPricing:
+                    if (string.IsNullOrEmpty(command.ContentId) ||
+                        !Enum.IsDefined(typeof(PricingPosture), command.Amount) ||
+                        command.Name.Length != 0 || command.AppearanceId.Length != 0)
+                        throw new ArgumentException("Invalid intrinsic business pricing payload.");
+                    break;
+                case CommandKind.CloseBusiness:
+                    if (string.IsNullOrEmpty(command.ContentId) || command.Amount != 0 ||
+                        command.Name.Length != 0 || command.AppearanceId.Length != 0)
+                        throw new ArgumentException("Invalid intrinsic business closure payload.");
+                    break;
             }
         }
 
