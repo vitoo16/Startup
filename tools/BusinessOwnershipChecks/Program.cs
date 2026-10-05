@@ -32,6 +32,11 @@ internal static class Program
         Check("F1 frozen v1 rejects whitespace and escaped Businesses members", FrozenV1MemberDetection);
         Check("F1 H1 restore preserves bytes when frozen v1 wire is impossible", FrozenV1H1BytesPreserved);
         Check("F2 unavailable business content cannot mask known business corruption", BusinessContentCompatibilityPrecedence);
+        Check("M8 restore rejects employed FullTimeRequired launch despite unrelated missing content", FullTimeWhileEmployedRestoreCorruption);
+        Check("M8 restore rejects ManagerOperable launch despite unrelated missing content", ManagerOperableRestoreCorruption);
+        Check("M8 valid employed side-hustle remains unsupported when unrelated content is missing", SideHustleMissingContentRemainsUnsupported);
+        Check("M8 receipt timing permits FullTimeRequired launch after resignation", FullTimeAfterResignMissingContentRemainsUnsupported);
+        Check("M8 operation-mode corruption recovers valid backup without rewriting files", OperationModeCorruptionRecoversBackup);
         Check("F3 intrinsic business history provenance survives unrelated missing content", BusinessHistoryProvenanceWithoutUnrelatedContent);
         Check("M8 restore intrinsically validates business command payloads before content compatibility", IntrinsicBusinessCommandPayloadPrecedesContentCompatibility);
         Check("M8 intrinsically corrupt business primary recovers valid backup", IntrinsicBusinessCorruptionRecoversBackup);
@@ -516,6 +521,122 @@ internal static class Program
         Equal(CommandStatus.Committed, closed.Execute("close-a", BusinessCommands.Close(aId)).Status);
         Launch(closed, 100, b);
         Equal(LoadStatus.Corrupt, missingA.DeserializeAndValidate(closed.Checkpoint()).Status);
+    }
+
+    private static void FullTimeWhileEmployedRestoreCorruption()
+    {
+        var source = Definition("test.business.restore-fulltime", BusinessType.OnlineStore);
+        var fullTime = Definition(source.Id, source.Type, BusinessOperationMode.FullTimeRequired);
+        var fixture = Ready(cash: 3000, businesses: new[] { source }, includeCareer: true);
+        Equal(CommandStatus.Committed, fixture.Execute("job-fulltime-restore",
+            new GameCommand(CommandKind.AcceptJob, "developer")).Status);
+        Equal(CommandStatus.Committed, fixture.Execute("launch-fulltime-restore",
+            BusinessCommands.Launch(source.Id, source.Revision, 100)).Status);
+        var checkpoint = fixture.Checkpoint();
+        Equal(LoadStatus.Valid, fixture.Serializer.DeserializeAndValidate(checkpoint).Status);
+        Equal(SaveSchema.CurrentVersion, JsonSaveSerializer.ReadObject<SaveEnvelope>(checkpoint).SchemaVersion);
+
+        var missingStartCatalog = BusinessCatalogWithoutStart(new[] { fullTime }, includeCareer: true);
+        var serializer = new JsonSaveSerializer(missingStartCatalog, GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+        Equal(LoadStatus.Corrupt, serializer.DeserializeAndValidate(checkpoint).Status);
+
+        var missingBusiness = new JsonSaveSerializer(BusinessCatalogWithoutStart(Array.Empty<BusinessDefinition>(), includeCareer: true),
+            GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
+        Equal(LoadStatus.UnsupportedContent, missingBusiness.DeserializeAndValidate(checkpoint).Status);
+
+        var wrongRevision = new BusinessDefinition(source.Id, "fixture-r2", source.NameKey, source.Type,
+            BusinessOperationMode.FullTimeRequired, source.MinimumStartupInvestment, source.MaximumStartupInvestment,
+            source.AllowedPricingPostures, source.DefaultPricingPosture, source.MinimumReinvestment, source.MaximumReinvestment);
+        var unavailableRevision = new JsonSaveSerializer(BusinessCatalogWithoutStart(new[] { wrongRevision }, includeCareer: true),
+            GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
+        Equal(LoadStatus.UnsupportedContent, unavailableRevision.DeserializeAndValidate(checkpoint).Status);
+    }
+
+    private static void ManagerOperableRestoreCorruption()
+    {
+        var source = Definition("test.business.restore-manager", BusinessType.OnlineStore);
+        var manager = Definition(source.Id, source.Type, BusinessOperationMode.ManagerOperable);
+        var fixture = Ready(cash: 3000, businesses: new[] { source });
+        Equal(CommandStatus.Committed, fixture.Execute("launch-manager-restore",
+            BusinessCommands.Launch(source.Id, source.Revision, 100)).Status);
+        var checkpoint = fixture.Checkpoint();
+        Equal(LoadStatus.Valid, fixture.Serializer.DeserializeAndValidate(checkpoint).Status);
+
+        var serializer = new JsonSaveSerializer(BusinessCatalogWithoutStart(new[] { manager }),
+            GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
+        Equal(LoadStatus.Corrupt, serializer.DeserializeAndValidate(checkpoint).Status);
+    }
+
+    private static void SideHustleMissingContentRemainsUnsupported()
+    {
+        var source = Definition("test.business.restore-sidehustle", BusinessType.FreelanceService);
+        var fixture = Ready(cash: 3000, businesses: new[] { source }, includeCareer: true);
+        Equal(CommandStatus.Committed, fixture.Execute("job-sidehustle-restore",
+            new GameCommand(CommandKind.AcceptJob, "developer")).Status);
+        Equal(CommandStatus.Committed, fixture.Execute("launch-sidehustle-restore",
+            BusinessCommands.Launch(source.Id, source.Revision, 100)).Status);
+        var checkpoint = fixture.Checkpoint();
+        Equal(LoadStatus.Valid, fixture.Serializer.DeserializeAndValidate(checkpoint).Status);
+
+        var serializer = new JsonSaveSerializer(BusinessCatalogWithoutStart(new[] { source }, includeCareer: true),
+            GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
+        var load = serializer.DeserializeAndValidate(checkpoint);
+        Equal(LoadStatus.UnsupportedContent, load.Status);
+        Equal("save.content_id", load.Reason);
+    }
+
+    private static void FullTimeAfterResignMissingContentRemainsUnsupported()
+    {
+        var source = Definition("test.business.restore-post-resign", BusinessType.CoffeeKiosk);
+        var fullTime = Definition(source.Id, source.Type, BusinessOperationMode.FullTimeRequired);
+        var fixture = Ready(cash: 3000, businesses: new[] { source }, includeCareer: true);
+        Equal(CommandStatus.Committed, fixture.Execute("job-post-resign",
+            new GameCommand(CommandKind.AcceptJob, "developer")).Status);
+        Equal(CommandStatus.Committed, fixture.Execute("resign-before-fulltime",
+            new GameCommand(CommandKind.Resign)).Status);
+        Equal(CommandStatus.Committed, fixture.Execute("launch-after-resign",
+            BusinessCommands.Launch(source.Id, source.Revision, 100)).Status);
+        var checkpoint = fixture.Checkpoint();
+        Equal(LoadStatus.Valid, fixture.Serializer.DeserializeAndValidate(checkpoint).Status);
+
+        var serializer = new JsonSaveSerializer(BusinessCatalogWithoutStart(new[] { fullTime }, includeCareer: true),
+            GameSession.CreateRestoreValidator(), new SyntheticV0Migration(), new V1ToV2Migration());
+        var load = serializer.DeserializeAndValidate(checkpoint);
+        Equal(LoadStatus.UnsupportedContent, load.Status);
+        Equal("save.content_id", load.Reason);
+    }
+
+    private static void OperationModeCorruptionRecoversBackup()
+    {
+        var source = Definition("test.business.restore-recovery", BusinessType.OnlineStore);
+        var fullTime = Definition(source.Id, source.Type, BusinessOperationMode.FullTimeRequired);
+        var fixture = Ready(cash: 3000, businesses: new[] { source }, includeCareer: true);
+        Equal(CommandStatus.Committed, fixture.Execute("job-operation-recovery",
+            new GameCommand(CommandKind.AcceptJob, "developer")).Status);
+        Equal(CommandStatus.Committed, fixture.Execute("launch-operation-recovery",
+            BusinessCommands.Launch(source.Id, source.Revision, 100)).Status);
+        var primary = fixture.Checkpoint();
+
+        var catalog = BusinessCatalogWithoutStart(new[] { fullTime }, includeCareer: true);
+        var serializer = new JsonSaveSerializer(catalog, GameSession.CreateRestoreValidator(),
+            new SyntheticV0Migration(), new V1ToV2Migration());
+        Equal(LoadStatus.Corrupt, serializer.DeserializeAndValidate(primary).Status);
+
+        var backupState = GameSession.NewState(catalog, "operation-mode-backup", 98765, new SimDate(2026, 9, 3));
+        var backup = serializer.Serialize(backupState);
+        Equal(LoadStatus.Valid, serializer.DeserializeAndValidate(backup).Status);
+
+        var path = NewSavePath("operation-mode-recovery");
+        File.WriteAllBytes(path, primary);
+        File.WriteAllBytes(path + ".backup", backup);
+        var primaryBefore = File.ReadAllBytes(path);
+        var backupBefore = File.ReadAllBytes(path + ".backup");
+        var recovered = new AtomicFileSaveStore(path, serializer).Read();
+        Equal(LoadStatus.RecoveredBackup, recovered.Status);
+        Equal("operation-mode-backup", recovered.State!.RunId);
+        Bytes(primaryBefore, File.ReadAllBytes(path));
+        Bytes(backupBefore, File.ReadAllBytes(path + ".backup"));
     }
 
     private static void BusinessHistoryProvenanceWithoutUnrelatedContent()
@@ -1053,10 +1174,24 @@ internal static class Program
             new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
     }
 
-    private static ContentCatalog BusinessCatalogWithoutStart(IEnumerable<BusinessDefinition> businesses) =>
-        new ContentCatalog("business.fixture.v1", Array.Empty<SkillDefinition>(), Array.Empty<CareerDefinition>(),
-            Array.Empty<CourseDefinition>(), Array.Empty<CharacterStartDefinition>(), businesses,
+    private static ContentCatalog BusinessCatalogWithoutStart(IEnumerable<BusinessDefinition> businesses, bool includeCareer = false)
+    {
+        var skills = includeCareer
+            ? new[] { new SkillDefinition("communication", "skill.communication", 100, 300, 600, 1000, 1500) }
+            : Array.Empty<SkillDefinition>();
+        var careers = Array.Empty<CareerDefinition>();
+        if (includeCareer)
+        {
+            var scene = new CareerSceneDefinition("coding", "scene.coding", 100, 10, "communication", 1);
+            var rank = new CareerRankDefinition("junior", 0, 0, 1000, "communication", 0);
+            careers = new[] { new CareerDefinition("developer", "v1", "career.developer", 540, 1020, 4, 20,
+                new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday },
+                new[] { scene }, new[] { rank }) };
+        }
+        return new ContentCatalog("business.fixture.v1", skills, careers, Array.Empty<CourseDefinition>(),
+            Array.Empty<CharacterStartDefinition>(), businesses,
             new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
+    }
 
     private static ContentCatalog MigrationCatalog()
     {
