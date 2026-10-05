@@ -466,3 +466,122 @@ must go through Astra source re-audit first.
 `SAFE TO SEND FOLLOW-UP PR TO ASTRA SOURCE RE-AUDIT`
 
 Do not merge PR #25. Do not start M8-T02.
+
+---
+
+## Final frozen-v1 parser containment regression proof
+
+Date: 2026-10-06 (+07:00)  
+Executor: Codex (current session; no model switch claimed)  
+Verified starting main: `435670877c382b06d6c0a99a6231b2e995ba0a74`  
+Branch: `test/m8-t01-frozen-v1-xmlexception`  
+Follow-up PR: [#26 — test: prove frozen v1 parser containment](https://github.com/vitoo16/Startup/pull/26)  
+Production-code diff: **NONE**  
+Save impact: **none — SaveVersion remains 2**
+
+### Previous Astra MEDIUM finding and correction
+
+The earlier EOF-truncated fixture, `{"SaveVersion":1,"Receipts":[`, did not prove the
+`HistoricalV1Codec` XmlException containment boundary. The JSON-to-XML reader can
+synthesize end elements at EOF, allowing root inspection to finish; later DTO rejection
+can return Corrupt even without the containment catch.
+
+The replacement payload is exactly:
+
+```text
+{"SaveVersion":1,"Receipts":[?]}
+```
+
+The test project independently constructs the same JSON infoset reader with
+`JsonReaderWriterFactory.CreateJsonReader` and `XmlDictionaryReaderQuotas.Max`.
+It enters the root, asserts the SaveVersion member, skips it, asserts the Receipts member,
+and asserts `Throws<XmlException>` around the scan. Skipping Receipts encounters the
+invalid array-item token before any DTO deserialization. The successful assertion emits:
+
+```text
+PROOF malformed-token root-member reader: XmlException before DTO deserialization
+```
+
+That same payload is wrapped with `JsonSaveSerializer.Wrap` as schema 1 / generation 0,
+which computes its correct checksum. Direct `DeserializeAndValidate` returns **Corrupt**
+without an escaping XmlException. The same envelope is written as primary, with an
+independently validated **Valid** checkpoint as backup. `AtomicFileSaveStore.Read()`
+returns **RecoveredBackup** with the expected backup RunId. Byte equality assertions
+confirm both primary and backup remain unchanged during read.
+
+The production catch remains the existing narrow XmlException-to-ArgumentException
+translation. The serializer's validation-family filter contains ArgumentException, not
+XmlException. Therefore removing that translation lets this reader exception escape before
+DTO decoding, failing the direct Corrupt assertion. This is logical/test-wise mutation
+dependence; no production mutation experiment or production visibility change was performed.
+
+### Focused first, then full engine-free CI
+
+GitHub Actions ran the focused BusinessOwnershipChecks suite first:
+
+- [run 37344851334](https://github.com/vitoo16/Startup/actions/runs/37344851334):
+  **SUCCESS**, branch head `0aa49d059e3693ca860ac6bf8570bf914ba3e284`;
+- PR merge checkout: `379b1e8f8e8e4dd8b5ec1e6c9b7c7a7e78ea8e40`;
+- raw-reader proof emitted; business suite **26/26 PASS**;
+- build: **0 warnings / 0 errors**.
+
+A temporary focused-only entry point in `scripts/Test-Simulation.ps1` was then restored
+byte-for-byte to starting-main blob `3c0b4bf78d00b9e73286673d5c41b097b14396b7`.
+There is no runner or workflow change in the final PR diff.
+
+Full engine-free [run 37344984560](https://github.com/vitoo16/Startup/actions/runs/37344984560)
+completed **SUCCESS** on tested source head
+`0f317954592e06ebb3ed2bad7de84d68636d16bf`, using PR merge checkout
+`a7a2abea63cee86db13246aa810f579257fee320` against the verified starting main.
+
+Actual full results:
+
+- Simulation: **49/49 PASS**;
+- Business ownership: **26/26 PASS**, including the raw-reader proof;
+- H1/H2/R2: **20/20 PASS**;
+- M2 restore/provenance: **35/35 PASS**;
+- Presentation: **11/11 PASS**;
+- Content: **8/8 PASS**;
+- Static Unity: **31/31 PASS**;
+- frozen M1 API: **31/31 PASS**;
+- Content bridge: **8/8 PASS**;
+- M7 static: **43/43 PASS**;
+- runner contract: **30/30 PASS** (static only);
+- security/release: **28/28 PASS**;
+- .NET builds: **0 warnings / 0 errors**;
+- documentation validation: **PASS**;
+- clean-worktree gate: **PASS**.
+
+### Unchanged contracts and session closeout
+
+Save/H1 remains: SaveVersion 2; synthetic v0 → frozen v1 → v2; historical v1 → v2;
+current v2 → v2. H1 normalization stays identity-only, same physical schema and same
+revision. A normal gameplay commit after v1 restore advances revision by one and writes
+physical v2 from the migrated in-memory v2 state.
+
+No production file, business behavior, migration, AtomicFileSaveStore semantics, H1 logic,
+or frozen M1 API changed.
+
+Skills used: startup-life-session-orchestrator; startup-life-gameplay-guardian;
+unity-game-director; unity-gameplay-systems; unity-mcp-bridge; unity-qa-release;
+unity-game-economy. Community skills were read from
+`tea-x-random/unity-game-skills@dafb97ef00f94e64e42e6260bc6b3af74cc83dad`.  
+Tests: focused and full GitHub Actions evidence above; final evidence-head CI is reported
+on PR #26.  
+Visual evidence: not applicable; final Unity acceptance was not run.  
+Save impact: none; SaveVersion 2 and accepted Save/H1 contracts unchanged.  
+Known limitations: final independent Astra source re-audit and changed-head Unity acceptance
+remain required; this correction does not close M8-T01.  
+Files changed: `tools/BusinessOwnershipChecks/Program.cs`;
+`docs/evidence/M8-T01/SESSION.md` (append only).  
+Repository execution: GitHub source and Actions; no local checkout changes.
+
+`FINAL M8-T01 UNITY ACCEPTANCE: PENDING FINAL ASTRA SOURCE RE-AUDIT`
+
+`M8-T01 TEST PROOF CORRECTED — FINAL ASTRA SOURCE RE-AUDIT REQUIRED`
+
+`M8-T02 NOT READY — blocked by M8-T01`
+
+`SAFE TO SEND TEST-ONLY PR TO ASTRA FINAL SOURCE RE-AUDIT`
+
+Do not merge PR #26 automatically. Do not start M8-T02.
