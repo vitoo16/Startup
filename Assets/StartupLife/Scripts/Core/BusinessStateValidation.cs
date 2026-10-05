@@ -228,9 +228,20 @@ namespace StartupLife.Core
                     throw new ArgumentException("Multiple active businesses share one business type.");
             }
 
+            var employedAtReceipt = false;
             foreach (var receipt in state.Receipts)
             {
                 var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
+                if (command.Kind == CommandKind.AcceptJob)
+                {
+                    employedAtReceipt = true;
+                    continue;
+                }
+                if (command.Kind == CommandKind.Resign)
+                {
+                    employedAtReceipt = false;
+                    continue;
+                }
                 if (command.Kind == CommandKind.LaunchBusiness)
                 {
                     if (!content.Businesses.TryGetValue(command.ContentId, out var definition))
@@ -243,6 +254,10 @@ namespace StartupLife.Core
                         Unsupported("save.content_revision", "Business launch revision is unavailable.");
                         continue;
                     }
+                    if (definition.OperationMode == BusinessOperationMode.ManagerOperable)
+                        throw new ArgumentException("Committed manager-operated business launch is unsupported.");
+                    if (employedAtReceipt && definition.OperationMode == BusinessOperationMode.FullTimeRequired)
+                        throw new ArgumentException("Committed full-time business launch conflicts with employment.");
                     var record = FindRecord(state, receipt.OperationId);
                     if (record.Pricing != definition.DefaultPricingPosture ||
                         command.Amount < definition.MinimumStartupInvestment || command.Amount > definition.MaximumStartupInvestment)
