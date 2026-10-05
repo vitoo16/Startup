@@ -65,75 +65,95 @@ namespace StartupLife.Core
             var pricing = new Dictionary<string, PricingPosture>(StringComparer.Ordinal);
             var businessReceiptOperations = new HashSet<string>(StringComparer.Ordinal);
 
-            foreach (var receipt in state.Receipts)
+            var timelineDate = StateValidation.ReceiptOrigin(state);
+            var timelineMinute = 0;
+            for (var receiptIndex = 0; receiptIndex < state.Receipts.Count; receiptIndex++)
             {
+                var receipt = state.Receipts[receiptIndex];
+                if (receipt.Revision != receiptIndex + 1L)
+                    throw new ArgumentException("Business provenance requires ordered receipt revisions.");
                 var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
-                if ((int)command.Kind < (int)CommandKind.LaunchBusiness || (int)command.Kind > (int)CommandKind.CloseBusiness) continue;
-                if (receipt.MinutesConsumed != 0) throw new ArgumentException("Business command advanced time.");
-                if (!businessReceiptOperations.Add(receipt.OperationId) ||
-                    !byOperation.TryGetValue(receipt.OperationId, out var operationRecords) || operationRecords.Length != 1)
-                    throw new ArgumentException("Business receipt/history provenance mismatch.");
-                var record = operationRecords[0];
-                if (receipt.Cue != record.Action) throw new ArgumentException("Business cue/history mismatch.");
-
-                switch (command.Kind)
+                var businessCommand = (int)command.Kind >= (int)CommandKind.LaunchBusiness &&
+                    (int)command.Kind <= (int)CommandKind.CloseBusiness;
+                if (businessCommand)
                 {
-                    case CommandKind.LaunchBusiness:
+                    if (receipt.MinutesConsumed != 0) throw new ArgumentException("Business command advanced time.");
+                    if (!businessReceiptOperations.Add(receipt.OperationId) ||
+                        !byOperation.TryGetValue(receipt.OperationId, out var operationRecords) || operationRecords.Length != 1)
+                        throw new ArgumentException("Business receipt/history provenance mismatch.");
+                    var record = operationRecords[0];
+                    if (receipt.Cue != record.Action) throw new ArgumentException("Business cue/history mismatch.");
+                    if (record.DateIso != timelineDate.ToString() || record.Minute != timelineMinute)
+                        throw new ArgumentException("Business history timestamp differs from its committed receipt timeline.");
+
+                    switch (command.Kind)
                     {
-                        if (record.Action != "business.launched" || command.Name.Length != 0 || string.IsNullOrEmpty(command.AppearanceId) ||
-                            string.IsNullOrEmpty(command.ContentId) || record.Amount != command.Amount)
-                            throw new ArgumentException("Invalid launch provenance.");
-                        var ledgers = state.Ledger.Where(x => x.OperationId == receipt.OperationId).ToArray();
-                        if (ledgers.Length != 1 || ledgers[0].Category != "business.launch" ||
-                            ledgers[0].Amount != command.Amount || ledgers[0].CashDelta != -checked((long)command.Amount) ||
-                            ledgers[0].AttributionId != record.InstanceId)
-                            throw new ArgumentException("Invalid business launch ledger provenance.");
-                        var business = businesses.SingleOrDefault(x => x.InstanceId == record.InstanceId);
-                        if (business == null || !launched.Add(business.InstanceId) || closed.Contains(business.InstanceId) ||
-                            business.DefinitionId != command.ContentId || business.DefinitionRevision != command.AppearanceId ||
-                            business.InitialInvestment != command.Amount || business.OpenedIso != record.DateIso ||
-                            business.OpenedMinute != record.Minute)
-                            throw new ArgumentException("Invalid business launch state provenance.");
-                        pricing[business.InstanceId] = record.Pricing;
-                        break;
-                    }
-                    case CommandKind.ReinvestBusiness:
-                    {
-                        var business = businesses.SingleOrDefault(x => x.InstanceId == command.ContentId);
-                        if (record.Action != "business.reinvested" || business == null || record.InstanceId != business.InstanceId ||
-                            !launched.Contains(business.InstanceId) || closed.Contains(business.InstanceId) ||
-                            record.Amount != command.Amount)
-                            throw new ArgumentException("Invalid business reinvest provenance.");
-                        var ledgers = state.Ledger.Where(x => x.OperationId == receipt.OperationId).ToArray();
-                        if (ledgers.Length != 1 || ledgers[0].Category != "business.reinvest" ||
-                            ledgers[0].Amount != command.Amount || ledgers[0].CashDelta != -checked((long)command.Amount) ||
-                            ledgers[0].AttributionId != business.InstanceId)
-                            throw new ArgumentException("Invalid business reinvest ledger provenance.");
-                        reinvested[business.InstanceId] = checked(reinvested[business.InstanceId] + command.Amount);
-                        break;
-                    }
-                    case CommandKind.SetBusinessPricing:
-                    {
-                        var business = businesses.SingleOrDefault(x => x.InstanceId == command.ContentId);
-                        if (record.Action != "business.pricing_changed" || business == null || record.InstanceId != business.InstanceId ||
-                            !launched.Contains(business.InstanceId) || closed.Contains(business.InstanceId) || record.Amount != 0 ||
-                            !Enum.IsDefined(typeof(PricingPosture), command.Amount) || record.Pricing != (PricingPosture)command.Amount ||
-                            state.Ledger.Any(x => x.OperationId == receipt.OperationId))
-                            throw new ArgumentException("Invalid business pricing provenance.");
-                        pricing[business.InstanceId] = record.Pricing;
-                        break;
-                    }
-                    case CommandKind.CloseBusiness:
-                    {
-                        var business = businesses.SingleOrDefault(x => x.InstanceId == command.ContentId);
-                        if (record.Action != "business.closed" || business == null || record.InstanceId != business.InstanceId ||
-                            !launched.Contains(business.InstanceId) || !closed.Add(business.InstanceId) || record.Amount != 0 ||
-                            state.Ledger.Any(x => x.OperationId == receipt.OperationId) ||
-                            business.ClosedIso != record.DateIso || business.ClosedMinute != record.Minute)
-                            throw new ArgumentException("Invalid business closure provenance.");
-                        break;
+                        case CommandKind.LaunchBusiness:
+                        {
+                            if (record.Action != "business.launched" || command.Name.Length != 0 || string.IsNullOrEmpty(command.AppearanceId) ||
+                                string.IsNullOrEmpty(command.ContentId) || record.Amount != command.Amount)
+                                throw new ArgumentException("Invalid launch provenance.");
+                            var ledgers = state.Ledger.Where(x => x.OperationId == receipt.OperationId).ToArray();
+                            if (ledgers.Length != 1 || ledgers[0].Category != "business.launch" ||
+                                ledgers[0].Amount != command.Amount || ledgers[0].CashDelta != -checked((long)command.Amount) ||
+                                ledgers[0].AttributionId != record.InstanceId)
+                                throw new ArgumentException("Invalid business launch ledger provenance.");
+                            var business = businesses.SingleOrDefault(x => x.InstanceId == record.InstanceId);
+                            if (business == null || !launched.Add(business.InstanceId) || closed.Contains(business.InstanceId) ||
+                                business.DefinitionId != command.ContentId || business.DefinitionRevision != command.AppearanceId ||
+                                business.InitialInvestment != command.Amount || business.OpenedIso != record.DateIso ||
+                                business.OpenedMinute != record.Minute)
+                                throw new ArgumentException("Invalid business launch state provenance.");
+                            pricing[business.InstanceId] = record.Pricing;
+                            break;
+                        }
+                        case CommandKind.ReinvestBusiness:
+                        {
+                            var business = businesses.SingleOrDefault(x => x.InstanceId == command.ContentId);
+                            if (record.Action != "business.reinvested" || business == null || record.InstanceId != business.InstanceId ||
+                                !launched.Contains(business.InstanceId) || closed.Contains(business.InstanceId) ||
+                                record.Amount != command.Amount || !pricing.TryGetValue(business.InstanceId, out var currentPricing) ||
+                                record.Pricing != currentPricing)
+                                throw new ArgumentException("Invalid business reinvest provenance.");
+                            var ledgers = state.Ledger.Where(x => x.OperationId == receipt.OperationId).ToArray();
+                            if (ledgers.Length != 1 || ledgers[0].Category != "business.reinvest" ||
+                                ledgers[0].Amount != command.Amount || ledgers[0].CashDelta != -checked((long)command.Amount) ||
+                                ledgers[0].AttributionId != business.InstanceId)
+                                throw new ArgumentException("Invalid business reinvest ledger provenance.");
+                            reinvested[business.InstanceId] = checked(reinvested[business.InstanceId] + command.Amount);
+                            break;
+                        }
+                        case CommandKind.SetBusinessPricing:
+                        {
+                            var business = businesses.SingleOrDefault(x => x.InstanceId == command.ContentId);
+                            if (record.Action != "business.pricing_changed" || business == null || record.InstanceId != business.InstanceId ||
+                                !launched.Contains(business.InstanceId) || closed.Contains(business.InstanceId) || record.Amount != 0 ||
+                                !Enum.IsDefined(typeof(PricingPosture), command.Amount) || record.Pricing != (PricingPosture)command.Amount ||
+                                !pricing.TryGetValue(business.InstanceId, out var priorPricing) || priorPricing == record.Pricing ||
+                                state.Ledger.Any(x => x.OperationId == receipt.OperationId))
+                                throw new ArgumentException("Invalid business pricing provenance.");
+                            pricing[business.InstanceId] = record.Pricing;
+                            break;
+                        }
+                        case CommandKind.CloseBusiness:
+                        {
+                            var business = businesses.SingleOrDefault(x => x.InstanceId == command.ContentId);
+                            if (record.Action != "business.closed" || business == null || record.InstanceId != business.InstanceId ||
+                                !launched.Contains(business.InstanceId) || !closed.Add(business.InstanceId) || record.Amount != 0 ||
+                                !pricing.TryGetValue(business.InstanceId, out var currentPricing) || record.Pricing != currentPricing ||
+                                state.Ledger.Any(x => x.OperationId == receipt.OperationId) ||
+                                business.ClosedIso != record.DateIso || business.ClosedMinute != record.Minute)
+                                throw new ArgumentException("Invalid business closure provenance.");
+                            break;
+                        }
                     }
                 }
+
+                if (receipt.MinutesConsumed < 0)
+                    throw new ArgumentException("Receipt timeline cannot move backwards.");
+                var nextMinute = checked(timelineMinute + receipt.MinutesConsumed);
+                timelineDate = timelineDate.AddDays(nextMinute / 1440);
+                timelineMinute = nextMinute % 1440;
             }
 
             if (records.Any(x => !businessReceiptOperations.Contains(x.OperationId)))
@@ -152,13 +172,25 @@ namespace StartupLife.Core
 
         public static void ValidateContent(GameState state, ContentCatalog content)
         {
+            ContentCompatibilityException? incompatibility = null;
+            void Unsupported(string key, string message)
+            {
+                incompatibility ??= new ContentCompatibilityException(key, message);
+            }
+
             var activeTypes = new HashSet<BusinessType>();
             foreach (var business in state.Businesses)
             {
                 if (!content.Businesses.TryGetValue(business.DefinitionId, out var definition))
-                    throw new ContentCompatibilityException("save.content_id", "Business definition is unavailable in the active catalog.");
+                {
+                    Unsupported("save.content_id", "Business definition is unavailable in the active catalog.");
+                    continue;
+                }
                 if (definition.Revision != business.DefinitionRevision)
-                    throw new ContentCompatibilityException("save.content_revision", "Business revision is unavailable in the active catalog.");
+                {
+                    Unsupported("save.content_revision", "Business revision is unavailable in the active catalog.");
+                    continue;
+                }
                 if (business.InitialInvestment < definition.MinimumStartupInvestment ||
                     business.InitialInvestment > definition.MaximumStartupInvestment ||
                     !definition.AllowedPricingPostures.Contains(business.PricingPosture))
@@ -172,9 +204,16 @@ namespace StartupLife.Core
                 var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
                 if (command.Kind == CommandKind.LaunchBusiness)
                 {
-                    if (!content.Businesses.TryGetValue(command.ContentId, out var definition)) continue;
+                    if (!content.Businesses.TryGetValue(command.ContentId, out var definition))
+                    {
+                        Unsupported("save.content_id", "Business launch definition is unavailable.");
+                        continue;
+                    }
                     if (command.AppearanceId != definition.Revision)
-                        throw new ContentCompatibilityException("save.content_revision", "Business launch revision is unavailable.");
+                    {
+                        Unsupported("save.content_revision", "Business launch revision is unavailable.");
+                        continue;
+                    }
                     var record = FindRecord(state, receipt.OperationId);
                     if (record.Pricing != definition.DefaultPricingPosture ||
                         command.Amount < definition.MinimumStartupInvestment || command.Amount > definition.MaximumStartupInvestment)
@@ -183,23 +222,41 @@ namespace StartupLife.Core
                 else if (command.Kind == CommandKind.ReinvestBusiness)
                 {
                     var business = state.Businesses.SingleOrDefault(x => x.InstanceId == command.ContentId);
-                    if (business == null || !content.Businesses.TryGetValue(business.DefinitionId, out var definition)) continue;
+                    if (business == null) continue;
+                    if (!content.Businesses.TryGetValue(business.DefinitionId, out var definition))
+                    {
+                        Unsupported("save.content_id", "Business definition is unavailable in the active catalog.");
+                        continue;
+                    }
                     if (business.DefinitionRevision != definition.Revision)
-                        throw new ContentCompatibilityException("save.content_revision", "Business revision is unavailable.");
+                    {
+                        Unsupported("save.content_revision", "Business revision is unavailable in the active catalog.");
+                        continue;
+                    }
                     if (command.Amount < definition.MinimumReinvestment || command.Amount > definition.MaximumReinvestment)
                         throw new ArgumentException("Business reinvestment conflicts with its definition.");
                 }
                 else if (command.Kind == CommandKind.SetBusinessPricing)
                 {
                     var business = state.Businesses.SingleOrDefault(x => x.InstanceId == command.ContentId);
-                    if (business == null || !content.Businesses.TryGetValue(business.DefinitionId, out var definition)) continue;
+                    if (business == null) continue;
+                    if (!content.Businesses.TryGetValue(business.DefinitionId, out var definition))
+                    {
+                        Unsupported("save.content_id", "Business definition is unavailable in the active catalog.");
+                        continue;
+                    }
                     if (business.DefinitionRevision != definition.Revision)
-                        throw new ContentCompatibilityException("save.content_revision", "Business revision is unavailable.");
+                    {
+                        Unsupported("save.content_revision", "Business revision is unavailable in the active catalog.");
+                        continue;
+                    }
                     if (!Enum.IsDefined(typeof(PricingPosture), command.Amount) ||
                         !definition.AllowedPricingPostures.Contains((PricingPosture)command.Amount))
                         throw new ArgumentException("Business pricing conflicts with its definition.");
                 }
             }
+
+            if (incompatibility != null) throw incompatibility;
         }
 
         private static BusinessHistoryRecord FindRecord(GameState state, string operationId)
