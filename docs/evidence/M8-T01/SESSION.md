@@ -585,3 +585,121 @@ Repository execution: GitHub source and Actions; no local checkout changes.
 `SAFE TO SEND TEST-ONLY PR TO ASTRA FINAL SOURCE RE-AUDIT`
 
 Do not merge PR #26 automatically. Do not start M8-T02.
+
+
+---
+
+## M8-T01 operation-mode restore-provenance correction
+
+Date: 2026-10-06 (+07:00)  
+Owner model: GPT-5.6 Sol  
+Starting main: `dbdb41f051814ac6e7fc13f27115940a59dd6fcb`  
+Branch: `fix/m8-t01-operation-mode-restore-provenance`  
+PR: #28 — `fix: validate business operation mode on restore`  
+Source/test verification head: `5f3f3b76de13a9f894cac7ebbe6675cb0073292d`
+
+### Scope and preserved runtime behavior
+
+This correction closes the remaining M8-T01 restore-boundary provenance gap without implementing M8-T02.
+
+Unchanged runtime rules:
+- `ManagerOperable` launch remains rejected by `SimulationEngine.LaunchBusiness` with `business.manager_unsupported`;
+- employed + `FullTimeRequired` launch remains rejected with `business.employment_incompatible`;
+- `SimulationRestoreValidator.FullContentAvailable(...)` remains unchanged and is not bypassed.
+
+No `SimulationEngine.cs` change is present in the final source/test diff.
+
+### Restore design
+
+`BusinessStateValidation.ValidateContent()` now reconstructs only the minimum committed employment lifecycle needed by the M8-T01 launch invariant.
+
+It walks the already ordered canonical receipt sequence and tracks:
+- `AcceptJob` → `employedAtReceipt = true`;
+- `Resign` → `employedAtReceipt = false`.
+
+For each `LaunchBusiness`, validation preserves the compatibility order:
+1. parse canonical command;
+2. look up the exact business ID;
+3. require the exact saved definition revision;
+4. only then inspect `OperationMode`;
+5. reject a committed `ManagerOperable` launch as corruption;
+6. reject a committed `FullTimeRequired` launch when `employedAtReceipt` is true;
+7. continue the existing pricing and investment validation.
+
+The check does not use final `state.Employment`, does not fetch career definitions to reconstruct the boolean, and does not implement operating windows, required owner minutes, business-day planning, kiosk operation, manager operation, or owner-time allocation.
+
+### Focused regressions
+
+Five focused regressions were added:
+
+1. employed → committed FullTimeRequired launch, with unrelated character-start content unavailable → **Corrupt**;
+2. committed ManagerOperable launch, with unrelated character-start content unavailable → **Corrupt**;
+3. employed → valid SideHustleCompatible launch, with unrelated character-start content unavailable → **UnsupportedContent**;
+4. employed → resign → FullTimeRequired launch, with unrelated character-start content unavailable → **UnsupportedContent**;
+5. corrupt FullTimeRequired primary + independently valid backup → primary **Corrupt**, backup **Valid**, store **RecoveredBackup**, and both files remain byte-identical after read.
+
+The FullTimeRequired test also proves that if the business definition itself is unavailable, or only a different revision is available, the result remains **UnsupportedContent**. OperationMode is never inferred from a different/newer revision.
+
+### Focused CI
+
+Engine-free CI run **#120**, run ID `37376664378`, head
+`8e9caf3114782f699f49bf300038aa6a23e5daeb`: **SUCCESS**.
+
+The temporary focused runner executed BusinessOwnershipChecks only after the static gates:
+- BusinessOwnershipChecks: **31/31 PASS**;
+- .NET build: **0 warnings / 0 errors**;
+- documentation/static Unity/frozen M1/content bridge/M7/runner/security gates: PASS.
+
+After this proof, `scripts/Test-Simulation.ps1` was restored byte-for-byte to starting-main blob
+`3c0b4bf78d00b9e73286673d5c41b097b14396b7`. There is no runner change in the final diff.
+
+### Full engine-free CI
+
+Engine-free CI run **#121**, run ID `37376889256`, source/test head
+`5f3f3b76de13a9f894cac7ebbe6675cb0073292d`: **SUCCESS**.
+
+Actual results:
+- Simulation: **49/49 PASS**;
+- Business ownership: **31/31 PASS**;
+- H1/H2/R2: **20/20 PASS**;
+- M2 restore/provenance: **35/35 PASS**;
+- Presentation: **11/11 PASS**;
+- Content: **8/8 PASS**;
+- Static Unity: **31/31 PASS**;
+- frozen M1 API: **31/31 PASS**;
+- Content bridge: **8/8 PASS**;
+- M7 static: **43/43 PASS**;
+- runner contract: **30/30 PASS**;
+- security/release: **28/28 PASS**;
+- .NET builds: **0 warnings / 0 errors**;
+- documentation validation: **PASS**;
+- clean-worktree gate: **PASS**.
+
+### Save / M1 / scope
+
+Save impact: **none**. `SaveVersion = 2`; no persisted field changed; no migration changed. Synthetic v0 → frozen v1 → v2, historical v1 → v2, current v2 → v2, H1 same-schema/same-revision identity-only normalization, and the first ordinary post-v1 revision+1 physical-v2 commit remain unchanged.
+
+Frozen M1 APIs and playback contracts are unchanged.
+
+M8-T02 remains unstarted.
+
+### Session closeout
+
+Skills used: startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-mcp-bridge; unity-qa-release; unity-game-economy. Community Unity skills were read from pinned revision `tea-x-random/unity-game-skills@dafb97ef00f94e64e42e6260bc6b3af74cc83dad`.  
+Acceptance criteria: hard operation-mode launch invariants classify as corruption when independently provable; unrelated unsupported content remains unsupported; backup recovery resumes for corrupt primary; runtime guards and future eligibility scope remain unchanged.  
+Tests: focused run #120 and full run #121 above.  
+Visual evidence: not applicable; no UI/scene/asset change.  
+Save impact: none; SaveVersion remains 2.  
+Known limitations: independent Astra source re-audit is still required. Final Unity 6000.3.25f1 acceptance has not run and must not run before Astra source acceptance.  
+Files changed in the reviewable correction: `Assets/StartupLife/Scripts/Core/BusinessStateValidation.cs`; `tools/BusinessOwnershipChecks/Program.cs`; this evidence file.  
+Merge: not performed.
+
+`FINAL M8-T01 UNITY ACCEPTANCE: PENDING ASTRA SOURCE RE-AUDIT`
+
+`M8-T01 OPERATION-MODE RESTORE FIX IMPLEMENTED — ASTRA SOURCE RE-AUDIT REQUIRED`
+
+`M8-T02 NOT READY — blocked by M8-T01`
+
+`SAFE TO SEND TO ASTRA SOURCE RE-AUDIT`
+
+Do not merge PR #28 automatically. Do not begin M8-T02.
