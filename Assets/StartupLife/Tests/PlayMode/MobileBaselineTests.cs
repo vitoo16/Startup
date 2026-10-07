@@ -12,7 +12,7 @@ namespace StartupLife.Tests.PlayMode
     public sealed class MobileBaselineTests
     {
         [UnityTest]
-        public IEnumerator BaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage()
+        public IEnumerator MobileBaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage()
         {
             yield return SceneManager.LoadSceneAsync("MobileBaseline");
             yield return LocalizationSettings.InitializationOperation;
