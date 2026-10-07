@@ -12,20 +12,25 @@ Tài liệu này mô tả đúng quy trình đã được kiểm chứng với U
 
 ## Chuẩn bị worktree an toàn
 
-Không dùng checkout chính nếu checkout đó đang có thay đổi của bạn. Không chạy `checkout`, `reset`, `clean` hoặc xóa file trên checkout đang làm việc. Tạo một worktree riêng từ đúng SHA của main:
+Không dùng checkout chính nếu checkout đó đang có thay đổi của bạn. Không chạy `checkout`, `reset`, `clean` hoặc xóa file trên checkout đang làm việc.
+
+Để review hoặc chạy lại trạng thái đã chuẩn hóa, dùng worktree riêng của branch hiện có `fix/m8-t01-font-determinism` và xác nhận HEAD khớp commit đang được review. Branch này đã đi qua bước chuẩn hóa nên HEAD của nó không còn là SHA main ban đầu.
+
+Để tái hiện Pass A từ đầu, tạo một worktree thí nghiệm riêng ở đúng SHA main ban đầu rồi dùng một tên branch thí nghiệm khác:
 
 ```powershell
 $Repo = 'C:\Users\viett\Startup'
 $Worktree = 'C:\duong-dan-rieng\m8-t01-font-determinism'
 $StartSha = 'ce7bb299f120f6fc9ebae78413d8764c2c8057ce'
 
-git -C $Repo worktree add -b fix/m8-t01-font-determinism $Worktree $StartSha
+git -C $Repo worktree add --detach $Worktree $StartSha
+git -C $Worktree switch -c experiment/m8-t01-font-determinism
 git -C $Worktree rev-parse HEAD
 git -C $Worktree branch --show-current
 git -C $Worktree status --short
 ```
 
-Ba kết quả bắt buộc là đúng SHA, đúng tên branch và `git status --short` không in gì. Nếu branch đã tồn tại, hãy dùng worktree đã tạo cho branch đó; không tạo branch trùng tên và không ghi đè worktree khác.
+Ba kết quả bắt buộc của thí nghiệm là đúng SHA ban đầu, đúng branch thí nghiệm và `git status --short` không in gì. Không tạo lại branch closeout đang tồn tại và không ghi đè worktree khác.
 
 Kiểm tra pin của project:
 
@@ -58,12 +63,42 @@ git diff -- `
 
 Ở Pass A từ main cũ, chỉ hai font trên được phép thay đổi. Phải ghi lại số glyph, character, atlas và các bảng feature trước khi giữ candidate do Unity tạo ra. Không gọi thay đổi lớn của bảng feature là “chỉ đổi serialization”.
 
-## Tạo fresh import mà không xóa nhầm dữ liệu
-
-Trước Pass B, đóng Unity và kiểm tra không còn `Unity.exe`. Không dùng lệnh xóa đệ quy rộng. Quy trình đã kiểm chứng di chuyển duy nhất cache `Library` của worktree riêng sang một thư mục backup có đường dẫn tuyệt đối đã xác nhận:
+Giữ bản vá Pass A bên ngoài repository trước khi commit candidate:
 
 ```powershell
 $EvidenceRoot = 'C:\duong-dan-bang-chung'
+New-Item -ItemType Directory -Path $EvidenceRoot -Force | Out-Null
+$PassAPatch = Join-Path $EvidenceRoot 'PASS-A-font-normalization.patch'
+
+git diff --binary --output=$PassAPatch -- `
+  'Assets/StartupLife/UI/Fonts/NotoSansVietnamese.asset' `
+  'Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset'
+
+Get-Item -LiteralPath $PassAPatch
+```
+
+Nếu diff đã được xác nhận chỉ có đúng hai font canonical do Unity tạo ra, commit chính xác hai đường dẫn đó. Không dùng `git add -A`:
+
+```powershell
+git add -- `
+  'Assets/StartupLife/UI/Fonts/NotoSansVietnamese.asset' `
+  'Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset'
+
+git diff --cached --name-only
+git commit -m 'fix: normalize TMP font assets for Unity 6.3'
+git status --short
+```
+
+Trước khi bắt đầu Pass B, `git status --short` phải trống. Nếu candidate chưa được commit thì Pass B vẫn sẽ so với main cũ và không thể chứng minh trạng thái đã chuẩn hóa là sạch.
+
+## Tạo fresh import mà không xóa nhầm dữ liệu
+
+Trước Pass B, đóng Unity Editor. Không dùng lệnh xóa đệ quy rộng. Quy trình đã kiểm chứng di chuyển duy nhất cache `Library` của worktree riêng sang một thư mục backup có đường dẫn tuyệt đối đã xác nhận:
+
+```powershell
+$EvidenceRoot = 'C:\duong-dan-bang-chung'
+$EditorPath = 'C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Unity.exe'
+New-Item -ItemType Directory -Path $EvidenceRoot -Force | Out-Null
 $Library = [IO.Path]::GetFullPath((Join-Path $Worktree 'Library'))
 $Expected = [IO.Path]::GetFullPath("$Worktree\Library")
 $Backup = [IO.Path]::GetFullPath((Join-Path $EvidenceRoot 'Library-PASS-A-backup'))
@@ -74,8 +109,10 @@ if (-not $Library.StartsWith(
     [StringComparison]::OrdinalIgnoreCase)) {
     throw 'Library nằm ngoài worktree riêng'
 }
-if (Get-Process Unity -ErrorAction SilentlyContinue) {
-    throw 'Unity vẫn đang chạy'
+$RunningEditor = Get-Process Unity -ErrorAction SilentlyContinue |
+    Where-Object { $_.Path -eq $EditorPath }
+if ($RunningEditor) {
+    throw 'Unity Editor 6000.3.25f1 vẫn đang chạy'
 }
 if (-not (Test-Path -LiteralPath $Library -PathType Container)) {
     throw 'Không tìm thấy Library cần di chuyển'
@@ -87,7 +124,7 @@ if (Test-Path -LiteralPath $Backup) {
 Move-Item -LiteralPath $Library -Destination $Backup
 ```
 
-Lệnh này không đụng vào checkout chính và có thể hoàn tác bằng cách di chuyển backup trở lại khi Unity đang tắt. Sau đó chạy lại script với thư mục bằng chứng mới:
+Kiểm tra trên chỉ xét executable Editor chính xác và không đọc hoặc in command line/token. Một tiến trình broker của Unity CLI không phải Editor có thể vẫn tồn tại và không cần chặn việc di chuyển cache. Lệnh này không đụng vào checkout chính và có thể hoàn tác bằng cách di chuyển backup trở lại khi Unity Editor đang tắt. Sau đó chạy lại script với thư mục bằng chứng mới:
 
 ```powershell
 Set-Location $Worktree
