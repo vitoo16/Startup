@@ -10,12 +10,12 @@ The first delivery gate is a small playable Developer workday with evening study
 
 ### ACTIVE_STATUS
 
-- **Current phase:** M8-T01 is **CLOSED and merged**. M8-T02 source implementation is prepared for Astra re-audit; final Unity acceptance remains pending. See [implementation handoff](evidence/M8-T02/SESSION.md).
+- **Current phase:** M8-T02 is **CLOSED — source, correction, and final LFS-complete Unity runtime acceptance verified**. This evidence-only closeout is awaiting final evidence review/merge. M9-T01 becomes ready only after this closeout merges. See [M8-T02 closeout](evidence/M8-T02/SESSION.md).
 - **M8-T01:** **CLOSED — Unity runtime acceptance and tracked-asset determinism verified**. See [font determinism closeout](evidence/M8-T01/FONT_DETERMINISM_2026-10-07.md).
 - **iOS:** **DEFERRED — NOT RUN — owned by M18-T02**. Missing Mac/Xcode/iPhone infrastructure is not represented as PASS.
 - **Physical Android:** **NOT RUN — owned by M18-T01**. Android emulator evidence from M7-T02 does not satisfy the physical-device gate.
 - **M0-T04:** **OPEN — deferred Mac/iOS prerequisite work remains**. Only those deferred iOS subcriteria cease to block current Windows/Android functional task progression under ADR-010; unrelated prerequisites remain required.
-- **Save/schema:** SaveVersion 2; this font-determinism closeout changes no persisted field or migration.
+- **Save/schema:** SaveVersion 2; the M8-T02 runtime closeout adds no persisted field and no migration.
 - **Evidence root:** `docs/evidence/<TASK-ID>/`.
 
 ### CURRENT_STATE
@@ -514,10 +514,11 @@ Unity documents that local iOS application builds require Xcode on macOS; Window
   **Acceptance/tests:** Duplicate type launch, insufficient funds, arrears, repeated closure, and investment replay reject or settle correctly.  
   **Visual:** None. **Save:** Business collection addition with migration. **Evidence:** Lifecycle and cash-conservation fixtures; [Unity/TMP font determinism closeout](evidence/M8-T01/FONT_DETERMINISM_2026-10-07.md).
 
-- [ ] **M8-T02 — Data-driven operating eligibility**  
+- [x] **M8-T02 — Data-driven operating eligibility**  
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `unity-game-director`, `unity-gameplay-systems`, `unity-mcp-bridge`, `unity-qa-release`, `unity-game-economy`. **Dependencies:** M8-T01.  
   **Implementation/systems:** Implement compatibility results using employment, operating windows, and required owner minutes. Author evening-compatible Freelance windows and locked kiosk requirements.  
   **Acceptance/tests:** Employed kiosk launch rejects; side-business evening operation succeeds; F&B job schedules constrain availability; `ManagerOperable` content rejects as unsupported.  
+  **Visual:** N/A. **Save:** SaveVersion 2; no new persisted fields; no migration. **Evidence:** [final runtime closeout](evidence/M8-T02/SESSION.md), [TMP correction provenance](evidence/M8-T02/TMP_RUNTIME_CORRECTION.md), and [runtime-final metadata](evidence/M8-T02/runtime-final/README.md).  
   **Visual:** None. **Save:** Definition changes only unless eligibility state is persisted. **Evidence:** Employment/business schedule matrix.
 
 ### M9 — Multiple-business time and aggregate demand
