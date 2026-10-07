@@ -10,7 +10,7 @@ The first delivery gate is a small playable Developer workday with evening study
 
 ### ACTIVE_STATUS
 
-- **Current phase:** M8-T01 is **CLOSED** after exact Unity runtime acceptance and tracked TMP font-determinism verification; M8-T02 remains pending the closeout merge.
+- **Current phase:** M8-T01 is **CLOSED and merged**. M8-T02 source implementation is prepared for Astra re-audit; final Unity acceptance remains pending. See [implementation handoff](evidence/M8-T02/SESSION.md).
 - **M8-T01:** **CLOSED — Unity runtime acceptance and tracked-asset determinism verified**. See [font determinism closeout](evidence/M8-T01/FONT_DETERMINISM_2026-10-07.md).
 - **iOS:** **DEFERRED — NOT RUN — owned by M18-T02**. Missing Mac/Xcode/iPhone infrastructure is not represented as PASS.
 - **Physical Android:** **NOT RUN — owned by M18-T01**. Android emulator evidence from M7-T02 does not satisfy the physical-device gate.
