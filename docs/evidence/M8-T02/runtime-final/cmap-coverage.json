@@ -1,0 +1,23 @@
+{
+  "provenance": "closeout metadata transcribed from final LFS diagnostics",
+  "notoSansRegular": {
+    "path": "Assets/StartupLife/UI/Fonts/NotoSans-Regular.ttf",
+    "u2212Available": false
+  },
+  "liberationSans": {
+    "path": "Assets/TextMesh Pro/Fonts/LiberationSans.ttf",
+    "u2212Available": true
+  },
+  "classification": "Intermediate U+2212 failure was caused by an unhydrated Git LFS Liberation fallback source. No source glyph contract defect remains established.",
+  "finalMissingGlyphWarnings": 0,
+  "previouslyFailingCharacters": [
+    "ữ",
+    "ạ",
+    "ể",
+    "ậ",
+    "ấ",
+    "ă",
+    "ộ",
+    "−"
+  ]
+}
