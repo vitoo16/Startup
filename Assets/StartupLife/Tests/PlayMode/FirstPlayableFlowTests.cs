@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using TMPro;
@@ -37,6 +38,36 @@ namespace StartupLife.Tests.PlayMode
             foreach (var save in preservedSaves) File.WriteAllBytes(save.Key, save.Value);
             preservedSaves.Clear();
             yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator AppearanceSelectionUsesLocalizedLabelsWithoutRawGenderGlyphs()
+        {
+            var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
+            while (!load.isDone) yield return null;
+            yield return LocalizationSettings.InitializationOperation;
+            yield return null;
+
+            var appearance = GameObject.Find("AppearanceValue").GetComponent<TMP_Text>();
+            Assert.That(appearance.text, Is.EqualTo("Nữ"));
+            Assert.That(appearance.text, Does.Not.Contain("♀"));
+            Assert.That(appearance.text, Does.Not.Contain("♂"));
+            appearance.ForceMeshUpdate();
+
+            GameObject.Find("MaleButton").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            yield return null;
+            Assert.That(appearance.text, Is.EqualTo("Nam"));
+            Assert.That(appearance.text, Does.Not.Contain("♀"));
+            Assert.That(appearance.text, Does.Not.Contain("♂"));
+            appearance.ForceMeshUpdate();
+
+            GameObject.Find("FemaleButton").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            yield return null;
+            Assert.That(appearance.text, Is.EqualTo("Nữ"));
+            appearance.ForceMeshUpdate();
+            Assert.That(Object.FindObjectsByType<TMP_Text>(FindObjectsSortMode.None)
+                .All(text => !text.text.Contains("♀") && !text.text.Contains("♂")), Is.True);
+            LogAssert.NoUnexpectedReceived();
         }
 
         [UnityTest]

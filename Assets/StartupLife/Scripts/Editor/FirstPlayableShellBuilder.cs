@@ -85,7 +85,7 @@ namespace StartupLife.Editor
             StaticLabel("AppearanceLabel", "character.appearance", characterPanel.transform, font, theme.body, theme.ink, 70);
             var appearanceRow = Row("AppearanceRow", characterPanel.transform, theme.gap);
             var female = Button("FemaleButton", "character.appearance.female", appearanceRow.transform, font, theme);
-            var appearanceValue = PlainValue("AppearanceValue", appearanceRow.transform, font, theme.body, theme.accent, 100);
+            var appearanceValue = LocalizedValue("AppearanceValue", "character.appearance.female", appearanceRow.transform, font, theme, 100);
             var male = Button("MaleButton", "character.appearance.male", appearanceRow.transform, font, theme);
             var create = Button("CreateCharacterButton", "character.create", characterPanel.transform, font, theme);
             var characterStatus = LocalizedValue("CharacterStatus", "status.ready", characterPanel.transform, font, theme, 80);
@@ -136,7 +136,7 @@ namespace StartupLife.Editor
             Assign(character, "root", characterPanel);
             Assign(character, "nameInput", nameInput);
             Assign(character, "ageValue", ageValue);
-            Assign(character, "appearanceValue", appearanceValue);
+            Assign(character, "appearanceValue", appearanceValue.GetComponent<TMP_Text>());
             Assign(character, "status", characterStatus);
 
             Assign(life, "root", lifePanel);

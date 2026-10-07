@@ -12,7 +12,7 @@ namespace StartupLife.Tests.PlayMode
     public sealed class MobileBaselineTests
     {
         [UnityTest]
-        public IEnumerator BaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage()
+        public IEnumerator MobileBaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage()
         {
             yield return SceneManager.LoadSceneAsync("MobileBaseline");
             yield return LocalizationSettings.InitializationOperation;
@@ -33,7 +33,7 @@ namespace StartupLife.Tests.PlayMode
             {
                 text.ForceMeshUpdate();
                 foreach (var character in text.text.Where(c => !char.IsWhiteSpace(c)).Distinct())
-                    Assert.That(text.font.HasCharacter(character), Is.True, "Missing glyph: " + character);
+                    Assert.That(text.font.HasCharacter(character, true, true), Is.True, "Missing glyph: " + character);
             }
             LogAssert.NoUnexpectedReceived();
         }

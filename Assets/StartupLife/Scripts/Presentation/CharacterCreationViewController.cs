@@ -15,6 +15,7 @@ namespace StartupLife.Presentation
 
         private FirstPlayableFlow flow;
         private Action onCreated;
+        private LocalizedKeyLabel appearanceLabel;
         private int age = 25;
         private string appearanceId = "base.female";
 
@@ -72,7 +73,13 @@ namespace StartupLife.Presentation
         private void RenderSelection()
         {
             if (ageValue) ageValue.text = age.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            if (appearanceValue) appearanceValue.text = appearanceId == "base.female" ? "♀" : "♂";
+            if (!appearanceValue) return;
+
+            if (!appearanceLabel) appearanceLabel = LocalizedKeyLabel.EnsureFor(appearanceValue);
+            appearanceLabel.SetKey(
+                appearanceId == "base.female"
+                    ? "character.appearance.female"
+                    : "character.appearance.male");
         }
     }
 }
