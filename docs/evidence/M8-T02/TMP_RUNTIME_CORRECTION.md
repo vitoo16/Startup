@@ -80,18 +80,25 @@ Required acceptance remains:
 
 ## Engine-free
 
-Status: **PENDING PR CI**. Record actual counts after the pull-request workflow completes.
+PR #31 Engine-free CI run #128 passed on source/evidence head `fc24ae5d59e4721314114ac665e8082d1b93193a`.
 
-Expected historical baseline only (not a claimed new-head result):
+Actual results:
 
-- Simulation 49/49
-- Business ownership + eligibility 68/68
-- Foundation H1/H2/R2 20/20
-- M2 restore/provenance 35/35
-- Presentation 11/11
-- Content 13/13
+- Static Unity foundation: 31/31
+- M1 public API freeze: 31/31
+- Content bridge static contract: 8/8
+- M7 first playable shell source: 43/43
+- Unity runner contract static gate: 30/30
+- Repository security/release hygiene: 28/28
+- Simulation: 49/49
+- Business ownership + eligibility: 68/68
+- Foundation H1/H2/R2: 20/20
+- M2 restore/provenance: 35/35
+- Presentation: 11/11
+- Content: 13/13
+- repository mutation gate: PASS
 
-Expected counters must not be edited merely to force green.
+The CI logs explicitly state that these reports verify .NET/static behavior only; Unity EditMode, PlayMode, IL2CPP, and device evidence remain separate gates.
 
 ## Save
 
@@ -128,4 +135,6 @@ and a new final Unity acceptance is executed on that approved correction head.
 
 ## PR
 
-PR number and exact head are recorded after PR creation. The PR must not be merged automatically.
+PR: #31 — `fix: correct TMP runtime glyph handling for M8-T02`  
+Branch: `fix/m8-t02-tmp-runtime-glyphs`  
+The exact final PR head is reported in the handoff after the final evidence-only commit/CI cycle. The PR must not be merged automatically.
