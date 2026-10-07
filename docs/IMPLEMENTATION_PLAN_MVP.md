@@ -10,12 +10,12 @@ The first delivery gate is a small playable Developer workday with evening study
 
 ### ACTIVE_STATUS
 
-- **Current phase:** M7-T02 is **CLOSED under ADR-010 revised acceptance** after verified Editor + Android-emulator lifecycle/persistence acceptance and owner-authorized iOS deferral.
-- **M8-T01:** **READY AFTER THIS RECONCILIATION MERGES**. M8 has not started and no M8 implementation is included here.
+- **Current phase:** M8-T01 is **CLOSED** after exact Unity runtime acceptance and tracked TMP font-determinism verification; M8-T02 remains pending the closeout merge.
+- **M8-T01:** **CLOSED — Unity runtime acceptance and tracked-asset determinism verified**. See [font determinism closeout](evidence/M8-T01/FONT_DETERMINISM_2026-10-07.md).
 - **iOS:** **DEFERRED — NOT RUN — owned by M18-T02**. Missing Mac/Xcode/iPhone infrastructure is not represented as PASS.
 - **Physical Android:** **NOT RUN — owned by M18-T01**. Android emulator evidence from M7-T02 does not satisfy the physical-device gate.
 - **M0-T04:** **OPEN — deferred Mac/iOS prerequisite work remains**. Only those deferred iOS subcriteria cease to block current Windows/Android functional task progression under ADR-010; unrelated prerequisites remain required.
-- **Save/schema:** SaveVersion 1; persisted fields unchanged; migration none for this reconciliation.
+- **Save/schema:** SaveVersion 2; this font-determinism closeout changes no persisted field or migration.
 - **Evidence root:** `docs/evidence/<TASK-ID>/`.
 
 ### CURRENT_STATE
@@ -508,11 +508,11 @@ Unity documents that local iOS application builds require Xcode on macOS; Window
 
 **Goal:** Launch a valid side business and explain incompatible choices.
 
-- [ ] **M8-T01 — Business ownership, investment, and closure**  
+- [x] **M8-T01 — Business ownership, investment, and closure**
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `unity-game-director`, `unity-gameplay-systems`, `unity-mcp-bridge`, `unity-qa-release`, `unity-game-economy`. **Dependencies:** M7-T02.  
   **Implementation/systems:** Implement instance ownership, startup investment, pricing posture, reinvestment, closure/history, one-active-per-type limit, and Freelance test content.  
   **Acceptance/tests:** Duplicate type launch, insufficient funds, arrears, repeated closure, and investment replay reject or settle correctly.  
-  **Visual:** None. **Save:** Business collection addition with migration. **Evidence:** Lifecycle and cash-conservation fixtures.
+  **Visual:** None. **Save:** Business collection addition with migration. **Evidence:** Lifecycle and cash-conservation fixtures; [Unity/TMP font determinism closeout](evidence/M8-T01/FONT_DETERMINISM_2026-10-07.md).
 
 - [ ] **M8-T02 — Data-driven operating eligibility**  
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `unity-game-director`, `unity-gameplay-systems`, `unity-mcp-bridge`, `unity-qa-release`, `unity-game-economy`. **Dependencies:** M8-T01.  
