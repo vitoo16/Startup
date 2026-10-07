@@ -19,7 +19,7 @@ namespace StartupLife.Presentation
             if (!localizer)
             {
                 localizer = text.gameObject.AddComponent<LocalizeStringEvent>();
-                localizer.OnUpdateString.AddListener(text.SetText);
+                localizer.OnUpdateString.AddListener(value => text.SetText(value));
             }
 
             if (!label) label = text.gameObject.AddComponent<LocalizedKeyLabel>();
