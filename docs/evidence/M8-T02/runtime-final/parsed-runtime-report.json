@@ -1,0 +1,32 @@
+{
+  "provenance": "closeout metadata transcribed from successful external acceptance handoff; not original Unity XML/JUnit",
+  "testedHead": "9782b13403b8a721cde7952123576377c1991d3e",
+  "unity": {
+    "version": "6000.3.25f1",
+    "revision": "e1dba0a9aba4"
+  },
+  "editMode": {
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0,
+    "durationSeconds": 0.5057843,
+    "cliExit": 0
+  },
+  "playMode": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0,
+    "durationSeconds": 7.8788131,
+    "cliExit": 0
+  },
+  "parser": {
+    "status": "PASS",
+    "matchingTotals": true,
+    "matchingCaseIdentities": true
+  },
+  "runnerExit": 0
+}
