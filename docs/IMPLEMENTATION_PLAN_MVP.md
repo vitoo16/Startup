@@ -508,7 +508,7 @@ Unity documents that local iOS application builds require Xcode on macOS; Window
 
 **Goal:** Launch a valid side business and explain incompatible choices.
 
-- [x] **M8-T01 — Business ownership, investment, and closure**  
+- [x] **M8-T01 — Business ownership, investment, and closure**
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `unity-game-director`, `unity-gameplay-systems`, `unity-mcp-bridge`, `unity-qa-release`, `unity-game-economy`. **Dependencies:** M7-T02.  
   **Implementation/systems:** Implement instance ownership, startup investment, pricing posture, reinvestment, closure/history, one-active-per-type limit, and Freelance test content.  
   **Acceptance/tests:** Duplicate type launch, insufficient funds, arrears, repeated closure, and investment replay reject or settle correctly.  
