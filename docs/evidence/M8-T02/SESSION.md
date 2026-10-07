@@ -122,3 +122,262 @@ Commit: final source head above; evidence-only follow-up commit is identified by
 `M8-T02 IMPLEMENTED — ASTRA SOURCE RE-AUDIT REQUIRED`
 
 `M9-T01 NOT READY — blocked by M8-T02 source and runtime acceptance`
+
+
+---
+
+## Source re-audit closeout
+
+Closeout date: 2026-10-08 (+07:00)
+
+The implementation-stage record above is preserved as historical truth. It correctly ended at source implementation and did not claim a runtime pass that had not yet happened.
+
+Original M8-T02 audited source:
+
+`3b15ba97f13779f570007cb48a13b20c3a47726f`
+
+Original Astra result:
+
+- BLOCKER 0
+- HIGH 0
+- MEDIUM 0
+- LOW 0
+
+TMP correction audited source:
+
+`035ecda58cd114a69917709150322ce0f6e96e3f`
+
+Correction Astra result:
+
+- BLOCKER 0
+- HIGH 0
+- MEDIUM 0
+- LOW 1 evidence-only issue
+
+LOW-01 was documentation provenance only: `TMP_RUNTIME_CORRECTION.md` cited Engine-free CI #128 / `fc24ae...` while the final exact correction evidence is Engine-free CI #129, run id `37621910855`, exact source head `035ecda58cd114a69917709150322ce0f6e96e3f`, SUCCESS. The stale authoritative reference is corrected in this closeout while the earlier #128 run remains historical chronology.
+
+PR #31 merged the Astra-audited correction into:
+
+`9782b13403b8a721cde7952123576377c1991d3e`
+
+Verified relation:
+
+```text
+035ecda58cd114a69917709150322ce0f6e96e3f
+→
+9782b13403b8a721cde7952123576377c1991d3e
+
+files changed = 0
+```
+
+Therefore the runtime-tested merged tree is file-tree equivalent to the Astra-audited correction source.
+
+## TMP runtime correction chronology
+
+Runtime provenance is intentionally not collapsed into a fictional single successful run:
+
+1. Original M8-T02 source implementation completed.
+2. Astra source audit passed at BLOCKER 0 / HIGH 0 / MEDIUM 0 / LOW 0.
+3. The first final runtime attempt on `f352cac...` failed because the required font Git LFS source object was not hydrated.
+4. TMP presentation correction PR #31 removed the raw `♀/♂` runtime dependency and corrected Dynamic TMP glyph-test semantics.
+5. Astra correction source audit passed BLOCKER 0 / HIGH 0 / MEDIUM 0 with LOW-01 limited to stale CI evidence wording.
+6. PR #31 merged to `9782b134...` with no file-tree difference from audited source.
+7. A subsequent runtime attempt proved Noto hydration fixed Vietnamese coverage, but Liberation fallback was still an LFS pointer; an optional M7 visual-capture path under `-nographics` also produced unrelated RenderTexture failures.
+8. The final valid acceptance hydrated both required font source objects, cleared the optional M7 evidence-capture environment variable, and passed completely.
+
+The failed and invalid attempts remain provenance; they are not relabeled as PASS.
+
+## Final Unity runtime acceptance
+
+Exact tested source:
+
+`9782b13403b8a721cde7952123576377c1991d3e`
+
+Editor:
+
+- Unity `6000.3.25f1`
+- revision `e1dba0a9aba4`
+- executable `C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Unity.exe`
+- Unity CLI `1.0.0-beta.12`
+
+Fresh import:
+
+- PASS
+- C# errors: 0
+- C# warnings: 0
+
+Parsed EditMode:
+
+- total: 9
+- passed: 9
+- failed: 0
+- skipped: 0
+- inconclusive: 0
+- duration: 0.5057843 s
+
+Parsed PlayMode:
+
+- total: 12
+- passed: 12
+- failed: 0
+- skipped: 0
+- inconclusive: 0
+- duration: 7.8788131 s
+
+Canonical runner:
+
+- `./scripts/Test-UnityHeadless.ps1 -Mode All -OutputDirectory <external-directory>`
+- overall exit: 0
+- EditMode CLI exit: 0
+- PlayMode CLI exit: 0
+- NUnit/JUnit parsing: PASS
+- parsed totals matched
+- parsed case identities matched
+
+Final verdict:
+
+`M8-T02 UNITY ACCEPTANCE PASSED — LFS-COMPLETE HEADLESS RUNTIME VERIFIED`
+
+Runtime findings:
+
+- BLOCKER 0
+- HIGH 0
+- MEDIUM 0
+- LOW 0
+
+## TMP runtime proof
+
+Focused appearance regression:
+
+`AppearanceSelectionUsesLocalizedLabelsWithoutRawGenderGlyphs` — PASS
+
+Verified sequence:
+
+`Nữ → Nam → Nữ`
+
+Also verified:
+
+- no raw `♀` rendering
+- no raw `♂` rendering
+- forced mesh generation PASS
+- unexpected-log assertion PASS
+
+Mobile baseline:
+
+`MobileBaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage` — PASS
+
+The required Vietnamese sample retained `ộ`; the test retained `HasCharacter(character, true, true)` and `LogAssert.NoUnexpectedReceived()`.
+
+Final runtime logs contained zero missing-glyph warnings for the previously failing characters, including `ữ`, `ạ`, `ể`, `ậ`, `ấ`, `ă`, `ộ`, and `−`.
+
+## Git LFS environment provenance
+
+Noto source contract:
+
+- path: `Assets/StartupLife/UI/Fonts/NotoSans-Regular.ttf`
+- size: 569208 bytes
+- SHA-256: `b85c38ecea8a7cfb39c24e395a4007474fa5a4fc864f6ee33309eb4948d232d5`
+
+Liberation source contract:
+
+- path: `Assets/TextMesh Pro/Fonts/LiberationSans.ttf`
+- size: 350200 bytes
+- SHA-256: `e5b0af421ea2bfbc1ac8d251d647268087ae82786234c57f757d1f0b90fa8b49`
+
+Diagnostic cmap:
+
+- Noto U+2212: unavailable
+- Liberation U+2212: available
+
+Classification:
+
+The remaining U+2212 failure in the intermediate run was an unhydrated Git LFS fallback-font environment problem. No source glyph contract defect remains established. The earlier Vietnamese missing-glyph run was also invalid because Noto itself was still an LFS pointer.
+
+Reproducibility follow-up, intentionally not fixed in this evidence-only PR:
+
+`Git LFS hydration preflight missing from Unity acceptance tooling.`
+
+The current static foundation checks validate path presence, while the canonical Unity runner does not independently verify that Git LFS-backed TTF objects are hydrated. A separate tooling-hardening task should add that preflight after M8 closeout.
+
+## Visual-capture provenance
+
+M8-T02 visual evidence: N/A.
+
+The intermediate RenderTexture errors were caused by `STARTUP_LIFE_M7_EVIDENCE` enabling the optional M7 capture path while canonical acceptance was running with `-nographics`. The final valid acceptance explicitly cleared that environment variable and recorded 0 `RenderTexture.Create failed` errors.
+
+These intermediate capture errors are not classified as gameplay defects.
+
+## Content, font, and scene integrity
+
+Final stable integrity:
+
+- Noto source TTF: stable hydrated object
+- Liberation source TTF: stable hydrated object
+- Noto TMP asset: unchanged
+- Liberation TMP fallback asset: unchanged
+- `FirstPlayableContent.asset`: unchanged
+- `FirstPlayable.unity`: unchanged
+
+`FirstPlayableContent.asset` SHA-256:
+
+`1f637ade3b8cdb7334deab7cef75db5c25751f24d7654c6577d899cc8b999ae0`
+
+Runtime-loaded business definitions remained:
+
+| Definition | Mode | Window | Required owner minutes |
+|---|---|---|---:|
+| Freelance | SideHustleCompatible | 18:00–22:00 | 120 |
+| Coffee Kiosk | FullTimeRequired | 09:00–17:00 | 480 |
+
+No production source, test, font asset, scene, serialized content, ProjectSettings, package, or save-schema modification was made during closeout.
+
+## Post-run Git integrity
+
+Tested HEAD:
+
+`9782b13403b8a721cde7952123576377c1991d3e`
+
+Post-run state:
+
+- `git status --short`: empty
+- `git diff --check`: exit 0
+- no reset/restore/clean was used to manufacture cleanliness
+
+## Save contract
+
+```text
+SaveVersion 2
+no new persisted fields
+no migration
+```
+
+Existing `startup-life.json*` hashes were preserved through acceptance.
+
+## Durable closeout evidence
+
+The original credential-safe runtime artifacts were produced in an external PASS evidence directory. That external directory is not mounted into this GitHub connector session, so this closeout does not fabricate Unity XML/JUnit files or pretend reconstructed files are originals.
+
+The repository closeout retains structured runtime metadata under `docs/evidence/M8-T02/runtime-final/` and records the exact externally verified acceptance facts above. Original XML/JUnit artifacts remain external acceptance provenance and should be supplied to Astra alongside this PR if its final evidence audit requires raw case-level files.
+
+## Final status
+
+`M8-T02 CLOSED — source, correction, and final Unity runtime acceptance verified`
+
+Final runtime findings:
+
+```text
+BLOCKER 0
+HIGH 0
+MEDIUM 0
+LOW 0
+```
+
+Visual:
+
+`N/A — M8-T02 has no visual acceptance scope`
+
+Before this evidence-only PR merges:
+
+`M9-T01 NOT READY — waiting for accepted M8-T02 closeout evidence merge`
+
+Do not implement M9 in this closeout.

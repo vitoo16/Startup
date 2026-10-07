@@ -1,0 +1,11 @@
+{
+  "provenance": "closeout metadata transcribed from final external acceptance",
+  "testedHead": "9782b13403b8a721cde7952123576377c1991d3e",
+  "freshImport": "PASS",
+  "compile": "PASS",
+  "csharpErrors": 0,
+  "csharpWarnings": 0,
+  "unityVersion": "6000.3.25f1",
+  "unityRevision": "e1dba0a9aba4",
+  "executable": "C:\\\\Program Files\\\\Unity\\\\Hub\\\\Editor\\\\6000.3.25f1\\\\Editor\\\\Unity.exe"
+}

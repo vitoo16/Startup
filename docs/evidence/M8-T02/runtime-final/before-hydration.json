@@ -1,0 +1,9 @@
+{
+  "provenance": "diagnostic chronology only; not final PASS evidence",
+  "chronology": [
+    "First final runtime attempt on f352cac failed while required font LFS source was not hydrated.",
+    "Later Vietnamese coverage passed after Noto hydration, but Liberation fallback remained an LFS pointer and U+2212 still failed.",
+    "Final acceptance hydrated both required TTF objects."
+  ],
+  "sourceDefectEstablished": false
+}

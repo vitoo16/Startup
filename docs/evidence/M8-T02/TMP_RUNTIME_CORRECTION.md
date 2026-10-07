@@ -80,7 +80,7 @@ Required acceptance remains:
 
 ## Engine-free
 
-PR #31 Engine-free CI run #128 passed on source/evidence head `fc24ae5d59e4721314114ac665e8082d1b93193a`.
+An earlier PR #31 Engine-free CI run #128 passed on intermediate source/evidence head `fc24ae5d59e4721314114ac665e8082d1b93193a`. The authoritative final correction CI is **Engine-free CI run #129**, run id `37621910855`, on exact source head `035ecda58cd114a69917709150322ce0f6e96e3f`: **SUCCESS**.
 
 Actual results:
 
@@ -108,33 +108,34 @@ The CI logs explicitly state that these reports verify .NET/static behavior only
 
 ## Findings
 
-Current implementation review:
+Correction Astra source re-audit on `035ecda58cd114a69917709150322ce0f6e96e3f`:
 
-- BLOCKER: 0 source blockers identified
-- HIGH: 0 source findings identified
-- MEDIUM: 0 source findings identified
-- LOW: 0 source findings identified
+- BLOCKER: 0
+- HIGH: 0
+- MEDIUM: 0
+- LOW: 1 evidence-only issue
 
-Runtime acceptance is still outstanding and is not represented by the source finding counts.
+LOW-01 identified that this document still cited CI run #128 / `fc24ae...` even though the final exact-head correction evidence is run #129 / `035ecda...`. This closeout corrects that provenance without rewriting the earlier run out of history.
+
+Final LFS-complete Unity runtime acceptance on merged tested main `9782b13403b8a721cde7952123576377c1991d3e`:
+
+- BLOCKER: 0
+- HIGH: 0
+- MEDIUM: 0
+- LOW: 0
 
 ## M8-T02
 
-`M8-T02 CORRECTION IMPLEMENTED — ASTRA SOURCE RE-AUDIT REQUIRED`
+`M8-T02 CORRECTION SOURCE REVIEW COMPLETE — FINAL LFS-COMPLETE UNITY ACCEPTANCE PASSED ON MERGED TESTED TREE`
 
-Do **not** mark closed before Astra returns:
-
-- BLOCKER 0
-- HIGH 0
-- MEDIUM 0
-
-and a new final Unity acceptance is executed on that approved correction head.
+Historical correction-stage gating above remains valid provenance. Final milestone closure is recorded by the evidence-only M8-T02 closeout after documentation/CI review.
 
 ## M9
 
-`M9-T01 NOT READY — blocked by M8-T02 correction review/runtime acceptance`
+`M9-T01 NOT READY — waiting for M8-T02 closeout evidence review/merge`
 
 ## PR
 
 PR: #31 — `fix: correct TMP runtime glyph handling for M8-T02`  
 Branch: `fix/m8-t02-tmp-runtime-glyphs`  
-The exact final PR head is reported in the handoff after the final evidence-only commit/CI cycle. The PR must not be merged automatically.
+`035ecda58cd114a69917709150322ce0f6e96e3f` was the exact correction source head audited by Astra and verified by Engine-free CI #129. PR #31 later merged to `9782b13403b8a721cde7952123576377c1991d3e` with zero file-tree difference. This closeout does not merge automatically.

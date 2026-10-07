@@ -1,0 +1,9 @@
+{
+  "provenance": "closeout metadata; external output directory intentionally not committed",
+  "command": "./scripts/Test-UnityHeadless.ps1 -Mode All -OutputDirectory <external-directory>",
+  "runnerExit": 0,
+  "editModeCliExit": 0,
+  "playModeCliExit": 0,
+  "startupLifeM7EvidenceCleared": true,
+  "graphicsMode": "headless/-nographics"
+}
