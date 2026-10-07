@@ -1,0 +1,21 @@
+{
+  "provenance": "closeout metadata transcribed from final external acceptance",
+  "verdict": "M8-T02 UNITY ACCEPTANCE PASSED — LFS-COMPLETE HEADLESS RUNTIME VERIFIED",
+  "testedHead": "9782b13403b8a721cde7952123576377c1991d3e",
+  "freshImport": "PASS",
+  "csharp": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "editMode": "9/9",
+  "playMode": "12/12",
+  "runnerExit": 0,
+  "renderTextureCreateFailedErrors": 0,
+  "runtimeFindings": {
+    "blocker": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "visualEvidence": "N/A — M8-T02 has no visual acceptance scope"
+}
