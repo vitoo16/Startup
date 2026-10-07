@@ -1,0 +1,9 @@
+{
+  "provenance": "closeout metadata transcribed from final acceptance preflight",
+  "head": "9782b13403b8a721cde7952123576377c1991d3e",
+  "worktreeStatus": "clean",
+  "correctionAuditedHead": "035ecda58cd114a69917709150322ce0f6e96e3f",
+  "correctionToTestedHeadFileTreeDifference": "NONE",
+  "saveVersion": 2,
+  "contentSha256": "1f637ade3b8cdb7334deab7cef75db5c25751f24d7654c6577d899cc8b999ae0"
+}
