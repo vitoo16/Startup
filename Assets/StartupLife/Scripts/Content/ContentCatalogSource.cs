@@ -131,6 +131,42 @@ namespace StartupLife.Content
     }
 
     [Serializable]
+    public sealed class BusinessOperatingWindowContentSource
+    {
+        public DayOfWeek DayOfWeek;
+        public int StartMinute;
+        public int EndMinute;
+        public BusinessOperatingWindow Build() => new BusinessOperatingWindow(DayOfWeek, StartMinute, EndMinute);
+    }
+
+    [Serializable]
+    public sealed class BusinessContentSource
+    {
+        public string Id = "";
+        public string Revision = "";
+        public string NameKey = "";
+        public BusinessType Type;
+        public BusinessOperationMode OperationMode;
+        public long MinimumStartupInvestment;
+        public long MaximumStartupInvestment;
+        public PricingPosture[] AllowedPricingPostures = Array.Empty<PricingPosture>();
+        public PricingPosture DefaultPricingPosture;
+        public long MinimumReinvestment;
+        public long MaximumReinvestment;
+        public BusinessOperatingWindowContentSource[] OperatingWindows = Array.Empty<BusinessOperatingWindowContentSource>();
+        public int RequiredOwnerMinutes;
+
+        public BusinessDefinition Build()
+        {
+            if (OperatingWindows == null) throw new ArgumentException("Business operating windows are required.");
+            var windows = OperatingWindows.Select(x => (x ?? throw new ArgumentException("Business window entry cannot be null.")).Build());
+            return new BusinessDefinition(Id, Revision, NameKey, Type, OperationMode,
+                MinimumStartupInvestment, MaximumStartupInvestment, AllowedPricingPostures, DefaultPricingPosture,
+                MinimumReinvestment, MaximumReinvestment, new BusinessOperatingRequirements(windows, RequiredOwnerMinutes));
+        }
+    }
+
+    [Serializable]
     public sealed class ContentCatalogSource
     {
         public string Version = "";
@@ -138,6 +174,7 @@ namespace StartupLife.Content
         public CareerContentSource[] Careers = Array.Empty<CareerContentSource>();
         public CourseContentSource[] Courses = Array.Empty<CourseContentSource>();
         public CharacterStartContentSource[] Starts = Array.Empty<CharacterStartContentSource>();
+        public BusinessContentSource[] Businesses = Array.Empty<BusinessContentSource>();
         public EconomyContentSource Economy = new EconomyContentSource();
         public DayScheduleContentSource Schedule = new DayScheduleContentSource();
 
@@ -151,6 +188,7 @@ namespace StartupLife.Content
                 BuildAll(Careers, x => x.Build(), nameof(Careers)),
                 BuildAll(Courses, x => x.Build(), nameof(Courses)),
                 BuildAll(Starts, x => x.Build(), nameof(Starts)),
+                BuildAll(Businesses, x => x.Build(), nameof(Businesses)),
                 Economy.Build(),
                 Schedule.Build());
         }

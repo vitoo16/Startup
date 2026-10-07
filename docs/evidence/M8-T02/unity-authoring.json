@@ -1,0 +1,41 @@
+{
+  "sourceHead": "740a717d4e62ef23b9c75a6aff9a58457b8ebd83",
+  "runs": [
+    {
+      "passLabel": "A",
+      "purpose": "Unity authoring/regeneration only; not final acceptance",
+      "editorVersion": "6000.3.25f1",
+      "editorRevision": "e1dba0a9aba4",
+      "runnerExit": 0,
+      "csharpErrors": 0,
+      "csharpWarnings": 0,
+      "proof": [
+        "Initialize engine version: 6000.3.25f1 (e1dba0a9aba4)",
+        "[M8-T02-Authoring] Loaded asset: Freelance 240/120; Kiosk 480/480; scheduled content verified.",
+        "[StartupLifeContent] First playable content validated at Assets/StartupLife/Data/FirstPlayableContent.asset",
+        "Exiting batchmode successfully now!"
+      ]
+    },
+    {
+      "passLabel": "B",
+      "purpose": "Unity authoring/regeneration only; not final acceptance",
+      "editorVersion": "6000.3.25f1",
+      "editorRevision": "e1dba0a9aba4",
+      "runnerExit": 0,
+      "csharpErrors": 0,
+      "csharpWarnings": 0,
+      "proof": [
+        "Initialize engine version: 6000.3.25f1 (e1dba0a9aba4)",
+        "[M8-T02-Authoring] Loaded asset: Freelance 240/120; Kiosk 480/480; scheduled content verified.",
+        "[StartupLifeContent] First playable content validated at Assets/StartupLife/Data/FirstPlayableContent.asset",
+        "Exiting batchmode successfully now!"
+      ]
+    }
+  ],
+  "repeatedBuilderByteStable": true,
+  "contentSha256": "1f637ade3b8cdb7334deab7cef75db5c25751f24d7654c6577d899cc8b999ae0",
+  "normalizedTmpFontsChanged": false,
+  "editMode": "NOT RUN",
+  "playMode": "NOT RUN",
+  "finalUnityAcceptance": "NOT RUN \u2014 requires Astra source approval and owner instruction"
+}

@@ -114,6 +114,75 @@ MonoBehaviour:
       AppearanceIds:
       - base.female
       - base.male
+    Businesses:
+    - Id: freelance-service
+      Revision: v1
+      NameKey: business.freelance-service
+      Type: 3
+      OperationMode: 1
+      MinimumStartupInvestment: 100
+      MaximumStartupInvestment: 1000
+      AllowedPricingPostures: 010000000200000003000000
+      DefaultPricingPosture: 2
+      MinimumReinvestment: 1
+      MaximumReinvestment: 1000
+      OperatingWindows:
+      - DayOfWeek: 0
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 1
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 2
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 3
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 4
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 5
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 6
+        StartMinute: 1080
+        EndMinute: 1320
+      RequiredOwnerMinutes: 120
+    - Id: coffee-kiosk
+      Revision: v1
+      NameKey: business.coffee-kiosk
+      Type: 4
+      OperationMode: 2
+      MinimumStartupInvestment: 100
+      MaximumStartupInvestment: 1000
+      AllowedPricingPostures: 010000000200000003000000
+      DefaultPricingPosture: 2
+      MinimumReinvestment: 1
+      MaximumReinvestment: 1000
+      OperatingWindows:
+      - DayOfWeek: 0
+        StartMinute: 540
+        EndMinute: 1020
+      - DayOfWeek: 1
+        StartMinute: 540
+        EndMinute: 1020
+      - DayOfWeek: 2
+        StartMinute: 540
+        EndMinute: 1020
+      - DayOfWeek: 3
+        StartMinute: 540
+        EndMinute: 1020
+      - DayOfWeek: 4
+        StartMinute: 540
+        EndMinute: 1020
+      - DayOfWeek: 5
+        StartMinute: 540
+        EndMinute: 1020
+      - DayOfWeek: 6
+        StartMinute: 540
+        EndMinute: 1020
+      RequiredOwnerMinutes: 480
     Economy:
       Payday: 1
       ExpenseDay: 1

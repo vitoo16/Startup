@@ -16,6 +16,9 @@ namespace StartupLife.Content
             "leadership"
         };
 
+        public const string FreelanceId = "freelance-service";
+        public const string CoffeeKioskId = "coffee-kiosk";
+
         public static ContentCatalogSource Create()
         {
             var skills = new SkillContentSource[SkillIds.Length];
@@ -117,6 +120,11 @@ namespace StartupLife.Content
                         AppearanceIds = new[] { "base.female", "base.male" }
                     }
                 },
+                Businesses = new[]
+                {
+                    FunctionalBusiness(FreelanceId, BusinessType.FreelanceService, BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120),
+                    FunctionalBusiness(CoffeeKioskId, BusinessType.CoffeeKiosk, BusinessOperationMode.FullTimeRequired, 540, 1020, 480)
+                },
                 Economy = new EconomyContentSource
                 {
                     Payday = 1,
@@ -132,6 +140,20 @@ namespace StartupLife.Content
         }
 
         public static ContentCatalog BuildCatalog() => Create().Build();
+
+        // Provisional functional content only; capital/pricing are not final economy balance.
+        private static BusinessContentSource FunctionalBusiness(string id, BusinessType type, BusinessOperationMode mode,
+            int start, int end, int required)
+        {
+            var windows = new BusinessOperatingWindowContentSource[7];
+            for (var day = 0; day < windows.Length; day++)
+                windows[day] = new BusinessOperatingWindowContentSource { DayOfWeek = (DayOfWeek)day, StartMinute = start, EndMinute = end };
+            return new BusinessContentSource { Id = id, Revision = "v1", NameKey = "business." + id,
+                Type = type, OperationMode = mode, MinimumStartupInvestment = 100, MaximumStartupInvestment = 1000,
+                AllowedPricingPostures = new[] { PricingPosture.Budget, PricingPosture.Standard, PricingPosture.Premium },
+                DefaultPricingPosture = PricingPosture.Standard, MinimumReinvestment = 1, MaximumReinvestment = 1000,
+                OperatingWindows = windows, RequiredOwnerMinutes = required };
+        }
 
         private static CareerSceneContentSource Scene(string id, int weight) =>
             new CareerSceneContentSource

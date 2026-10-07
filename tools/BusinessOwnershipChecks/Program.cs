@@ -12,7 +12,7 @@ using StartupLife.Core;
 using StartupLife.Infrastructure;
 using StartupLife.Simulation;
 
-internal static class Program
+internal static partial class Program
 {
     private static int passed;
     private static readonly List<object> results = new List<object>();
@@ -51,12 +51,14 @@ internal static class Program
         Check("M8 restore rejects corrupt business state before content compatibility", RestoreBusinessCorruption);
         Check("M8 unavailable business revision is unsupported content", UnsupportedBusinessRevision);
 
+        OperatingEligibilityChecks();
+
         var reportPath = args.Length > 0 ? Path.GetFullPath(args[0]) :
             Path.Combine(Path.GetTempPath(), "startup-life-m8-business-ownership.json");
         Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
         File.WriteAllText(reportPath, JsonSerializer.Serialize(new
         {
-            suite = "Startup Life M8-T01 business ownership and Save v2 — .NET, not Unity",
+            suite = "Startup Life M8 ownership, operating eligibility and Save v2 — .NET, not Unity",
             passed,
             failed = results.Count - passed,
             tests = results
@@ -1328,8 +1330,10 @@ internal static class Program
         public byte[]? Bytes => bytes == null ? null : (byte[])bytes.Clone();
         public MemoryStore(ISaveSerializer serializer, byte[]? initial) { this.serializer = serializer; bytes = initial == null ? null : (byte[])initial.Clone(); }
         public LoadResult Read() => bytes == null ? new LoadResult(LoadStatus.Missing) : serializer.DeserializeAndValidate(bytes);
+        public int CommitCalls { get; private set; }
         public WriteStatus Commit(byte[] candidate, long expectedRevision)
         {
+            CommitCalls++;
             var next = serializer.DeserializeAndValidate(candidate);
             var previous = Read();
             if (next.Status != LoadStatus.Valid || next.State!.Revision != expectedRevision + 1) return WriteStatus.Failed;

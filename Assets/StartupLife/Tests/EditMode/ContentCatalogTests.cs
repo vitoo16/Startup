@@ -1,4 +1,6 @@
 using NUnit.Framework;
+using StartupLife.Core;
+using UnityEditor;
 using StartupLife.Content;
 using UnityEngine;
 
@@ -14,6 +16,24 @@ namespace StartupLife.Tests.EditMode
             Assert.That(catalog.Skills.Count, Is.EqualTo(6));
             Assert.That(catalog.Careers.ContainsKey("developer"), Is.True);
             Assert.That(catalog.Courses.ContainsKey("communication-basics"), Is.True);
+            Assert.That(catalog.Businesses.Count, Is.EqualTo(2));
+            Assert.That(catalog.Businesses[FirstPlayableContentTemplate.FreelanceId].OperatingRequirements.RequiredOwnerMinutes, Is.EqualTo(120));
+        }
+
+        [Test]
+        public void SerializedFirstPlayableAssetContainsScheduledBusinesses()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<StartupLifeContentCatalogAsset>("Assets/StartupLife/Data/FirstPlayableContent.asset");
+            Assert.That(asset, Is.Not.Null);
+            var catalog = asset.BuildCatalog();
+            Assert.That(catalog.Businesses.Count, Is.EqualTo(2));
+            var freelance = catalog.Businesses[FirstPlayableContentTemplate.FreelanceId];
+            var kiosk = catalog.Businesses[FirstPlayableContentTemplate.CoffeeKioskId];
+            Assert.That(freelance.OperationMode, Is.EqualTo(BusinessOperationMode.SideHustleCompatible));
+            Assert.That(freelance.OperatingRequirements.RequiredOwnerMinutes, Is.EqualTo(120));
+            Assert.That(freelance.OperatingRequirements.OperatingWindows.Count, Is.EqualTo(7));
+            Assert.That(kiosk.OperationMode, Is.EqualTo(BusinessOperationMode.FullTimeRequired));
+            Assert.That(kiosk.OperatingRequirements.RequiredOwnerMinutes, Is.EqualTo(480));
         }
 
         [Test]

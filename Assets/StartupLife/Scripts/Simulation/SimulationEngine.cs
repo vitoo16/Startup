@@ -55,11 +55,9 @@ namespace StartupLife.Simulation
         {
             if (state.Employment != null) Fail("career.already_employed");
             if (!content.Careers.TryGetValue(id, out var career)) Fail("content.missing");
-            var first = state.Date;
-            if (state.Minute > career!.StartMinute) first = first.AddDays(1);
-            while (!career.WorksOn(first)) first = first.AddDays(1);
+            var first = EmploymentSchedule.FirstShift(career!, state.Date, state.Minute);
             state.Employment = new EmploymentState { InstanceId = state.NewEntity("employment"), EmployerId = state.NewEntity("employer"),
-                CareerId = id, DefinitionRevision = career.Revision, StartedIso = state.DateIso, FirstShiftIso = first.ToString() };
+                CareerId = id, DefinitionRevision = career!.Revision, StartedIso = state.DateIso, FirstShiftIso = first.ToString() };
             state.Scheduler = new SchedulerState { LastScene = state.Scheduler.LastScene };
             state.History.Add("career.accepted:" + id + ":" + state.DateIso); state.CurrentCue = "career.accepted";
             Promote(state);
@@ -218,9 +216,8 @@ namespace StartupLife.Simulation
             if (command.Amount < definition.MinimumStartupInvestment || command.Amount > definition.MaximumStartupInvestment)
                 Fail("business.invalid_investment");
             if (state.Cash < command.Amount) Fail("economy.insufficient_cash");
-            if (definition.OperationMode == BusinessOperationMode.ManagerOperable) Fail("business.manager_unsupported");
-            if (state.Employment != null && definition.OperationMode == BusinessOperationMode.FullTimeRequired)
-                Fail("business.employment_incompatible");
+            var eligibility = BusinessEligibilityEvaluator.Evaluate(content, state, definition.Id, definition.Revision);
+            if (!eligibility.IsEligible) Fail(eligibility.ReasonKey);
 
             _ = checked(state.Cash - command.Amount);
             _ = checked(state.NextEntity + 2);
@@ -360,6 +357,7 @@ namespace StartupLife.Simulation
     {
         public void Validate(GameState state, ContentCatalog content)
         {
+            ValidateKnownBusinessEligibility(state, content);
             ValidateKnownScheduler(state, content);
             // Unrelated unavailable definitions do not suppress the scheduler checks above.
             if (!FullContentAvailable(state, content)) return;
@@ -422,6 +420,55 @@ namespace StartupLife.Simulation
             Require(state.History.SequenceEqual(replay.History), "committed history");
             // PendingChoiceId, event RNG and presentation fields have separate contracts; no new M1 rules here.
         }
+        // StateValidation has already verified receipt structure and committed durations.
+        // Trace only employment provenance and time; never replay unavailable unrelated content.
+        private static void ValidateKnownBusinessEligibility(GameState state, ContentCatalog content)
+        {
+            var jobs = state.PreviousEmployment.Concat(state.Employment == null
+                ? Array.Empty<EmploymentState>() : new[] { state.Employment }).ToArray();
+            var trace = new GameState { DateIso = StateValidation.ReceiptOrigin(state).ToString() };
+            var jobIndex = 0;
+            var firstShiftKnown = false;
+            foreach (var receipt in state.Receipts)
+            {
+                var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
+                if (command.Kind == CommandKind.AcceptJob)
+                {
+                    Require(trace.Employment == null && jobIndex < jobs.Length, "employment receipt sequence");
+                    var saved = jobs[jobIndex++];
+                    Require(saved.CareerId == command.ContentId && saved.StartedIso == trace.DateIso, "employment start");
+                    firstShiftKnown = content.Careers.TryGetValue(saved.CareerId, out var career) && career.Revision == saved.DefinitionRevision;
+                    var firstShift = firstShiftKnown ? EmploymentSchedule.FirstShift(career!, trace.Date, trace.Minute).ToString() : "";
+                    if (firstShiftKnown) Require(saved.FirstShiftIso == firstShift, "employment first shift");
+                    trace.Employment = new EmploymentState { CareerId = saved.CareerId, DefinitionRevision = saved.DefinitionRevision,
+                        StartedIso = trace.DateIso, FirstShiftIso = firstShift };
+                }
+                else if (command.Kind == CommandKind.Resign)
+                {
+                    Require(trace.Employment != null, "resignation receipt");
+                    Require(jobs[jobIndex - 1].EndedIso == trace.DateIso, "employment end");
+                    trace.Employment = null; firstShiftKnown = false;
+                }
+                else if (command.Kind == CommandKind.LaunchBusiness &&
+                    content.Businesses.TryGetValue(command.ContentId, out var business) && business.Revision == command.AppearanceId)
+                {
+                    // Hard modes and legacy policy require no career schedule. Unknown exact career
+                    // skips just scheduled math, never the remaining timeline or later launches.
+                    var needsCareer = business.OperatingRequirements != null &&
+                        business.OperationMode == BusinessOperationMode.SideHustleCompatible && trace.Employment != null;
+                    if (!needsCareer || firstShiftKnown)
+                    {
+                        var result = BusinessEligibilityEvaluator.Evaluate(content, trace, business.Id, business.Revision);
+                        Require(result.IsEligible, "business launch eligibility: " + result.ReasonKey);
+                    }
+                }
+                var next = checked(trace.Minute + receipt.MinutesConsumed);
+                trace.DateIso = trace.Date.AddDays(next / 1440).ToString(); trace.Minute = next % 1440;
+            }
+            Require(jobIndex == jobs.Length, "employment receipt history");
+            Require((trace.Employment == null) == (state.Employment == null), "current employment receipt provenance");
+        }
+
         private static bool FullContentAvailable(GameState state, ContentCatalog content) =>
             (state.Name.Length == 0 || (content.Starts.TryGetValue(state.BackgroundId, out var start) && start.AppearanceIds.Contains(state.AppearanceId))) &&
             state.Skills.All(x => content.Skills.ContainsKey(x.Id)) &&
@@ -446,9 +493,7 @@ namespace StartupLife.Simulation
                     var saved = jobs[jobIndex++];
                     Require(saved.CareerId == command.ContentId && saved.StartedIso == trace.DateIso, "employment start");
                     if (!content.Careers.TryGetValue(saved.CareerId, out var career) || career.Revision != saved.DefinitionRevision) return;
-                    var first = trace.Date;
-                    if (trace.Minute > career.StartMinute) first = first.AddDays(1);
-                    while (!career.WorksOn(first)) first = first.AddDays(1);
+                    var first = EmploymentSchedule.FirstShift(career, trace.Date, trace.Minute);
                     trace.Employment = new EmploymentState { InstanceId = saved.InstanceId, EmployerId = saved.EmployerId,
                         CareerId = career.Id, DefinitionRevision = career.Revision, StartedIso = trace.DateIso, FirstShiftIso = first.ToString() };
                     trace.Scheduler = new SchedulerState { LastScene = trace.Scheduler.LastScene };

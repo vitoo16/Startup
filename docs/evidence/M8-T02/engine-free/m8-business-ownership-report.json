@@ -1,0 +1,279 @@
+{
+  "suite": "Startup Life M8 ownership, operating eligibility and Save v2 \u2014 .NET, not Unity",
+  "passed": 68,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "M8 definitions, enums, defensive copies, and catalog compatibility",
+      "status": "passed"
+    },
+    {
+      "name": "M8 command ordinals and historical canonical payloads are frozen",
+      "status": "passed"
+    },
+    {
+      "name": "M8 launch acceptance matrix",
+      "status": "passed"
+    },
+    {
+      "name": "M8 reinvest acceptance matrix",
+      "status": "passed"
+    },
+    {
+      "name": "M8 pricing acceptance matrix",
+      "status": "passed"
+    },
+    {
+      "name": "M8 closure acceptance matrix",
+      "status": "passed"
+    },
+    {
+      "name": "M8 retry, stale, identity conflict, and rejected-byte invariants",
+      "status": "passed"
+    },
+    {
+      "name": "M8 conservation, ledger attribution, entity order, and read model",
+      "status": "passed"
+    },
+    {
+      "name": "M8 save v1/v0 migration and v2 roundtrip matrix",
+      "status": "passed"
+    },
+    {
+      "name": "M8 H1 v1 schema-preserving normalization and first v2 commit",
+      "status": "passed"
+    },
+    {
+      "name": "F1 frozen v1 rejects whitespace and escaped Businesses members",
+      "status": "passed"
+    },
+    {
+      "name": "F1 H1 restore preserves bytes when frozen v1 wire is impossible",
+      "status": "passed"
+    },
+    {
+      "name": "F2 unavailable business content cannot mask known business corruption",
+      "status": "passed"
+    },
+    {
+      "name": "M8 restore rejects employed FullTimeRequired launch despite unrelated missing content",
+      "status": "passed"
+    },
+    {
+      "name": "M8 restore rejects ManagerOperable launch despite unrelated missing content",
+      "status": "passed"
+    },
+    {
+      "name": "M8 valid employed side-hustle remains unsupported when unrelated content is missing",
+      "status": "passed"
+    },
+    {
+      "name": "M8 receipt timing permits FullTimeRequired launch after resignation",
+      "status": "passed"
+    },
+    {
+      "name": "M8 operation-mode corruption recovers valid backup without rewriting files",
+      "status": "passed"
+    },
+    {
+      "name": "F3 intrinsic business history provenance survives unrelated missing content",
+      "status": "passed"
+    },
+    {
+      "name": "M8 restore intrinsically validates business command payloads before content compatibility",
+      "status": "passed"
+    },
+    {
+      "name": "M8 intrinsically corrupt business primary recovers valid backup",
+      "status": "passed"
+    },
+    {
+      "name": "M8 malformed-token frozen v1 reader throws and serializer recovers valid backup",
+      "status": "passed"
+    },
+    {
+      "name": "F4 ordinary commits require physical current schema",
+      "status": "passed"
+    },
+    {
+      "name": "F5 migration source and intermediate stages validate before the next step",
+      "status": "passed"
+    },
+    {
+      "name": "F8 LaunchBusiness retry matrix returns original committed semantics",
+      "status": "passed"
+    },
+    {
+      "name": "F8 ReinvestBusiness retry matrix returns original committed semantics",
+      "status": "passed"
+    },
+    {
+      "name": "F8 SetBusinessPricing retry matrix returns original committed semantics",
+      "status": "passed"
+    },
+    {
+      "name": "F8 CloseBusiness retry matrix returns original committed semantics",
+      "status": "passed"
+    },
+    {
+      "name": "F8 business command IDs preserve hostile ownership rules",
+      "status": "passed"
+    },
+    {
+      "name": "M8 restore rejects corrupt business state before content compatibility",
+      "status": "passed"
+    },
+    {
+      "name": "M8 unavailable business revision is unsupported content",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 immutable windows, copies, canonical sort and adjacency",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 malformed operating windows reject",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 malformed and impossible owner requirements reject",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 catalog rejects windows outside global waking day",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 result statuses and metric invariants",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 unemployed Freelance 240/120 eligible",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 Developer workday evening 240/120 eligible",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 Developer off-day eligible",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 early F\u0026B 08-16 leaves 240",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 late F\u0026B 14-21 leaves 60 and rejects",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 threshold F\u0026B 14-20 leaves exactly 120",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 threshold minus one minute rejects",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 late F\u0026B off-day leaves 240",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 late F\u0026B before first shift leaves 240",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 weekend configured shift subtracts career interval",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 multiple windows add and half-open boundaries exclude overlap",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 omitted business weekday measures zero",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 whole-date calculation ignores clock, study and portfolio",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 modes preserve hard rules and legacy policy",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 content resolution is exact and follows hard mode gates",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 read model is pure with date/revision and stale metadata",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 command-query parity and rejected-byte atomicity",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 launch rejection precedence stays frozen",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 scheduled v2 roundtrip and cold retry",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 historical launch then employment stays valid",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 historical resign then same-day launch stays valid",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 historical pre-first-shift ignores future shift",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 first shift exact start and one minute after preserve parity",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 employed illegal historical launch then resign remains corrupt",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 known scheduled corruption wins over unrelated missing content",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 required career revision absent remains unsupported",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 changed business revision never substitutes new balance",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 unavailable earlier career cannot hide later unemployed corruption",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 unavailable earlier career cannot hide later known-career schedule corruption",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 unavailable earlier career cannot hide later Manager corruption",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 receipt date rather than current weekday decides historical eligibility",
+      "status": "passed"
+    },
+    {
+      "name": "M8-T02 forged first shift cannot make a historical launch eligible",
+      "status": "passed"
+    }
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "suite": "Startup Life Unity runner contract static verification",
+  "passed": 30,
+  "failed": 0,
+  "trackedBuildProfileCandidates": [],
+  "runtimeReady": false,
+  "note": "Static PASS means the runner/test/build contract is internally consistent. It does not prove a licensed runner, Unity test result, mobile build, or device.",
+  "checks": [
+    {
+      "name": "runner contract files exist",
+      "passed": true,
+      "detail": "4 files present"
+    },
+    {
+      "name": "PowerShell syntax: scripts/Test-UnityHeadless.ps1",
+      "passed": true,
+      "detail": "clean"
+    },
+    {
+      "name": "no machine-specific Windows path: scripts/Test-UnityHeadless.ps1",
+      "passed": true,
+      "detail": "runner scripts must resolve tools through PATH/UNITY_CLI_PATH, not a developer machine path"
+    },
+    {
+      "name": "pins Unity 6000.3.25f1: scripts/Test-UnityHeadless.ps1",
+      "passed": true,
+      "detail": "expected explicit project Editor guard"
+    },
+    {
+      "name": "PowerShell syntax: scripts/Invoke-UnityBuild.ps1",
+      "passed": true,
+      "detail": "clean"
+    },
+    {
+      "name": "no machine-specific Windows path: scripts/Invoke-UnityBuild.ps1",
+      "passed": true,
+      "detail": "runner scripts must resolve tools through PATH/UNITY_CLI_PATH, not a developer machine path"
+    },
+    {
+      "name": "pins Unity 6000.3.25f1: scripts/Invoke-UnityBuild.ps1",
+      "passed": true,
+      "detail": "expected explicit project Editor guard"
+    },
+    {
+      "name": "headless tests use official unity test command",
+      "passed": true,
+      "detail": "expected Unity CLI test command"
+    },
+    {
+      "name": "headless tests require both EditMode and PlayMode in All mode",
+      "passed": true,
+      "detail": "All mode must cover EditMode and PlayMode"
+    },
+    {
+      "name": "headless tests retain NUnit and JUnit",
+      "passed": true,
+      "detail": "both report formats must be retained"
+    },
+    {
+      "name": "headless tests distinguish test failure exit code",
+      "passed": true,
+      "detail": "exit 8 must remain an explicit test-failure result"
+    },
+    {
+      "name": "headless tests distinguish infrastructure exit code",
+      "passed": true,
+      "detail": "exit 6 must remain an explicit infrastructure/no-verdict result"
+    },
+    {
+      "name": "build wrapper uses Unity 6 Build Profile",
+      "passed": true,
+      "detail": "mobile build wrapper must not guess a non-desktop target build path"
+    },
+    {
+      "name": "build wrapper requires provenance",
+      "passed": true,
+      "detail": "successful build must retain provenance evidence"
+    },
+    {
+      "name": "build wrapper documents iOS Xcode export boundary",
+      "passed": true,
+      "detail": "iOS Unity export must not be described as signed IPA/TestFlight evidence"
+    },
+    {
+      "name": "Unity runtime workflow is manual only",
+      "passed": true,
+      "detail": "runtime workflow must not auto-queue unavailable self-hosted runners"
+    },
+    {
+      "name": "runtime build defaults off",
+      "passed": true,
+      "detail": "run_build must default false until profiles/modules are provisioned"
+    },
+    {
+      "name": "runner label present: self-hosted",
+      "passed": true,
+      "detail": "expected runner label self-hosted"
+    },
+    {
+      "name": "runner label present: startup-life",
+      "passed": true,
+      "detail": "expected runner label startup-life"
+    },
+    {
+      "name": "runner label present: windows",
+      "passed": true,
+      "detail": "expected runner label windows"
+    },
+    {
+      "name": "runner label present: android",
+      "passed": true,
+      "detail": "expected runner label android"
+    },
+    {
+      "name": "runner label present: macos",
+      "passed": true,
+      "detail": "expected runner label macos"
+    },
+    {
+      "name": "runner label present: ios",
+      "passed": true,
+      "detail": "expected runner label ios"
+    },
+    {
+      "name": "runner label present: unity-6000-3",
+      "passed": true,
+      "detail": "expected runner label unity-6000-3"
+    },
+    {
+      "name": "runtime workflow executes real Unity tests",
+      "passed": true,
+      "detail": "both platform routes must invoke the headless test gate"
+    },
+    {
+      "name": "runtime workflow builds only through wrapper",
+      "passed": true,
+      "detail": "profile build must use the reviewed wrapper"
+    },
+    {
+      "name": "runtime workflow retains evidence on failure",
+      "passed": true,
+      "detail": "artifact step must always run and remain action-SHA pinned"
+    },
+    {
+      "name": "runner contract names iOS Mac blocker",
+      "passed": true,
+      "detail": "current external iOS blocker must remain explicit"
+    },
+    {
+      "name": "runner contract does not claim provisioned state",
+      "passed": true,
+      "detail": "contract must not imply runners exist"
+    },
+    {
+      "name": "runner contract requires Build Profile before build",
+      "passed": true,
+      "detail": "missing mobile profiles must remain an explicit gate"
+    }
+  ]
+}
