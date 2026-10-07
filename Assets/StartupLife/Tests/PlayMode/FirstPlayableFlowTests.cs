@@ -52,16 +52,19 @@ namespace StartupLife.Tests.PlayMode
             Assert.That(appearance.text, Is.EqualTo("Nữ"));
             Assert.That(appearance.text, Does.Not.Contain("♀"));
             Assert.That(appearance.text, Does.Not.Contain("♂"));
+            appearance.ForceMeshUpdate();
 
             GameObject.Find("MaleButton").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
             yield return null;
             Assert.That(appearance.text, Is.EqualTo("Nam"));
             Assert.That(appearance.text, Does.Not.Contain("♀"));
             Assert.That(appearance.text, Does.Not.Contain("♂"));
+            appearance.ForceMeshUpdate();
 
             GameObject.Find("FemaleButton").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
             yield return null;
             Assert.That(appearance.text, Is.EqualTo("Nữ"));
+            appearance.ForceMeshUpdate();
             Assert.That(Object.FindObjectsByType<TMP_Text>(FindObjectsSortMode.None)
                 .All(text => !text.text.Contains("♀") && !text.text.Contains("♂")), Is.True);
             LogAssert.NoUnexpectedReceived();
