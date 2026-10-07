@@ -29,6 +29,39 @@ namespace StartupLife.Core
         Premium = 3
     }
 
+    public sealed class BusinessOperatingWindow
+    {
+        public DayOfWeek DayOfWeek { get; }
+        public int StartMinute { get; }
+        public int EndMinute { get; }
+        public BusinessOperatingWindow(DayOfWeek dayOfWeek, int startMinute, int endMinute)
+        {
+            if (!Enum.IsDefined(typeof(DayOfWeek), dayOfWeek) || startMinute < 0 ||
+                startMinute >= endMinute || endMinute > 1440)
+                throw new ArgumentException("Invalid business operating window.");
+            DayOfWeek = dayOfWeek; StartMinute = startMinute; EndMinute = endMinute;
+        }
+    }
+
+    public sealed class BusinessOperatingRequirements
+    {
+        public IReadOnlyList<BusinessOperatingWindow> OperatingWindows { get; }
+        public int RequiredOwnerMinutes { get; }
+        public BusinessOperatingRequirements(IEnumerable<BusinessOperatingWindow> operatingWindows, int requiredOwnerMinutes)
+        {
+            var windows = operatingWindows?.ToArray() ?? throw new ArgumentNullException(nameof(operatingWindows));
+            if (windows.Length == 0 || windows.Any(x => x == null) || requiredOwnerMinutes <= 0)
+                throw new ArgumentException("Business operating requirements need windows and positive owner minutes.");
+            windows = windows.OrderBy(x => (int)x.DayOfWeek).ThenBy(x => x.StartMinute).ThenBy(x => x.EndMinute).ToArray();
+            for (var i = 1; i < windows.Length; i++)
+                if (windows[i - 1].DayOfWeek == windows[i].DayOfWeek && windows[i].StartMinute < windows[i - 1].EndMinute)
+                    throw new ArgumentException("Business operating windows overlap or repeat.");
+            if (windows.GroupBy(x => x.DayOfWeek).Any(day => day.Sum(x => x.EndMinute - x.StartMinute) < requiredOwnerMinutes))
+                throw new ArgumentException("A declared business weekday cannot meet required owner minutes.");
+            OperatingWindows = Array.AsReadOnly(windows); RequiredOwnerMinutes = requiredOwnerMinutes;
+        }
+    }
+
     public sealed class BusinessDefinition
     {
         public string Id { get; }
@@ -42,6 +75,8 @@ namespace StartupLife.Core
         public PricingPosture DefaultPricingPosture { get; }
         public long MinimumReinvestment { get; }
         public long MaximumReinvestment { get; }
+        // Null explicitly retains the accepted M8-T01 mode-only policy for legacy revisions.
+        public BusinessOperatingRequirements? OperatingRequirements { get; }
 
         public BusinessDefinition(string id, string revision, string nameKey, BusinessType type,
             BusinessOperationMode operationMode, long minimumStartupInvestment, long maximumStartupInvestment,
@@ -64,6 +99,75 @@ namespace StartupLife.Core
             DefaultPricingPosture = defaultPricingPosture;
             MinimumReinvestment = minimumReinvestment; MaximumReinvestment = maximumReinvestment;
         }
+
+        public BusinessDefinition(string id, string revision, string nameKey, BusinessType type,
+            BusinessOperationMode operationMode, long minimumStartupInvestment, long maximumStartupInvestment,
+            IEnumerable<PricingPosture> allowedPricingPostures, PricingPosture defaultPricingPosture,
+            long minimumReinvestment, long maximumReinvestment, BusinessOperatingRequirements operatingRequirements)
+            : this(id, revision, nameKey, type, operationMode, minimumStartupInvestment, maximumStartupInvestment,
+                allowedPricingPostures, defaultPricingPosture, minimumReinvestment, maximumReinvestment)
+        {
+            OperatingRequirements = operatingRequirements ?? throw new ArgumentNullException(nameof(operatingRequirements));
+        }
+    }
+
+    public enum BusinessEligibilityStatus
+    {
+        Eligible = 1,
+        UnsupportedOperationMode = 2,
+        EmploymentIncompatible = 3,
+        InsufficientOwnerTime = 4,
+        BusinessDefinitionUnavailable = 5,
+        BusinessRevisionUnavailable = 6
+    }
+
+    public sealed class BusinessEligibilityResult
+    {
+        public BusinessEligibilityStatus Status { get; }
+        public bool IsEligible => Status == BusinessEligibilityStatus.Eligible;
+        public string ReasonKey => Status switch
+        {
+            BusinessEligibilityStatus.Eligible => "",
+            BusinessEligibilityStatus.UnsupportedOperationMode => "business.manager_unsupported",
+            BusinessEligibilityStatus.EmploymentIncompatible => "business.employment_incompatible",
+            BusinessEligibilityStatus.InsufficientOwnerTime => "business.insufficient_owner_time",
+            BusinessEligibilityStatus.BusinessDefinitionUnavailable => "content.missing",
+            BusinessEligibilityStatus.BusinessRevisionUnavailable => "business.definition_revision",
+            _ => throw new InvalidOperationException("Invalid business eligibility status.")
+        };
+        public int? RequiredOwnerMinutes { get; }
+        public int? AvailableOwnerMinutes { get; }
+        public BusinessEligibilityResult(BusinessEligibilityStatus status, int? requiredOwnerMinutes = null, int? availableOwnerMinutes = null)
+        {
+            if (!Enum.IsDefined(typeof(BusinessEligibilityStatus), status) || requiredOwnerMinutes <= 0 || availableOwnerMinutes < 0 ||
+                (availableOwnerMinutes.HasValue && !requiredOwnerMinutes.HasValue) ||
+                (status == BusinessEligibilityStatus.InsufficientOwnerTime && (!availableOwnerMinutes.HasValue || availableOwnerMinutes >= requiredOwnerMinutes)) ||
+                (status == BusinessEligibilityStatus.Eligible && availableOwnerMinutes.HasValue && availableOwnerMinutes < requiredOwnerMinutes) ||
+                (status != BusinessEligibilityStatus.Eligible && status != BusinessEligibilityStatus.InsufficientOwnerTime && availableOwnerMinutes.HasValue) ||
+                ((status == BusinessEligibilityStatus.BusinessDefinitionUnavailable || status == BusinessEligibilityStatus.BusinessRevisionUnavailable) && requiredOwnerMinutes.HasValue))
+                throw new ArgumentException("Invalid business eligibility result.");
+            Status = status; RequiredOwnerMinutes = requiredOwnerMinutes; AvailableOwnerMinutes = availableOwnerMinutes;
+        }
+    }
+
+    public sealed class BusinessEligibilitySnapshot
+    {
+        public string DefinitionId { get; }
+        public string DefinitionRevision { get; }
+        public SimDate Date { get; }
+        public long StateRevision { get; }
+        public BusinessEligibilityResult Eligibility { get; }
+        public BusinessEligibilitySnapshot(string definitionId, string definitionRevision, SimDate date, long stateRevision,
+            BusinessEligibilityResult eligibility)
+        {
+            DefinitionId = definitionId; DefinitionRevision = definitionRevision; Date = date; StateRevision = stateRevision;
+            Eligibility = eligibility ?? throw new ArgumentNullException(nameof(eligibility));
+        }
+    }
+
+    public interface IBusinessEligibilityReadModel
+    {
+        BusinessEligibilitySnapshot ReadEligibility(string definitionId, string definitionRevision);
     }
 
     public sealed class BusinessState

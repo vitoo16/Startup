@@ -163,6 +163,10 @@ namespace StartupLife.Core
             foreach (var c in Careers.Values)
                 if (c.StartMinute < schedule.WakeMinute || c.EndMinute > schedule.SleepMinute || c.Scenes.Any(x => !Skills.ContainsKey(x.SkillId)) || c.Ranks.Any(x => !Skills.ContainsKey(x.GrantSkillId)))
                     throw new ArgumentException("Missing career skill reference.");
+            foreach (var business in Businesses.Values)
+                if (business.OperatingRequirements != null && business.OperatingRequirements.OperatingWindows.Any(window =>
+                    window.StartMinute < schedule.WakeMinute || window.EndMinute > schedule.SleepMinute))
+                    throw new ArgumentException("Business operating window is outside the waking day.");
             if (Courses.Values.Any(x => !Skills.ContainsKey(x.SkillId))) throw new ArgumentException("Missing course skill reference.");
         }
         private static IReadOnlyDictionary<string, T> Index<T>(IEnumerable<T> values, Func<T, string> id) =>
