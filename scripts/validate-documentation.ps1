@@ -96,7 +96,7 @@ if (Test-Path -LiteralPath $ledgerPath -PathType Leaf) {
     }
 
     $checkedTaskIds = @($taskMatches | Where-Object { $_.Groups['status'].Value -eq 'x' } | ForEach-Object { $_.Groups['id'].Value })
-    $expectedCompletedTaskIds = @('M0-T01', 'M2-T02', 'M3-T02', 'M6-T01', 'M6-T02', 'M7-T01', 'M7-T02')
+    $expectedCompletedTaskIds = @('M0-T01', 'M2-T02', 'M3-T02', 'M6-T01', 'M6-T02', 'M7-T01', 'M7-T02', 'M8-T01')
     $completedTaskDiff = @(Compare-Object -ReferenceObject $expectedCompletedTaskIds -DifferenceObject $checkedTaskIds)
     if ($completedTaskDiff.Count -ne 0) {
         Add-Failure "Completed task set differs from reconciled ledger. Expected: $($expectedCompletedTaskIds -join ', '); actual: $($checkedTaskIds -join ', ')"
