@@ -40,6 +40,33 @@ namespace StartupLife.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator AppearanceSelectionUsesLocalizedLabelsWithoutRawGenderGlyphs()
+        {
+            var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
+            while (!load.isDone) yield return null;
+            yield return LocalizationSettings.InitializationOperation;
+            yield return null;
+
+            var appearance = GameObject.Find("AppearanceValue").GetComponent<TMP_Text>();
+            Assert.That(appearance.text, Is.EqualTo("Nữ"));
+            Assert.That(appearance.text, Does.Not.Contain("♀"));
+            Assert.That(appearance.text, Does.Not.Contain("♂"));
+
+            GameObject.Find("MaleButton").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            yield return null;
+            Assert.That(appearance.text, Is.EqualTo("Nam"));
+            Assert.That(appearance.text, Does.Not.Contain("♀"));
+            Assert.That(appearance.text, Does.Not.Contain("♂"));
+
+            GameObject.Find("FemaleButton").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            yield return null;
+            Assert.That(appearance.text, Is.EqualTo("Nữ"));
+            Assert.That(Object.FindObjectsByType<TMP_Text>(FindObjectsSortMode.None)
+                .All(text => !text.text.Contains("♀") && !text.text.Contains("♂")), Is.True);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
         public IEnumerator CreateWorkStudyAndAdvanceDayThroughViews()
         {
             var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
