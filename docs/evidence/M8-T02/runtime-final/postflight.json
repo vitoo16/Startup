@@ -1,0 +1,18 @@
+{
+  "provenance": "closeout metadata transcribed from final acceptance postflight",
+  "head": "9782b13403b8a721cde7952123576377c1991d3e",
+  "gitStatusShort": "empty",
+  "gitDiffCheckExit": 0,
+  "resetRestoreCleanUsedToManufactureCleanliness": false,
+  "stable": {
+    "notoTmpAsset": true,
+    "liberationTmpFallbackAsset": true,
+    "firstPlayableContentAsset": true,
+    "firstPlayableScene": true
+  },
+  "save": {
+    "version": 2,
+    "newPersistedFields": false,
+    "migration": false
+  }
+}
