@@ -2,9 +2,9 @@
 
 Date: 2026-10-08 (+07:00)
 
-Status: **SOURCE APPROVED; UNITY RUNTIME VERIFIED per original manifest and supplied independent Astra verdict; EVIDENCE-ONLY CLOSEOUT REVIEW AND MERGE PENDING. M9-T01 NOT CLOSED; M9-T02 NOT READY.**
+Status (2026-10-09 UTC+07): **M9-T01 SOURCE PASS; UNITY RUNTIME PASS (independent Astra-reported); PR #35 MERGED WITHOUT RECORDED CLOSEOUT APPROVAL; POST-MERGE CORRECTION C-01/C-02/C-03 AND G-01 PENDING INDEPENDENT ASTRA RE-AUDIT. M9-T01 NOT CLOSED. M9-T02 NOT READY.**
 
-This file preserves the historical implementation-session notes below. The current provenance and remaining release gates are in the final closeout section at the end; historical statements such as “NOT RUN in this session” must not be mistaken for the later Windows runtime acceptance.
+This record retains prior source-implementation and PR #35 closeout notes as **historical snapshots**. The authoritative current chronology, the two different Astra audit decisions, and pending governance gates appear in the **Post-merge correction (C-01/C-02/C-03/G-01)** section at the end. Statements such as “NOT RUN in this session” apply only to the original source session, not the subsequent Windows Unity acceptance.
 
 Starting main: `05b9776ad515ed8a169decdf3f2b1a6fd42aab7d`
 
@@ -51,14 +51,14 @@ Algorithm: canonical ordinal DefinitionId/InstanceId ordering; minute-slot augme
 - Actual Unity Editor `6000.3.25f1 (e1dba0a9aba4)` compile, EditMode and PlayMode: **NOT RUN** in this session. No Unity connection is available here.
 - Visual evidence: **N/A**. No visible UI or art changed.
 
-## Reproducibility gates for later Unity acceptance
+## Original reproducibility gates (historical source session)
 
 - Hydrate and verify both Noto and Liberation Git LFS source fonts before fresh import.
 - Do not set `STARTUP_LIFE_M7_EVIDENCE` when running the canonical `-nographics` suite.
 - Run exact-head Unity fresh import and EditMode/PlayMode only after Astra source approval.
 - Preserve TMP/content asset hash and clean post-run Git state.
 
-## Session closeout
+## Original implementation session closeout (historical)
 
 - Owner: GPT-6 implementing the Astra-approved M9-T01 architecture, with Sol 6.1/Astra review gates still pending.
 - Skills read: repo `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, repo `unity-cli`; pinned `unity-game-director`, `unity-gameplay-systems`, `unity-game-economy`, `unity-mcp-bridge`, `unity-qa-release` source definitions at `tea-x-random/unity-game-skills@dafb97ef00f94e64e42e6260bc6b3af74cc83dad`. Remote skill source read is not a claim that corresponding local CLI tools are installed.
@@ -73,9 +73,9 @@ Algorithm: canonical ordinal DefinitionId/InstanceId ordering; minute-slot augme
 
 `M9-T02 NOT READY — blocked by M9-T01 source and runtime acceptance`
 
-## Proposed final Unity evidence closeout — pending independent closeout PR review
+## Historical PR #35 evidence-only closeout proposal — merged without independent closeout approval
 
-This **evidence-only documentation update does not close M9-T01**. Source acceptance and historical Unity evidence are recorded for external verification. No Unity, source, test runner, saved DTO, content, package, scene or font changes were made in this closeout document.
+**Historical scope of PR #35:** this evidence-only documentation change did not close M9-T01. PR #35 was subsequently merged as `873f7ed4b63a638bd86a1179aee8d41737886349` at `2026-10-08T20:14:39Z`, without a recorded independent closeout approval; Astra later rejected its evidence closeout. The remaining text in this section preserves the PR #35 proposal as submitted, and is superseded for chronology/governance by the corrected section below.
 
 ### Exact-head, merge and CI provenance
 
@@ -110,27 +110,98 @@ The original ZIP and sidecar are committed under the project root `M9-T01-LOCAL-
 
 **Evidence-verification boundary:** This closeout author independently cross-checked the Git LFS pointer OID, sidecar and manifest/checksum *text metadata*, but the connector did **not** hydrate/read the raw ZIP binary or recompute the 13 hashes here. The user-supplied **independent Astra final evidence audit reports** 13/13 byte checks and acceptance; no new verification of those original raw bytes is asserted by this documentation update. A stable, independently retrievable audit verdict report/permalink and exact audit timestamp are not present in the retained repository; Astra closeout review must verify/archive those before approval. Logs/artifacts must undergo credential/token check before any new public rehosting.
 
-### Actual chronology and residual findings
+### Historical PR #35 chronology and findings (superseded by correction)
 
-1. Original M9-T01 source corrections applied to `68a5c30c267e2a79c4f6ed12b37f08a132ef90cd`; Astra source review **APPROVED** (review status supplied in handoff).
-2. Unity fresh import and 9/9 EditMode + 12/12 PlayMode acceptance executed on `68a5c30c267e2a79c4f6ed12b37f08a132ef90cd`, attested by the original manifest. The manifest was generated at **2026-10-08T16:46:32Z (AFTER the implementation PR merge)**. The exact runtime start/finish timestamps are not independently verified from the raw logs here, so **do not assert that runtime execution itself preceded the merge**; archive the raw timestamp evidence during independent closeout review.
-3. PR #33 merged into `main` at **2026-10-08 16:20:13Z**.
-4. Independent Astra **FINAL Unity runtime evidence audit** reported **APPROVED/VERIFIED PASS** *after the merge* (supplied verdict; exact audit time and permanent report location **not independently recorded here**).
-5. This evidence-only closeout PR is proposed **after** the final evidence audit.
-6. Final independent **Astra closeout PR review**, then actual closeout PR merge, then milestone state reconciliation are still pending.
+The following notes were present in the original PR #35 audit record. Their sequencing was incomplete and must **not** be treated as authoritative after the independent closeout rejection. See the corrected UTC chronology and retained independent audit decisions below.
 
-**P-01 HISTORICAL PROCESS DEVIATION:** PR #33 merged *before* independent final Unity evidence audit. This sequence must stay visible; do not re-date it or imply the final evidence audit preceded merge.
-
-| Finding | Residual status and disposition |
+| Historical finding | Disposition retained |
 |---|---|
-| E-01 | **CLOSED** — independent Astra reports original ZIP/raw evidence verified |
-| ENV-01 | **LOW / nonblocking** — licensing and ILPP diagnostic context retained in raw editor log |
-| E-02 | **LOW / nonblocking** — separate import console log not retained; raw editor log is sufficient for recorded contract |
-| E-03 | **LOW / nonblocking** — acceptance execution script retained separately from ZIP, linked above |
-| P-01 | **Historical deviation** — implementation PR merge preceded final evidence audit; documented without rewriting chronology |
-| D-01 | **Pending final closeout review** — prior M9-T01 `SESSION.md` and implementation ledger stale; this PR proposes the correction |
-| New config follow-up | **Not part of M9-T01 tested SHA** — the later `main` URP/Android Build Profile changes require separate validation before claiming those settings accepted |
+| E-01 | **CLOSED**, per independent Astra runtime evidence audit |
+| ENV-01 | **LOW, nonblocking** — licensing/ILPP diagnostic context |
+| E-02 | **LOW, nonblocking** — raw editor import log sufficient despite absent separate console log |
+| E-03 | **LOW, nonblocking** — canonical acceptance script supplied separately |
+| P-01 | **Historical deviation** — PR #33 merged before Unity acceptance and independent evidence audit |
+| D-01 | PR #35 documentation ledger was submitted then merged; corrected governance status follows below |
+| Later Android/URP settings | Not part of M9 tested head; tracked separately in [issue #36](https://github.com/vitoo16/Startup/issues/36) |
 
-**Remaining release gates:** independent Astra evidence-only closeout PR review, raw LFS ZIP/checksum and final audit record confirmation, actual closeout PR merge and subsequent ledger CLOSED synchronization. **No source reimplementation, no Unity re-run solely for documentation, and no M9-T02 implementation.**
+## Post-merge correction — C-01/C-02/C-03/G-01 (2026-10-09 UTC+07)
 
-**Skills/read constraints:** repo `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `startup-life-asset-quality-gate`, `unity-cli`; `AGENTS.md`, implementation plan, CI Unity runner contract, prior M8 evidence conventions and source PR history. This update is documentation-only; no visual art QA or save migration applies.
+This is a **documentation/evidence/governance correction only** in response to a **user-supplied independent Astra final closeout audit**. It does not re-run Unity, authenticate an unrecorded GitHub review, or alter any approved runtime artifact. Earlier source-session prose above is historical, not an alternate current release status.
+
+### C-01 (MEDIUM) — corrected verified chronology
+
+**Authoritative event order:** PR #33 was merged first; then Windows Unity fresh import and both suites ran on its previously approved source SHA. Astra's supplied closeout audit cites the raw log timestamps below. GitHub merge/CI event timestamps were independently checked in this correction session. **Unity timestamps are attributed to Astra's raw-log review and were not re-extracted by Sol.**
+
+| Event | UTC source timestamp | Provenance / qualification |
+|---|---|---|
+| Source corrected and source gate APPROVED | Prior to PR #33 merge; exact audit time not supplied | User-supplied Astra source verdict; approved head `68a5c30c267e2a79c4f6ed12b37f08a132ef90cd` |
+| [PR #33](https://github.com/vitoo16/Startup/pull/33) merged | **2026-10-08 16:20:13 UTC** | Verified GitHub merged_at; merge SHA `a5cb2882041fbe700f2c022da731a813bc661719` |
+| Unity fresh import **started** | **2026-10-08 16:44:46 UTC** | Astra-reported from raw Editor log; not a second Unity run |
+| EditMode **9/9 PASS** | **2026-10-08 16:46:03–16:46:10 UTC** | Astra-reported raw NUnit/JUnit/runner chronology |
+| PlayMode **12/12 PASS** | **2026-10-08 16:46:14–16:46:29 UTC** | Astra-reported raw NUnit/JUnit/runner chronology |
+| Evidence manifest generated | **2026-10-08 16:46:32 UTC** | Original `manifest.json`: `2026-10-08T16:46:32.3778074Z` |
+| Independent **Unity runtime evidence audit** | After runtime verification, **exact time not supplied** | User-supplied Astra `M9-T01 UNITY RUNTIME ACCEPTANCE VERIFIED`; ordering relative to PR #34 merge not independently established |
+| [PR #34](https://github.com/vitoo16/Startup/pull/34) cleanup merged | **2026-10-08 19:48:11 UTC** | Verified GitHub merged_at; `8237abfc060c212d4a348e43a9e66fab7f3363ab` |
+| [PR #35](https://github.com/vitoo16/Startup/pull/35) evidence closeout merged | **2026-10-08 20:14:39 UTC** | Verified GitHub merged_at; `873f7ed4b63a638bd86a1179aee8d41737886349` |
+| Independent **final evidence closeout audit** | **2026-10-09 (UTC+07)**; clock time not supplied | User-supplied Astra verdict `CLOSEOUT REJECTED — CORRECTION REQUIRED` |
+| Post-merge Sol correction PR | After closeout rejection; exact PR SHA and final CI belong to the correction PR | This document change is proposed for Astra re-audit; do not preemptively record approval or merge |
+
+**P-01 (historical, not erased):** implementation PR #33 merged at 16:20:13 UTC **before the Unity fresh import, Unity test completion, and independent final runtime evidence audit**. The earlier chronology in PR #35 was incorrect to present execution before merge.
+
+**Additional sequencing deviation:** PR #35 merged with **zero GitHub APPROVED reviews recorded**, before any `CLOSEOUT APPROVED` verdict. The subsequent independent Astra evidence closeout decision was **REJECTED — CORRECTION REQUIRED**. Merging PR #35 neither supplies the missing approval nor automatically closes M9-T01.
+
+### C-02 (MEDIUM) — retained independent Astra audit record A: Unity runtime evidence
+
+- **Auditor:** Astra; **independent outcome supplied by user**, not a GitHub PR review or a new Sol verification.
+- **Audit date/time:** not independently supplied; **do not invent it**. Final source-reviewed/Unity-tested SHA: [`68a5c30c267e2a79c4f6ed12b37f08a132ef90cd`](https://github.com/vitoo16/Startup/commit/68a5c30c267e2a79c4f6ed12b37f08a132ef90cd).
+- **Recorded verdict:** `M9-T01 UNITY RUNTIME ACCEPTANCE VERIFIED`.
+- **Editor:** Unity `6000.3.25f1 (e1dba0a9aba4)` with clean isolated import. **0 C# compiler warnings, 0 C# compiler errors, 0 asset import failures**. Do not infer every other Unity log diagnostic was absent.
+- **Unity results:** EditMode **9/9 PASS**; PlayMode **12/12 PASS**; combined **21/21**; failed/skipped/inconclusive **0/0/0**. Canonical headless runner exit **0**, font hydration and critical-source hash preservation recorded in manifest.
+- **Independent audit statement:** original **13/13 internal evidence SHA-256 checks passed**, per user-supplied Astra report. **Sol did not download/re-hash the raw LFS ZIP or 13 files in this correction session.**
+- **Original ZIP (Git LFS):** [`M9-T01-unity-evidence.zip`](../../../M9-T01-LOCAL-HANDOFF/M9-T01-unity-evidence.zip), **333154 bytes**, full SHA-256 **`80a30d40c2da099f65baec3f217ffa7dd9c0a89045c44d70247fda059f393fe9`**, with matching [SHA-256 sidecar](../../../M9-T01-LOCAL-HANDOFF/M9-T01-unity-evidence.zip.sha256).
+- **Manifest, per-file hash list and runner:** [`manifest.json`](../../../M9-T01-LOCAL-HANDOFF/manifest.json), [`evidence-SHA256SUMS.txt`](../../../M9-T01-LOCAL-HANDOFF/evidence-SHA256SUMS.txt), [`Run-M9-T01-UnityAcceptance.ps1`](../../../M9-T01-LOCAL-HANDOFF/Run-M9-T01-UnityAcceptance.ps1); original internal Unity Editor/runner raw logs and NUnit/JUnit XML are archived *within the Git LFS ZIP*. Canonical project runner: `scripts/Test-UnityHeadless.ps1`.
+- **Accepted residual findings:** **E-01 CLOSED**; **ENV-01 LOW, nonblocking** (license/ILPP context); **E-02 LOW** (raw editor log sufficient); **E-03 LOW** (script retained separately).
+- **Retention/provenance limit:** No standalone authenticated Astra audit message, permanent source-report URL, signature, or exact runtime-audit timestamp was present in GitHub. This section is a **faithful record of the independently reported decision** with immutable source pointers, not a fabricated authenticated GitHub approval. Any future auditor should hydrate the LFS ZIP, compare full SHA-256 with sidecar and 13-entry internal hash listing, inspect raw logs/XML and provenance, and independently verify redaction before external redistribution.
+- **Boundary:** Engine-free [CI #143](https://github.com/vitoo16/Startup/actions/runs/37803360563), **22 M9-T01 tests**, is separate from Unity **21** runtime tests. Later Android/URP changes in `main` were **not** Unity-tested by this evidence.
+
+### C-02 (MEDIUM) — retained independent Astra audit record B: final evidence closeout
+
+- **Auditor:** Astra, independent **user-supplied final closeout audit**; audit date **2026-10-09 (UTC+07)**, exact time/signature **not supplied**.
+- **Exact decision:** `CLOSEOUT REJECTED — CORRECTION REQUIRED`. This **does not reverse** the separately approved source or Unity runtime gates.
+- **Scope audited:** Original PR #33 head and merge, runtime manifest/ZIP references, cleanup PR #34, evidence closeout PR #35 and implementation ledger. Source evidence and GitHub links appear above; report is represented here as **user-supplied audit findings**, not a native GitHub APPROVED review.
+- **C-01 MEDIUM:** Incorrect ordering of implementation merge vs actual Unity fresh import / EditMode / PlayMode; corrected in timestamp table.
+- **C-02 MEDIUM:** Missing retained independent audit record; both source-reported decisions recorded distinctly in this version-controlled document.
+- **C-03 MEDIUM:** Verify integration **after** PR #35 merge rather than rely on pre-merge CI #148; Git provenance and run #150 below supply the missing integration checks.
+- **G-01 LOW:** Authoritative implementation ledger still said PR #35 review/merge pending; updated in the correction PR.
+- **P-01 historical:** PR #33 merged before Unity acceptance and final independent audit; PR #35 additionally merged without recorded independent closeout approval.
+- **Disposition:** **C-01 / C-02 / C-03 = CORRECTED — PENDING ASTRA RE-AUDIT; G-01 ledger synchronization proposed; overall closeout remains NOT APPROVED**. No retroactive review, fabricated timestamp or release closure is implied.
+
+### C-03 (MEDIUM) — verified integrated `main` after PR #35
+
+- Actual merged `main` at correction baseline: [`873f7ed4b63a638bd86a1179aee8d41737886349`](https://github.com/vitoo16/Startup/commit/873f7ed4b63a638bd86a1179aee8d41737886349); PR #35 merge has two parents, `8237abfc060c212d4a348e43a9e66fab7f3363ab` (merged PR #34) and `56e390a8ddf0ce42db6a13e4e3e7b7668208cfe9` (PR #35 head). The cleanup merge is therefore an **ancestor of the closeout merge**.
+- Verified GitHub compare `8237abfc060c212d4a348e43a9e66fab7f3363ab...873f7ed4b63a638bd86a1179aee8d41737886349`: **only** `docs/IMPLEMENTATION_PLAN_MVP.md` and `docs/evidence/M9-T01/SESSION.md` changed.
+- Verified recursive Git tree **contains no `.utmp/` paths**; retained `.gitignore` rule `.utmp/` and static gate `scripts/Test-UnityFoundationStatic.ps1` checks both generated cache and orphan Unity metadata. PR #34 hygiene is not lost in PR #35 integration.
+- [Engine-free CI #150 / run 37837977601](https://github.com/vitoo16/Startup/actions/runs/37837977601): **completed SUCCESS** on exact merge SHA `873f7ed4b63a638bd86a1179aee8d41737886349`. This is **integrated-main engine-free evidence**, not Unity runtime coverage.
+- [Push-on-main CodeQL run #146 / 37837976878](https://github.com/vitoo16/Startup/actions/runs/37837976878): **SUCCESS** on the same merge SHA; included successful actions and C# analyses. The previous PR #34 push run [#145](https://github.com/vitoo16/Startup/actions/runs/37834675848) was **FAILURE** in C/C++ CodeQL, but the later #35 merge push run succeeded; do not conceal or confuse the two SHA scopes.
+- GitHub PR #35 review API returned **no approved reviews** (`[]`). Repository `main` branch was observed `protected: false` at correction baseline; lack of server-side branch protection does **not** waive project-mandated Astra closeout review.
+- **C-03: CORRECTED — PENDING ASTRA RE-AUDIT**, **not independently CLOSED**. Any new correction PR requires exact-head applicable CI on its own SHA after this documentation change.
+
+### G-01 (LOW) — authoritative ledger and remaining transitions
+
+- M9-T01 source gate **PASS**; engine-free CI **PASS**; independent Astra-reported Unity runtime evidence gate **PASS**.
+- PR #33 **MERGED** and PR #34 **MERGED**; PR #35 **MERGED WITHOUT RECORDED INDEPENDENT CLOSEOUT APPROVAL**. The closeout audit verdict remains **REJECTED — CORRECTION REQUIRED**.
+- New post-merge documentation correction: **prepared for Astra re-audit**, not yet merged or approved. The implementation-plan M9-T01 checkbox remains `[ ]`, M9-T02 stays `NOT READY`.
+- **Required transition:** (1) Sol correction PR created; (2) exact-head applicable CI SUCCESS on that PR; (3) Astra independently re-audits C-01/C-02/C-03 and confirms G-01; (4) Astra issues `CLOSEOUT APPROVED — READY TO MERGE`; (5) authorized merge of correction PR; (6) verify merged docs and applicable CI; (7) perform separate final **status-only ledger reconciliation** if required and mark M9-T01 CLOSED only under verified governance; (8) independently verify CLOSED before initiating M9-T02 architecture review.
+- **Not in scope:** allocator/gameplay code, Unity reruns, source/tests/packages/settings/assets/fonts, Android/URP acceptance [issue #36](https://github.com/vitoo16/Startup/issues/36), M9-T02 finance/implementation. The original ZIP, manifest, NUnit/JUnit reports and checksums are immutable and unchanged.
+
+### Correction session record
+
+- **Owner:** Sol / GPT-6, evidence-only release documentation.
+- **Skills used:** repo `startup-life-session-orchestrator`; `startup-life-gameplay-guardian` (boundary consulted; no gameplay change); `unity-cli` (contract inspected; not executed); GitHub connector governance/repository tooling.
+- **Acceptance criteria:** correct C-01 and C-02 without inventing provenance, verify integrated C-03, reconcile G-01 without closing milestone, restrict changed files to this note and implementation ledger, require CI and independent Astra re-audit.
+- **Tests:** no Unity run in this correction. GitHub PR #35 merge provenance, post-merge diff, merged CI #150, CodeQL run #146, retained cleanup and link existence verified; exact-head CI for correction PR is separately required.
+- **Visual evidence:** N/A (no scene/UI/asset changes).
+- **Save impact:** None; SaveVersion 2 unchanged.
+- **Known limitations:** Astra original full report/signed permalink not available; raw ZIP not downloaded or byte-rehashed by Sol; independent correction approval pending; later Android/URP config not covered by M9 runtime acceptance.
+- **Files changed in correction:** `docs/evidence/M9-T01/SESSION.md`; `docs/IMPLEMENTATION_PLAN_MVP.md` only.
+- **Merge:** **PROHIBITED until Astra issues CLOSEOUT APPROVED — READY TO MERGE**.
