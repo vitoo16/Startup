@@ -10,7 +10,8 @@ The first delivery gate is a small playable Developer workday with evening study
 
 ### ACTIVE_STATUS
 
-- **Current phase:** M8-T02 is **CLOSED — source, correction, and final LFS-complete Unity runtime acceptance verified**. This evidence-only closeout is awaiting final evidence review/merge. M9-T01 becomes ready only after this closeout merges. See [M8-T02 closeout](evidence/M8-T02/SESSION.md).
+- **Current phase:** M9-T01 source gate **PASS** and exact-head Unity runtime **PASS**; final independent Astra runtime evidence audit **APPROVED per supplied verdict**. Implementation [PR #33](https://github.com/vitoo16/Startup/pull/33) merged with exact patch/tree equivalence. **M9-T01 is NOT CLOSED**: evidence-only closeout PR review and actual merge remain **PENDING**. **M9-T02 NOT READY**. See [M9-T01 proposed evidence closeout](evidence/M9-T01/SESSION.md).
+- **M8-T02:** **CLOSED**, final evidence closeout merged in [PR #32](https://github.com/vitoo16/Startup/pull/32). See [M8-T02 closeout](evidence/M8-T02/SESSION.md).
 - **M8-T01:** **CLOSED — Unity runtime acceptance and tracked-asset determinism verified**. See [font determinism closeout](evidence/M8-T01/FONT_DETERMINISM_2026-10-07.md).
 - **iOS:** **DEFERRED — NOT RUN — owned by M18-T02**. Missing Mac/Xcode/iPhone infrastructure is not represented as PASS.
 - **Physical Android:** **NOT RUN — owned by M18-T01**. Android emulator evidence from M7-T02 does not satisfy the physical-device gate.
@@ -530,6 +531,8 @@ Unity documents that local iOS application builds require Xcode on macOS; Window
   **Implementation/systems:** Reserve required full-time blocks; share eligible side-business time; redistribute unused shares; scale output capacity by allocated minutes.  
   **Acceptance/tests:** One through four businesses, study overlap, employment shifts, closures, capped demand, and reordered collections produce conserved time and identical results.  
   **Visual:** None. **Save:** Allocation/activity fields with migration where persisted. **Evidence:** Time conservation and order-independence tests.
+
+  **Gate summary (evidence-only review pending):** Source `68a5c30c267e2a79c4f6ed12b37f08a132ef90cd` **APPROVED**; Engine-free CI [#143](https://github.com/vitoo16/Startup/actions/runs/37803360563) **SUCCESS** (22 owner-time tests); Unity 6000.3.25f1 fresh import **PASS**, EditMode **9/9**, PlayMode **12/12**, runner exit **0** per original manifest and independent Astra audit verdict. [Implementation PR #33](https://github.com/vitoo16/Startup/pull/33) merged at 2026-10-08T16:20:13Z as `a5cb2882041fbe700f2c022da731a813bc661719`, zero tree diff. Final evidence audit came **after** original implementation merge (historical deviation). Evidence-only closeout PR Astra review **PENDING**; closeout PR merge **PENDING**; final M9-T01 closure **PENDING**, checkbox intentionally unchecked. Original ZIP and checksums retained in Git LFS; [provenance and limitations](evidence/M9-T01/SESSION.md). Later URP/Android project-setting changes on main are not covered by the historical M9 Unity test gate.
 
 - [ ] **M9-T02 — Customer segments and daily financial settlement**  
   **Owner:** Sol. **Skills:** `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `unity-game-director`, `unity-gameplay-systems`, `unity-mcp-bridge`, `unity-qa-release`, `unity-game-economy`. **Dependencies:** M9-T01.  
