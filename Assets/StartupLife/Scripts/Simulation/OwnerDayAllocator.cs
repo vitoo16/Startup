@@ -23,6 +23,9 @@ namespace StartupLife.Simulation
         {
             if (state == null) throw new ArgumentNullException(nameof(state));
             if (content == null) throw new ArgumentNullException(nameof(content));
+            if (!string.Equals(state.ContentVersion, content.Version, StringComparison.Ordinal))
+                return Unsupported(state, content,
+                    Math.Min(content.Schedule.SleepMinute, Math.Max(content.Schedule.WakeMinute, state.Minute)));
             var wake = content.Schedule.WakeMinute;
             var sleep = content.Schedule.SleepMinute;
             var cutoff = Math.Min(sleep, Math.Max(wake, state.Minute));
