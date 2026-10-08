@@ -14,7 +14,7 @@
 ## Original v2 historical source (frozen)
 - Original ContentVersion: `first-playable.v1`, authored v2 businesses `freelance-service` and `coffee-kiosk`, definition revision `v1`.
 - Eight original Git blob-identical sources copied into `docs/evidence/M9-T02/frozen-v2-source/` in commit `77bd4c36fdff5ee54c27f6135c6668c65f18968d`.
-- Source blob SHA-1 pins are enforced and source SHA-256 calculated by `scripts/Test-M9T02FrozenV2.ps1`. The integrity archive is not yet the executable historical v2 evaluator/runtime resolver required in S6.
+- Source blob SHA-1 AND fixed source SHA-256 pins are enforced by `scripts/Test-M9T02FrozenV2.ps1`; see `FROZEN_V2_SOURCE_MANIFEST.md`. The integrity archive is not yet the executable historical v2 evaluator/runtime resolver required in S6.
 - The original Unity asset and its binary/asset fields were not edited by S1–S3; no source schema change yet.
 
 ## Source work completed, bounded by actual gates
