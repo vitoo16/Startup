@@ -40,8 +40,23 @@ internal static partial class Program
     private static ContentCatalog PlanCatalog(params BusinessDefinition[] definitions) =>
         EligibilityCatalog(definitions,Array.Empty<CareerDefinition>());
 
-    private static GameState PlanState(ContentCatalog catalog, int minute = 480) =>
-        new GameState { ContentVersion=catalog.Version,DateIso=Wednesday.ToString(),Minute=minute };
+    // Test fixtures carry an explicit receipt cursor; the planner must never infer past time.
+    private static GameState PlanState(ContentCatalog catalog, int minute = 480)
+    {
+        var state = new GameState { ContentVersion=catalog.Version,DateIso=Wednesday.ToString(),Minute=minute };
+        if (minute > 0)
+        {
+            state.History.Add("character.created:"+Wednesday);
+            state.Receipts.Add(new CommandReceipt {CommandId="fixture-create",
+                Payload=new GameCommand(CommandKind.CreateCharacter,"fresh",18,"Owner","base.female").CanonicalPayload,
+                OperationId="run/op/1",Revision=1,MinutesConsumed=0});
+            state.Receipts.Add(new CommandReceipt {CommandId="fixture-advance",
+                Payload=new GameCommand(CommandKind.AdvanceBoundary).CanonicalPayload,
+                OperationId="run/op/2",Revision=2,MinutesConsumed=minute});
+            state.Revision=2;
+        }
+        return state;
+    }
 
     private static void OwnerTimeContracts()
     {
@@ -170,6 +185,8 @@ internal static partial class Program
         var b=PlanBusiness("test.plan.a",BusinessType.FreelanceService,1080,1320);
         var c=PlanCatalog(b);var s=PlanState(c,1260);
         s.Businesses.Add(PlanInstance(b,"run/business/1"));
+        s.History.Clear();
+        s.Receipts.Clear();
         s.History.Add("character.created:"+Wednesday);
         var commands=new[]{new GameCommand(CommandKind.CreateCharacter,"fresh",18,"Owner","base.female"),
             new GameCommand(CommandKind.AdvanceBoundary),new GameCommand(CommandKind.Study,amount:180)};
