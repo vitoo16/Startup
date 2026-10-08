@@ -1,0 +1,277 @@
+{
+  "schema": "startup-life.m9-t01.unity-acceptance.v1",
+  "generatedUtc": "2026-10-08T16:46:32.3778074Z",
+  "approvedSha": "68a5c30c267e2a79c4f6ed12b37f08a132ef90cd",
+  "repository": "vitoo16/Startup",
+  "pr": 33,
+  "approvedEngineFreeCi": {
+    "workflow": "Engine-free CI",
+    "run": 143,
+    "runId": 37803360563,
+    "conclusion": "success",
+    "evidenceType": "source-only"
+  },
+  "sourceAudit": "APPROVED (supplied handoff; not a Unity runtime claim)",
+  "environment": {
+    "platform": "Microsoft Windows NT 10.0.26200.0",
+    "powershell": "7.6.6",
+    "user": "viett",
+    "host": "DESKTOP-O6PKTLQ",
+    "originalRepository": "C:\\Users\\viett\\Startup.worktrees\\m9-t01-approved-head",
+    "externalEvidenceRoot": "C:\\Users\\viett\\m9-ev",
+    "isolatedWorktree": "C:\\Users\\viett\\m9-ev\\isolated-worktree",
+    "gitLfs": "git-lfs/3.7.1 (GitHub; windows amd64; go 1.25.1; git b84b3384)",
+    "unityCliVersion": "1.0.0-beta.12",
+    "unityCliExecutable": "C:\\Users\\viett\\AppData\\Local\\Unity\\bin\\unity.exe",
+    "unityEditorExecutable": "C:\\Program Files\\Unity\\Hub\\Editor\\6000.3.25f1\\Editor\\Unity.exe",
+    "licenseActive": true,
+    "editorVersionProbeExit": 0,
+    "reportedEditorVersion": "6000.3.25f1",
+    "m7EvidenceOriginallySet": false,
+    "m7EvidenceDuringTests": "UNSET"
+  },
+  "preflight": {
+    "originalStatusBefore": [],
+    "origin": "https://github.com/vitoo16/Startup.git",
+    "head": "68a5c30c267e2a79c4f6ed12b37f08a132ef90cd",
+    "branch": "(detached HEAD)",
+    "projectVersion": "6000.3.25f1 (e1dba0a9aba4)",
+    "worktreeClean": true,
+    "isolatedHead": "68a5c30c267e2a79c4f6ed12b37f08a132ef90cd",
+    "gitLfsPullExit": 0,
+    "stageStatusAfterHydration": []
+  },
+  "fonts": [
+    {
+      "path": "Assets/StartupLife/UI/Fonts/NotoSans-Regular.ttf",
+      "size": 569208,
+      "lfsOid": "b85c38ecea8a7cfb39c24e395a4007474fa5a4fc864f6ee33309eb4948d232d5",
+      "actualSha256": "b85c38ecea8a7cfb39c24e395a4007474fa5a4fc864f6ee33309eb4948d232d5",
+      "verified": true
+    },
+    {
+      "path": "Assets/TextMesh Pro/Fonts/LiberationSans.ttf",
+      "size": 350200,
+      "lfsOid": "e5b0af421ea2bfbc1ac8d251d647268087ae82786234c57f757d1f0b90fa8b49",
+      "actualSha256": "e5b0af421ea2bfbc1ac8d251d647268087ae82786234c57f757d1f0b90fa8b49",
+      "verified": true
+    }
+  ],
+  "freshImport": {
+    "executed": true,
+    "executable": "C:\\Program Files\\Unity\\Hub\\Editor\\6000.3.25f1\\Editor\\Unity.exe",
+    "arguments": [
+      "-batchmode",
+      "-nographics",
+      "-quit",
+      "-projectPath",
+      "C:\\Users\\viett\\m9-ev\\isolated-worktree",
+      "-logFile",
+      "C:\\Users\\viett\\m9-ev\\evidence\\unity-fresh-import-editor.log"
+    ],
+    "libraryAbsentBefore": true,
+    "exitCode": 0,
+    "editorLog": "unity-fresh-import-editor.log",
+    "consoleLog": "unity-fresh-import-console.log",
+    "compileWarnings": 0,
+    "compileErrors": 0,
+    "importFailures": 0,
+    "otherWarningLines": [
+      "Start importing Packages/com.unity.2d.animation/Editor/Assets/EditorIcons/Light/Warning@2x.png using Guid(3233afe4c448d4eb198cfb1ca54feb3b) (TextureImporter) -> (artifact id: '1a37003b83c5eea573119a6f2ce6f384') in 0.0023143 seconds",
+      "Start importing Packages/com.unity.timeline/Editor/StyleSheets/Images/Icons/Timeline-Marker-Warning-Overlay.png using Guid(945f4ecec6df62244b9ebcc363833642) (TextureImporter) -> (artifact id: '4c91d7aa6ab860b7d59a1d0007f650d5') in 0.0044211 seconds",
+      "Start importing Packages/com.unity.2d.animation/Editor/Assets/EditorIcons/Light/Warning.png using Guid(ecff197e49b7c4a8c8431746d97f9b2d) (TextureImporter) -> (artifact id: '90c3c1d6846285d0a4701460a2e85b1f') in 0.0030627 seconds"
+    ],
+    "otherImportErrorLines": [],
+    "success": true
+  },
+  "runner": {
+    "executed": true,
+    "executable": "C:\\Users\\viett\\.dotnet\\tools\\pwsh.exe",
+    "arguments": [
+      "-NoProfile",
+      "-NonInteractive",
+      "-File",
+      "C:\\Users\\viett\\m9-ev\\isolated-worktree\\scripts\\Test-UnityHeadless.ps1",
+      "-Mode",
+      "All",
+      "-OutputDirectory",
+      "C:\\Users\\viett\\m9-ev\\evidence\\unity-tests",
+      "-UnityCliPath",
+      "C:\\Users\\viett\\AppData\\Local\\Unity\\bin\\unity.exe",
+      "-TimeoutSeconds",
+      "900"
+    ],
+    "canonicalFile": "scripts/Test-UnityHeadless.ps1",
+    "outputDirectory": "C:\\Users\\viett\\m9-ev\\evidence\\unity-tests",
+    "exitCode": 0
+  },
+  "tests": [
+    {
+      "mode": "EditMode",
+      "exitCode": 0,
+      "nunitCounts": {
+        "total": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0,
+        "inconclusive": 0
+      },
+      "junitCounts": {
+        "total": 9,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failedSuites": 0,
+      "testIdentities": [
+        "StartupLife.Tests.EditMode.ContentCatalogTests.FirstPlayableTemplateBuildsThroughContentAssembly",
+        "StartupLife.Tests.EditMode.ContentCatalogTests.InvalidAuthoringDataFailsBeforeRuntimeCatalogPublication",
+        "StartupLife.Tests.EditMode.ContentCatalogTests.ScriptableObjectWrapperBuildsDetachedCatalog",
+        "StartupLife.Tests.EditMode.ContentCatalogTests.SerializedFirstPlayableAssetContainsScheduledBusinesses",
+        "StartupLife.Tests.EditMode.FirstPlayableShellTests.GeneratedContentAssetImportsAndBuildsTheFirstPlayableCatalog",
+        "StartupLife.Tests.EditMode.FirstPlayableShellTests.GeneratedSceneReopensWithSerializedContentAndControllerBindings",
+        "StartupLife.Tests.EditMode.FoundationTests.DeveloperQuotasAndOrderingRemainDeterministicInUnity",
+        "StartupLife.Tests.EditMode.FoundationTests.LeapDatesAndCheckedMoneyUseEngineIndependentContracts",
+        "StartupLife.Tests.EditMode.FoundationTests.SafeAreaReappliesAfterResolutionChangeWithoutAccumulatingOffsets"
+      ],
+      "nunit": "unity-tests/editmode-results.xml",
+      "junit": "unity-tests/editmode-results.junit.xml",
+      "unityLog": "unity-tests/editmode-unity-cli.log"
+    },
+    {
+      "mode": "PlayMode",
+      "exitCode": 0,
+      "nunitCounts": {
+        "total": 12,
+        "passed": 12,
+        "failed": 0,
+        "skipped": 0,
+        "inconclusive": 0
+      },
+      "junitCounts": {
+        "total": 12,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failedSuites": 0,
+      "testIdentities": [
+        "StartupLife.Tests.PlayMode.FirstPlayableFlowTests.AppearanceSelectionUsesLocalizedLabelsWithoutRawGenderGlyphs",
+        "StartupLife.Tests.PlayMode.FirstPlayableFlowTests.CreateWorkStudyAndAdvanceDayThroughViews",
+        "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AcknowledgedWorkCueDoesNotReplayAfterRestart",
+        "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.BothInvalidSavesFailWithoutStartingNewRun",
+        "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.CorruptPrimaryRecoversBackupAndAllowsNextWrite",
+        "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.FreshLaunchWithoutSaveShowsCharacterCreation",
+        "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.MidCourseRestartRestoresExactProgressAndCompletesOnce",
+        "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.NextDayRestartDoesNotRecommitBoundary",
+        "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards",
+        "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.RealElapsedPauseDoesNotAdvanceSimulation",
+        "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.UnreadablePrimaryFailsClosedWithoutUsingBackup",
+        "StartupLife.Tests.PlayMode.MobileBaselineTests.MobileBaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage"
+      ],
+      "nunit": "unity-tests/playmode-results.xml",
+      "junit": "unity-tests/playmode-results.junit.xml",
+      "unityLog": "unity-tests/playmode-unity-cli.log"
+    }
+  ],
+  "sourceOnlyRegressions": [
+    "Owner-time: 1-4 businesses, Study(180), 241-minute 81/80/80 remainder, 30/120 cap redistribution, career revision fail-closed, permutation and cold restore are covered by engine-free CI #143. Unity execution of these specific cases is NOT asserted without matching Unity test identities."
+  ],
+  "integrity": {
+    "criticalHashesBefore": {
+      "Assets/StartupLife/Scripts/Core/SaveSchema.cs": "dffdc2a97cb4703a6d51e605bd0274d09684846a86a115b41b5abdce0722df5c",
+      "Assets/StartupLife/Scripts/Core/GameState.cs": "6fa766346d0ba41ce96439df657a3cf8e8338b4f602c451f9a03c36a09cd56d3",
+      "Assets/StartupLife/Scripts/Core/OwnerTime.cs": "7e35c514528212a89ebdb41502f670899b1caaf1ab82721f224f0d41b449190b",
+      "Assets/StartupLife/Scripts/Simulation/CommittedTimeTrace.cs": "fec2d11ff6fe235793bfb962855b44c11dca2680905ac1f56f5ab6cb4be70654",
+      "Assets/StartupLife/Scripts/Simulation/OwnerDayAllocator.cs": "7f25c71d1d4407c3e909ecc032df7791810b4a7005d533413faffc49885e85cd",
+      "Assets/StartupLife/Scripts/Application/GameSession.cs": "66110c558c1a6265c4b4f124454660b32e65ef4439e8e9ee43243558584a7d2e",
+      "Assets/StartupLife/UI/Fonts/NotoSansVietnamese.asset": "27ec2cdd9f5d3ded216e384268930025031d4ed986f5d90cb2ee38eef7dca5d1",
+      "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset": "f53586850a70c4f308e7e71b99b63881a49f38de4bd40f4edb7fe7ae6ecf8a52",
+      "ProjectSettings/ProjectVersion.txt": "56009bd4624cda7117405011dd01ecda09583f50226d7e2fa69356a60eeb6d3d",
+      "Packages/manifest.json": "d234bf01b5ea7c76c307e6ea7dfd0d0c6236a0cdb23652c5e6b28e59ae19f650",
+      "Packages/packages-lock.json": "f3a9ae712c16a5ac6c46b7960bc47e42eda8cbadb00c83d024599c6774454f8e"
+    },
+    "isolatedStatusAfter": [],
+    "criticalHashesAfter": {
+      "Assets/StartupLife/Scripts/Core/SaveSchema.cs": "dffdc2a97cb4703a6d51e605bd0274d09684846a86a115b41b5abdce0722df5c",
+      "Assets/StartupLife/Scripts/Core/GameState.cs": "6fa766346d0ba41ce96439df657a3cf8e8338b4f602c451f9a03c36a09cd56d3",
+      "Assets/StartupLife/Scripts/Core/OwnerTime.cs": "7e35c514528212a89ebdb41502f670899b1caaf1ab82721f224f0d41b449190b",
+      "Assets/StartupLife/Scripts/Simulation/CommittedTimeTrace.cs": "fec2d11ff6fe235793bfb962855b44c11dca2680905ac1f56f5ab6cb4be70654",
+      "Assets/StartupLife/Scripts/Simulation/OwnerDayAllocator.cs": "7f25c71d1d4407c3e909ecc032df7791810b4a7005d533413faffc49885e85cd",
+      "Assets/StartupLife/Scripts/Application/GameSession.cs": "66110c558c1a6265c4b4f124454660b32e65ef4439e8e9ee43243558584a7d2e",
+      "Assets/StartupLife/UI/Fonts/NotoSansVietnamese.asset": "27ec2cdd9f5d3ded216e384268930025031d4ed986f5d90cb2ee38eef7dca5d1",
+      "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset": "f53586850a70c4f308e7e71b99b63881a49f38de4bd40f4edb7fe7ae6ecf8a52",
+      "ProjectSettings/ProjectVersion.txt": "56009bd4624cda7117405011dd01ecda09583f50226d7e2fa69356a60eeb6d3d",
+      "Packages/manifest.json": "d234bf01b5ea7c76c307e6ea7dfd0d0c6236a0cdb23652c5e6b28e59ae19f650",
+      "Packages/packages-lock.json": "f3a9ae712c16a5ac6c46b7960bc47e42eda8cbadb00c83d024599c6774454f8e"
+    },
+    "originalStatusAfter": [],
+    "diffCheckExit": 0,
+    "testedHead": "68a5c30c267e2a79c4f6ed12b37f08a132ef90cd",
+    "success": true,
+    "originalStatusAtFinalize": [],
+    "isolatedStatusAtFinalize": []
+  },
+  "findings": [],
+  "evidenceFiles": [
+    {
+      "path": "canonical-runner-console.log",
+      "sha256": "6a43f1088754cdfae31b3b1752b093f40bdcc25e9ab52b02ce7781907a48b923",
+      "size": 98466
+    },
+    {
+      "path": "git-lfs-pull.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "unity-editor-version.log",
+      "sha256": "852d22783cecc105e32875062aa52e8236a1806d06381b04dc49ada7b800d4f6",
+      "size": 13
+    },
+    {
+      "path": "unity-fresh-import-editor.log",
+      "sha256": "6fc8353458e5979029c8a088689a96066a24b05785fd93b796aca98f6031600e",
+      "size": 1265729
+    },
+    {
+      "path": "unity-tests/editmode-results.junit.xml",
+      "sha256": "bf588cf18cc0b7f28ded6c4c3e1131acd551dab65e3771b0dfa23bb528f5bdbc",
+      "size": 2074
+    },
+    {
+      "path": "unity-tests/editmode-results.xml",
+      "sha256": "46e51509568682a5dd792061a4407e9dee0740167a91c2f26db0ef409e318b64",
+      "size": 10429
+    },
+    {
+      "path": "unity-tests/editmode-unity-cli.log",
+      "sha256": "11e81b4a6089bb5969fe9d5c7c8e6346db136d164abf9e0ef361d86e3a60e9ef",
+      "size": 41438
+    },
+    {
+      "path": "unity-tests/playmode-results.junit.xml",
+      "sha256": "181d97fe0d8f8b971e20c8605503fb01a516f0f7fc40b81420da665f5e0009ae",
+      "size": 2535
+    },
+    {
+      "path": "unity-tests/playmode-results.xml",
+      "sha256": "2e3fee30cbf3ecc50314af6e8f3b51e003fddbbcabf7026cd543b64808594fb4",
+      "size": 13420
+    },
+    {
+      "path": "unity-tests/playmode-unity-cli.log",
+      "sha256": "6b6b5c23117e7d441d736193e30d7b170450b8601b24d0f16560dfb5b37a7265",
+      "size": 56759
+    },
+    {
+      "path": "unity-tests/unity-headless-summary.json",
+      "sha256": "b82f4b542931af565209fddcf5a478a684e1f4d8684dd31052702626e586bec5",
+      "size": 1127
+    },
+    {
+      "path": "worktree-add.log",
+      "sha256": "dfad5a8e4104daffae283f61e7e19c20d6ddb68e5511d7a8863ceac49c86ff3d",
+      "size": 131
+    }
+  ],
+  "verdict": "UNITY ACCEPTANCE PASSED — READY FOR ASTRA FINAL AUDIT"
+}

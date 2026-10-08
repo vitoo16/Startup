@@ -1,0 +1,15 @@
+{
+  "schema": "startup-life.m9-t01.environment-blocker.v1",
+  "task": "M9-T01 FINAL UNITY RUNTIME ACCEPTANCE",
+  "repository": "vitoo16/Startup",
+  "pullRequest": 33,
+  "approvedSha": "68a5c30c267e2a79c4f6ed12b37f08a132ef90cd",
+  "approvedCI": {"name":"Engine-free CI", "run":143, "runId":37803360563, "status":"completed", "conclusion":"success", "unityRuntimeEvidence":false},
+  "repositoryRemoteState": {"state":"open", "draft":true, "merged":false, "headSha":"68a5c30c267e2a79c4f6ed12b37f08a132ef90cd"},
+  "requiredUnityEditor": {"version":"6000.3.25f1", "revision":"e1dba0a9aba4"},
+  "executionEnvironment": {"platform":"Linux container", "checkoutAvailable":false, "unityEditorAvailable":false, "unityCliAvailable":false, "powershellAvailable":false, "gitLfsAvailable":false, "gitRemoteCloneAvailable":false, "cloneFailure":"Could not resolve host: github.com"},
+  "actualRuntimeExecution": {"freshImport": "NOT RUN", "editMode": "NOT RUN", "playMode":"NOT RUN", "nunit":"NOT GENERATED", "junit":"NOT GENERATED", "editorLicense":"NOT VERIFIED", "gitLfsFonts":"NOT HYDRATED OR VERIFIED"},
+  "limits": "No approval, runtime PASS or milestone CLOSED is inferred from engine-free CI. Windows handoff script is provided separately and was not executed in this environment.",
+  "finding": {"severity":"BLOCKER", "id":"M9-RUNTIME-ENV-01", "description":"Pinned licensed Unity Editor and Windows runner are not available in the execution container"},
+  "verdict": "UNITY ACCEPTANCE BLOCKED — LOCAL EXECUTION REQUIRED"
+}
