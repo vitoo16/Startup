@@ -187,6 +187,21 @@ internal static class Program
                 "zero available cash never funds expenses");
         });
 
+
+        Check("future catalog revision permits fifth active stable segment", () =>
+        {
+            var expanded = catalog.Segments.Values.Select(s =>
+                new CustomerSegmentDefinition(s.SegmentId, "v2",
+                    s.Enabled || s.SegmentId == "loyal-relationship",
+                    s.PriceSensitivity, s.Quality, s.Convenience, s.Trend, s.Trust, s.Repeat)).ToArray();
+            var expandedCatalog = new BusinessEconomicCatalog(catalog.FixtureId, "v2",
+                "m9-t02.rules-v2", expanded, catalog.Pools.Values, catalog.Profiles.Values);
+            Assert(expandedCatalog.Segments.Values.Count(x => x.Enabled) == 5,
+                "future explicit segment enablement");
+            Assert(catalog.Segments.Values.Count(x => x.Enabled) == 4,
+                "current fixture must retain four active segments");
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)

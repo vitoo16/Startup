@@ -188,9 +188,10 @@ namespace StartupLife.Core
             Segments = Index(segments, x => x.SegmentId);
             Pools = Index(pools, x => x.PoolId);
             Profiles = Index(profiles, x => x.BusinessDefinitionId);
-            if (Segments.Count != 6 || Segments.Values.Count(x => x.Enabled) != 4 ||
+            if (Segments.Count != 6 || Segments.Values.All(x => !x.Enabled) ||
+                (catalogRevision == "v1" && Segments.Values.Count(x => x.Enabled) != 4) ||
                 Pools.Count != 4 || Profiles.Count != 4)
-                throw new ArgumentException("The M9-T02 functional fixture must define six segments, four active, four pools and four profiles.");
+                throw new ArgumentException("Invalid versioned segment roster or MVP business/pool profile.");
             foreach (var pool in Pools.Values)
             {
                 if (!pool.SegmentShareById.Keys.SequenceEqual(Segments.Keys, StringComparer.Ordinal) ||
