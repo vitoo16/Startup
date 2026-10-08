@@ -21,6 +21,9 @@ internal static partial class Program
         Check("M9-T01 unavailable exact definition fails closed", OwnerTimeMissingRevision);
         Check("M9-T01 closed businesses receive no allocation", OwnerTimeClosed);
         Check("M9-T01 committed Study receipts reserve actual consumed minutes", OwnerTimeStudyTrace);
+        Check("M9-T01 Developer weekday employment reservation and side business", OwnerTimeDeveloperShift);
+        Check("M9-T01 F&B Saturday career shift reserves mandatory time", OwnerTimeWeekendShift);
+        Check("M9-T01 off-day and pre-first-shift employment reserve no time", OwnerTimeOffDay);
         Check("M9-T01 source portfolio reordering is byte-deterministic", OwnerTimeReordering);
         Check("M9-T01 read model returns pure revision-bound preview", OwnerTimeReadModel);
     }
@@ -206,6 +209,39 @@ internal static partial class Program
         Equal(60,p.Capacities.Single().AllocatedOwnerMinutes);
         Equal(5000,p.Capacities.Single().CapacityPermyriad);
         True(p.Allocations.All(x=>x.Interval.StartMinute>=1260));
+    }
+
+    private static void OwnerTimeDeveloperShift()
+    {
+        var b=Scheduled();var c=EligibilityCatalog(new[]{b},new[]{EligibilityCareer()});
+        var f=EligibilityFixture(c);Employ(f);ScheduledLaunch(f,b);
+        var plan=f.Session.ReadOwnerDayAllocation();
+        Equal(480,plan.EmploymentIntervals.Sum(x=>x.Duration));
+        Equal(120,plan.Capacities.Single().AllocatedOwnerMinutes);
+        AssertNoOverlap(plan);
+    }
+
+    private static void OwnerTimeWeekendShift()
+    {
+        var day=new SimDate(2026,9,5);
+        var career=EligibilityCareer(start:480,end:960,days:new[]{DayOfWeek.Saturday});
+        var b=Scheduled();var c=EligibilityCatalog(new[]{b},new[]{career});
+        var f=EligibilityFixture(c,day);Employ(f);ScheduledLaunch(f,b);
+        var plan=f.Session.ReadOwnerDayAllocation();
+        Equal(480,plan.EmploymentIntervals.Sum(x=>x.Duration));
+        Equal(120,plan.Capacities.Single().AllocatedOwnerMinutes);
+        AssertNoOverlap(plan);
+    }
+
+    private static void OwnerTimeOffDay()
+    {
+        var day=new SimDate(2026,9,5);
+        var b=Scheduled();var c=EligibilityCatalog(new[]{b},new[]{EligibilityCareer()});
+        var f=EligibilityFixture(c,day);Employ(f);ScheduledLaunch(f,b);
+        var plan=f.Session.ReadOwnerDayAllocation();
+        Equal(0,plan.EmploymentIntervals.Sum(x=>x.Duration));
+        Equal(120,plan.Capacities.Single().AllocatedOwnerMinutes);
+        AssertNoOverlap(plan);
     }
 
     private static void OwnerTimeReordering()
