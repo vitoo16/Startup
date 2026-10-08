@@ -1,10 +1,10 @@
-# M9-T01 — Owner-time allocator: implementation record and proposed evidence-only closeout
+# M9-T01 — Owner-time allocator: implementation, audit evidence and final closure
 
 Date: 2026-10-08 (+07:00)
 
-Status (2026-10-09 UTC+07): **M9-T01 SOURCE PASS; UNITY RUNTIME PASS (independent Astra-reported); PR #35 MERGED WITHOUT RECORDED CLOSEOUT APPROVAL; POST-MERGE CORRECTION C-01/C-02/C-03 AND G-01 PENDING INDEPENDENT ASTRA RE-AUDIT. M9-T01 NOT CLOSED. M9-T02 NOT READY.**
+Status (2026-10-09 UTC+07): **M9-T01 CLOSED — final status-only ledger reconciliation after independent Astra correction approval, PR #37 merge and integrated-main CI. M9-T02 ARCHITECTURE REVIEW READY; M9-T02 IMPLEMENTATION NOT AUTHORIZED.**
 
-This record retains prior source-implementation and PR #35 closeout notes as **historical snapshots**. The authoritative current chronology, the two different Astra audit decisions, and pending governance gates appear in the **Post-merge correction (C-01/C-02/C-03/G-01)** section at the end. Statements such as “NOT RUN in this session” apply only to the original source session, not the subsequent Windows Unity acceptance.
+This record retains prior source-implementation and PR #35 closeout notes as **historical snapshots**. The detailed chronology and earlier two Astra audit decisions appear in **Post-merge correction (C-01/C-02/C-03/G-01)**. The **Final M9-T01 closure reconciliation** at the end supersedes historical phrases such as `PENDING ASTRA RE-AUDIT` and `MERGE PROHIBITED` after the exact-head approval was supplied and PR #37 actually merged. Statements such as “NOT RUN in this session” apply only to the original source session, not the subsequent Windows Unity acceptance.
 
 Starting main: `05b9776ad515ed8a169decdf3f2b1a6fd42aab7d`
 
@@ -205,3 +205,24 @@ This is a **documentation/evidence/governance correction only** in response to a
 - **Known limitations:** Astra original full report/signed permalink not available; raw ZIP not downloaded or byte-rehashed by Sol; independent correction approval pending; later Android/URP config not covered by M9 runtime acceptance.
 - **Files changed in correction:** `docs/evidence/M9-T01/SESSION.md`; `docs/IMPLEMENTATION_PLAN_MVP.md` only.
 - **Merge:** **PROHIBITED until Astra issues CLOSEOUT APPROVED — READY TO MERGE**.
+
+## Final M9-T01 closure reconciliation — status-only (2026-10-09 UTC+07)
+
+This is the **final task-status record**, superseding earlier *historical* source-session and draft-closeout statuses, without deleting any finding, changing code, editing the original Unity ZIP, or claiming a fresh Unity acceptance. Closure becomes effective **only when this status-only documentation change is merged into `main` and the authoritative ledger is verified**.
+
+### Preconditions independently checked before closure reconciliation
+
+1. **Source and original runtime acceptance:** Astra-reported source APPROVED SHA `68a5c30c267e2a79c4f6ed12b37f08a132ef90cd`; engine-free [CI #143](https://github.com/vitoo16/Startup/actions/runs/37803360563) SUCCESS. Original Unity 6000.3.25f1 fresh import PASS, EditMode 9/9, PlayMode 12/12, 13/13 evidence integrity per Astra audit. Not re-executed by Sol.
+2. **Correction audit:** Independent Astra final correction re-audit supplied by the user reported `C-01 CLOSED`, `C-02 CLOSED`, `C-03 CLOSED`, `G-01 ACCEPTED`, verdict **`CLOSEOUT APPROVED — READY TO MERGE`** applicable to PR #37 exact head `d8f288341508a47ba0dd37efe47798ec52631884`. Technical approval was preserved as [PR #37 discussion comment](https://github.com/vitoo16/Startup/pull/37#issuecomment-6068661417) with explicit **non-GitHub-APPROVED review** provenance. GitHub branch protection and rulesets did not mandate a distinct GitHub reviewer at merge time.
+3. **PR #37 implementation of authorized handoff:** [PR #37](https://github.com/vitoo16/Startup/pull/37) **MERGED** at **2026-10-08T20:41:46Z**, merge commit [`78d9b470a8ae1fc5902ba28e0cbeb38ddb84eb9c`](https://github.com/vitoo16/Startup/commit/78d9b470a8ae1fc5902ba28e0cbeb38ddb84eb9c). GitHub expected-head SHA merge check was used. Merge parents: earlier `main` `873f7ed4b63a638bd86a1179aee8d41737886349` and exact approved PR head `d8f288341508a47ba0dd37efe47798ec52631884`.
+4. **Post-merge integrity:** GitHub compare `873f7ed4...78d9b470...` reported only **two docs files** (`docs/IMPLEMENTATION_PLAN_MVP.md`, this `SESSION.md`). No allocator/Unity source, scene, test, package, saved schema, original LFS ZIP, checksum or font changed. Historical PR #34 cache cleanup remained integrated.
+5. **On-merge checks:** [Engine-free CI #152, run 37841370252](https://github.com/vitoo16/Startup/actions/runs/37841370252) **SUCCESS**, and [CodeQL push-on-main #148, run 37841369217](https://github.com/vitoo16/Startup/actions/runs/37841369217) **SUCCESS** on exactly `78d9b470a8ae1fc5902ba28e0cbeb38ddb84eb9c`; GitHub job conclusions independently checked. These checks do **not** substitute for the original Unity runtime acceptance.
+6. **Historical and later boundaries retained:** P-01 (PR #33 merge **preceded** Unity acceptance), PR #35 merge without recorded independent closeout approval, earlier Astra `CLOSEOUT REJECTED` verdict, accepted ENV-01/E-02/E-03 LOW findings, and later Android/URP [issue #36](https://github.com/vitoo16/Startup/issues/36) remain disclosed, not removed.
+
+### Status transition
+
+- **M9-T01:** **CLOSED** upon verified merge of this status-only reconciliation; checklist `[x]`; `ACTIVE_STATUS` synchronized. All relevant BLOCKER/HIGH/MEDIUM closeout findings were resolved per independently supplied Astra correction verdict.
+- **M9-T02:** **ARCHITECTURE REVIEW READY**, because the M9-T01 dependency gate is now satisfied. **M9-T02 IMPLEMENTATION IS NOT AUTHORIZED** until its own architecture approval; no M9-T02 code was changed here.
+- **Android/URP issue #36:** OPEN, separate unverified acceptance. It is not represented as covered by M9-T01 Unity tests.
+- **Changes in this final closure reconciliation:** `docs/IMPLEMENTATION_PLAN_MVP.md`, `docs/evidence/M9-T01/SESSION.md`, and **one status-baseline entry** in `scripts/validate-documentation.ps1` (`M9-T01` added to `$expectedCompletedTaskIds`). The validator's comparison logic, CI workflow and runtime tests are **unchanged**. The first status-only PR attempt failed documentation validation because its immutable expected-task list ended at M8-T02; this one-line baseline alignment is necessary to recognize the audited M9-T01 closure. No Unity execution, save schema modification, graphics work, visual acceptance or raw evidence revision.
+- **Owner:** Sol / GPT-6 release closeout executor. **Skills:** project session orchestrator, gameplay boundary guardian, Unity CLI read-only contract, GitHub integration/evidence review. **Tests:** integrated PR #37 CI #152 and CodeQL #148 SUCCESS; the separate status-only PR must pass its own applicable exact-head CI and merged-main checks. **Visual evidence:** N/A. **Save impact:** None, SaveVersion 2 retained. **Known limitations:** original raw LFS ZIP not rehashed in status-only closeout; independent Astra technical verdict was user-supplied, not authenticated GitHub APPROVED review; issue #36 remains.
