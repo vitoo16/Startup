@@ -41,7 +41,7 @@ namespace StartupLife.Simulation
             {
                 if (!content.Businesses.TryGetValue(instance.DefinitionId, out var definition) ||
                     definition.Revision != instance.DefinitionRevision)
-                    return Unsupported(state, content, cutoff, occupancy);
+                    return Unsupported(state, content, cutoff);
                 var c = new Candidate { State = instance, Definition = definition,
                     Required = definition.OperatingRequirements?.RequiredOwnerMinutes ?? 0 };
                 candidates.Add(c);
@@ -57,7 +57,7 @@ namespace StartupLife.Simulation
                 }
                 BusinessEligibilityResult eligibility;
                 try { eligibility = BusinessEligibilityEvaluator.Evaluate(content, state, definition.Id, definition.Revision); }
-                catch (ContentCompatibilityException) { return Unsupported(state, content, cutoff, occupancy); }
+                catch (ContentCompatibilityException) { return Unsupported(state, content, cutoff); }
                 if (!eligibility.IsEligible)
                 {
                     c.Status = BusinessPlanStatus.IndividuallyIneligible;
@@ -164,11 +164,16 @@ namespace StartupLife.Simulation
             return Build(state, content, cutoff, occupancy, candidates, owners, OwnerDayPlanStatus.Ready, true, sides);
         }
 
-        private static OwnerDayAllocation Unsupported(GameState state, ContentCatalog content, int cutoff, byte[]? occupancy = null)
+        private static OwnerDayAllocation Unsupported(GameState state, ContentCatalog content, int cutoff)
         {
-            return Build(state, content, cutoff, occupancy ?? new byte[1440],
-                Array.Empty<Candidate>(), Enumerable.Repeat(-1, 1440).ToArray(),
-                OwnerDayPlanStatus.UnsupportedContent, false);
+            // Unresolved content cannot establish trustworthy occupancy provenance.
+            // Empty time classifications mean unavailable/unknown, not "all minutes free".
+            // Never publish speculative free time or allocations from an unsupported plan.
+            return new OwnerDayAllocation(state.Date, state.Revision, content.Version, cutoff,
+                OwnerDayPlanStatus.UnsupportedContent,
+                Array.Empty<OwnerTimeInterval>(), Array.Empty<OwnerTimeInterval>(),
+                Array.Empty<OwnerTimeInterval>(), Array.Empty<OwnerTimeInterval>(),
+                Array.Empty<OwnerTimeAllocation>(), Array.Empty<BusinessOperatingCapacity>());
         }
 
         private static OwnerDayAllocation Build(GameState state, ContentCatalog content, int cutoff, byte[] occupancy,
