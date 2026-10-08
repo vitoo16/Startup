@@ -68,6 +68,8 @@ internal static partial class Program
         var allocated=new BusinessOperatingCapacity("id",120,90,BusinessPlanStatus.PartiallyAllocated);
         Equal(7500,allocated.CapacityPermyriad);
         Equal(150,allocated.EffectiveCapacity(200));
+        // Avoid multiplying an already-rounded permyriad: floor(3 * 1 / 3) must equal 1.
+        Equal(1,new BusinessOperatingCapacity("round",3,1,BusinessPlanStatus.PartiallyAllocated).EffectiveCapacity(3));
         Throws<ArgumentException>(()=>new BusinessOperatingCapacity("id",120,119,BusinessPlanStatus.FullyAllocated));
         Throws<ArgumentException>(()=>new BusinessOperatingCapacity("id",120,0,BusinessPlanStatus.PartiallyAllocated));
         Throws<ArgumentOutOfRangeException>(()=>allocated.EffectiveCapacity(-1));
@@ -168,6 +170,10 @@ internal static partial class Program
         var c=PlanCatalog(b);var s=PlanState(c);var instance=PlanInstance(b,"run/business/1");
         instance.DefinitionRevision="old";s.Businesses.Add(instance);
         var p=OwnerDayAllocator.Plan(s,c);
+        Equal(OwnerDayPlanStatus.UnsupportedContent,p.Status);
+        Equal(0,p.Allocations.Count);
+        s.ContentVersion="incompatible.version";
+        p=OwnerDayAllocator.Plan(s,c);
         Equal(OwnerDayPlanStatus.UnsupportedContent,p.Status);
         Equal(0,p.Allocations.Count);
     }
