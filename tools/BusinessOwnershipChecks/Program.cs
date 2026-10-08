@@ -52,13 +52,14 @@ internal static partial class Program
         Check("M8 unavailable business revision is unsupported content", UnsupportedBusinessRevision);
 
         OperatingEligibilityChecks();
+        OwnerDayAllocationChecks();
 
         var reportPath = args.Length > 0 ? Path.GetFullPath(args[0]) :
             Path.Combine(Path.GetTempPath(), "startup-life-m8-business-ownership.json");
         Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
         File.WriteAllText(reportPath, JsonSerializer.Serialize(new
         {
-            suite = "Startup Life M8 ownership, operating eligibility and Save v2 — .NET, not Unity",
+            suite = "Startup Life M8 ownership and M9 owner-day allocator — .NET, not Unity",
             passed,
             failed = results.Count - passed,
             tests = results
