@@ -63,7 +63,7 @@ namespace StartupLife.Core
             BlockOperationWhenUnpaid = blockOperationWhenUnpaid;
         }
 
-        internal static DateTime ParseDate(string iso) => DateTime.ParseExact(iso, "yyyy-MM-dd",
+        public static DateTime ParseDate(string iso) => DateTime.ParseExact(iso, "yyyy-MM-dd",
             CultureInfo.InvariantCulture, DateTimeStyles.None);
     }
 

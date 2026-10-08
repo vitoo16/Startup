@@ -129,6 +129,64 @@ internal static class Program
             Throws<ArgumentOutOfRangeException>(()=>new CustomerSegmentDefinition("invalid-segment","v1",true,
                 40001,10000,10000,10000,10000,10000));
         });
+
+        Check("eight obligation cadences use only authored deterministic triggers", () =>
+        {
+            BusinessObligationDefinition Definition(ObligationCadence cadence) =>
+                new BusinessObligationDefinition("sample-due","v1","online-store","charge-v1",
+                    cadence,ObligationProrationPolicy.FullContractual,
+                    ObligationClosurePolicy.EnforceableThroughContractEnd,"2026-01-31",null,100,true);
+            var one=BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.OneTime),"b1","2026-01-31",false);
+            Assert(one!=null && one.AmountDueVnd==100,"one-time due");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.OneTime),"b1","2026-02-01",true)==null,
+                "one-time duplicate period");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.PerOperation),"b1","2026-02-01",true,
+                committedOperationId:"op7")!=null,"per-operation due");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.PerOperation),"b1","2026-02-01",true)==null,
+                "no fabricated per-operation");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.PerOperatingDay),"b1",
+                "2026-02-01",true,committedOperationId:"op8")!=null,"per-operating-day due");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.Daily),"b1","2026-02-01",false)==null,
+                "no service entitlement");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.Daily),"b1","2026-02-01",true)!=null,
+                "day-metered daily");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.Weekly),"b1","2026-02-07",false)!=null,
+                "weekly contractual due survives pause");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.Weekly),"b1","2026-02-06",false)==null,
+                "no early weekly due");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.Monthly),"b1","2026-02-28",false)!=null,
+                "monthly anniversary clamps");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.Annual),"b1","2027-01-31",false)!=null,
+                "annual anniversary");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.OnClose),"b1","2026-02-07",false,
+                closeOperationId:"close-op")!=null,"authored close fee");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.OnClose),"b1","2026-02-07",false)==null,
+                "no unauthored close event");
+        });
+        Check("cumulative day-metered proration 33+33+34=100", () =>
+        {
+            var increments=new[]{
+                BusinessObligationScheduler.AccrualDelta(100,0,1,3),
+                BusinessObligationScheduler.AccrualDelta(100,1,2,3),
+                BusinessObligationScheduler.AccrualDelta(100,2,3,3)};
+            Assert(increments.SequenceEqual(new long[]{33,33,34}),"cumulative floor");
+            Assert(BusinessObligationScheduler.AccruedThroughEligibleDays(100,3,3)==100,"full period exact");
+            Throws<ArgumentException>(()=>BusinessObligationScheduler.AccrualDelta(100,2,1,3));
+            Throws<ArgumentException>(()=>BusinessObligationScheduler.AccruedThroughEligibleDays(100,1,0));
+            Throws<ArgumentException>(()=>BusinessObligationScheduler.AccruedThroughEligibleDays(100,4,3));
+        });
+        Check("oldest due payment order and partial cash reserve", () =>
+        {
+            var old=new ObligationDueTranche("old","d:old","2026-01-01",600,1,100,40);
+            var next=new ObligationDueTranche("new","d:new","2026-02-01",480,2,100,0);
+            var allocations=BusinessObligationScheduler.PlanDuePayments(new[]{next,old},70);
+            Assert(allocations.Count==2,"two attributed payments");
+            Assert(allocations[0].TrancheId=="old" && allocations[0].PaidVnd==60,"old arrear first");
+            Assert(allocations[1].TrancheId=="new" && allocations[1].PaidVnd==10,"remainder applied once");
+            Assert(BusinessObligationScheduler.PlanDuePayments(new[]{next,old},0).Count==0,
+                "zero available cash never funds expenses");
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
