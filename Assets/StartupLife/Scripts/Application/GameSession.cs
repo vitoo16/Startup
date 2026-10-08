@@ -8,7 +8,7 @@ using StartupLife.Simulation;
 
 namespace StartupLife.Application
 {
-    public sealed class GameSession : IGameCommands, IBusinessReadModel, IBusinessEligibilityReadModel
+    public sealed class GameSession : IGameCommands, IBusinessReadModel, IBusinessEligibilityReadModel, IOwnerDayAllocationReadModel
     {
         // Historical callers and pre-PR6 children were capped at 256 characters. PR6 children began "$batch/".
         // Starting with 257 '$' characters excludes both namespaces, including PR6 children longer than 256.
@@ -85,6 +85,12 @@ namespace StartupLife.Application
                 return new BusinessEligibilitySnapshot(definitionId, definitionRevision, state.Date, state.Revision,
                     BusinessEligibilityEvaluator.Evaluate(content, state, definitionId, definitionRevision));
         }
+        public OwnerDayAllocation ReadOwnerDayAllocation()
+        {
+            lock (gate)
+                return OwnerDayAllocator.Plan(state, content);
+        }
+
         public byte[] ExportCheckpoint() { lock (gate) return serializer.Serialize(state); }
         public CommandResult Execute(CommandEnvelope command)
         {
