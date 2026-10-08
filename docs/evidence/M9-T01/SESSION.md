@@ -113,7 +113,7 @@ The original ZIP and sidecar are committed under the project root `M9-T01-LOCAL-
 ### Actual chronology and residual findings
 
 1. Original M9-T01 source corrections applied to `68a5c30c267e2a79c4f6ed12b37f08a132ef90cd`; Astra source review **APPROVED** (review status supplied in handoff).
-2. Unity fresh import and 9/9 EditMode + 12/12 PlayMode acceptance executed on `68a5c30c267e2a79c4f6ed12b37f08a132ef90cd`, attested by the original manifest, prior to PR #33 merge (precise execution times can be checked from raw logs; manifest finalization time is *not* execution start).
+2. Unity fresh import and 9/9 EditMode + 12/12 PlayMode acceptance executed on `68a5c30c267e2a79c4f6ed12b37f08a132ef90cd`, attested by the original manifest. The manifest was generated at **2026-10-08T16:46:32Z (AFTER the implementation PR merge)**. The exact runtime start/finish timestamps are not independently verified from the raw logs here, so **do not assert that runtime execution itself preceded the merge**; archive the raw timestamp evidence during independent closeout review.
 3. PR #33 merged into `main` at **2026-10-08 16:20:13Z**.
 4. Independent Astra **FINAL Unity runtime evidence audit** reported **APPROVED/VERIFIED PASS** *after the merge* (supplied verdict; exact audit time and permanent report location **not independently recorded here**).
 5. This evidence-only closeout PR is proposed **after** the final evidence audit.
