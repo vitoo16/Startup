@@ -14,6 +14,9 @@ $contentReportPath = Join-Path $reportDirectory 'content-catalog-report.json'
 $presentationReportPath = Join-Path $reportDirectory 'presentation-adapter-report.json'
 $businessReportPath = Join-Path $reportDirectory 'm8-business-ownership-report.json'
 $economyReportPath = Join-Path $reportDirectory 'm9-t02-economy-report.json'
+$frozenV2ReportPath = Join-Path $reportDirectory 'm9-t02-frozen-v2-report.json'
+
+& "$PSScriptRoot/Test-M9T02FrozenV2.ps1" -ReportPath $frozenV2ReportPath
 
 & $DotnetPath build "$startupRoot/tools/SimulationChecks/SimulationChecks.csproj" --configuration Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Provisional .NET build failed.' }
