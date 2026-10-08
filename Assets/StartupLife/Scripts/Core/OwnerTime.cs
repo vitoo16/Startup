@@ -86,7 +86,7 @@ namespace StartupLife.Core
         public int EffectiveCapacity(int fullCapacity)
         {
             if (fullCapacity < 0) throw new ArgumentOutOfRangeException(nameof(fullCapacity));
-            return checked((int)(checked((long)fullCapacity * CapacityPermyriad) / 10000L));
+            return RequiredOwnerMinutes == 0 ? 0 : checked((int)(checked((long)fullCapacity * AllocatedOwnerMinutes) / RequiredOwnerMinutes));
         }
     }
 
@@ -135,13 +135,16 @@ namespace StartupLife.Core
                 .ThenBy(x => x.BusinessInstanceId, StringComparer.Ordinal).ToArray());
             Capacities = Array.AsReadOnly((capacities ?? throw new ArgumentNullException(nameof(capacities)))
                 .OrderBy(x => x.BusinessInstanceId, StringComparer.Ordinal).ToArray());
+            for (var i = 1; i < Allocations.Count; i++)
+                if (Allocations[i].Interval.StartMinute < Allocations[i - 1].Interval.EndMinute)
+                    throw new ArgumentException("Business allocations overlap.");
         }
 
         private static IReadOnlyList<OwnerTimeInterval> CopyIntervals(IEnumerable<OwnerTimeInterval> items)
         {
-            var copy = (items ?? throw new ArgumentNullException(nameof(items)))
-                .OrderBy(x => x.StartMinute).ThenBy(x => x.EndMinute).ToArray();
-            if (copy.Any(x => x == null)) throw new ArgumentException("Null time interval.");
+            var input = (items ?? throw new ArgumentNullException(nameof(items))).ToArray();
+            if (input.Any(x => x == null)) throw new ArgumentException("Null time interval.");
+            var copy = input.OrderBy(x => x.StartMinute).ThenBy(x => x.EndMinute).ToArray();
             for (var i = 1; i < copy.Length; i++)
                 if (copy[i].StartMinute < copy[i - 1].EndMinute)
                     throw new ArgumentException("Overlapping intervals in one classification.");
