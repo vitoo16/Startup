@@ -13,6 +13,7 @@ $restoreReportPath = Join-Path $reportDirectory 'astra-m2-restore-invariants-rep
 $contentReportPath = Join-Path $reportDirectory 'content-catalog-report.json'
 $presentationReportPath = Join-Path $reportDirectory 'presentation-adapter-report.json'
 $businessReportPath = Join-Path $reportDirectory 'm8-business-ownership-report.json'
+$economyReportPath = Join-Path $reportDirectory 'm9-t02-economy-report.json'
 
 & $DotnetPath build "$startupRoot/tools/SimulationChecks/SimulationChecks.csproj" --configuration Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Provisional .NET build failed.' }
@@ -42,5 +43,10 @@ if ($LASTEXITCODE -ne 0) { throw 'Presentation adapter regression checks failed.
 if ($LASTEXITCODE -ne 0) { throw 'Content catalog bridge build failed.' }
 & $DotnetPath run --project "$startupRoot/tools/ContentCatalogChecks/ContentCatalogChecks.csproj" --configuration Release --no-build -- $contentReportPath
 if ($LASTEXITCODE -ne 0) { throw 'Content catalog bridge checks failed.' }
+
+& $DotnetPath build "$startupRoot/tools/EconomicChecks/EconomicChecks.csproj" --configuration Release --nologo
+if ($LASTEXITCODE -ne 0) { throw 'M9-T02 pure economic build failed.' }
+& $DotnetPath run --project "$startupRoot/tools/EconomicChecks/EconomicChecks.csproj" --configuration Release --no-build -- $economyReportPath
+if ($LASTEXITCODE -ne 0) { throw 'M9-T02 deterministic economic checks failed.' }
 
 Write-Output 'These reports verify .NET behavior only. Unity EditMode, PlayMode, IL2CPP, and devices remain separate gates.'
