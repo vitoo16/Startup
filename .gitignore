@@ -22,6 +22,14 @@ sysinfo.txt
 # Always preserve Unity asset identity metadata
 !/[Aa]ssets/**/*.meta
 
+# Native Android/CMake build cache and ephemeral Unity CLI import state.
+# These are regenerated per machine and must never be committed.
+.utmp/
+/[Aa]ssets/[Ee]ditor/UnityCliTemp-*/
+/[Aa]ssets/[Ee]ditor/UnityCliTemp-*.meta
+/[Aa]ssets/[Aa]ddressableAssetsData/[Aa]ndroid.meta
+/[Aa]ssets/[Aa]ddressableAssetsData/[Aa]ndroid/addressables_content_state.bin.meta
+
 # IDE and generated project files
 .vs/
 .vscode/

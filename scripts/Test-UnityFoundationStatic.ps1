@@ -144,12 +144,24 @@ foreach ($entry in $baselineRequirements.GetEnumerator()) {
 
 $tracked = @(& git -C $repositoryRoot ls-files)
 if ($LASTEXITCODE -ne 0) { throw 'git ls-files failed' }
-$generatedPrefixes = @('Library/', 'Temp/', 'Obj/', 'obj/', 'Build/', 'Builds/', 'Logs/', 'UserSettings/', 'TestResults/', 'Artifacts/')
+$generatedPrefixes = @('Library/', 'Temp/', 'Obj/', 'obj/', 'Build/', 'Builds/', 'Logs/', 'UserSettings/', 'TestResults/', 'Artifacts/', '.utmp/')
 $trackedGenerated = @($tracked | Where-Object {
     $path = $_
     $generatedPrefixes | Where-Object { $path.StartsWith($_, [StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1
 })
 Add-Check 'generated Unity folders are not tracked' ($trackedGenerated.Count -eq 0) ($(if ($trackedGenerated.Count -eq 0) { 'clean' } else { $trackedGenerated -join ', ' }))
+
+# Git tracks Unity metadata as asset identity; reject metadata for removed assets/folders.
+# This catches accidental Unity CLI temp folders and Addressables generated state sidecars.
+$assetPaths = @($tracked | Where-Object { $_.StartsWith('Assets/', [StringComparison]::Ordinal) })
+$orphanMeta = [System.Collections.Generic.List[string]]::new()
+foreach ($meta in @($assetPaths | Where-Object { $_.EndsWith('.meta', [StringComparison]::Ordinal) })) {
+    $withoutMeta = $meta.Substring(0, $meta.Length - '.meta'.Length)
+    if ($withoutMeta -in $tracked) { continue }
+    $hasFolderChildren = @($assetPaths | Where-Object { $_.StartsWith(($withoutMeta + '/'), [StringComparison]::Ordinal) }).Count -gt 0
+    if (-not $hasFolderChildren) { $orphanMeta.Add($meta) }
+}
+Add-Check 'tracked Unity metadata has an asset or tracked folder content' ($orphanMeta.Count -eq 0) ($(if ($orphanMeta.Count -eq 0) { 'clean' } else { $orphanMeta -join ', ' }))
 
 $assetFiles = @($tracked | Where-Object { $_ -like 'Assets/*' -and $_ -notlike '*.meta' -and $_ -notlike '*/.gitkeep' })
 $missingMeta = @($assetFiles | Where-Object { "$_`n" -and ("$_.meta" -notin $tracked) })
