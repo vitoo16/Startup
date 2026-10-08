@@ -132,7 +132,8 @@ namespace StartupLife.Simulation
             IEnumerable<MarketFulfillmentUnit> alreadyCommitted)
         {
             if (supply == null || alreadyCommitted == null) throw new ArgumentNullException(nameof(supply));
-            var remaining = new SortedDictionary<string, int>(supply.OriginalUnitsBySegment, StringComparer.Ordinal);
+            var remaining = new SortedDictionary<string, int>(StringComparer.Ordinal);
+            foreach (var item in supply.OriginalUnitsBySegment) remaining.Add(item.Key, item.Value);
             var ids = new HashSet<string>(StringComparer.Ordinal);
             var marketKeys = new HashSet<string>(StringComparer.Ordinal);
             foreach (var unit in alreadyCommitted)
@@ -162,7 +163,9 @@ namespace StartupLife.Simulation
                 !originalSupply.OriginalUnitsBySegment.Keys.SequenceEqual(pool.SegmentShareById.Keys, StringComparer.Ordinal))
                 throw new ContentCompatibilityException("save.content_revision", "Unavailable immutable pool revision.");
             var remaining = RemainingSupply(originalSupply, alreadyCommitted);
-            var participating = candidates.OrderBy(x => x.DefinitionId, StringComparer.Ordinal)
+            var sourceCandidates = candidates.ToArray();
+            if (sourceCandidates.Any(x => x == null)) throw new ArgumentException("Null business demand candidate.");
+            var participating = sourceCandidates.OrderBy(x => x.DefinitionId, StringComparer.Ordinal)
                 .ThenBy(x => x.BusinessInstanceId, StringComparer.Ordinal).ToArray();
             if (participating.Any(x => x == null) ||
                 participating.Select(x => x.BusinessInstanceId).Distinct(StringComparer.Ordinal).Count() != participating.Length)
