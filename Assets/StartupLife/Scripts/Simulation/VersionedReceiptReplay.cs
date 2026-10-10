@@ -9,12 +9,6 @@ namespace StartupLife.Simulation
     // Central versioned replay authority. At the migration-only gate this proves the
     // entire v2 prefix against *frozen* source and rejects unaudited v3 suffixes.
     // Must be extended with a tested V3 evaluator BEFORE schema3 becomes live.
-    public interface IVersionedReceiptReplay
-    {
-        void Validate(GameState originalV2, GameState currentV3,
-            EconomicActivationAnchor anchor, IHistoricalEconomicRulesResolver archiveResolver);
-    }
-
     public sealed class VersionedReceiptReplay : IVersionedReceiptReplay
     {
         public void Validate(GameState originalV2, GameState currentV3,

@@ -12,6 +12,14 @@ namespace StartupLife.Infrastructure
     public sealed class V2ToV3Migration : ISaveMigration
     {
         public const string ArchivedRuleset = "first-playable.v1/v2-semantics@051a9314";
+        private readonly IHistoricalEconomicRulesResolver archiveResolver;
+        private readonly IVersionedReceiptReplay versionedReplay;
+        public V2ToV3Migration(IHistoricalEconomicRulesResolver archiveResolver, IVersionedReceiptReplay versionedReplay)
+        {
+            this.archiveResolver = archiveResolver ?? throw new ArgumentNullException(nameof(archiveResolver));
+            this.versionedReplay = versionedReplay ?? throw new ArgumentNullException(nameof(versionedReplay));
+        }
+
         public int FromVersion => SaveSchema.HistoricalV2;
         public int ToVersion => 3;
 
@@ -48,6 +56,10 @@ namespace StartupLife.Infrastructure
                 OriginalV2ContentVersion = anchor.OriginalContentVersion,
                 OriginalV2RulesetId = anchor.ArchivedRulesetId
             };
+            // The exact archived v2 evaluator and catalog must validate the checkpoint
+            // before the migration may produce even an in-memory v3 payload.
+            var originalV2 = JsonSaveSerializer.ReadObject<GameState>(originalV2Payload);
+            versionedReplay.Validate(originalV2, target.Current!, anchor, archiveResolver);
             return EconomicV3PayloadCodec.SerializeChecked(target);
         }
 

@@ -694,7 +694,7 @@ internal static class Program
                 new SimDate(2026, 9, 1));
             StateValidation.Validate(legacy, historicalCatalog, GameSession.CreateRestoreValidator());
             var original = JsonSaveSerializer.WriteObject(legacy);
-            var migration = new V2ToV3Migration();
+            var migration = new V2ToV3Migration(new BundledHistoricalV2ContentResolver(),new VersionedReceiptReplay());
             Assert(migration.FromVersion == 2 && migration.ToVersion == 3,
                 "adjacent 2-to-3 schema contract");
             var migrated = EconomicV3PayloadCodec.ReadChecked(migration.Migrate(original));
@@ -729,7 +729,7 @@ internal static class Program
         {
             var legacy = GameSession.NewState(FirstPlayableContentTemplate.BuildCatalog(),
                 "v2-stage-tamper", 98766UL, new SimDate(2026, 9, 2));
-            var migration = new V2ToV3Migration();
+            var migration = new V2ToV3Migration(new BundledHistoricalV2ContentResolver(),new VersionedReceiptReplay());
             var original = JsonSaveSerializer.WriteObject(legacy);
             var payload = EconomicV3PayloadCodec.ReadChecked(migration.Migrate(original));
             Assert(payload.EconomicRecords != null && payload.Current != null, "v3 initialized");
@@ -748,11 +748,11 @@ internal static class Program
                 "v2-stage-unknown", 98767UL, new SimDate(2026, 9, 3));
             legacy.ContentVersion = "other-unknown-historical-catalog";
             Throws<ArgumentException>(() =>
-                new V2ToV3Migration().Migrate(JsonSaveSerializer.WriteObject(legacy)));
+                new V2ToV3Migration(new BundledHistoricalV2ContentResolver(),new VersionedReceiptReplay()).Migrate(JsonSaveSerializer.WriteObject(legacy)));
             legacy.ContentVersion = "first-playable.v1";
             legacy.SaveVersion = 3;
             Throws<ArgumentException>(() =>
-                new V2ToV3Migration().Migrate(JsonSaveSerializer.WriteObject(legacy)));
+                new V2ToV3Migration(new BundledHistoricalV2ContentResolver(),new VersionedReceiptReplay()).Migrate(JsonSaveSerializer.WriteObject(legacy)));
         });
 
 
@@ -850,7 +850,7 @@ internal static class Program
                 "archived-prefix-replay", 98768UL, new SimDate(2026,9,1));
             var oldBytes = JsonSaveSerializer.WriteObject(historical);
             var migrated = EconomicV3PayloadCodec.ReadChecked(
-                new V2ToV3Migration().Migrate(oldBytes));
+                new V2ToV3Migration(new BundledHistoricalV2ContentResolver(),new VersionedReceiptReplay()).Migrate(oldBytes));
             Assert(migrated.Current != null && migrated.Activation != null,"staged v3 body");
             var archive = new BundledHistoricalV2ContentResolver();
             var dispatcher = new VersionedReceiptReplay();
