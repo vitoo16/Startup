@@ -1535,6 +1535,24 @@ internal static class Program
             Throws<ArgumentException>(()=>serializer.SerializeForSchema(migrated.Current!,2));
         });
 
+        Check("legacy business closed before v3 activation must never open a v3 contract", () =>
+        {
+            Assert(!V3EconomicReceiptProcessor.HasPostCutoverContractPeriod(
+                "2026-09-20", "2026-10-10"),
+                "historical-only closed business must not incur a post-cutover due");
+            Assert(V3EconomicReceiptProcessor.HasPostCutoverContractPeriod(
+                "2026-10-10", "2026-10-10"),
+                "closure on the activation date may preserve an accrued contractual due");
+            Assert(V3EconomicReceiptProcessor.HasPostCutoverContractPeriod(
+                "2026-10-11", "2026-10-10"),
+                "contract can remain enforceable through a later closure");
+            Assert(V3EconomicReceiptProcessor.HasPostCutoverContractPeriod(
+                null, "2026-10-10"),
+                "still-active business remains eligible for v3 contract consideration");
+            Throws<FormatException>(() =>
+                V3EconomicReceiptProcessor.HasPostCutoverContractPeriod("garbage", "2026-10-10"));
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
