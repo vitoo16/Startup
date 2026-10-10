@@ -86,6 +86,40 @@ namespace StartupLife.Core
         }
     }
 
+    // Fixed-contract helper: wages are ALREADY included in the parent profile's
+    // daily mandatory charge. Do not accrue another wage invoice for this helper.
+    // Capacity contribution is determined by immutable authored data, not a scene NPC.
+    public sealed class FixedBusinessHelperDefinition
+    {
+        public string Id { get; }
+        public string NameKey { get; }
+        public long ContractedDailyWageVnd { get; }
+        public int BaseAdditionalCapacityUnits { get; }
+        public int EfficiencyPermyriad { get; }
+        public int EffectiveAdditionalCapacityUnits { get; }
+
+        public FixedBusinessHelperDefinition(string id, string nameKey, long dailyWageVnd,
+            int baseAdditionalCapacityUnits, int efficiencyPermyriad)
+        {
+            EconomicDefinitionLimits.Id(id, nameof(id));
+            if (string.IsNullOrWhiteSpace(nameKey) || dailyWageVnd <= 0 ||
+                dailyWageVnd > 1000000000000L ||
+                baseAdditionalCapacityUnits <= 0 || baseAdditionalCapacityUnits > 1440 ||
+                efficiencyPermyriad <= 0 || efficiencyPermyriad > EconomicDefinitionLimits.MaxMultiplier)
+                throw new ArgumentException("Invalid fixed helper wage/efficiency contract.");
+            Id = id;
+            NameKey = nameKey;
+            ContractedDailyWageVnd = dailyWageVnd;
+            BaseAdditionalCapacityUnits = baseAdditionalCapacityUnits;
+            EfficiencyPermyriad = efficiencyPermyriad;
+            EffectiveAdditionalCapacityUnits = checked((int)(
+                (long)baseAdditionalCapacityUnits * efficiencyPermyriad /
+                EconomicDefinitionLimits.Scale));
+            if (EffectiveAdditionalCapacityUnits == 0)
+                throw new ArgumentException("Fixed helper efficiency must contribute capacity.");
+        }
+    }
+
     public sealed class BusinessEconomicProfile
     {
         public string BusinessDefinitionId { get; }
@@ -94,7 +128,11 @@ namespace StartupLife.Core
         public string ProfileRevision { get; }
         public string MarketPoolId { get; }
         public int RequiredOwnerMinutes { get; }
+        public int BaseOwnerCapacityUnits { get; }
         public int FullCapacityUnits { get; }
+        public FixedBusinessHelperDefinition? FixedHelper { get; }
+        public long NonHelperDailyFixedChargeVnd =>
+            DailyMandatoryChargeVnd - (FixedHelper?.ContractedDailyWageVnd ?? 0);
         public long VariableCostPerUnitVnd { get; }
         public long DailyMandatoryChargeVnd { get; }
         public IReadOnlyDictionary<string, int> ProductFitBySegmentId { get; }
@@ -102,20 +140,24 @@ namespace StartupLife.Core
         public IReadOnlyDictionary<PricingPosture, long> UnitPriceByPosture { get; }
 
         public BusinessEconomicProfile(string definitionId, string definitionRevision, BusinessType type,
-            string profileRevision, string poolId, int requiredOwnerMinutes, int fullCapacityUnits,
+            string profileRevision, string poolId, int requiredOwnerMinutes, int baseOwnerCapacityUnits,
             long variableCostPerUnitVnd, long dailyMandatoryChargeVnd,
             IEnumerable<KeyValuePair<string, int>> productFit,
             IEnumerable<KeyValuePair<PricingPosture, IEnumerable<KeyValuePair<string, int>>>> priceFit,
-            IEnumerable<KeyValuePair<PricingPosture, long>> unitPrices)
+            IEnumerable<KeyValuePair<PricingPosture, long>> unitPrices,
+            FixedBusinessHelperDefinition? fixedHelper = null)
         {
             EconomicDefinitionLimits.Id(definitionId, nameof(definitionId));
             EconomicDefinitionLimits.Revision(definitionRevision, nameof(definitionRevision));
             EconomicDefinitionLimits.Revision(profileRevision, nameof(profileRevision));
             EconomicDefinitionLimits.Id(poolId, nameof(poolId));
             if (!Enum.IsDefined(typeof(BusinessType), type)) throw new ArgumentException("Unsupported business type.");
+            var assistedCapacity = checked(baseOwnerCapacityUnits +
+                (fixedHelper?.EffectiveAdditionalCapacityUnits ?? 0));
             if (requiredOwnerMinutes < 1 || requiredOwnerMinutes > 840 ||
-                fullCapacityUnits < 0 || fullCapacityUnits > 1440)
-                throw new ArgumentException("Invalid owner requirement/capacity.");
+                baseOwnerCapacityUnits < 0 || assistedCapacity > 1440 ||
+                (fixedHelper != null && fixedHelper.ContractedDailyWageVnd > dailyMandatoryChargeVnd))
+                throw new ArgumentException("Invalid owner requirement, helper wage or total capacity.");
             if (variableCostPerUnitVnd < 0 || variableCostPerUnitVnd > 1000000000L ||
                 dailyMandatoryChargeVnd < 0 || dailyMandatoryChargeVnd > 1000000000000L)
                 throw new ArgumentException("Invalid economic costs.");
@@ -146,7 +188,10 @@ namespace StartupLife.Core
                 throw new ArgumentException("Exactly the three canonical pricing postures are required.");
             BusinessDefinitionId = definitionId; BusinessDefinitionRevision = definitionRevision;
             Type = type; ProfileRevision = profileRevision; MarketPoolId = poolId;
-            RequiredOwnerMinutes = requiredOwnerMinutes; FullCapacityUnits = fullCapacityUnits;
+            RequiredOwnerMinutes = requiredOwnerMinutes;
+            BaseOwnerCapacityUnits = baseOwnerCapacityUnits;
+            FullCapacityUnits = assistedCapacity;
+            FixedHelper = fixedHelper;
             VariableCostPerUnitVnd = variableCostPerUnitVnd; DailyMandatoryChargeVnd = dailyMandatoryChargeVnd;
             ProductFitBySegmentId = fits;
             PriceFitByPostureAndSegmentId = new ReadOnlyDictionary<PricingPosture, IReadOnlyDictionary<string, int>>(matrix);

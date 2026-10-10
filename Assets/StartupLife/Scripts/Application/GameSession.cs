@@ -92,7 +92,10 @@ namespace StartupLife.Application
                     state.Businesses.Select(x => new BusinessSnapshot(
                         x, content.Businesses[x.DefinitionId],
                         state.EconomicV3?.EconomicRecords?.BusinessPolicies?
-                            .FirstOrDefault(p => p.InstanceId == x.InstanceId))).ToArray());
+                            .FirstOrDefault(p => p.InstanceId == x.InstanceId),
+                        v3EconomicRules != null &&
+                        v3EconomicRules.Profiles.TryGetValue(x.DefinitionId, out var profile)
+                            ? profile.FixedHelper : null)).ToArray());
         }
         public BusinessEligibilitySnapshot ReadEligibility(string definitionId, string definitionRevision)
         {
