@@ -1,43 +1,59 @@
-# M9-T02 — Implementation session evidence (partial implementation, DO NOT MERGE)
+# M9-T02 — Sol implementation evidence (DRAFT / NOT CLOSED)
 
-**Date:** 2026-10-09 (Asia/Ho_Chi_Minh). **Owner:** Sol implementation role. **Status:** SOURCE IN PROGRESS — NOT CLOSED.
-**Architecture:** `M9-T02-TA-1.0-FINAL` (RC5). **Verified baseline:** `051a931410f2dec0ec51906f7f06191a0deaf77c`.
-**Branch:** `feat/m9-t02-segments-daily-finance`. **Draft PR:** https://github.com/vitoo16/Startup/pull/39 (NOT MERGEABLE BY GOVERNANCE).
+**Updated:** 2026-10-10 (Asia/Ho_Chi_Minh). **Implementer:** Sol role. **Architecture:** `M9-T02-TA-1.0-FINAL` (RC5).
+**Approved source baseline:** `051a931410f2dec0ec51906f7f06191a0deaf77c`.
+**Feature branch:** `feat/m9-t02-segments-daily-finance`. **Draft PR:** https://github.com/vitoo16/Startup/pull/39 .
+**Status:** SOURCE IMPLEMENTATION IN PROGRESS — **NO MERGE**, **NO UNITY RUNTIME PASS**, **M9-T02 OPEN**.
 
-## Preflight and skills
-- Project-local skill sources inspected/loaded: `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `unity-cli`.
-- Five additional M9 skills read from pinned upstream `tea-x-random/unity-game-skills` commit `dafb97ef00f94e64e42e6260bc6b3af74cc83dad`: `unity-game-director`, `unity-gameplay-systems`, `unity-game-economy`, `unity-mcp-bridge`, `unity-qa-release`.
-- Baseline repo contains 63 local SKILL.md files; it does not include the last five under `.agents/skills/`. They were loaded as immutable upstream source, not installed on the owner's Windows environment.
-- GitHub connector is the implementation channel; local sandbox has Git but cannot resolve github.com and no runnable `dotnet`/Unity Editor. GitHub Actions .NET 8 is the actual source compiler/test runner.
-- Pinned Unity Editor project version: `6000.3.25f1 (e1dba0a9aba4)`. Unity fresh import/EditMode/PlayMode/Windows runner **NOT RUN**.
+## Repo and session environment
 
-## Original v2 historical source (frozen)
-- Original ContentVersion: `first-playable.v1`, authored v2 businesses `freelance-service` and `coffee-kiosk`, definition revision `v1`.
-- Eight original Git blob-identical sources copied into `docs/evidence/M9-T02/frozen-v2-source/` in commit `77bd4c36fdff5ee54c27f6135c6668c65f18968d`.
-- Source blob SHA-1 AND fixed source SHA-256 pins are enforced by `scripts/Test-M9T02FrozenV2.ps1`; see `FROZEN_V2_SOURCE_MANIFEST.md`. The integrity archive is not yet the executable historical v2 evaluator/runtime resolver required in S6.
-- The original Unity asset and its binary/asset fields were not edited by S1–S3; no source schema change yet.
+- Original M9-T01 CLOSED. Issue #36 Android/URP separate and still not accepted by this implementation.
+- Actual project Unity Editor is `6000.3.25f1 (e1dba0a9aba4)` per pinned ProjectVersion.
+- Repository has 63 local `.agents/skills/*/SKILL.md` entries including project orchestrator, gameplay guardian and unity-cli; five required community Unity game skills read from `tea-x-random/unity-game-skills` pinned `dafb97ef00f94e64e42e6260bc6b3af74cc83dad`, not locally installed in this environment.
+- Implementation uses the authorized GitHub connector to create immutable blobs/commits on the isolated feature branch. Local environment lacks runnable dotnet and Unity; **GitHub Actions .NET8** is the actual compiler and engine-free test runner. All UI, Editor, PlayMode and IL2CPP tests **NOT RUN**.
+- Legacy public `OwnerDayAllocator.Plan(GameState,ContentCatalog)`, `CommandKind` 0..10, `BusinessType` 1..4, original `first-playable.v1` content asset and SaveVersion=2 remain unmodified. No economic-reward path is currently wired into the v2 GameSession.
 
-## Source work completed, bounded by actual gates
-- S1 (PARTIAL): added Core `EconomicDefinitions.cs` and content `M9T02FunctionalEconomy.cs`: six ID-keyed stable segments, four active, two disabled, four market pools/profiles, three pricing postures, immutable checked values. Existing v2 `BusinessDefinition` / save / public M9 API unchanged. Production Unity asset attachment and archived economic revisions remain pending.
-- S2 (PURE FUNCTIONS ONLY): `CustomerDemandCalculator.cs`: exact BigInteger competition weights, segment supply largest remainders, canonical business ties, original-day finite supply, supply-consumption provenance and double-sell rejection. Not wired to GameSession or daily fulfillment ledger.
-- S3 (PURE PRIMITIVES ONLY): `ObligationContracts.cs` and `BusinessObligationScheduler.cs`: eight synthetic cadence triggers, cumulative day-metered proration and deterministic oldest-due-first payment planning. Not yet connected to runtime liability graph, arrears, actual wallet payments or closure state.
-- Existing SaveVersion remains 2, no v3 migration or P-04 policy commands, no live business simulation, no settlement/revenue credit yet.
+## Historical source archive
 
-## Actual CI
-- First draft head `8938659842b6e34e79cfdca158c322c93ff06b82`: engine-free CI failed static Unity foundation because three new C# sources lacked .meta sidecars. Corrected in `6e5926c0729ae7d5374eb725d1b557e2e3e63e0f`.
-- S1/S2 check head `6e5926c0729ae7d5374eb725d1b557e2e3e63e0f`: engine-free CI run https://github.com/vitoo16/Startup/actions/runs/37856211821 **SUCCESS**, 9/9 new M9-T02 checks, existing regressions PASS, 0 errors.
-- S3 pure source check head `637bfea32ac8f64d692d55d8f7ddf52da9e92bbe`: engine-free CI run https://github.com/vitoo16/Startup/actions/runs/37856615307 **SUCCESS**, 12/12 M9-T02 checks and existing regressions PASS, 0 errors.
-- Current document/checksum-script follow-up head requires its own CI result; success from earlier heads must not be transferred.
+- Byte-identical v2 source snapshots: `docs/evidence/M9-T02/frozen-v2-source/` (8 original Git blobs).
+- `FROZEN_V2_SOURCE_MANIFEST.md` pins each original SHA-1 + SHA-256.
+- `scripts/Test-M9T02FrozenV2.ps1` checks all 8 original copies in CI; all 8 verified in prior successful runs.
+- This is not yet a compiled archival runtime evaluator/dispatcher for complete v2 prefix replay. Do not claim migration is done from frozen source alone.
 
-## Remaining implementation and independent gates
-- S0 frozen v2 content/ruleset runtime bundle, verification at Save v3 cutover: incomplete.
-- S1 full content asset integration: incomplete.
-- S2 persistent slice/fulfillment consumption validator/market epoch integration: incomplete.
-- S3 full liability graph + v3 arrears lifecycle: incomplete.
-- S4 P-03 time/wallet fairness and reservation epochs: NOT STARTED.
-- S5 P-04 runtime status/pricing, committed operations and midnight settlement: NOT STARTED.
-- S6 save v0/v1/v2/v3 adjacent migration, archived evaluator/replay, v2 CAS: NOT STARTED.
-- S7 detached financial read models: NOT STARTED.
-- S8 actual Unity, independent Astra source + final evidence audit, authorized merge/closeout: NOT STARTED.
+## Scoped source artifacts
 
-**No approval to merge. PR remains DRAFT; M9-T02 remains OPEN.**
+| Slice | Scope committed | Actual status |
+|---|---|---|
+| S0 | SHA-locked v2 source + 8 SHA-256 manifest entries; local/upstream skill inventory | Source archive PASS; historical evaluator bundle still incomplete |
+| S1 | `Core/EconomicDefinitions.cs`, `Content/M9T02FunctionalEconomy.cs` — immutable 6 ID-keyed segments (4 active), 4 finite pools/profiles, per-posture price | Pure model PASS, production authored content activation pending |
+| S2 | `Simulation/CustomerDemandCalculator.cs` — BigInteger demand, largest remainder, stable ties, finite original/day remaining, no double-sell | Pure calculator PASS, actual persisted fulfillment bridge pending |
+| S3 | `Core/ObligationContracts.cs`, `Simulation/BusinessObligationScheduler.cs`, `ObligationIncomeDistributor.cs` — 8 cadence triggers, cumulative exact proration, due ordering, source-linked withheld income | Pure model PASS, linked v3 GameState/arrear ledger posting pending |
+| S4 | `Simulation/BusinessAffordabilityPlanner.cs`, `BusinessEpochExecution.cs`, `BusinessMarketEpochPlanner.cs` — quota-normalized P-03 + global owner-slot matching + one-wallet reserved units + frozen epoch + market/price reservation mapping, Study exclusion | Pure model PASS; real committed GameSession/AdvanceBoundary integration pending |
+| S5 | `Simulation/BusinessPolicyTransitions.cs`, `BusinessDaySettlement.cs` — P-04 pure transitions and old-day cash/profit/arrears conservation against attributed market+cost units | Pure model PASS; actual command IDs 11/12, v3 transaction, ledger and midnight source posting pending |
+| S6 | `Core/EconomicActivationAnchor.cs` — historical receipt-prefix length, midpoint/00:00 activation gate; `Core/SaveSchema.cs` adds HistoricalV2 constant=2 while CurrentVersion remains 2; `JsonSaveSerializer.V1ToV2Migration` pinned to 2 | Primitives implemented; **v3 DTO/codec, 2→3 migration, historical replay dispatcher, CAS repair unimplemented** |
+| S7 | Detached v3 finance interface/UI adapter | NOT STARTED |
+| S8 | Independent Astra source audit → canonical Unity runtime acceptance → independent final evidence audit | NOT STARTED |
+
+The implementation intentionally does not credit money or units, change schema version or mutate the real Unity asset until all v3 replay/migration and wallet invariants can be wired atomically.
+
+## Engine-free CI evidence (exact prior source heads)
+
+- `6e5926c0729ae7d5374eb725d1b557e2e3e63e0f`: [CI #37856211821](https://github.com/vitoo16/Startup/actions/runs/37856211821) SUCCESS, 9/9 new economy checks.
+- `637bfea32ac8f64d692d55d8f7ddf52da9e92bbe`: [CI #37856615307](https://github.com/vitoo16/Startup/actions/runs/37856615307) SUCCESS, 12/12 checks.
+- `7fdc10d06c5f6ed4e1033151ba0f5a6e40053b6e`: [CI #37857241866](https://github.com/vitoo16/Startup/actions/runs/37857241866) SUCCESS, 13/13 checks and 8/8 frozen-source hashes.
+- `d83351afe9585f9e7e85a25f1464763e8eb099a4`: [CI #38045657054](https://github.com/vitoo16/Startup/actions/runs/38045657054) SUCCESS, 28/28 checks.
+- `0bee9d2e2d5d21c2a78cea6a50e44aa087c94224`: [CI #38045843534](https://github.com/vitoo16/Startup/actions/runs/38045843534) SUCCESS, 31/31 checks (gross380, fixed20, variable80, profit280, final cash380; linked obligation settlement).
+- `b194fb0bc2566aacd70267f99965b989f8a69f5c`: [CI #38046159789](https://github.com/vitoo16/Startup/actions/runs/38046159789) SUCCESS, 33/33 checks (market/owner/wallet integration + replan ordinal nonreuse).
+- `aa5f062fbf693acd7e20a7fe485cdf6dad2dc1d1`: [CI #38046296969](https://github.com/vitoo16/Startup/actions/runs/38046296969) SUCCESS, 35/35 checks (midnight/midday activation anchor).
+- `131571359f5898f3efb64ff8c4d4123df8e484e7`: [CI #38046433155](https://github.com/vitoo16/Startup/actions/runs/38046433155) SUCCESS, 35/35 M9-T02 economic checks plus 35/35 restore invariant checks and 0 compile errors; historical V1→V2 stage remains fixed to 2.
+
+## Remaining hard safety gates (DO NOT BYPASS)
+
+1. Full content-authoring and ruleset archive resolver: freeze exact historical v2 evaluator, not just source hashes.
+2. Typed v3 state + unique per-operation/slice/fulfillment financial provenance in `GameState` and intrinsic/replay validators.
+3. Atomic GameSession source mutation: advance boundaries, Study replanning, salary/living ordering, fixed dues and income/arrear ledger without same-day revenue funding.
+4. Adjacent 0→1→2→3 lossless source migration and v2 same-generation CAS/backup-repair before first v3 write; single historical prefix dispatcher reused by restore, idempotency and replay. Future schema4 preservation test.
+5. Unity 6000.3.25f1 fresh import, EditMode/PlayMode, raw logs/XML/evidence ZIP, local acceptance.
+6. Independent Astra source audit and final evidence audit on exact CI/Unity SHA; owner-authorized merge/closeout only after all gates.
+
+**No merge, no milestone CLOSE, no invented Unity/pass/replay evidence.**
