@@ -41,6 +41,83 @@ namespace StartupLife.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator FiveTabDashboardKeepsRevisionAndLinksExistingBusinessCommands()
+        {
+            var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
+            while (!load.isDone) yield return null;
+            yield return LocalizationSettings.InitializationOperation;
+            yield return null;
+            var bootstrap = Object.FindAnyObjectByType<StartupLifeBootstrapper>();
+            Assert.That(bootstrap, Is.Not.Null);
+            Assert.That(bootstrap.IsReady, Is.True);
+            GameObject.Find("CharacterNameInput").GetComponent<TMP_InputField>().text =
+                "Nguyễn Văn Thịnh tên dài kiểm tra";
+            GameObject.Find("CreateCharacterButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            yield return null;
+            var originalRevision = bootstrap.Snapshot.Revision;
+            var originalCash = bootstrap.Snapshot.Cash;
+            var dashboardButton = GameObject.Find("LifeDashboardButton")
+                .GetComponent<UnityEngine.UI.Button>();
+            Assert.That(dashboardButton.GetComponent<RectTransform>().rect.height,
+                Is.GreaterThanOrEqualTo(95.9f));
+            dashboardButton.onClick.Invoke();
+            yield return null;
+            var panel = GameObject.Find("LifeDashboardOverlay");
+            Assert.That(panel, Is.Not.Null);
+            Assert.That(panel.activeSelf, Is.True);
+            var scroll = GameObject.Find("LifeDashboardScroll").GetComponent<UnityEngine.UI.ScrollRect>();
+            Assert.That(scroll.vertical, Is.True);
+            Assert.That(scroll.horizontal, Is.False);
+            Assert.That(scroll.viewport.GetComponent<UnityEngine.UI.Mask>(), Is.Not.Null);
+            Assert.That(scroll.content.GetComponent<UnityEngine.UI.VerticalLayoutGroup>(), Is.Not.Null);
+            Assert.That(scroll.content.GetComponent<UnityEngine.UI.ContentSizeFitter>(), Is.Not.Null);
+
+            foreach (var section in new[] { "Career", "Skills", "Finance", "Business", "Profile" })
+            {
+                var tab = GameObject.Find("LifeTab" + section + "Button")
+                    .GetComponent<UnityEngine.UI.Button>();
+                Assert.That(tab.GetComponent<RectTransform>().rect.height,
+                    Is.GreaterThanOrEqualTo(95.9f), "Undersized tab: " + section);
+                tab.onClick.Invoke();
+                yield return null;
+                Assert.That(GameObject.Find("LifePage" + section), Is.Not.Null,
+                    "Tab should expose its corresponding page");
+                Assert.That(bootstrap.Snapshot.Revision, Is.EqualTo(originalRevision),
+                    "Navigation must not commit an outcome");
+                Assert.That(bootstrap.Snapshot.Cash, Is.EqualTo(originalCash),
+                    "Navigation must not change wallet");
+            }
+            Assert.That(GameObject.Find("LifeProfileValue").GetComponent<TMP_Text>().text,
+                Does.Contain("Nguyễn Văn Thịnh tên dài kiểm tra"));
+            GameObject.Find("LifeTabSkillsButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            yield return null;
+            Assert.That(GameObject.Find("LifeSkillsValue").GetComponent<TMP_Text>().text,
+                Does.Contain("Giao tiếp").And.Contain("Lãnh đạo"));
+            GameObject.Find("LifeTabFinanceButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            yield return null;
+            Assert.That(GameObject.Find("LifeFinanceValue").GetComponent<TMP_Text>().text,
+                Does.Contain("Tiền mặt").And.Contain("Tổng nợ"));
+            GameObject.Find("LifeTabBusinessButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            yield return null;
+            GameObject.Find("LifeOpenBusinessButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            yield return null;
+            Assert.That(panel.activeSelf, Is.False,
+                "Opening existing business controls must close the dashboard");
+            Assert.That(GameObject.Find("BusinessManagementOverlay").activeSelf, Is.True,
+                "Business tab must reuse the authoritative business overlay");
+            Assert.That(bootstrap.Snapshot.Revision, Is.EqualTo(originalRevision),
+                "Opening existing business UI must not commit money or time");
+            GameObject.Find("BusinessManagementCloseButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
         public IEnumerator BusinessManagementOverlayCreatesControlsAndBindsCommittedReadouts()
         {
             var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);

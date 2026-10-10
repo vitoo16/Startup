@@ -38,6 +38,8 @@ namespace StartupLife.Presentation
         private Func<BusinessPortfolioSnapshot> portfolioReader;
         private Func<BusinessOperationsSnapshot> operationsReader;
         private BusinessManagementOverlay businessOverlay;
+        private Func<LifeDashboardSnapshot> lifeDashboardReader;
+        private LifeDashboardOverlay lifeDashboard;
 
         public void AttachBusinessReadouts(TMP_Text financeText, TMP_Text portfolioText)
         {
@@ -56,6 +58,30 @@ namespace StartupLife.Presentation
             Refresh();
         }
 
+
+        public void BindLifeDashboard(Func<LifeDashboardSnapshot> reader)
+        {
+            lifeDashboardReader = reader ?? throw new ArgumentNullException(nameof(reader));
+            Refresh();
+        }
+
+        public void EnsureLifeDashboardUi()
+        {
+            if (lifeDashboardReader == null)
+                throw new InvalidOperationException("Dashboard reader must be bound before UI installation.");
+            var fontSource = cashValue != null ? cashValue :
+                GetComponentInChildren<TMP_Text>(true);
+            lifeDashboard = LifeDashboardOverlay.Install(this, lifeDashboardReader, fontSource);
+            Refresh();
+        }
+
+        public void OpenBusinessManagement()
+        {
+            lifeDashboard?.Hide();
+            if (businessOverlay == null)
+                throw new InvalidOperationException("Business overlay has not been installed.");
+            businessOverlay.Open();
+        }
 
         public void BindBusinessPortfolio(Func<BusinessPortfolioSnapshot> readBusinessPortfolio)
         {
@@ -172,6 +198,7 @@ namespace StartupLife.Presentation
             if (studyButton) studyButton.interactable = snapshot.ActiveCourse != null;
             if (resignButton) resignButton.interactable = employed;
             businessOverlay?.Refresh();
+            lifeDashboard?.Refresh();
         }
 
         public void AcceptDeveloper()
