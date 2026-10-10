@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="../SimulationChecks/StartupLife.Core.csproj" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Simulation.csproj" />
+    <ProjectReference Include="../SimulationChecks/StartupLife.Application.csproj" />
     <Compile Include="../../Assets/StartupLife/Scripts/Content/M9T02FunctionalEconomy.cs" Link="M9T02FunctionalEconomy.cs" />
   </ItemGroup>
 </Project>

@@ -1,3 +1,4 @@
+using StartupLife.Application;
 #nullable enable
 using System;
 using System.Collections.Generic;
@@ -498,6 +499,18 @@ internal static class Program
                 new[]{"slice-A","slice-B","slice-C"},
                 new[]{new KeyValuePair<string,long>("A",20)},
                 Array.Empty<ObligationDueTranche>(),Array.Empty<string>());
+            var view=BusinessFinanceProjection.FromVerifiedSettlement(settlement);
+            Assert(view.DateIso=="2026-10-09" && view.SettlementId==settlement.SettlementId,
+                "finance projection must only represent committed date and settlement");
+            Assert(view.GrossRevenueVnd==380 && view.VariableExpenseVnd==80 &&
+                view.FixedExpenseVnd==20 && view.ProfitVnd==280 &&
+                view.NetCashCreditVnd==380 && view.ArrearsWithheldVnd==0,
+                "finance projection must conserve verified realized amounts");
+            Assert(view.Businesses.Select(x=>x.InstanceId).SequenceEqual(new[]{"A","B","C"}),
+                "detached finance rows must use canonical ordering");
+            Assert(view.Businesses.Sum(x=>x.GrossRevenueVnd)==view.GrossRevenueVnd &&
+                view.Businesses.Sum(x=>x.ProfitVnd)==view.ProfitVnd,
+                "finance rows and day totals must match");
             Assert(settlement.SettlementId=="run/business-day/2026-10-09","receipt-independent identity");
             Assert(settlement.GrossRevenueVnd==380,"gross A160 + B100 + C120");
             Assert(settlement.VariablePaidDuringDayVnd==80,"variable paid earlier A50 B30");
