@@ -30,6 +30,7 @@ namespace StartupLife.Presentation
     public sealed class FirstPlayableState
     {
         public FirstPlayableScreen Screen { get; }
+        public string RunId { get; }
         public string Name { get; }
         public SimInstant Instant { get; }
         public long Revision { get; }
@@ -53,6 +54,7 @@ namespace StartupLife.Presentation
         {
             if (snapshot == null) throw new ArgumentNullException(nameof(snapshot));
             Screen = snapshot.Name.Length == 0 ? FirstPlayableScreen.CharacterCreation : FirstPlayableScreen.Life;
+            RunId = snapshot.RunId;
             Name = snapshot.Name;
             Instant = snapshot.Instant;
             Revision = snapshot.Revision;
