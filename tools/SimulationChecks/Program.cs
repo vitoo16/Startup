@@ -522,6 +522,68 @@ internal static class Program
             var before = session.ExportCheckpoint(); Equal(CommandStatus.PersistenceFailed, session.Execute(new CommandEnvelope("run", "failed", initial.Revision, new GameCommand(CommandKind.AdvanceBoundary))).Status);
             Bytes(before, session.ExportCheckpoint()); Bytes(before, File.ReadAllBytes(path)); True(!File.Exists(path + ".tmp"));
         });
+        Check("M11 pre-promotion disk faults retain exact primary and clean own temp", () =>
+        {
+            var f = new Fixture(); f.Create(); f.Accept();
+            var initial = f.State();
+            var checkpoint = f.Session.ExportCheckpoint();
+            foreach (var phase in new[] { "before-temp-write", "during-temp-write",
+                "after-temp-flush", "before-replace" })
+            {
+                var name = "m11-" + phase;
+                var path = PathFor(name);
+                File.WriteAllBytes(path, checkpoint);
+                var guardedStore = new AtomicFileSaveStore(path, f.Serializer, current => current == phase);
+                var session = new GameSession(initial, f.Content, f.Serializer, guardedStore);
+                var request = new CommandEnvelope("run", name, initial.Revision,
+                    new GameCommand(CommandKind.AdvanceBoundary));
+                Equal(CommandStatus.PersistenceFailed, session.Execute(request).Status);
+                Bytes(checkpoint, File.ReadAllBytes(path));
+                Bytes(checkpoint, session.ExportCheckpoint());
+                True(!File.Exists(path + ".backup"));
+                Equal(0, Directory.GetFiles(scratch, name + ".json.tmp-*").Length);
+
+                // A failed disk write does not consume the idempotency key. Exactly
+                // one authorized retry may now commit the identical command.
+                var healthy = new AtomicFileSaveStore(path, f.Serializer);
+                var recovered = new GameSession(initial, f.Content, f.Serializer, healthy);
+                Equal(CommandStatus.Committed, recovered.Execute(request).Status);
+                Equal(CommandStatus.AlreadyCommitted, recovered.Execute(request).Status);
+                Equal(initial.Revision + 1, recovered.Snapshot().Revision);
+                Bytes(checkpoint, File.ReadAllBytes(path + ".backup"));
+            }
+        });
+        Check("M11 both invalid checkpoints refuse recovery and retain original bytes", () =>
+        {
+            var f = new Fixture(); f.Create();
+            var path = PathFor("m11-both-damaged");
+            var badPrimary = Encoding.UTF8.GetBytes("truncated-primary");
+            var badBackup = Encoding.UTF8.GetBytes("truncated-backup");
+            File.WriteAllBytes(path, badPrimary);
+            File.WriteAllBytes(path + ".backup", badBackup);
+            var store = new AtomicFileSaveStore(path, f.Serializer);
+            var read = store.Read();
+            Equal(LoadStatus.Corrupt, read.Status);
+            Equal("save.unrecoverable", read.Reason);
+            Equal(WriteStatus.Failed, store.Commit(f.Session.ExportCheckpoint(), f.State().Revision));
+            Bytes(badPrimary, File.ReadAllBytes(path));
+            Bytes(badBackup, File.ReadAllBytes(path + ".backup"));
+        });
+        Check("M11 invalid primary never downgrades a future-version backup", () =>
+        {
+            var f = new Fixture(); f.Create();
+            var path = PathFor("m11-future-backup");
+            var invalid = Encoding.UTF8.GetBytes("broken-primary");
+            var future = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(f.State()),
+                SaveSchema.CurrentVersion + 10, f.State().Revision);
+            File.WriteAllBytes(path, invalid);
+            File.WriteAllBytes(path + ".backup", future);
+            var store = new AtomicFileSaveStore(path, f.Serializer);
+            Equal(LoadStatus.FutureVersion, store.Read().Status);
+            Equal(WriteStatus.Failed, store.Commit(f.Session.ExportCheckpoint(), f.State().Revision));
+            Bytes(invalid, File.ReadAllBytes(path));
+            Bytes(future, File.ReadAllBytes(path + ".backup"));
+        });
         Check("post-replace ambiguity blocks commands then reconciles retry", () =>
         {
             var f = new Fixture(); f.Create(); f.Accept(); var path = PathFor("after"); File.WriteAllBytes(path, f.Session.ExportCheckpoint()); var initial = f.State();

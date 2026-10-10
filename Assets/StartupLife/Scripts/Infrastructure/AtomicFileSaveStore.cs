@@ -112,8 +112,21 @@ namespace StartupLife.Infrastructure
                                     SerializeForSchema(expected.State!, expected.SourceSchemaVersion)) ||
                                 !IdentityOnlyChange(expected.State!, candidate.State!, expected.SourceSchemaVersion)) return WriteStatus.Failed;
                         }
+                        // Fault probes only act when injected; normal writes keep the same
+                        // bytes, flush(true), CAS and promotion semantics. Simulate a
+                        // low-storage/partial write BEFORE replacement to prove isolation.
+                        if (fault?.Invoke("before-temp-write") == true)
+                            throw new IOException("Injected before temporary write.");
                         using (var file = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
-                        { file.Write(validatedBytes, 0, validatedBytes.Length); file.Flush(true); }
+                        {
+                            var partialWrite = fault?.Invoke("during-temp-write") == true;
+                            var length = partialWrite ? Math.Max(1, validatedBytes.Length / 2) : validatedBytes.Length;
+                            file.Write(validatedBytes, 0, length);
+                            file.Flush(true);
+                            if (partialWrite) throw new IOException("Injected incomplete disk write.");
+                        }
+                        if (fault?.Invoke("after-temp-flush") == true)
+                            throw new IOException("Injected after durable temporary flush.");
                         if (ReadFile(temporary).Status != LoadStatus.Valid) return WriteStatus.Failed;
                         if (fault?.Invoke("before-replace") == true) throw new IOException("Injected before replacement.");
                         if (File.Exists(primary))
