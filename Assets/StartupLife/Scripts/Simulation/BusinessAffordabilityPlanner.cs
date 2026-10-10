@@ -179,7 +179,7 @@ namespace StartupLife.Simulation
                 int possible = b.FullCapacityUnits == 0 ? 0 : Math.Max(0,
                     (int)Math.Min(b.FullCapacityUnits - b.AlreadyFulfilledUnits,
                         ((long)(b.AlreadyWorkedMinutes + future.Length) * b.FullCapacityUnits / b.RequiredOwnerMinutes)
-                        - b.AlreadyFulfilledUnits));
+                        - Math.Max(b.AlreadyFulfilledUnits, (long)b.AlreadyWorkedMinutes * b.FullCapacityUnits / b.RequiredOwnerMinutes)));
                 if (b.RemainingDemandUnits > 0 && possible > 0 &&
                     b.VariableCostPerUnitVnd <= spendableCashAfterDueFixedVnd)
                 {
@@ -219,7 +219,9 @@ namespace StartupLife.Simulation
                 if (i == fullTimeCandidate && chosenFullTime.Length == 0) continue;
                 var soloCapacity = (long)(b.AlreadyWorkedMinutes + allowed[i].Length)
                     * b.FullCapacityUnits / b.RequiredOwnerMinutes;
-                var additional = Math.Max(0L, soloCapacity - b.AlreadyFulfilledUnits);
+                var alreadyPassedCapacity = (long)b.AlreadyWorkedMinutes * b.FullCapacityUnits / b.RequiredOwnerMinutes;
+                // Capacity already passed by committed work cannot generate retrospective sales.
+                var additional = Math.Max(0L, soloCapacity - Math.Max(b.AlreadyFulfilledUnits, alreadyPassedCapacity));
                 refs[i] = (int)Math.Min(b.RemainingDemandUnits,
                     Math.Min(b.FullCapacityUnits - b.AlreadyFulfilledUnits, additional));
             }
@@ -296,8 +298,10 @@ namespace StartupLife.Simulation
         {
             if (additionalUnits == 0) return 0;
             if (c.FullCapacityUnits == 0) throw new ArgumentException("Zero-capacity business cannot reserve units.");
-            var totalNeeded = ((long)(c.AlreadyFulfilledUnits + additionalUnits) *
-                c.RequiredOwnerMinutes + c.FullCapacityUnits - 1) / c.FullCapacityUnits;
+            var passedCapacity = (long)c.AlreadyWorkedMinutes * c.FullCapacityUnits / c.RequiredOwnerMinutes;
+            var futureTarget = Math.Max((long)c.AlreadyFulfilledUnits, passedCapacity) + additionalUnits;
+            var totalNeeded = (futureTarget * c.RequiredOwnerMinutes + c.FullCapacityUnits - 1) /
+                c.FullCapacityUnits;
             return checked((int)Math.Max(0, totalNeeded - c.AlreadyWorkedMinutes));
         }
 
