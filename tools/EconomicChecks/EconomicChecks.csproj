@@ -8,6 +8,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <None Update="Fixtures/*.json" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Core.csproj" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Simulation.csproj" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Application.csproj" />

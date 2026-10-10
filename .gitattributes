@@ -16,6 +16,11 @@
 *.yml        text eol=lf
 *.yaml       text eol=lf
 
+# Archived compatibility evidence is byte-frozen, including on Windows checkouts.
+docs/evidence/M9-T02/frozen-v2-source/** -text
+tools/EconomicChecks/Fixtures/*.json -text
+docs/evidence/M9-T02/runtime-20261011/** -text
+
 # Unity serialized assets stay mergeable and outside LFS
 *.meta       -text merge=unityyamlmerge eol=lf
 *.unity      -text merge=unityyamlmerge eol=lf

@@ -66,6 +66,12 @@ namespace StartupLife.Tests.PlayMode
             Assert.That(overlay, Is.Not.Null);
             Assert.That(overlay.activeSelf, Is.True,
                 "Business panel must open from its visible uGUI button");
+            Canvas.ForceUpdateCanvases();
+            foreach (var button in overlay.GetComponentsInChildren<UnityEngine.UI.Button>())
+                Assert.That(button.GetComponent<RectTransform>().rect.height,
+                    Is.GreaterThanOrEqualTo(95.9f), "Undersized business touch target: " + button.name);
+            Assert.That(open.GetComponent<RectTransform>().rect.height,
+                Is.GreaterThanOrEqualTo(95.9f), "Undersized business entry touch target");
             Assert.That(bootstrap.Snapshot.Cash, Is.EqualTo(previousCash),
                 "Opening or refreshing UI must never generate money/costs");
 

@@ -1,0 +1,394 @@
+PASS frozen v2 runtime evaluator exactly matches original semantics (identifier renames only)
+PASS frozen v2 source Business.cs.txt gitSHA1=505e036003431fa31dab749311d4deffa098f667 SHA256=c76306ddbc1a1c20418f0366a3323fb7cf84212e1ffaa12e0e69cd2944242a15
+PASS frozen v2 source ContentCatalogSource.cs.txt gitSHA1=3cd16f2c1b5023d10e52f96f27bc68c6afc37bd4 SHA256=b776a8f8ed04fa49422cf378931b31aa74d0114bc99cc4a066a328e4a79bdd9a
+PASS frozen v2 source Definitions.cs.txt gitSHA1=55dead577b734e6d4497984160132dd01eb00242 SHA256=35b70b7229029a144a5ec110a57bd1f985d6c274acfd49c66df843f2b341b8c0
+PASS frozen v2 source FirstPlayableContent.asset.yaml gitSHA1=fe78dc29d590ecacca6056eba07a7b2cf4605557 SHA256=1f637ade3b8cdb7334deab7cef75db5c25751f24d7654c6577d899cc8b999ae0
+PASS frozen v2 source FirstPlayableContentTemplate.cs.txt gitSHA1=7bb5a829c5d1647b7df123249dd8a1233bda231a SHA256=927065c9559b6b223112a5ff39ccdde49794f160e59e2022300cc8bd9b207a3e
+PASS frozen v2 source HistoricalV1Codec.cs.txt gitSHA1=3c407d78c3b344ee042408fc04fce4b2119dac15 SHA256=487507084edc90bfb17b7c2be23c154394be7d7d986beb64d009859715df7fc4
+PASS frozen v2 source JsonSaveSerializer.cs.txt gitSHA1=1733cdf32e9779dd5c489fd4c6a612eec2e9de28 SHA256=ac4d8def1e01841ba8cd65a76f122962993f228cb483c72db7f390b8381450d4
+PASS frozen v2 source SimulationEngine.cs.txt gitSHA1=4adbbce053db01ac5ee161e74838349740899f4b SHA256=871d51d694e1ad5451a08d1eb120f3ccf9ddff7e42d0b4eb247250776ad7a0e0
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  StartupLife.Core -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  StartupLife.Simulation -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Simulation.dll
+  StartupLife.Application -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Application.dll
+  StartupLife.Infrastructure -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Infrastructure.dll
+  StartupLife.Provisional -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Provisional.dll
+  SimulationChecks -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\net8.0\SimulationChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.25
+PASS xorshift32-v1 reference vector
+PASS independent event stream leaves scheduler unchanged
+PASS Developer 20-slot quota exact across cycles
+PASS largest remainder stable ties and <1 slot error
+PASS content rejects invalid quota, duplicate IDs and missing references
+PASS character boundaries and rejected commands are byte identical
+PASS Vietnamese name and course save round trip
+PASS salary accrues without spendable cash and retry grants once
+PASS course charge once, study time and completion floor
+PASS course prerequisites and single-active-course gate reject without mutation
+PASS active course snapshot survives cold restore without checkpoint inspection
+PASS course outcome distinguishes progress and study completion
+PASS career grant course completion has explicit target-already-met reason
+PASS LearningSpeed changes duration and study never overlaps work/sleep
+PASS career XP remains separate from skills; promotion milestone idempotent
+PASS skill levels cover 0-5 boundaries and weaker grants cannot lower earned strength
+PASS course target met by career completes without refund/second grant
+PASS mid-cycle/course restore and next outcomes deterministic
+PASS suspension/real elapsed time never advances simulation
+PASS employment-free planner covers founder-equivalent availability and clamps allocated minutes
+PASS full month salary, expenses, payday and batch retry
+PASS partial-month resignation preserves exact earned pay and biography
+PASS oldest arrears settle before spending and employment recovers
+PASS repeated zero-cash shortfalls accumulate arrears without negative cash
+PASS insufficient funds and stale revision reject without mutation
+PASS overflow rejects entire boundary including RNG/rewards
+PASS leap years, month end and hospitality weekends
+PASS payday clamp and payday work excluded from current payment
+PASS rank changes preserve committed deck prefix/history
+PASS pending required choice stops month advancement
+PASS playback acknowledgement cannot add rewards
+PASS committed outcome exposes transactions and survives old retry after restore
+PASS career boundary outcome exposes activity interval progression and reached instant
+PASS playback outcome changes cursor only and snapshot publishes it
+PASS root playback cue and cursor forgery are corrupt before restore publication
+PASS playback provenance does not mask unsupported content
+PASS candidate serialization validation is contained as state invalid
+PASS committed non-boundary cue forgery is corrupt before outcome publication
+PASS synthetic v0 migration and current continuation
+PASS future/content-incompatible saves preserved without backup fallback
+PASS atomic storage before-replace failure retains state and backup
+PASS post-replace ambiguity blocks commands then reconciles retry
+PASS corrupt primary recovers prior generation and preserves backup
+PASS malformed save checksum, duplicate identity and invalid RNG rejected
+PASS transient read lock does not roll back to backup
+PASS competing writer cannot delete active writer temp
+PASS invalid restored work cursor and reward coherence rejected
+PASS snapshot collections cannot mutate authoritative state
+PASS ledger cash reconciliation over multi-month employed study scenario
+49/49 passed. Report: [USER_HOME]\.codex\visualizations\2026\10\10\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\unity-fix-7c3c581\evidence\engine-free\simulation-report.json
+Temporary fixtures retained for diagnosis: [USER_HOME]\AppData\Local\Temp\StartupLifeChecks\08ef7da7b4a64662acb565408568633b
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  StartupLife.Core -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  StartupLife.Simulation -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Simulation.dll
+  StartupLife.Application -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Application.dll
+  StartupLife.Infrastructure -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Infrastructure.dll
+  StartupLife.Provisional -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Provisional.dll
+  BusinessOwnershipChecks -> [USER_HOME]\Startup\tools\BusinessOwnershipChecks\bin\Release\net8.0\BusinessOwnershipChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.19
+PASS M8 definitions, enums, defensive copies, and catalog compatibility
+PASS M8 command ordinals and historical canonical payloads are frozen
+PASS M8 launch acceptance matrix
+PASS M8 reinvest acceptance matrix
+PASS M8 pricing acceptance matrix
+PASS M8 closure acceptance matrix
+PASS M8 retry, stale, identity conflict, and rejected-byte invariants
+PASS M8 conservation, ledger attribution, entity order, and read model
+PASS M8 save v1/v0 migration and v2 roundtrip matrix
+PASS M8 H1 v1 schema-preserving normalization and first v2 commit
+PASS F1 frozen v1 rejects whitespace and escaped Businesses members
+PASS F1 H1 restore preserves bytes when frozen v1 wire is impossible
+PASS F2 unavailable business content cannot mask known business corruption
+PASS M8 restore rejects employed FullTimeRequired launch despite unrelated missing content
+PASS M8 restore rejects ManagerOperable launch despite unrelated missing content
+PASS M8 valid employed side-hustle remains unsupported when unrelated content is missing
+PASS M8 receipt timing permits FullTimeRequired launch after resignation
+PASS M8 operation-mode corruption recovers valid backup without rewriting files
+PASS F3 intrinsic business history provenance survives unrelated missing content
+PASS M8 restore intrinsically validates business command payloads before content compatibility
+PASS M8 intrinsically corrupt business primary recovers valid backup
+PROOF malformed-token root-member reader: XmlException before DTO deserialization
+PASS M8 malformed-token frozen v1 reader throws and serializer recovers valid backup
+PASS F4 ordinary commits require physical current schema
+PASS F5 migration source and intermediate stages validate before the next step
+PASS F8 LaunchBusiness retry matrix returns original committed semantics
+PASS F8 ReinvestBusiness retry matrix returns original committed semantics
+PASS F8 SetBusinessPricing retry matrix returns original committed semantics
+PASS F8 CloseBusiness retry matrix returns original committed semantics
+PASS F8 business command IDs preserve hostile ownership rules
+PASS M8 restore rejects corrupt business state before content compatibility
+PASS M8 unavailable business revision is unsupported content
+PASS M8-T02 immutable windows, copies, canonical sort and adjacency
+PASS M8-T02 malformed operating windows reject
+PASS M8-T02 malformed and impossible owner requirements reject
+PASS M8-T02 catalog rejects windows outside global waking day
+PASS M8-T02 result statuses and metric invariants
+PASS M8-T02 unemployed Freelance 240/120 eligible
+PASS M8-T02 Developer workday evening 240/120 eligible
+PASS M8-T02 Developer off-day eligible
+PASS M8-T02 early F&B 08-16 leaves 240
+PASS M8-T02 late F&B 14-21 leaves 60 and rejects
+PASS M8-T02 threshold F&B 14-20 leaves exactly 120
+PASS M8-T02 threshold minus one minute rejects
+PASS M8-T02 late F&B off-day leaves 240
+PASS M8-T02 late F&B before first shift leaves 240
+PASS M8-T02 weekend configured shift subtracts career interval
+PASS M8-T02 multiple windows add and half-open boundaries exclude overlap
+PASS M8-T02 omitted business weekday measures zero
+PASS M8-T02 whole-date calculation ignores clock, study and portfolio
+PASS M8-T02 modes preserve hard rules and legacy policy
+PASS M8-T02 content resolution is exact and follows hard mode gates
+PASS M8-T02 read model is pure with date/revision and stale metadata
+PASS M8-T02 command-query parity and rejected-byte atomicity
+PASS M8-T02 launch rejection precedence stays frozen
+PASS M8-T02 scheduled v2 roundtrip and cold retry
+PASS M8-T02 historical launch then employment stays valid
+PASS M8-T02 historical resign then same-day launch stays valid
+PASS M8-T02 historical pre-first-shift ignores future shift
+PASS M8-T02 first shift exact start and one minute after preserve parity
+PASS M8-T02 employed illegal historical launch then resign remains corrupt
+PASS M8-T02 known scheduled corruption wins over unrelated missing content
+PASS M8-T02 required career revision absent remains unsupported
+PASS M8-T02 changed business revision never substitutes new balance
+PASS M8-T02 unavailable earlier career cannot hide later unemployed corruption
+PASS M8-T02 unavailable earlier career cannot hide later known-career schedule corruption
+PASS M8-T02 unavailable earlier career cannot hide later Manager corruption
+PASS M8-T02 receipt date rather than current weekday decides historical eligibility
+PASS M8-T02 forged first shift cannot make a historical launch eligible
+PASS M9-T01 interval and capacity validation
+PASS M9-T01 one business caps at owner requirement
+PASS M9-T01 two different overlapping windows share feasible 90/90
+PASS M9-T01 three side businesses receive 80/80/80
+PASS M9-T01 four side businesses receive 60/60/60/60
+PASS M9-T01 kiosk contiguous reservation precedes side business
+PASS M9-T01 kiosk cannot operate with a fragmented or elapsed block
+PASS M9-T01 Manager and legacy content cannot obtain operation minutes
+PASS M9-T01 unsupported content has no speculative free minutes
+PASS M9-T01 unavailable career revision fails closed
+PASS M9-T01 closed businesses receive no allocation
+PASS M9-T01 real committed Study timeline and cold restore
+PASS M9-T01 Developer weekday employment reservation and side business
+PASS M9-T01 F&B Saturday career shift reserves mandatory time
+PASS M9-T01 off-day and pre-first-shift employment reserve no time
+PASS M9-T01 241-minute canonical remainder apportions 81/80/80
+PASS M9-T01 capped owner time redistributes remaining 120 minutes
+PASS M9-T01 three-business permutations preserve complete output
+PASS M9-T01 four-business permutations preserve complete output
+PASS M9-T01 source portfolio reordering is byte-deterministic
+PASS M9-T01 valid cold restore preserves complete output
+PASS M9-T01 read model returns pure revision-bound preview
+90/90 passed. Report: [USER_HOME]\.codex\visualizations\2026\10\10\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\unity-fix-7c3c581\evidence\engine-free\m8-business-ownership-report.json
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  StartupLife.Core -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  StartupLife.Simulation -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Simulation.dll
+  StartupLife.Application -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Application.dll
+  StartupLife.Infrastructure -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Infrastructure.dll
+  StartupLife.Provisional -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Provisional.dll
+  AstraFoundationChecks -> [USER_HOME]\Startup\tools\AstraFoundationChecks\bin\Release\net8.0\AstraFoundationChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.20
+PASS H1 direct command and advance batch cannot share caller CommandId
+PASS H1 completed batch retry replays persisted receipts after restore
+PASS H1 legacy reserved-prefix caller and batch identities remain disjoint
+PASS H1 unknown historical receipt ownership blocks writes without guessing
+PASS H1 PR6 and pre-PR6 completed day/month receipts replay with their original owner
+PASS H1 historical partial day/month continuation persists ownership atomically
+PASS H1 ordinary root/index day/month continuations need no provenance
+PASS H1 failed normalization preserves checkpoint and owner bindings are defensive
+PASS H1 internal IDs exclude historical callers including delimiter and maximum-length roots
+PASS H1 trusted recovery persists completed/partial day/month owners before retry
+PASS H1 compatibility recovery failures and replacement ambiguity preserve exactly-once results
+PASS H1 compatibility writes reject same-schema gameplay, direct-ID, and competing-owner changes
+PASS H1 mixed-schema compatibility normalization is rejected separately
+PASS H1 malformed ownership groups fail closed without rewriting the checkpoint
+PASS H2 unsupported career revision does not fall back to backup or overwrite primary
+PASS H2 missing saved skill is unsupported content
+PASS H2 missing scheduled scene is unsupported while wrong-career scene is corrupt
+PASS H2 malformed persisted fields remain corrupt before compatibility resolution
+PASS R2 truncated skill state is corrupt and recovers the valid backup
+PASS R2 cross-field corruption wins over missing content and unavailable revisions
+20/20 passed. Report: [USER_HOME]\.codex\visualizations\2026\10\10\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\unity-fix-7c3c581\evidence\engine-free\astra-foundation-highs-report.json
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  StartupLife.Core -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  StartupLife.Infrastructure -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Infrastructure.dll
+  StartupLife.Simulation -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Simulation.dll
+  StartupLife.Application -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Application.dll
+  StartupLife.Provisional -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Provisional.dll
+  RestoreInvariantChecks -> [USER_HOME]\Startup\tools\RestoreInvariantChecks\bin\Release\net8.0\RestoreInvariantChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.25
+PASS M2 operation and entity counters cannot reuse issued identities
+PASS M2 scheduler cursor cannot rewind committed work
+PASS M2 scheduler cycle follows committed career activities
+PASS M2 promoted rank transition remains valid until next scheduler consume
+PASS M2 committed activity history cannot be removed or forged
+PASS M2 resigned employment keeps its persisted scheduler valid
+PASS M2 valid mid-cycle restore continues byte-identically
+PASS M2 rewinding cursor and history cannot replay XP or salary
+PASS M2 same-career deck cannot violate quota
+PASS M2 correct quota cannot hide impossible deck ordering
+PASS M2 generation overflow is rejected before publication
+PASS M2 stale signature after an already-consumed promotion is corrupt
+PASS M2 non-career boundary history cannot be removed
+PASS M2 canonical past activities cannot be invented
+PASS M2 equal activity counts cannot hide forged provenance
+PASS M2 global entity sequence cannot be shared by different kinds
+PASS M2 counter covers settled entity references retained in ledger
+PASS M2 committed receipt history cannot be removed or reordered
+PASS M2 malformed canonical payloads remain structural corruption
+PASS M2 timeline corruption wins over unavailable content
+PASS M2 known scheduler corruption wins over missing background
+PASS M2 valid missing background remains unsupported content
+PASS M2 missing scheduler scenes remain unsupported content
+PASS M2 multi-scene promotion and cycle-seam continuation are deterministic
+PASS M2 resignation and subsequent employment preserve scheduler provenance
+PASS M2 missing historical scheduler scene is unsupported
+PASS M2 historical scene belonging to another career is corrupt
+PASS M2 serializer requires an explicit restore verifier
+PASS M2 coordinated receipt and cursor rewind cannot retain rewards
+PASS M2 committed reward and salary provenance cannot be forged
+PASS M2 scheduler RNG and plausible generation must match its trace
+PASS M2 creation receipt binds intrinsic character identity
+PASS M2 available start definition binds learning speed
+PASS M2 reconstructed cash must match authoritative checkpoint
+PASS M2 unemployed boundary after mid-shift resignation is not career work
+35/35 passed. Report: [USER_HOME]\.codex\visualizations\2026\10\10\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\unity-fix-7c3c581\evidence\engine-free\astra-m2-restore-invariants-report.json
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  StartupLife.Core -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  StartupLife.Infrastructure -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Infrastructure.dll
+  StartupLife.Simulation -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Simulation.dll
+  StartupLife.Application -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Application.dll
+  StartupLife.PresentationModel -> [USER_HOME]\Startup\tools\PresentationChecks\bin\Release\netstandard2.1\StartupLife.PresentationModel.dll
+  StartupLife.Provisional -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Provisional.dll
+  PresentationChecks -> [USER_HOME]\Startup\tools\PresentationChecks\bin\Release\net8.0\PresentationChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.08
+PASS initial snapshot selects character creation and copies read model
+PASS create character dispatches current run revision and injected command id
+PASS life actions dispatch frozen commands from latest snapshot revision
+PASS business commands preserve canonical kind, revision and payload
+PASS playback acknowledgement binds current activity
+PASS day and month advancement use boundary intent and project reached state
+PASS active course read model flows through unchanged
+PASS empty command id source fails before dispatch
+PASS run id is read again for every dispatch
+PASS empty ids block both direct and batch dispatch
+PASS backward playback returns application rejection without rewards
+PASS old and restored course retries preserve original outcome and current projection
+12/12 passed. Report: [USER_HOME]\.codex\visualizations\2026\10\10\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\unity-fix-7c3c581\evidence\engine-free\presentation-adapter-report.json
+  Determining projects to restore...
+  Restored [USER_HOME]\Startup\tools\ContentCatalogChecks\ContentCatalogChecks.csproj (in 203 ms).
+  2 of 3 projects are up-to-date for restore.
+  StartupLife.Core -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  StartupLife.Simulation -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Simulation.dll
+  ContentCatalogChecks -> [USER_HOME]\Startup\tools\ContentCatalogChecks\bin\Release\net8.0\ContentCatalogChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.61
+PASS first playable template builds expected immutable catalog
+PASS duplicate content ids reject at conversion boundary
+PASS missing career skill reference rejects
+PASS missing course skill reference rejects
+PASS invalid appearance id rejects
+PASS career outside day schedule rejects
+PASS built catalog is detached from mutable source arrays
+PASS null authoring entries reject explicitly
+PASS M8-T02 authored business definitions build with functional schedules
+PASS M8-T02 business authoring rejects missing or malformed requirements
+PASS M8-T02 business authoring defensive copy
+PASS M8-T02 business source collection and duplicate id validation
+PASS M8-T02 production content evaluates Developer Freelance and kiosk
+13/13 passed. Report: [USER_HOME]\.codex\visualizations\2026\10\10\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\unity-fix-7c3c581\evidence\engine-free\content-catalog-report.json
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  StartupLife.Core -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Core.dll
+  StartupLife.Simulation -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Simulation.dll
+  StartupLife.Application -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Application.dll
+  StartupLife.Infrastructure -> [USER_HOME]\Startup\tools\SimulationChecks\bin\Release\netstandard2.1\StartupLife.Infrastructure.dll
+  EconomicChecks -> [USER_HOME]\Startup\tools\EconomicChecks\bin\Release\net8.0\EconomicChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.28
+PASS six ID-keyed segments with exactly four active
+PASS four exact functional fixture prices and charges
+PASS largest remainder pool supply is exact, tie by segment ID
+PASS one business respects pool supply, no fake full-conversion
+PASS competition caps shared pool and canonical ordering
+PASS sold units survive replanning and future pool exhaustion
+PASS duplicate market unit and identity rejected
+PASS zero weight cannot produce demand
+PASS version-1 integer bounds reject out of range
+PASS eight obligation cadences use only authored deterministic triggers
+PASS cumulative day-metered proration 33+33+34=100
+PASS oldest due payment order and partial cash reserve
+PASS future catalog revision permits fifth active stable segment
+PASS P-03 A/B/C exact 100-20-80 wallet time vector
+PASS P-03 unequal R is normalized, not equal legacy minute shares
+PASS P-03 zero wallet still funds zero-cost units without income
+PASS global matching reassigns occupied shared minute to feasible peer
+PASS C greater than R cannot mint unreserved units on one-minute floor jump
+PASS full-time contiguous reservation excludes overlapping side minutes
+PASS previously fulfilled and committed time preserved in new epoch
+PASS contractual due100 immediate40 later income80 pays same liability once
+PASS salary and business income share stable oldest-first arrears graph
+PASS full-time with zero accepted units releases future side slots
+PASS frozen epoch time crossing equals sum of split AdvanceBoundary children
+PASS epoch consumes C greater than R only up to reserved two units
+PASS Study never credits business work and invalidates frozen epoch
+PASS v3 price changes are next-day, overwritten, and can be cleared
+PASS v3 Pause immediate, Resume next day, Close terminal with no fee fabricated
+PASS midnight A/B/C settlement conserves gross cost profit and cash
+PASS midnight revenue pays exact original obligation arrear with no double debit
+PASS settlement rejects duplicated market unit and unmatched cost
+PASS four-pool epoch connects finite segment demand to wallet reservations
+PASS same-day market replan cannot reissue committed pool ordinal
+PASS migration activation is next date for v2 midday, without retroactive fees
+PASS v2 midnight cutover is lazy current-day only, without salary/living replay
+PASS staged v2-to-v3 migration retains exact source checkpoint bytes
+PASS staged v3 codec rejects fabricated revenue and post-cutover root mutation
+PASS staged v2-to-v3 migration fails closed for unknown history ruleset and schema
+PASS frozen v2 catalog matches the original v2 authored fixture semantics
+PASS frozen v2 evaluator preserves immediate pricing and original command effects
+PASS versioned replay validates zero-effect v2 prefix against frozen evaluator
+PASS typed v3 provenance preserves one sale / reservation / market unit / settlement
+PASS v1 source checkpoint migrates through 1-to-2-to-3 with original schema retained
+PASS synthetic v0 source migrates through each adjacent stage with source0 anchor
+PASS staged schema3 envelope validates checksum generation and future schema precedence
+PASS v3 command wire appends Pause11 and Resume12 without changing v2 payload codes
+PASS v3 policy candidate mutates only prospective time and price
+PASS v3 policy serialization retains pending fields and fails malformed flags
+PASS persisted v3 market epoch survives cold save with unspent wallet reservations
+PASS prospective replan releases only unconsumed cost and never refunds cash
+PASS authoritative epoch validator rejects tampered hours and market reservation mappings
+PASS v3 invoice persists one payable and income clears oldest without second debit
+PASS persisted v3 old-day settlement conserves actual wallet and invoice profit
+PASS v3 economic receipt processing operates freelance and pays next-day fixed charges
+PASS real GameSession commits schema3 character and cold restores source-verified receipt
+PASS v3 employment transitions commit with receipt-backed time and survive cold restore
+PASS pre-fix v3 pending business policies retain byte-identical replay and serialization
+PASS v2 primary migrates in-memory and first v3 command preserves byte-exact v2 backup
+PASS same-generation v2 CAS projection rejects edited cash and latent v3 economy
+PASS legacy business closed before v3 activation must never open a v3 contract
+60/60 M9-T02 economy checks passed.
+These reports verify .NET behavior only. Unity EditMode, PlayMode, IL2CPP, and devices remain separate gates.

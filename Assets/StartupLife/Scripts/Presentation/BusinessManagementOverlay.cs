@@ -15,6 +15,8 @@ namespace StartupLife.Presentation
     // ScrollRect hierarchy: ScrollRoot -> Viewport(Image+Mask) -> Content(VLG+CSF).
     public sealed class BusinessManagementOverlay : MonoBehaviour
     {
+        // Match the portrait UI's minimum touch target in 1080x1920 reference units.
+        private const float ButtonHeight = 96f;
         private LifeScreenViewController host = null!;
         private Func<BusinessPortfolioSnapshot> readPortfolio = null!;
         private TMP_FontAsset font = null!;
@@ -71,13 +73,13 @@ namespace StartupLife.Presentation
         private void Build()
         {
             var toggle = ButtonObject("BusinessManagementButton", "Kinh doanh",
-                transform, Open, 78);
+                transform, Open, ButtonHeight);
             var toggleLayout = toggle.GetComponent<LayoutElement>();
             toggleLayout.ignoreLayout = true;
             var toggleRect = (RectTransform)toggle.transform;
             toggleRect.anchorMin = toggleRect.anchorMax = new Vector2(1, 1);
             toggleRect.pivot = new Vector2(1, 1);
-            toggleRect.sizeDelta = new Vector2(290, 78);
+            toggleRect.sizeDelta = new Vector2(290, ButtonHeight);
             toggleRect.anchoredPosition = new Vector2(-22, -18);
 
             panel = Node("BusinessManagementOverlay", transform,
@@ -99,7 +101,7 @@ namespace StartupLife.Presentation
 
             Label("BusinessManagementTitle", "Quản lý doanh nghiệp", panel.transform, 39, 72);
             ButtonObject("BusinessManagementCloseButton", "Đóng bảng",
-                panel.transform, Hide, 70);
+                panel.transform, Hide, ButtonHeight);
             var finance = Label("LastSettledFinanceValue", "Chưa có quyết toán kinh doanh",
                 panel.transform, 28, 106);
             var portfolio = Label("BusinessPortfolioValue", "Chưa có doanh nghiệp",
@@ -156,27 +158,27 @@ namespace StartupLife.Presentation
             selectedValue = Label("SelectedBusinessValue", "Chưa có doanh nghiệp",
                 content.transform, 29, 118);
             previous = ButtonObject("PreviousBusinessButton", "Doanh nghiệp trước",
-                content.transform, () => Select(-1), 70).GetComponent<Button>();
+                content.transform, () => Select(-1), ButtonHeight).GetComponent<Button>();
             next = ButtonObject("NextBusinessButton", "Doanh nghiệp tiếp",
-                content.transform, () => Select(1), 70).GetComponent<Button>();
+                content.transform, () => Select(1), ButtonHeight).GetComponent<Button>();
 
             budget = ButtonObject("BusinessBudgetPricingButton", "Giá tiết kiệm",
                 content.transform, () => ForSelected(id =>
-                    host.SetBusinessPricing(id, PricingPosture.Budget)), 70).GetComponent<Button>();
+                    host.SetBusinessPricing(id, PricingPosture.Budget)), ButtonHeight).GetComponent<Button>();
             standard = ButtonObject("BusinessStandardPricingButton", "Giá tiêu chuẩn",
                 content.transform, () => ForSelected(id =>
-                    host.SetBusinessPricing(id, PricingPosture.Standard)), 70).GetComponent<Button>();
+                    host.SetBusinessPricing(id, PricingPosture.Standard)), ButtonHeight).GetComponent<Button>();
             premium = ButtonObject("BusinessPremiumPricingButton", "Giá cao cấp",
                 content.transform, () => ForSelected(id =>
-                    host.SetBusinessPricing(id, PricingPosture.Premium)), 70).GetComponent<Button>();
+                    host.SetBusinessPricing(id, PricingPosture.Premium)), ButtonHeight).GetComponent<Button>();
             pause = ButtonObject("PauseBusinessButton", "Tạm dừng hoạt động",
-                content.transform, () => ForSelected(host.PauseBusiness), 70).GetComponent<Button>();
+                content.transform, () => ForSelected(host.PauseBusiness), ButtonHeight).GetComponent<Button>();
             resume = ButtonObject("ResumeBusinessButton", "Tiếp tục hoạt động",
-                content.transform, () => ForSelected(host.ResumeBusiness), 70).GetComponent<Button>();
+                content.transform, () => ForSelected(host.ResumeBusiness), ButtonHeight).GetComponent<Button>();
             reinvest = ButtonObject("ReinvestBusinessButton", "Tái đầu tư mức tối thiểu",
-                content.transform, () => ForSelected(host.ReinvestMinimumBusiness), 70).GetComponent<Button>();
+                content.transform, () => ForSelected(host.ReinvestMinimumBusiness), ButtonHeight).GetComponent<Button>();
             var closeObject = ButtonObject("CloseBusinessButton", "Đóng doanh nghiệp",
-                content.transform, RequestClose, 70);
+                content.transform, RequestClose, ButtonHeight);
             close = closeObject.GetComponent<Button>();
             closeCaption = closeObject.GetComponentInChildren<TMP_Text>(true);
             panel.SetActive(false);
@@ -189,7 +191,7 @@ namespace StartupLife.Presentation
                 {
                     callback();
                     Refresh();
-                }, 74);
+                }, ButtonHeight);
             launchButtons.Add(id, go.GetComponent<Button>());
         }
 

@@ -17,9 +17,15 @@ namespace StartupLife.Simulation
             IReadOnlyDictionary<string, bool> eligibleServiceByInstance,
             string sourceOperationId,
             IReadOnlyDictionary<string, string>? committedPerOperationEvents = null,
-            IReadOnlyDictionary<string, string>? committedCloseEvents = null)
+            IReadOnlyDictionary<string, string>? committedCloseEvents = null,
+            long? transactionStartRevision = null)
         {
             Require(candidate, records, sourceOperationId);
+            // Invoice ordering belongs to the transaction's original checkpoint,
+            // even when receipt-backed planning runs after its revision increment.
+            var creationSequence = transactionStartRevision ?? candidate.Revision;
+            if (creationSequence < 0 || creationSequence > candidate.Revision)
+                throw new ArgumentOutOfRangeException(nameof(transactionStartRevision));
             if (authoredDefinitions == null || eligibleServiceByInstance == null)
                 throw new ArgumentNullException(nameof(authoredDefinitions));
             var newDue = new List<V3ObligationTranche>();
@@ -55,7 +61,7 @@ namespace StartupLife.Simulation
                         DefinitionRevision = definition.Revision,
                         PeriodKey = due.PeriodKey, EventKey = due.DueEventKey,
                         DueDateIso = due.DueDateIso, DueMinute = candidate.Minute,
-                        CreationSequence = candidate.Revision,
+                        CreationSequence = creationSequence,
                         AmountDueVnd = due.AmountDueVnd,
                         PaidVnd = 0, SourceOperationId = sourceOperationId
                     };

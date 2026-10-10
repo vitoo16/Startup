@@ -1,0 +1,61 @@
+PASS six ID-keyed segments with exactly four active
+PASS four exact functional fixture prices and charges
+PASS largest remainder pool supply is exact, tie by segment ID
+PASS one business respects pool supply, no fake full-conversion
+PASS competition caps shared pool and canonical ordering
+PASS sold units survive replanning and future pool exhaustion
+PASS duplicate market unit and identity rejected
+PASS zero weight cannot produce demand
+PASS version-1 integer bounds reject out of range
+PASS eight obligation cadences use only authored deterministic triggers
+PASS cumulative day-metered proration 33+33+34=100
+PASS oldest due payment order and partial cash reserve
+PASS future catalog revision permits fifth active stable segment
+PASS P-03 A/B/C exact 100-20-80 wallet time vector
+PASS P-03 unequal R is normalized, not equal legacy minute shares
+PASS P-03 zero wallet still funds zero-cost units without income
+PASS global matching reassigns occupied shared minute to feasible peer
+PASS C greater than R cannot mint unreserved units on one-minute floor jump
+PASS full-time contiguous reservation excludes overlapping side minutes
+PASS previously fulfilled and committed time preserved in new epoch
+PASS contractual due100 immediate40 later income80 pays same liability once
+PASS salary and business income share stable oldest-first arrears graph
+PASS full-time with zero accepted units releases future side slots
+PASS frozen epoch time crossing equals sum of split AdvanceBoundary children
+PASS epoch consumes C greater than R only up to reserved two units
+PASS Study never credits business work and invalidates frozen epoch
+PASS v3 price changes are next-day, overwritten, and can be cleared
+PASS v3 Pause immediate, Resume next day, Close terminal with no fee fabricated
+PASS midnight A/B/C settlement conserves gross cost profit and cash
+PASS midnight revenue pays exact original obligation arrear with no double debit
+PASS settlement rejects duplicated market unit and unmatched cost
+PASS four-pool epoch connects finite segment demand to wallet reservations
+PASS same-day market replan cannot reissue committed pool ordinal
+PASS migration activation is next date for v2 midday, without retroactive fees
+PASS v2 midnight cutover is lazy current-day only, without salary/living replay
+PASS staged v2-to-v3 migration retains exact source checkpoint bytes
+PASS staged v3 codec rejects fabricated revenue and post-cutover root mutation
+PASS staged v2-to-v3 migration fails closed for unknown history ruleset and schema
+PASS frozen v2 catalog matches the original v2 authored fixture semantics
+PASS frozen v2 evaluator preserves immediate pricing and original command effects
+PASS versioned replay validates zero-effect v2 prefix against frozen evaluator
+PASS typed v3 provenance preserves one sale / reservation / market unit / settlement
+PASS v1 source checkpoint migrates through 1-to-2-to-3 with original schema retained
+PASS synthetic v0 source migrates through each adjacent stage with source0 anchor
+PASS staged schema3 envelope validates checksum generation and future schema precedence
+PASS v3 command wire appends Pause11 and Resume12 without changing v2 payload codes
+PASS v3 policy candidate mutates only prospective time and price
+PASS v3 policy serialization retains pending fields and fails malformed flags
+PASS persisted v3 market epoch survives cold save with unspent wallet reservations
+PASS prospective replan releases only unconsumed cost and never refunds cash
+PASS authoritative epoch validator rejects tampered hours and market reservation mappings
+PASS v3 invoice persists one payable and income clears oldest without second debit
+PASS persisted v3 old-day settlement conserves actual wallet and invoice profit
+PASS v3 economic receipt processing operates freelance and pays next-day fixed charges
+PASS real GameSession commits schema3 character and cold restores source-verified receipt
+PASS v3 employment transitions commit with receipt-backed time and survive cold restore
+PASS pre-fix v3 pending business policies retain byte-identical replay and serialization
+PASS v2 primary migrates in-memory and first v3 command preserves byte-exact v2 backup
+PASS same-generation v2 CAS projection rejects edited cash and latent v3 economy
+PASS legacy business closed before v3 activation must never open a v3 contract
+60/60 M9-T02 economy checks passed.

@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "command": "test",
+  "data": {
+    "projectPath": "[USER_HOME]\\Startup",
+    "output": "[USER_HOME]\\.codex\\visualizations\\2026\\10\\10\\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\\unity-original-confirmation-20261011-025554\\evidence\\graphical\\results.xml",
+    "reports": {
+      "nunit": "[USER_HOME]\\.codex\\visualizations\\2026\\10\\10\\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\\unity-original-confirmation-20261011-025554\\evidence\\graphical\\results.xml",
+      "junit": "[USER_HOME]\\.codex\\visualizations\\2026\\10\\10\\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\\unity-original-confirmation-20261011-025554\\evidence\\graphical\\results.junit.xml"
+    },
+    "coverage": {
+      "requested": false,
+      "enabled": false,
+      "output": null
+    }
+  },
+  "errors": [],
+  "warnings": []
+}

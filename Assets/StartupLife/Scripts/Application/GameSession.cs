@@ -136,6 +136,7 @@ namespace StartupLife.Application
             var baseline = CaptureOutcome(state);
             try
             {
+                V3EconomicReceiptProcessor? v3Processor = null;
                 candidate = Clone(state);
                 NormalizeBatchReceipts(candidate);
                 var operation = candidate.NewOperation();
@@ -148,9 +149,9 @@ namespace StartupLife.Application
                         candidate.EconomicV3.EconomicRecords == null ||
                         v3EconomicRules == null || historicalRules == null)
                         throw new RuleFailure("save.v3_evaluator_unavailable");
-                    minutes = new V3EconomicReceiptProcessor(content, v3EconomicRules,
-                        candidate.EconomicV3.Activation.ToAnchor()).Evaluate(
-                        candidate.EconomicV3,envelope.Command,operation);
+                    v3Processor = new V3EconomicReceiptProcessor(content, v3EconomicRules,
+                        candidate.EconomicV3.Activation.ToAnchor());
+                    minutes = v3Processor.Evaluate(candidate.EconomicV3,envelope.Command,operation);
                 }
                 else minutes = simulation.Evaluate(candidate, envelope.Command, operation);
                 candidate.Revision = checked(state.Revision + 1);
@@ -159,6 +160,7 @@ namespace StartupLife.Application
                 receipt = new CommandReceipt { CommandId = envelope.CommandId, Payload = envelope.Command.CanonicalPayload, OperationId = operation,
                     Revision = candidate.Revision, Cue = candidate.CurrentCue, MinutesConsumed = minutes, AdvanceTargetIso = advanceTarget, ParentPayload = parentPayload };
                 candidate.Receipts.Add(receipt);
+                v3Processor?.FinalizeReceipt(candidate.EconomicV3!, receipt);
                 if (candidate.SaveVersion == 3)
                     candidate.EconomicV3!.EconomicRecords!.Validate();
                 else StateValidation.Validate(candidate, content);

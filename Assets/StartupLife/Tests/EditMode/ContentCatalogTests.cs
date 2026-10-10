@@ -26,7 +26,7 @@ namespace StartupLife.Tests.EditMode
             var asset = AssetDatabase.LoadAssetAtPath<StartupLifeContentCatalogAsset>("Assets/StartupLife/Data/FirstPlayableContent.asset");
             Assert.That(asset, Is.Not.Null);
             var catalog = asset.BuildCatalog();
-            Assert.That(catalog.Businesses.Count, Is.EqualTo(2));
+            Assert.That(catalog.Businesses.Count, Is.EqualTo(4));
             var freelance = catalog.Businesses[FirstPlayableContentTemplate.FreelanceId];
             var kiosk = catalog.Businesses[FirstPlayableContentTemplate.CoffeeKioskId];
             Assert.That(freelance.OperationMode, Is.EqualTo(BusinessOperationMode.SideHustleCompatible));

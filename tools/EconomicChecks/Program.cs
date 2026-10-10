@@ -39,6 +39,14 @@ internal static class Program
         }
     }
 
+    private sealed class FailedWriteStore : ISaveStore
+    {
+        private readonly ISaveStore inner;
+        public FailedWriteStore(ISaveStore inner) { this.inner = inner; }
+        public LoadResult Read() => inner.Read();
+        public WriteStatus Commit(byte[] validatedBytes, long expectedRevision) => WriteStatus.Failed;
+    }
+
     private static int Main(string[] args)
     {
         var catalog = M9T02FunctionalEconomy.Create();
@@ -1457,6 +1465,145 @@ internal static class Program
             }
         });
 
+
+        Check("v3 employment transitions commit with receipt-backed time and survive cold restore", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var economics = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economics, content);
+            var migration = new V2ToV3Migration(archives, replay);
+            var serializer = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), migration,
+                new StagedV3SaveSerializer(archives, replay));
+            var initial = GameSession.NewState(content, "run-employment-v3", 123456,
+                new SimDate(2026, 9, 1));
+            var promoted = EconomicV3PayloadCodec.ReadChecked(
+                migration.Migrate(JsonSaveSerializer.WriteObject(initial)));
+            promoted.Current!.EconomicV3 = promoted;
+            var path = Path.Combine(Path.GetTempPath(),
+                "m9-t02-employment-" + Guid.NewGuid().ToString("N") + ".json");
+            try
+            {
+                var store = new AtomicFileSaveStore(path, serializer);
+                var session = new GameSession(promoted.Current, content, serializer, store,
+                    economicRules: economics, archivedRules: archives);
+                CommandResult Commit(string id, GameCommand command)
+                {
+                    var result = session.Execute(new CommandEnvelope(initial.RunId, id,
+                        session.Snapshot().Revision, command));
+                    Assert(result.Status == CommandStatus.Committed,
+                        id + " must commit through v3 transaction: " + result.ReasonKey);
+                    Assert(GameSession.TryRestore(content, serializer, store,
+                        out var restored, out var outcome,
+                        economicRules: economics, archivedRules: archives),
+                        id + " cold replay: " + outcome.Reason);
+                    Assert(restored!.Snapshot().Revision == session.Snapshot().Revision &&
+                        restored.Snapshot().CareerId == session.Snapshot().CareerId &&
+                        restored.Snapshot().Cash == session.Snapshot().Cash,
+                        id + " cold snapshot matches the continuously running session");
+                    return result;
+                }
+                Commit("create", new GameCommand(CommandKind.CreateCharacter,
+                    "fresh", 18, "Employment Tester", "base.male"));
+                Commit("launch", new GameCommand(CommandKind.LaunchBusiness,
+                    "online-store", 100, appearanceId: "v1"));
+                Commit("accept", new GameCommand(CommandKind.AcceptJob, "developer"));
+                Assert(session.Snapshot().CareerId == "developer", "accepted career persists");
+                var acceptedBytes = File.ReadAllBytes(path);
+                var revision = session.Snapshot().Revision;
+                var retry = session.Execute(new CommandEnvelope(initial.RunId, "accept", revision - 1,
+                    new GameCommand(CommandKind.AcceptJob, "developer")));
+                Assert(retry.Status == CommandStatus.AlreadyCommitted &&
+                    session.Snapshot().Revision == revision &&
+                    File.ReadAllBytes(path).SequenceEqual(acceptedBytes),
+                    "duplicate acceptance cannot replan, mint identities or rewrite the save");
+                var rejected = session.Execute(new CommandEnvelope(initial.RunId, "accept-again", revision,
+                    new GameCommand(CommandKind.AcceptJob, "developer")));
+                Assert(rejected.Status == CommandStatus.Rejected &&
+                    File.ReadAllBytes(path).SequenceEqual(acceptedBytes),
+                    "rejected acceptance preserves the committed economic graph");
+                Commit("wake", new GameCommand(CommandKind.AdvanceBoundary));
+                Commit("work-start", new GameCommand(CommandKind.AdvanceBoundary));
+                Commit("work-cue", new GameCommand(CommandKind.AdvanceBoundary));
+                Assert(session.Snapshot().CareerXp > 0, "career work really executes before resignation");
+                var beforeResign = store.Read().State!;
+                var beforeBytes = File.ReadAllBytes(path);
+                var failedSession = new GameSession(beforeResign, content, serializer,
+                    new FailedWriteStore(store), economicRules: economics, archivedRules: archives);
+                var failedResign = failedSession.Execute(new CommandEnvelope(initial.RunId,
+                    "failed-resign", beforeResign.Revision, new GameCommand(CommandKind.Resign)));
+                Assert(failedResign.Status == CommandStatus.PersistenceFailed &&
+                    failedSession.Snapshot().CareerId == "developer" &&
+                    failedSession.Snapshot().Revision == beforeResign.Revision &&
+                    File.ReadAllBytes(path).SequenceEqual(beforeBytes),
+                    "failed CAS cannot publish finalized resignation or change saved economics");
+                var committedWorkEnd = beforeResign.Minute;
+                Commit("resign", new GameCommand(CommandKind.Resign));
+                Assert(session.Snapshot().CareerId == "", "resignation persists");
+                var resignedState = store.Read().State!;
+                var occupancy = CommittedTimeTrace.Project(resignedState, content);
+                var workStart = content.Careers["developer"].StartMinute;
+                Assert(Enumerable.Range(workStart, committedWorkEnd - workStart)
+                    .All(t => occupancy[t] == CommittedTimeTrace.Employment),
+                    "resignation preserves already committed work occupancy");
+                Assert(occupancy[committedWorkEnd] == CommittedTimeTrace.Free,
+                    "resignation releases future career time");
+                Commit("reaccept", new GameCommand(CommandKind.AcceptJob, "developer"));
+                Assert(session.Snapshot().CareerId == "developer", "reemployment persists");
+                var checkpoint = File.ReadAllBytes(path);
+                Commit("continuation", new GameCommand(CommandKind.AdvanceBoundary));
+                var uninterruptedBytes = File.ReadAllBytes(path);
+                var otherPath = path + ".continuation";
+                try
+                {
+                    File.WriteAllBytes(otherPath, checkpoint);
+                    var otherStore = new AtomicFileSaveStore(otherPath, serializer);
+                    Assert(GameSession.TryRestore(content, serializer, otherStore,
+                        out var other, out var result, economicRules: economics, archivedRules: archives),
+                        "independent cold continuation checkpoint: " + result.Reason);
+                    var continued = other!.Execute(new CommandEnvelope(initial.RunId, "continuation",
+                        other.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary)));
+                    Assert(continued.Status == CommandStatus.Committed &&
+                        File.ReadAllBytes(otherPath).SequenceEqual(uninterruptedBytes),
+                        "cold and live continuation produce byte-identical save/receipt/economic graph");
+                }
+                finally
+                {
+                    foreach (var filename in new[] { otherPath, otherPath + ".backup", otherPath + ".lock" })
+                        if (File.Exists(filename)) File.Delete(filename);
+                }
+            }
+            finally
+            {
+                foreach (var filename in new[] { path, path + ".backup", path + ".lock" })
+                    if (File.Exists(filename)) File.Delete(filename);
+            }
+        });
+
+        Check("pre-fix v3 pending business policies retain byte-identical replay and serialization", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(M9T02FunctionalEconomy.Create(), content);
+            var serializer = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "pre-fix-v3-pending-business.json");
+            var bytes = File.ReadAllBytes(path);
+            var fixtureEnvelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(bytes);
+            var fixturePayload = EconomicV3PayloadCodec.ReadChecked(
+                Convert.FromBase64String(fixtureEnvelope.PayloadBase64));
+            replay.ValidateV3(fixturePayload, archives);
+            var loaded = serializer.DeserializeAndValidate(bytes);
+            Assert(loaded.Status == LoadStatus.Valid && loaded.SourceSchemaVersion == 3,
+                "existing pre-fix save must pass unchanged strict replay: " + loaded.Reason);
+            var policy = loaded.State!.EconomicV3!.EconomicRecords!.BusinessPolicies.Single();
+            Assert(policy.HasPendingPricing && policy.HasPendingResume,
+                "fixture exercises pricing/pause/resume, not only a fresh empty save");
+            Assert(serializer.Serialize(loaded.State).SequenceEqual(bytes),
+                "two-phase fix cannot rewrite previously valid v3 economics or wire bytes");
+        });
 
         Check("v2 primary migrates in-memory and first v3 command preserves byte-exact v2 backup", () =>
         {

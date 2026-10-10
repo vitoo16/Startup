@@ -1,0 +1,28 @@
+{
+  "suite": "Startup Life Unity headless tests",
+  "editorVersion": "6000.3.25f1",
+  "unityCli": "unity.exe",
+  "requestedMode": "All",
+  "success": true,
+  "results": [
+    {
+      "mode": "EditMode",
+      "exitCode": 0,
+      "nunitReport": "[USER_HOME]\\.codex\\visualizations\\2026\\10\\10\\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\\unity-original-confirmation-20261011-025554\\evidence\\unity-tests\\editmode-results.xml",
+      "nunitExists": true,
+      "junitReport": "[USER_HOME]\\.codex\\visualizations\\2026\\10\\10\\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\\unity-original-confirmation-20261011-025554\\evidence\\unity-tests\\editmode-results.junit.xml",
+      "junitExists": true,
+      "log": "[USER_HOME]\\.codex\\visualizations\\2026\\10\\10\\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\\unity-original-confirmation-20261011-025554\\evidence\\unity-tests\\editmode-unity-cli.log"
+    },
+    {
+      "mode": "PlayMode",
+      "exitCode": 0,
+      "nunitReport": "[USER_HOME]\\.codex\\visualizations\\2026\\10\\10\\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\\unity-original-confirmation-20261011-025554\\evidence\\unity-tests\\playmode-results.xml",
+      "nunitExists": true,
+      "junitReport": "[USER_HOME]\\.codex\\visualizations\\2026\\10\\10\\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\\unity-original-confirmation-20261011-025554\\evidence\\unity-tests\\playmode-results.junit.xml",
+      "junitExists": true,
+      "log": "[USER_HOME]\\.codex\\visualizations\\2026\\10\\10\\01a126b7-df3d-7ee2-a43e-3e5a917da2f0\\unity-original-confirmation-20261011-025554\\evidence\\unity-tests\\playmode-unity-cli.log"
+    }
+  ],
+  "note": "A successful result is real Unity test evidence. This script does not build mobile players or prove physical-device behavior."
+}

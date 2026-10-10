@@ -48,7 +48,7 @@ namespace StartupLife.Simulation
             if (IsPolicy(command.Kind))
             {
                 V3BusinessPolicyEngine.ApplyCommand(game, records, command, operationId);
-                ReopenProspective(game, records, operationId);
+                V3EpochTransactions.ReleaseFuture(records.Provenance);
                 return 0;
             }
 
@@ -56,7 +56,7 @@ namespace StartupLife.Simulation
             {
                 // Old date has priority over next-day salary and living costs.
                 if (activation.ShouldOpenEconomicOperationsOnDate(oldDate))
-                    EnsureOpened(game, records, operationId);
+                    EnsureOpened(game, records, operationId, game.Revision);
                 var midnight = game.Minute >= content.Schedule.SleepMinute;
                 if (midnight && activation.ShouldOpenEconomicOperationsOnDate(oldDate))
                 {
@@ -86,12 +86,7 @@ namespace StartupLife.Simulation
             // Study and cash-changing commands release ONLY uncommitted future
             // reservations. Their changes are applied from already-existing wallet,
             // never projected same-day revenue.
-            var prospective = command.Kind == CommandKind.Study ||
-                command.Kind == CommandKind.LaunchBusiness ||
-                command.Kind == CommandKind.ReinvestBusiness ||
-                command.Kind == CommandKind.PurchaseCourse ||
-                command.Kind == CommandKind.Resign ||
-                command.Kind == CommandKind.AcceptJob;
+            var prospective = IsProspective(command.Kind);
             if (prospective) V3EpochTransactions.ReleaseFuture(records.Provenance);
             var result = new SimulationEngine(content, records).Evaluate(game, command, operationId);
             if (command.Kind == CommandKind.LaunchBusiness)
@@ -99,12 +94,28 @@ namespace StartupLife.Simulation
                 var instance = game.Businesses.Last(x => x.IsActive);
                 V3BusinessPolicyEngine.OnLaunched(game, records, instance.InstanceId);
             }
-            // Study may advance the cursor, but its receipt has not been committed
-            // until GameSession finishes this transaction. Never regenerate a plan
-            // using incomplete occupancy evidence.
-            if (prospective && command.Kind != CommandKind.Study)
-                EnsureOpened(game, records, operationId);
+            // The caller must append the canonical receipt before FinalizeReceipt:
+            // employment history and the cursor are not yet receipt-backed here.
             return result;
+        }
+
+        // Second phase of the same isolated transaction, before validation/save/CAS.
+        // Live execution and cold replay must finalize at the identical frontier.
+        public void FinalizeReceipt(EconomicV3Payload candidate, CommandReceipt receipt)
+        {
+            var game = candidate?.Current;
+            var records = candidate?.EconomicRecords;
+            if (game == null || records == null || receipt == null ||
+                game.SaveVersion != 3 || game.Receipts.Count == 0 ||
+                !ReferenceEquals(game.Receipts[game.Receipts.Count - 1], receipt) ||
+                receipt.Revision != game.Revision || receipt.Revision != game.Receipts.Count ||
+                string.IsNullOrWhiteSpace(receipt.OperationId))
+                throw new ArgumentException("Economic finalization requires the appended receipt frontier.");
+            var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
+            if (IsPolicy(command.Kind) || (IsProspective(command.Kind) && command.Kind != CommandKind.Study))
+                EnsureOpened(game, records, receipt.OperationId, receipt.Revision - 1);
+            // Preserve lazy opening after Study and midnight. A new epoch is opened
+            // by the next command from their complete, committed time provenance.
         }
 
         private static bool IsPolicy(CommandKind kind) =>
@@ -113,11 +124,10 @@ namespace StartupLife.Simulation
             kind == CommandKind.ResumeBusiness ||
             kind == CommandKind.CloseBusiness;
 
-        private void ReopenProspective(GameState game, EconomicV3Records records, string sourceOperation)
-        {
-            V3EpochTransactions.ReleaseFuture(records.Provenance);
-            EnsureOpened(game, records, sourceOperation);
-        }
+        private static bool IsProspective(CommandKind kind) =>
+            kind == CommandKind.Study || kind == CommandKind.LaunchBusiness ||
+            kind == CommandKind.ReinvestBusiness || kind == CommandKind.PurchaseCourse ||
+            kind == CommandKind.Resign || kind == CommandKind.AcceptJob;
 
         public static bool HasPostCutoverContractPeriod(string? closedIso, string activationIso)
         {
@@ -127,7 +137,8 @@ namespace StartupLife.Simulation
             return string.CompareOrdinal(closedIso, activationIso) >= 0;
         }
 
-        private void EnsureOpened(GameState game, EconomicV3Records records, string operation)
+        private void EnsureOpened(GameState game, EconomicV3Records records, string operation,
+            long transactionStartRevision)
         {
             if (!activation.ShouldOpenEconomicOperationsOnDate(game.DateIso)) return;
             if (records.Provenance.ActiveEpoch != null &&
@@ -165,7 +176,8 @@ namespace StartupLife.Simulation
                     pending.Add(definition);
             }
             if (pending.Count > 0)
-                V3ObligationTransactions.OpenDue(game, records, pending, eligible, operation);
+                V3ObligationTransactions.OpenDue(game, records, pending, eligible, operation,
+                    transactionStartRevision: transactionStartRevision);
             V3ObligationTransactions.PayDue(game, records, operation);
 
             var snapshots = new List<MarketPoolDaySupply>();

@@ -123,13 +123,15 @@ namespace StartupLife.Simulation
                     state.CurrentActivity = operation;
                     state.PlaybackCursor = 0;
                 }
-                state.Receipts.Add(new CommandReceipt
+                var replayedReceipt = new CommandReceipt
                 {
                     CommandId = receipt.CommandId, Payload = command.CanonicalPayload,
                     OperationId = operation, Revision = state.Revision, Cue = state.CurrentCue,
                     MinutesConsumed = duration, AdvanceTargetIso = receipt.AdvanceTargetIso,
                     ParentPayload = receipt.ParentPayload
-                });
+                };
+                state.Receipts.Add(replayedReceipt);
+                evaluator.FinalizeReceipt(candidate, replayedReceipt);
             }
             financial.Validate();
             if (!Write(state).SequenceEqual(Write(target.Current)) ||
