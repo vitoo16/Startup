@@ -755,6 +755,54 @@ internal static class Program
                 new V2ToV3Migration().Migrate(JsonSaveSerializer.WriteObject(legacy)));
         });
 
+
+        Check("frozen v2 catalog matches the original v2 authored fixture semantics", () =>
+        {
+            var resolver = new BundledHistoricalV2ContentResolver();
+            Assert(!resolver.TryResolve("unknown-ruleset","first-playable.v1",out var absent1) &&
+                absent1 == null,"unknown archived ruleset must fail closed");
+            Assert(!resolver.TryResolve(BundledHistoricalV2ContentResolver.ArchiveId,
+                "first-playable.v999",out var absent2) && absent2 == null,
+                "unknown legacy content version must fail closed");
+            Assert(resolver.TryResolve(BundledHistoricalV2ContentResolver.ArchiveId,
+                BundledHistoricalV2ContentResolver.ContentVersion,out var original) &&
+                original != null, "frozen authored resolver");
+            var archived=original!;
+            var template=FirstPlayableContentTemplate.BuildCatalog();
+            string Fingerprint(ContentCatalog c) => System.Text.Json.JsonSerializer.Serialize(new {
+                c.Version,
+                Schedule=new[]{c.Schedule.WakeMinute,c.Schedule.SleepMinute},
+                Economy=new long[]{c.Economy.Payday,c.Economy.ExpenseDay,c.Economy.LivingCost},
+                Skills=c.Skills.Values.OrderBy(x=>x.Id,StringComparer.Ordinal).Select(x=>new {x.Id,x.NameKey,Thresholds=x.Thresholds.ToArray()}).ToArray(),
+                Careers=c.Careers.Values.OrderBy(x=>x.Id,StringComparer.Ordinal).Select(x=>new {
+                    x.Id,x.Revision,x.NameKey,x.StartMinute,x.EndMinute,x.ScenesPerShift,x.QuotaSlots,
+                    Days=x.WorkDays.Select(d=>(int)d).ToArray(),
+                    Scenes=x.Scenes.Select(s=>new{s.Id,s.NameKey,s.SkillId,s.Weight,s.CareerXp,s.Exposure}).ToArray(),
+                    Ranks=x.Ranks.Select(r=>new{r.Id,r.RequiredXp,r.RequiredServiceDays,r.MonthlySalary,r.GrantSkillId,r.GrantLevel}).ToArray()
+                }).ToArray(),
+                Courses=c.Courses.Values.OrderBy(x=>x.Id,StringComparer.Ordinal).Select(x=>new{
+                    x.Id,x.NameKey,x.SkillId,x.TargetLevel,x.PrerequisiteLevel,x.BaseMinutes,x.Price}).ToArray(),
+                Starts=c.Starts.Values.OrderBy(x=>x.Id,StringComparer.Ordinal).Select(x=>new{
+                    x.Id,x.Cash,x.LearningSpeed,Appearances=x.AppearanceIds.ToArray()}).ToArray(),
+                Businesses=c.Businesses.Values.OrderBy(x=>x.Id,StringComparer.Ordinal).Select(x=>new{
+                    x.Id,x.Revision,x.NameKey,Type=(int)x.Type,Mode=(int)x.OperationMode,
+                    x.MinimumStartupInvestment,x.MaximumStartupInvestment,x.MinimumReinvestment,x.MaximumReinvestment,
+                    Pricing=x.AllowedPricingPostures.Select(z=>(int)z).ToArray(),
+                    DefaultPricing=(int)x.DefaultPricingPosture,
+                    OwnerMinutes=x.OperatingRequirements!.RequiredOwnerMinutes,
+                    Windows=x.OperatingRequirements!.OperatingWindows.Select(w=>new{
+                        Day=(int)w.DayOfWeek,w.StartMinute,w.EndMinute}).ToArray()
+                }).ToArray()
+            });
+            Assert(Fingerprint(archived)==Fingerprint(template),"frozen content values differ from actual authored baseline/template");
+            Assert(archived.Businesses.Count==2 &&
+                archived.Businesses["freelance-service"].Revision=="v1" &&
+                archived.Businesses["coffee-kiosk"].Revision=="v1",
+                "legacy v2 businesses must not be overwritten by four modern MVP business profiles");
+            Assert(archived.Businesses.Values.All(x=>x.MaximumStartupInvestment==1000),
+                "frozen old capital bounds must remain v2");
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
