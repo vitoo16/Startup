@@ -9,9 +9,13 @@
   </PropertyGroup>
   <ItemGroup>
     <None Update="Fixtures/*.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Link historical source fixtures; never fork or silently regenerate their bytes. -->
+    <None Include="../SimulationChecks/Fixtures/synthetic-v0.json"
+          Link="Fixtures/Legacy/synthetic-v0.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../SimulationChecks/Fixtures/current-v1.json"
+          Link="Fixtures/Legacy/current-v1.json" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Core.csproj" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Simulation.csproj" />
-    <ProjectReference Include="../SimulationChecks/StartupLife.Application.csproj" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Application.csproj" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Infrastructure.csproj" />
     <Compile Include="../../Assets/StartupLife/Scripts/Content/M9T02FunctionalEconomy.cs" Link="M9T02FunctionalEconomy.cs" />

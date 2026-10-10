@@ -1762,6 +1762,150 @@ internal static class Program
         });
 
 
+        Check("M11 historical schemas v0 v1 v2 v3 cold-restore and byte-identical continuation matrix", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var economic = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economic, content);
+            var serializer = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var fixtureDir = Path.Combine(AppContext.BaseDirectory, "Fixtures");
+            var zero = File.ReadAllBytes(Path.Combine(fixtureDir, "Legacy", "synthetic-v0.json"));
+            var one = File.ReadAllBytes(Path.Combine(fixtureDir, "Legacy", "current-v1.json"));
+            var sourceOne = JsonSaveSerializer.ReadObject<SaveEnvelope>(one);
+            var twoPayload = new V1ToV2Migration().Migrate(
+                Convert.FromBase64String(sourceOne.PayloadBase64));
+            var two = JsonSaveSerializer.Wrap(twoPayload, SaveSchema.HistoricalV2, sourceOne.Generation);
+            var three = File.ReadAllBytes(Path.Combine(fixtureDir, "pre-fix-v3-pending-business.json"));
+            var matrix = new (int Schema, byte[] Wire)[] {
+                (0, zero), (1, one), (2, two), (3, three)
+            };
+            foreach (var source in matrix)
+            {
+                var initial = serializer.DeserializeAndValidate(source.Wire);
+                Assert(initial.Status == LoadStatus.Valid &&
+                    initial.SourceSchemaVersion == source.Schema &&
+                    initial.State != null && initial.State.SaveVersion == 3,
+                    "source schema " + source.Schema + " cannot migrate: " + initial.Reason);
+                var baseState = initial.State!;
+                var originalRevision = baseState.Revision;
+                var originalEnvelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(source.Wire);
+                Assert(originalEnvelope.SchemaVersion == source.Schema,
+                    "fixture schema is not source truth");
+                if (source.Schema < 3)
+                {
+                    var provenance = baseState.EconomicV3!;
+                    Assert(provenance.OriginalSourceSchema == source.Schema &&
+                        Convert.FromBase64String(provenance.OriginalSourcePayloadBase64)
+                            .SequenceEqual(Convert.FromBase64String(originalEnvelope.PayloadBase64)) &&
+                        provenance.Activation!.LegacyReceiptCount == originalRevision,
+                        "legacy source bytes, schema or identity frontier were lost");
+                }
+                else
+                {
+                    var policies = baseState.EconomicV3!.EconomicRecords!.BusinessPolicies;
+                    Assert(policies.Any(x => x.HasPendingPricing && x.HasPendingResume),
+                        "real pre-fix V3 fixture must still preserve pending actions");
+                    Assert(serializer.Serialize(baseState).SequenceEqual(source.Wire),
+                        "pre-fix v3 source must roundtrip without wire rewrite");
+                }
+
+                var root = Path.Combine(Path.GetTempPath(), "m11-compat-" +
+                    source.Schema + "-" + Guid.NewGuid().ToString("N"));
+                var leftPath = root + "-left.json";
+                var rightPath = root + "-right.json";
+                try
+                {
+                    File.WriteAllBytes(leftPath, source.Wire);
+                    File.WriteAllBytes(rightPath, source.Wire);
+                    var leftStore = new AtomicFileSaveStore(leftPath, serializer);
+                    var rightStore = new AtomicFileSaveStore(rightPath, serializer);
+                    Assert(GameSession.TryRestore(content, serializer, leftStore,
+                        out var left, out var leftLoad, economicRules: economic, archivedRules: archives) &&
+                        GameSession.TryRestore(content, serializer, rightStore,
+                        out var right, out var rightLoad, economicRules: economic, archivedRules: archives),
+                        "two independent cold restores of schema " + source.Schema + " failed");
+                    Assert(leftLoad.SourceSchemaVersion == source.Schema &&
+                        rightLoad.SourceSchemaVersion == source.Schema,
+                        "cold restore discarded original schema identity");
+                    Assert(left!.Snapshot().Revision == originalRevision &&
+                        right!.Snapshot().Revision == originalRevision,
+                        "cold reads must preserve original revision");
+                    _ = left.Snapshot();
+                    _ = right.ReadBusinesses();
+                    Assert(File.ReadAllBytes(leftPath).SequenceEqual(source.Wire) &&
+                        File.ReadAllBytes(rightPath).SequenceEqual(source.Wire),
+                        "cold-read migrated historical source must not rewrite original wire");
+
+                    var envelope = new CommandEnvelope(baseState.RunId,
+                        "m11-schema-" + source.Schema, originalRevision,
+                        new GameCommand(CommandKind.AdvanceBoundary));
+                    var first = left.Execute(envelope);
+                    var second = right.Execute(envelope);
+                    Assert(first.Status == CommandStatus.Committed &&
+                        second.Status == CommandStatus.Committed,
+                        "schema " + source.Schema + " cold continuation did not commit: " +
+                        first.ReasonKey + ", " + second.ReasonKey);
+                    var persisted = File.ReadAllBytes(leftPath);
+                    Assert(persisted.SequenceEqual(File.ReadAllBytes(rightPath)),
+                        "schema " + source.Schema + " continuation diverged between cold loads");
+                    Assert(File.ReadAllBytes(leftPath + ".backup").SequenceEqual(source.Wire) &&
+                        File.ReadAllBytes(rightPath + ".backup").SequenceEqual(source.Wire),
+                        "first V3 write must preserve exact original schema " + source.Schema + " wire");
+                    var validated = leftStore.Read();
+                    Assert(validated.Status == LoadStatus.Valid &&
+                        validated.SourceSchemaVersion == 3 &&
+                        validated.State!.Revision == originalRevision + 1,
+                        "schema " + source.Schema + " V3 promotion did not replay");
+                    Assert(GameSession.TryRestore(content, serializer, leftStore,
+                        out var resumed, out var resumedLoad,
+                        economicRules: economic, archivedRules: archives) &&
+                        resumedLoad.SourceSchemaVersion == 3 &&
+                        resumed!.Execute(envelope).Status == CommandStatus.AlreadyCommitted,
+                        "schema " + source.Schema + " retry after cold continuation was not idempotent");
+                }
+                finally
+                {
+                    foreach (var path in new[] { leftPath, rightPath })
+                        foreach (var file in new[] { path, path + ".backup", path + ".lock" })
+                            if (File.Exists(file)) File.Delete(file);
+                }
+            }
+        });
+
+        Check("M11 independent scheduler and event RNG tampering is caught by V3 replay", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var economic = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economic, content);
+            var serializer = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var original = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,
+                "Fixtures", "pre-fix-v3-pending-business.json"));
+            var envelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(original);
+            foreach (var stream in new[] { "scheduler", "event" })
+            {
+                var candidate = EconomicV3PayloadCodec.ReadChecked(
+                    Convert.FromBase64String(envelope.PayloadBase64));
+                if (stream == "scheduler")
+                    candidate.Current!.SchedulerRng ^= 0x9e3779b9u;
+                else
+                    candidate.Current!.EventRng ^= 0x9e3779b9u;
+                var alteredWire = JsonSaveSerializer.Wrap(
+                    EconomicV3PayloadCodec.SerializeChecked(candidate),
+                    3, envelope.Generation);
+                var result = serializer.DeserializeAndValidate(alteredWire);
+                Assert(result.Status == LoadStatus.Corrupt,
+                    "valid-envelope tampering of " + stream + " RNG bypassed frozen/V3 replay");
+            }
+            Assert(serializer.DeserializeAndValidate(original).Status == LoadStatus.Valid,
+                "immutable original fixture was modified by RNG test");
+        });
+
         Check("same-generation v2 CAS projection rejects edited cash and latent v3 economy", () =>
         {
             var content=FirstPlayableContentTemplate.BuildCatalog();
