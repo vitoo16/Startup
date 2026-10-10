@@ -51,7 +51,7 @@ namespace StartupLife.Presentation
                 content = contentAsset.BuildCatalog();
                 var historical = new BundledHistoricalV2ContentResolver();
                 var economics = M9T02FunctionalEconomy.Create();
-                var replay = new VersionedReceiptReplay(economics);
+                var replay = new VersionedReceiptReplay(economics, content);
                 var migration = new V2ToV3Migration(historical, replay);
                 var staged = new StagedV3SaveSerializer(historical, replay);
                 var serializer = new V3SaveCompatibilitySerializer(

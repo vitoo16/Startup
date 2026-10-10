@@ -12,10 +12,16 @@ namespace StartupLife.Simulation
     public sealed class VersionedReceiptReplay : IVersionedReceiptReplay, IVersionedV3ReceiptReplay
     {
         private readonly BusinessEconomicCatalog? economicRules;
+        private readonly ContentCatalog? v3Content;
         public VersionedReceiptReplay() { }
         public VersionedReceiptReplay(BusinessEconomicCatalog economicRules)
         {
             this.economicRules = economicRules ?? throw new ArgumentNullException(nameof(economicRules));
+        }
+        public VersionedReceiptReplay(BusinessEconomicCatalog economicRules, ContentCatalog v3Content)
+            : this(economicRules)
+        {
+            this.v3Content = v3Content ?? throw new ArgumentNullException(nameof(v3Content));
         }
 
         public void Validate(GameState originalV2, GameState currentV3,
@@ -94,7 +100,7 @@ namespace StartupLife.Simulation
             {
                 Current = state, Activation = target.Activation, EconomicRecords = financial
             };
-            var evaluator = new V3EconomicReceiptProcessor(content, economicRules, anchor);
+            var evaluator = new V3EconomicReceiptProcessor(v3Content ?? content, economicRules, anchor);
             if (anchor.LegacyReceiptCount < 0 || anchor.LegacyReceiptCount > target.Current.Receipts.Count)
                 throw new ArgumentException("Invalid historical receipt frontier.");
             for (var index = checked((int)anchor.LegacyReceiptCount);

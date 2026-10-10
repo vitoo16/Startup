@@ -1387,7 +1387,7 @@ internal static class Program
             var content=FirstPlayableContentTemplate.BuildCatalog();
             var econ=M9T02FunctionalEconomy.Create();
             var archive=new BundledHistoricalV2ContentResolver();
-            var versioned=new VersionedReceiptReplay(econ);
+            var versioned=new VersionedReceiptReplay(econ,content);
             var migration=new V2ToV3Migration(archive,versioned);
             var serializer=new V3SaveCompatibilitySerializer(content,
                 GameSession.CreateRestoreValidator(),migration,
