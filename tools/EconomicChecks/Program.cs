@@ -1369,8 +1369,8 @@ internal static class Program
                 "old-date three sales realized only on midnight");
             Assert(prior.VariablePaidVnd==60000 && prior.FixedRecognizedVnd==5000 &&
                 prior.ProfitVnd==595000,"revenue minus fixed and variable exactly once");
-            Assert(state.Cash==890000,
-                "opening300000-oldfixed5000-variable60000+660000-nextfixed5000=890000");
+            Assert(state.Cash==895000,
+                "opening300000-oldfixed5000-variable60000+660000=895000; new-day fee waits for next committed receipt");
             Assert(payload.EconomicRecords.Provenance.ActiveEpoch==null,
                 "new-day epoch cannot freeze before its boundary receipt is committed");
             payload.EconomicRecords.Validate();
