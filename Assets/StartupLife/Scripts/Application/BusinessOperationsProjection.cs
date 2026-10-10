@@ -111,7 +111,8 @@ namespace StartupLife.Application
 
     public static class BusinessOperationsProjection
     {
-        public static BusinessOperationsSnapshot FromCommittedState(GameState state,
+        // Single detached portfolio builder shared by both read APIs.
+        public static BusinessPortfolioSnapshot ProjectPortfolio(GameState state,
             ContentCatalog content, BusinessEconomicCatalog? economics)
         {
             if (state == null) throw new ArgumentNullException(nameof(state));
@@ -127,7 +128,16 @@ namespace StartupLife.Application
                 return new BusinessSnapshot(x, content.Businesses[x.DefinitionId],
                     policy, profile?.FixedHelper);
             }).ToArray();
-            var portfolio = new BusinessPortfolioSnapshot(new GameSnapshot(state, content), businesses);
+            return new BusinessPortfolioSnapshot(new GameSnapshot(state, content), businesses);
+        }
+
+        public static BusinessOperationsSnapshot FromCommittedState(GameState state,
+            ContentCatalog content, BusinessEconomicCatalog? economics)
+        {
+            if (state == null) throw new ArgumentNullException(nameof(state));
+            if (content == null) throw new ArgumentNullException(nameof(content));
+            var portfolio = ProjectPortfolio(state, content, economics);
+            var businesses = portfolio.Businesses;
             var ownerDay = OwnerDayAllocator.Plan(state, content);
             var active = state.Businesses.Where(x => x.IsActive).ToArray();
             var launches = content.Businesses.Values.OrderBy(x => x.Id, StringComparer.Ordinal)
