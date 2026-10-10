@@ -116,8 +116,22 @@ namespace StartupLife.Infrastructure
                 throw new ArgumentException("Historical receipt roster changed during compatibility repair.");
             for (var index = 0; index < frozen.Receipts.Count; index++)
                 frozen.Receipts[index].CommandId = state.Receipts[index].CommandId;
-            return JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(frozen),
-                SaveSchema.HistoricalV2,state.Revision);
+            // Reject any attempted semantic rewriting while repairing legacy child
+            // IDs. This catches cash/price/closure/timeline mutations even when
+            // receipt count and generation are unchanged.
+            var candidateV2 = JsonSaveSerializer.ReadObject<GameState>(
+                JsonSaveSerializer.WriteObject(state));
+            candidateV2.SaveVersion = SaveSchema.HistoricalV2;
+            var normalizedV2 = JsonSaveSerializer.WriteObject(frozen);
+            if (!normalizedV2.SequenceEqual(JsonSaveSerializer.WriteObject(candidateV2)))
+                throw new ArgumentException("Compatibility repair may change only historical receipt IDs.");
+            // Pending v3 policy/financial effects are forbidden before the first
+            // authoritative v3 receipt, even if cash and v2 GameState are unchanged.
+            var originalMigration = EconomicV3PayloadCodec.ReadChecked(migration.Migrate(before));
+            if (!JsonSaveSerializer.WriteObject(originalMigration.EconomicRecords!)
+                .SequenceEqual(JsonSaveSerializer.WriteObject(archive.EconomicRecords!)))
+                throw new ArgumentException("V3 policies or finance mutated before legacy same-generation repair.");
+            return JsonSaveSerializer.Wrap(normalizedV2,SaveSchema.HistoricalV2,state.Revision);
         }
     }
 }
