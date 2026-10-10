@@ -1,4 +1,7 @@
 # STARTUP LIFE — AI PRODUCTION WORKFLOW v1
+
+> **Active development-first directive, 2026-10-11:** GPT-6 is the Technical Director and direct coding/art-production owner for the MVP. Do not route image/asset generation to Gemini. Keep project and relevant Unity/art/animation skills mandatory, clean reusable code and deterministic engine-free CI at each implementation increment. Full Unity runtime, visual, animation deformation and physical-device acceptance are deferred to the consolidated end-of-MVP gate and must be recorded as NOT RUN rather than PASS. Prior session-by-session Unity runtime requirements below remain the **final acceptance standard**, not an obligation to block intermediate feature development. Historical frozen replay code must not be deduplicated by changing semantics. No merge/closure without required evidence and user authorization.
+
 **Status:** Mandatory project operating model  
 **Research snapshot:** 2026-09-30  
 **Project stack:** Unity 6.3 LTS + Universal 2D/URP + C# + uGUI/TMP + Unity 2D Animation  
