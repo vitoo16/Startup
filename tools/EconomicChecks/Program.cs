@@ -782,7 +782,12 @@ internal static class Program
                 BundledHistoricalV2ContentResolver.ContentVersion,out var original) &&
                 original != null, "frozen authored resolver");
             var archived=original!;
-            var template=FirstPlayableContentTemplate.BuildCatalog();
+            // The authored v3 template adds two modern businesses; compare only the
+            // immutable v2-authored roster to the pinned historical catalog.
+            var historicalAuthoring=FirstPlayableContentTemplate.Create();
+            historicalAuthoring.Businesses = historicalAuthoring.Businesses.Where(x =>
+                x.Id=="freelance-service" || x.Id=="coffee-kiosk").ToArray();
+            var template=historicalAuthoring.Build();
             string Fingerprint(ContentCatalog c) => System.Text.Json.JsonSerializer.Serialize(new {
                 c.Version,
                 Schedule=new[]{c.Schedule.WakeMinute,c.Schedule.SleepMinute},
