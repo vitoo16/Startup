@@ -318,6 +318,59 @@ internal static class Program
                 "ordinals continue through a genuine replan");
         });
 
+
+        Check("contractual due100 immediate40 later income80 pays same liability once", () =>
+        {
+            var obligation = new ObligationDueTranche("due-1","obligation-1","2026-10-09",
+                0,1,100,40);
+            var credited = ObligationIncomeDistributor.Plan("business-income/receipt-1",80,
+                new[]{obligation});
+            Assert(credited.GrossIncomeVnd==80 && credited.WithheldToOldestArrearsVnd==60,
+                "revenue withheld 60 into linked obligation");
+            Assert(credited.NetCreditedToCashVnd==20,"only 20 credited cash");
+            var updated=credited.ApplyTo(new[]{obligation});
+            Assert(updated.Single().PaidVnd==100 && updated.Single().OutstandingVnd==0,
+                "linked debt paid exactly once");
+            Throws<ArgumentException>(()=>credited.ApplyTo(updated));
+            Assert(-40 + credited.NetCreditedToCashVnd == -20,
+                "no second 60 cash debit on income withholding");
+        });
+
+        Check("salary and business income share stable oldest-first arrears graph", () =>
+        {
+            var debtEarly=new ObligationDueTranche("first","fixed/early","2026-02-01",0,1,100,0);
+            var debtLate=new ObligationDueTranche("second","fixed/late","2026-03-01",0,2,100,0);
+            var salary=ObligationIncomeDistributor.Plan("salary/receipt",130,new[]{debtLate,debtEarly});
+            Assert(salary.ArrearAllocations.Count==2,"both arrears");
+            Assert(salary.ArrearAllocations[0].TrancheId=="first" &&
+                salary.ArrearAllocations[0].PaidFromIncomeVnd==100,"oldest due first");
+            Assert(salary.ArrearAllocations[1].TrancheId=="second" &&
+                salary.ArrearAllocations[1].PaidFromIncomeVnd==30,"remaining next due");
+            var updated=salary.ApplyTo(new[]{debtLate,debtEarly});
+            var business=ObligationIncomeDistributor.Plan("business/receipt",100,updated);
+            Assert(business.ArrearAllocations.Single().TrancheId=="second" &&
+                business.ArrearAllocations.Single().PaidFromIncomeVnd==70,"business uses same remaining debt");
+            Assert(business.NetCreditedToCashVnd==30,"business sale net 30");
+            Assert(business.ApplyTo(updated).All(x=>x.OutstandingVnd==0),"all liabilities cleared");
+        });
+
+        Check("full-time with zero accepted units releases future side slots", () =>
+        {
+            var paidSide=new BusinessTimeWalletCandidate("a","paid",
+                BusinessOperationMode.SideHustleCompatible,1,1,0,0,1,60,new[]{0,1,2,3});
+            var unpaidFull=new BusinessTimeWalletCandidate("b","full",
+                BusinessOperationMode.FullTimeRequired,3,3,0,0,3,60,new[]{0,1,2});
+            var freeSide=new BusinessTimeWalletCandidate("c","free",
+                BusinessOperationMode.SideHustleCompatible,1,4,0,0,4,0,new[]{0,1,2,3});
+            var p=BusinessAffordabilityPlanner.Plan("releasing-fulltime",60,
+                new[]{unpaidFull,freeSide,paidSide});
+            Assert(p.ByInstance("paid").ReservedUnits==1,"paid competitor uses cash");
+            Assert(p.ByInstance("full").ReservedUnits==0 &&
+                p.ByInstance("full").ReservedOwnerMinutes.Count==0,"unfunded full-time must release block");
+            Assert(p.ByInstance("free").ReservedUnits>=1,"free business remains eligible");
+            Assert(p.TotalCostReservedVnd==60,"wallet exactly reserved once");
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
