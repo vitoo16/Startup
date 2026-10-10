@@ -1415,6 +1415,16 @@ internal static class Program
                     out var restored,out var outcome,economicRules:econ,archivedRules:archive),
                     "cold restore v3 GameSession must be valid: "+outcome.Reason);
                 Assert(restored!.Snapshot().Revision==1,"restored revision");
+                var launch=new GameCommand(CommandKind.LaunchBusiness,"online-store",100,
+                    appearanceId:"v1");
+                var launched=restored.Execute(new CommandEnvelope("run-m9-smoke","launch-online",1,launch));
+                Assert(launched.Status==CommandStatus.Committed,
+                    "v3 live-only business must launch and replay through active content: "+launched.ReasonKey);
+                Assert(restored.ReadBusinesses().Businesses.Any(x=>x.DefinitionId=="online-store"),
+                    "newly authored online-store business is available to v3 gameplay");
+                Assert(store.Read().Status==LoadStatus.Valid &&
+                    store.Read().State!.Businesses.Any(x=>x.DefinitionId=="online-store"),
+                    "cold reloaded v3 source contains launch beyond frozen v2 business roster");
                 var retry=restored.Execute(new CommandEnvelope("run-m9-smoke","create-character",0,cmd));
                 Assert(retry.Status==CommandStatus.AlreadyCommitted,
                     "same canonical id must not duplicate the creation receipt");
