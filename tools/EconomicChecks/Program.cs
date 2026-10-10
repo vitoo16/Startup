@@ -1323,6 +1323,47 @@ internal static class Program
                 date,"op/retry"));
         });
 
+
+        Check("v3 economic receipt processing operates freelance and pays next-day fixed charges", () =>
+        {
+            var content=FirstPlayableContentTemplate.BuildCatalog();
+            var economy=M9T02FunctionalEconomy.Create();
+            var anchor=EconomicActivationAnchor.FromHistoricalCheckpoint(0,"",content.Version,2,
+                "2026-10-09",0,V2ToV3Migration.ArchivedRuleset);
+            var processor=new V3EconomicReceiptProcessor(content,economy,anchor);
+            var state=new GameState{SaveVersion=3,RunId="run",ContentVersion=content.Version,
+                DateIso="2026-10-09",Minute=1080,Name="Tester",Cash=300000,
+                Businesses=new List<BusinessState>{
+                    new BusinessState{InstanceId="run/business/1",DefinitionId="freelance-service",
+                        DefinitionRevision="v1",OpenedIso="2026-10-09",
+                        OpenedMinute=0,InitialInvestment=100,
+                        PricingPosture=PricingPosture.Standard}
+                }};
+            var payload=new EconomicV3Payload{Current=state,Activation=EconomicV3Activation.FromAnchor(anchor),
+                EconomicRecords=EconomicV3Records.Empty()};
+            var before=state.Cash;
+            var first=processor.Evaluate(payload,new GameCommand(CommandKind.AdvanceBoundary),"run/op/1");
+            Assert(first==240 && state.Minute==1320 && state.DateIso=="2026-10-09",
+                "gameplay advanced in-day to bedtime");
+            Assert(payload.EconomicRecords!.Provenance.Fulfillments.Count==3,
+                "committed slice earned three actual freelance units");
+            Assert(state.Cash==235000,"opened fixed5000 and variable60000 paid from opening cash");
+            var second=processor.Evaluate(payload,new GameCommand(CommandKind.AdvanceBoundary),"run/op/2");
+            Assert(second==120 && state.DateIso=="2026-10-10" && state.Minute==0,
+                "midnight child consumes old date then advances simulation date");
+            var prior=payload.EconomicRecords.Provenance.Settlements.Single();
+            Assert(prior.OldDateIso=="2026-10-09" && prior.GrossVnd==660000,
+                "old-date three sales realized only on midnight");
+            Assert(prior.VariablePaidVnd==60000 && prior.FixedRecognizedVnd==5000 &&
+                prior.ProfitVnd==595000,"revenue minus fixed and variable exactly once");
+            Assert(state.Cash==890000,
+                "opening300000-oldfixed5000-variable60000+660000-nextfixed5000=890000");
+            Assert(payload.EconomicRecords.Provenance.ActiveEpoch!=null &&
+                payload.EconomicRecords.Provenance.ActiveEpoch.DateIso=="2026-10-10",
+                "next-day epoch frozen independently of prior midnight sales");
+            payload.EconomicRecords.Validate();
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)

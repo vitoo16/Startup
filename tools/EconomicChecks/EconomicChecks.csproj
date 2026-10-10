@@ -11,6 +11,7 @@
     <ProjectReference Include="../SimulationChecks/StartupLife.Core.csproj" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Simulation.csproj" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Application.csproj" />
+    <ProjectReference Include="../SimulationChecks/StartupLife.Application.csproj" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Infrastructure.csproj" />
     <Compile Include="../../Assets/StartupLife/Scripts/Content/M9T02FunctionalEconomy.cs" Link="M9T02FunctionalEconomy.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Content/ContentCatalogSource.cs" Link="ContentCatalogSource.cs" />
