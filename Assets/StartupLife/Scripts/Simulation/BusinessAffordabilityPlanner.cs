@@ -91,6 +91,10 @@ namespace StartupLife.Simulation
         public string DefinitionId { get; }
         public string InstanceId { get; }
         public int ReferenceEligibleUnits { get; }
+        public int RequiredOwnerMinutes { get; }
+        public int FullCapacityUnits { get; }
+        public int AlreadyWorkedMinutes { get; }
+        public int AlreadyFulfilledUnits { get; }
         public int ReservedUnits { get; }
         public long ReservedVariableVnd { get; }
         public IReadOnlyList<int> ReservedOwnerMinutes { get; }
@@ -101,6 +105,10 @@ namespace StartupLife.Simulation
         {
             DefinitionId = candidate.DefinitionId; InstanceId = candidate.InstanceId;
             ReferenceEligibleUnits = reference; ReservedUnits = accepted;
+            RequiredOwnerMinutes = candidate.RequiredOwnerMinutes;
+            FullCapacityUnits = candidate.FullCapacityUnits;
+            AlreadyWorkedMinutes = candidate.AlreadyWorkedMinutes;
+            AlreadyFulfilledUnits = candidate.AlreadyFulfilledUnits;
             ReservedVariableVnd = checked(candidate.VariableCostPerUnitVnd * accepted);
             ReservedOwnerMinutes = Array.AsReadOnly(slots.ToArray());
             UnitReservations = Array.AsReadOnly(reservations.ToArray());
