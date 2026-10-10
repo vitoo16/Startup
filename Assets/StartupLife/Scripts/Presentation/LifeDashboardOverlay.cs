@@ -66,7 +66,7 @@ namespace StartupLife.Presentation
         private float textScale = 1f;
         private readonly Dictionary<TMP_Text, float> originalFontSizes = new Dictionary<TMP_Text, float>();
         private const string TextScalePreference = "startup-life.ui.text-scale.v1";
-        private const string TutorialPreferencePrefix = "startup-life.ui.guide.v1.";
+        private const string TutorialPreferencePrefix = "startup-life.ui.guide.v";
 
         public static LifeDashboardOverlay Install(LifeScreenViewController view,
             Func<LifeDashboardSnapshot> read, TMP_Text fontSource)
@@ -192,7 +192,9 @@ namespace StartupLife.Presentation
         }
 
         private static string GuidePreference(string runId) =>
-            TutorialPreferencePrefix + runId;
+            TutorialPreferencePrefix +
+            OnboardingGuideCatalog.Version.ToString(CultureInfo.InvariantCulture) +
+            "." + runId;
 
         private void RefreshGuidance(string runId)
         {
