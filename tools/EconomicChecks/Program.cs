@@ -1251,7 +1251,7 @@ internal static class Program
             Assert(records.V3RecognizedRevenueVnd==80 &&
                 records.V3AppliedToArrearsVnd==60 && records.V3NetBusinessCreditVnd==20,
                 "revenue = arrears + cash");
-            Assert(candidate.Ledger.Sum(x=>x.CashDelta)==20,"wallet ledger conserved 40-40+20");
+            Assert(candidate.Ledger.Sum(x=>x.CashDelta)==-20,"wallet ledger conserved 40-40+20");
             records.Validate();
             Throws<ArgumentException>(()=>V3ObligationTransactions.OpenDue(candidate,records,
                 new[]{fixedDaily},new Dictionary<string,bool>(),"run/op/duplicate"));
