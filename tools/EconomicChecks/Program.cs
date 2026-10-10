@@ -465,6 +465,105 @@ internal static class Program
                 "2026-10-11","illegal"));
         });
 
+
+        Check("midnight A/B/C settlement conserves gross cost profit and cash", () =>
+        {
+            var slots=Enumerable.Range(1080,240);
+            var candidates=new[]{
+                new BusinessTimeWalletCandidate("a","A",BusinessOperationMode.SideHustleCompatible,
+                    120,6,0,0,6,25,slots),
+                new BusinessTimeWalletCandidate("b","B",BusinessOperationMode.SideHustleCompatible,
+                    120,6,0,0,6,15,slots),
+                new BusinessTimeWalletCandidate("c","C",BusinessOperationMode.SideHustleCompatible,
+                    120,6,0,0,6,0,slots)
+            };
+            var plan=BusinessAffordabilityPlanner.Plan("settle-epoch",80,candidates);
+            var prices=new Dictionary<string,long>{{"A",80},{"B",50},{"C",20}};
+            var sold=new List<BusinessUnitFinancialLine>();
+            var ordinal=0;
+            foreach(var allocation in plan.Allocations)
+                foreach(var reservation in allocation.UnitReservations)
+                {
+                    var unit=new MarketFulfillmentUnit("line-"+ordinal,"2026-10-09","test.pool",
+                        "budget-sensitive",ordinal,allocation.InstanceId,
+                        "slice-"+allocation.InstanceId,"advance/receipt");
+                    sold.Add(new BusinessUnitFinancialLine(unit,reservation,prices[allocation.InstanceId],
+                        "m9-t02.profile-v1",PricingPosture.Standard));
+                    ordinal++;
+                }
+            var supply=new MarketPoolDaySupply("2026-10-09","test.pool","v1",
+                new[]{new KeyValuePair<string,int>("budget-sensitive",10)});
+            var settlement=BusinessDaySettlementEngine.Calculate("run","2026-10-09","midnight/operation",
+                new[]{supply},sold,plan.AllUnitReservations,
+                new[]{"slice-A","slice-B","slice-C"},
+                new[]{new KeyValuePair<string,long>("A",20)},
+                Array.Empty<ObligationDueTranche>(),Array.Empty<string>());
+            Assert(settlement.SettlementId=="run/business-day/2026-10-09","receipt-independent identity");
+            Assert(settlement.GrossRevenueVnd==380,"gross A160 + B100 + C120");
+            Assert(settlement.VariablePaidDuringDayVnd==80,"variable paid earlier A50 B30");
+            Assert(settlement.FixedRecognizedDuringDayVnd==20,"recognized fixed20");
+            Assert(settlement.RecognizedProfitVnd==280,"profit=380-80-20");
+            Assert(settlement.AppliedToArrearsVnd==0 && settlement.NetCreditedCashVnd==380,
+                "no debt, all gross credited at midnight");
+            Assert(100-20-80+settlement.NetCreditedCashVnd==380,"wallet after midnight=380");
+            Throws<ArgumentException>(()=>BusinessDaySettlementEngine.Calculate("run","2026-10-09",
+                "midnight/retry",new[]{supply},sold,plan.AllUnitReservations,
+                new[]{"slice-A","slice-B","slice-C"},
+                new[]{new KeyValuePair<string,long>("A",20)},
+                Array.Empty<ObligationDueTranche>(),new[]{settlement.SettlementId}));
+        });
+
+        Check("midnight revenue pays exact original obligation arrear with no double debit", () =>
+        {
+            var item=new BusinessTimeWalletCandidate("a","A",BusinessOperationMode.SideHustleCompatible,
+                1,1,0,0,1,0,new[]{100});
+            var plan=BusinessAffordabilityPlanner.Plan("one-sale",0,new[]{item});
+            var reservation=plan.AllUnitReservations.Single();
+            var market=new MarketFulfillmentUnit("sale-1","2026-10-09","test.pool",
+                "budget-sensitive",0,"A","slice-A","adv-1");
+            var line=new BusinessUnitFinancialLine(market,reservation,80,"v1",PricingPosture.Standard);
+            var supply=new MarketPoolDaySupply("2026-10-09","test.pool","v1",
+                new[]{new KeyValuePair<string,int>("budget-sensitive",1)});
+            var due=new ObligationDueTranche("due-1","obligation-1","2026-10-09",0,1,100,40);
+            var settlement=BusinessDaySettlementEngine.Calculate("run","2026-10-09","midnight-op",
+                new[]{supply},new[]{line},new[]{reservation},new[]{"slice-A"},
+                Array.Empty<KeyValuePair<string,long>>(),new[]{due},Array.Empty<string>());
+            Assert(settlement.GrossRevenueVnd==80,"income80");
+            Assert(settlement.AppliedToArrearsVnd==60,"arrear settled60");
+            Assert(settlement.NetCreditedCashVnd==20,"net credit20");
+            Assert(settlement.UpdatedArrears.Single().PaidVnd==100 &&
+                settlement.UpdatedArrears.Single().OutstandingVnd==0,"one payable debt, no duplicate");
+            Assert(-40+settlement.NetCreditedCashVnd==-20,"only up-front payment cash debit40");
+            Throws<ArgumentException>(()=>BusinessDaySettlementEngine.Calculate("run",
+                "2026-10-09","midnight-op",new[]{supply},new[]{line},new[]{reservation},
+                Array.Empty<string>(),Array.Empty<KeyValuePair<string,long>>(),
+                new[]{due},Array.Empty<string>()));
+        });
+
+        Check("settlement rejects duplicated market unit and unmatched cost", () =>
+        {
+            var item=new BusinessTimeWalletCandidate("a","A",BusinessOperationMode.SideHustleCompatible,
+                2,2,0,0,2,0,new[]{200,201});
+            var plan=BusinessAffordabilityPlanner.Plan("duplicate-sale",0,new[]{item});
+            var reserved=plan.AllUnitReservations.ToArray();
+            var l1=new BusinessUnitFinancialLine(
+                new MarketFulfillmentUnit("l1","2026-10-09","test.pool","budget-sensitive",
+                    0,"A","s","adv"),reserved[0],100,"v1",PricingPosture.Standard);
+            var l2=new BusinessUnitFinancialLine(
+                new MarketFulfillmentUnit("l2","2026-10-09","test.pool","budget-sensitive",
+                    0,"A","s","adv"),reserved[1],100,"v1",PricingPosture.Standard);
+            var supply=new MarketPoolDaySupply("2026-10-09","test.pool","v1",
+                new[]{new KeyValuePair<string,int>("budget-sensitive",2)});
+            Throws<ArgumentException>(()=>BusinessDaySettlementEngine.Calculate("run","2026-10-09","op",
+                new[]{supply},new[]{l1,l2},reserved,new[]{"s"},
+                Array.Empty<KeyValuePair<string,long>>(),Array.Empty<ObligationDueTranche>(),
+                Array.Empty<string>()));
+            Throws<ArgumentException>(()=>BusinessDaySettlementEngine.Calculate("run","2026-10-09","op",
+                new[]{supply},new[]{l1},Array.Empty<BusinessUnitCostReservation>(),new[]{"s"},
+                Array.Empty<KeyValuePair<string,long>>(),Array.Empty<ObligationDueTranche>(),
+                Array.Empty<string>()));
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
