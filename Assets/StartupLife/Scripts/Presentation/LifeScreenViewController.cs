@@ -36,6 +36,25 @@ namespace StartupLife.Presentation
         private StudyActionController studyActions;
         private Func<IReadOnlyList<BusinessFinanceDaySnapshot>> financeReader;
         private Func<BusinessPortfolioSnapshot> portfolioReader;
+        private BusinessManagementOverlay businessOverlay;
+
+        public void AttachBusinessReadouts(TMP_Text financeText, TMP_Text portfolioText)
+        {
+            lastSettledFinanceValue = financeText ?? throw new ArgumentNullException(nameof(financeText));
+            businessPortfolioValue = portfolioText ?? throw new ArgumentNullException(nameof(portfolioText));
+            Refresh();
+        }
+
+        public void EnsureBusinessManagementUi()
+        {
+            if (portfolioReader == null || financeReader == null)
+                throw new InvalidOperationException("Business and finance read models must be bound before UI installation.");
+            var fontSource = cashValue != null ? cashValue :
+                GetComponentInChildren<TMP_Text>(true);
+            businessOverlay = BusinessManagementOverlay.Install(this, portfolioReader, fontSource);
+            Refresh();
+        }
+
 
         public void BindBusinessPortfolio(Func<BusinessPortfolioSnapshot> readBusinessPortfolio)
         {
@@ -141,6 +160,7 @@ namespace StartupLife.Presentation
             if (buyCourseButton) buyCourseButton.interactable = snapshot.ActiveCourse == null && snapshot.Arrears == 0;
             if (studyButton) studyButton.interactable = snapshot.ActiveCourse != null;
             if (resignButton) resignButton.interactable = employed;
+            businessOverlay?.Refresh();
         }
 
         public void AcceptDeveloper()
@@ -186,21 +206,31 @@ namespace StartupLife.Presentation
 
         // UnityEvent bindings for optional business management UI. No implicit
         // cost or simulation step is executed when this view merely refreshes.
-        public void LaunchOnlineStore() => Publish(
-            flow.LaunchBusiness("online-store", "v1", 100).Command,
-            "status.business.launched");
+        // Investment amount and content revision always come from authored content.
+        private void LaunchAuthoredBusiness(string definitionId)
+        {
+            if (content == null || !content.Businesses.TryGetValue(definitionId, out var definition))
+                throw new ArgumentException("Unknown authored business.", nameof(definitionId));
+            Publish(flow.LaunchBusiness(definition.Id, definition.Revision,
+                checked((int)definition.MinimumStartupInvestment)).Command, "status.business.launched");
+        }
 
-        public void LaunchHomeFoodPreorder() => Publish(
-            flow.LaunchBusiness("home-food-preorder", "v1", 100).Command,
-            "status.business.launched");
+        public void LaunchOnlineStore() => LaunchAuthoredBusiness("online-store");
 
-        public void LaunchFreelanceService() => Publish(
-            flow.LaunchBusiness("freelance-service", "v1", 100).Command,
-            "status.business.launched");
+        public void LaunchHomeFoodPreorder() => LaunchAuthoredBusiness("home-food-preorder");
 
-        public void LaunchCoffeeKiosk() => Publish(
-            flow.LaunchBusiness("coffee-kiosk", "v1", 100).Command,
-            "status.business.launched");
+        public void LaunchFreelanceService() => LaunchAuthoredBusiness("freelance-service");
+
+        public void LaunchCoffeeKiosk() => LaunchAuthoredBusiness("coffee-kiosk");
+
+        public void ReinvestMinimumBusiness(string instanceId)
+        {
+            var portfolio = portfolioReader?.Invoke() ??
+                throw new InvalidOperationException("Missing authoritative portfolio reader.");
+            var owned = portfolio.Businesses.Single(x => x.InstanceId == instanceId && x.IsActive);
+            var definition = content.Businesses[owned.DefinitionId];
+            ReinvestBusiness(instanceId, checked((int)definition.MinimumReinvestment));
+        }
 
         public void PauseBusiness(string instanceId) => Publish(
             flow.PauseBusiness(instanceId).Command, "status.business.paused");
