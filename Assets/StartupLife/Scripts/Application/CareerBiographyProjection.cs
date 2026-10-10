@@ -61,23 +61,44 @@ namespace StartupLife.Application
         }
     }
 
+    // A character can be unemployed after resignation without owning a company.
+    // Employment history is independent from business ownership and founder status.
+    public enum CareerJourneyStage
+    {
+        CharacterCreation = 0,
+        Unemployed = 1,
+        Employed = 2,
+        SideBusinessOwner = 3,
+        FullTimeFounder = 4
+    }
+
     public sealed class CareerBiographySnapshot
     {
         public bool HasCharacter { get; }
         public bool IsEmployed => CurrentEmployment != null;
-        public bool IsFounderAfterResignation { get; }
+        public bool HasResignedEmployment => PreviousEmployments.Count > 0;
+        public int ActiveBusinessCount { get; }
+        public bool IsFullTimeFounder => Stage == CareerJourneyStage.FullTimeFounder;
+        public CareerJourneyStage Stage { get; }
         public CareerTenureSnapshot? CurrentEmployment { get; }
         public IReadOnlyList<CareerTenureSnapshot> PreviousEmployments { get; }
         public RationalAmount OutstandingSalary { get; }
 
         internal CareerBiographySnapshot(bool hasCharacter, CareerTenureSnapshot? current,
-            CareerTenureSnapshot[] past, RationalAmount outstanding)
+            CareerTenureSnapshot[] past, int activeBusinesses, RationalAmount outstanding)
         {
+            if (past == null) throw new ArgumentNullException(nameof(past));
+            if (activeBusinesses < 0) throw new ArgumentOutOfRangeException(nameof(activeBusinesses));
             HasCharacter = hasCharacter;
             CurrentEmployment = current;
-            IsFounderAfterResignation = hasCharacter && current == null && past.Length > 0;
             PreviousEmployments = Array.AsReadOnly(past);
+            ActiveBusinessCount = activeBusinesses;
             OutstandingSalary = outstanding;
+            Stage = !hasCharacter ? CareerJourneyStage.CharacterCreation :
+                current != null ? (activeBusinesses == 0
+                    ? CareerJourneyStage.Employed : CareerJourneyStage.SideBusinessOwner) :
+                activeBusinesses == 0 ? CareerJourneyStage.Unemployed :
+                    CareerJourneyStage.FullTimeFounder;
         }
     }
 
@@ -100,7 +121,7 @@ namespace StartupLife.Application
             foreach (var claim in state.Claims)
                 total += SimulationEngine.ClaimAmount(claim);
             return new CareerBiographySnapshot(!string.IsNullOrWhiteSpace(state.Name),
-                current, past, total);
+                current, past, state.Businesses.Count(x => x.IsActive), total);
         }
     }
 }

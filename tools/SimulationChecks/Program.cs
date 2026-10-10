@@ -262,13 +262,16 @@ internal static class Program
             var f = new Fixture(); f.Create();
             var untouched = f.Session.ReadCareerBiography();
             True(untouched.HasCharacter); True(!untouched.IsEmployed);
-            True(!untouched.IsFounderAfterResignation);
+            Equal(CareerJourneyStage.Unemployed, untouched.Stage);
+            True(!untouched.HasResignedEmployment);
+            Equal(0, untouched.ActiveBusinessCount);
             Equal(0, untouched.PreviousEmployments.Count);
 
             f.Accept(); f.Evening();
             var before = f.Session.ExportCheckpoint();
             var employed = f.Session.ReadCareerBiography();
-            True(employed.IsEmployed); True(!employed.IsFounderAfterResignation);
+            True(employed.IsEmployed); True(!employed.IsFullTimeFounder);
+            Equal(CareerJourneyStage.Employed, employed.Stage);
             Equal("developer", employed.CurrentEmployment!.CareerId);
             Equal("career.developer", employed.CurrentEmployment.CareerNameKey);
             Equal(10000000L, employed.CurrentEmployment.MonthlySalaryAtRecordedRankVnd!.Value);
@@ -278,7 +281,9 @@ internal static class Program
 
             f.SendOk(new GameCommand(CommandKind.Resign));
             var resigned = f.Session.ReadCareerBiography();
-            True(!resigned.IsEmployed); True(resigned.IsFounderAfterResignation);
+            True(!resigned.IsEmployed); True(resigned.HasResignedEmployment);
+            Equal(CareerJourneyStage.Unemployed, resigned.Stage);
+            True(!resigned.IsFullTimeFounder);
             Equal(1, resigned.PreviousEmployments.Count);
             Equal(employed.CurrentEmployment.EmploymentId,
                 resigned.PreviousEmployments.Single().EmploymentId);
@@ -287,14 +292,16 @@ internal static class Program
 
             var restored = new Fixture(f.Content, f.State());
             var cold = restored.Session.ReadCareerBiography();
-            True(cold.IsFounderAfterResignation);
+            Equal(CareerJourneyStage.Unemployed, cold.Stage);
             Equal(resigned.PreviousEmployments.Single().EmploymentId,
                 cold.PreviousEmployments.Single().EmploymentId);
             Equal(resigned.OutstandingSalary, cold.OutstandingSalary);
 
             f.Accept();
             var reemployed = f.Session.ReadCareerBiography();
-            True(reemployed.IsEmployed); True(!reemployed.IsFounderAfterResignation);
+            True(reemployed.IsEmployed); True(!reemployed.IsFullTimeFounder);
+            True(reemployed.HasResignedEmployment);
+            Equal(CareerJourneyStage.Employed, reemployed.Stage);
             Equal(1, reemployed.PreviousEmployments.Count);
             True(reemployed.CurrentEmployment!.EmploymentId !=
                 reemployed.PreviousEmployments.Single().EmploymentId);

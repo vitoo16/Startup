@@ -1506,10 +1506,16 @@ internal static class Program
                 }
                 Commit("create", new GameCommand(CommandKind.CreateCharacter,
                     "fresh", 18, "Employment Tester", "base.male"));
+                Assert(session.ReadCareerBiography().Stage == CareerJourneyStage.Unemployed,
+                    "a newly created player without a business is unemployed, not a founder");
                 Commit("launch", new GameCommand(CommandKind.LaunchBusiness,
                     "online-store", 100, appearanceId: "v1"));
+                Assert(session.ReadCareerBiography().Stage == CareerJourneyStage.FullTimeFounder,
+                    "operating an owned business without a job is a full-time founder");
                 Commit("accept", new GameCommand(CommandKind.AcceptJob, "developer"));
                 Assert(session.Snapshot().CareerId == "developer", "accepted career persists");
+                Assert(session.ReadCareerBiography().Stage == CareerJourneyStage.SideBusinessOwner,
+                    "employment with an active side business is not full-time founding");
                 var acceptedBytes = File.ReadAllBytes(path);
                 var revision = session.Snapshot().Revision;
                 var retry = session.Execute(new CommandEnvelope(initial.RunId, "accept", revision - 1,
@@ -1541,6 +1547,10 @@ internal static class Program
                 var committedWorkEnd = beforeResign.Minute;
                 Commit("resign", new GameCommand(CommandKind.Resign));
                 Assert(session.Snapshot().CareerId == "", "resignation persists");
+                var founder = session.ReadCareerBiography();
+                Assert(founder.Stage == CareerJourneyStage.FullTimeFounder &&
+                    founder.HasResignedEmployment && founder.PreviousEmployments.Count == 1,
+                    "resignation with an active business transitions to founder without discarding biography");
                 var resignedState = store.Read().State!;
                 var occupancy = CommittedTimeTrace.Project(resignedState, content);
                 var workStart = content.Careers["developer"].StartMinute;
@@ -1551,6 +1561,8 @@ internal static class Program
                     "resignation releases future career time");
                 Commit("reaccept", new GameCommand(CommandKind.AcceptJob, "developer"));
                 Assert(session.Snapshot().CareerId == "developer", "reemployment persists");
+                Assert(session.ReadCareerBiography().Stage == CareerJourneyStage.SideBusinessOwner,
+                    "reemployment changes the stage without deleting existing business or history");
                 var checkpoint = File.ReadAllBytes(path);
                 Commit("continuation", new GameCommand(CommandKind.AdvanceBoundary));
                 var uninterruptedBytes = File.ReadAllBytes(path);
@@ -1573,6 +1585,22 @@ internal static class Program
                     foreach (var filename in new[] { otherPath, otherPath + ".backup", otherPath + ".lock" })
                         if (File.Exists(filename)) File.Delete(filename);
                 }
+                Commit("return-founder", new GameCommand(CommandKind.Resign));
+                var businessId = session.ReadBusinesses().Businesses.Single(x =>
+                    x.DefinitionId == "online-store").InstanceId;
+                Commit("close-owned-business", new GameCommand(CommandKind.CloseBusiness, businessId));
+                var unemployed = session.ReadCareerBiography();
+                Assert(unemployed.Stage == CareerJourneyStage.Unemployed &&
+                    unemployed.HasResignedEmployment && unemployed.ActiveBusinessCount == 0 &&
+                    unemployed.PreviousEmployments.Count == 2,
+                    "closing the last business returns player to unemployed without losing career history");
+                var beforeDuplicate = File.ReadAllBytes(path);
+                var repeatResign = session.Execute(new CommandEnvelope(initial.RunId,
+                    "resign-with-no-career", session.Snapshot().Revision,
+                    new GameCommand(CommandKind.Resign)));
+                Assert(repeatResign.Status == CommandStatus.Rejected &&
+                    File.ReadAllBytes(path).SequenceEqual(beforeDuplicate),
+                    "invalid repeated resignation must not mutate persisted save");
             }
             finally
             {
