@@ -93,6 +93,7 @@ namespace StartupLife.Core
         [DataMember(Order=2)] public List<V3BusinessOperationSlice> OperationSlices { get; set; } = new List<V3BusinessOperationSlice>();
         [DataMember(Order=3)] public List<V3UnitFulfillment> Fulfillments { get; set; } = new List<V3UnitFulfillment>();
         [DataMember(Order=4)] public List<V3BusinessDaySettlement> Settlements { get; set; } = new List<V3BusinessDaySettlement>();
+        [DataMember(Order=5)] public V3BusinessEpochPlan? ActiveEpoch { get; set; }
 
         public void Validate()
         {
@@ -181,6 +182,7 @@ namespace StartupLife.Core
                 if (cost.Status==V3CostReservationStatus.Consumed && !consumed.Contains(cost.Id))
                     throw new ArgumentException("Consumed cost reservation lacks exactly one market sale.");
 
+            if (ActiveEpoch != null) ActiveEpoch.Validate(this);
             var settlements = UniqueMap(Settlements,x=>x.Id);
             var settledSales = new HashSet<string>(StringComparer.Ordinal);
             var dates = new HashSet<string>(StringComparer.Ordinal);
