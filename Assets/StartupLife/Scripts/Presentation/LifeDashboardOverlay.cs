@@ -263,7 +263,7 @@ namespace StartupLife.Presentation
         private static string GuideExplanation(string key) => key switch
         {
             "onboarding.skills.free" =>
-                "Đi làm và trải nghiệm sẽ giúp tăng kỹ năng. Bạn không cần mua khóa học để bắt đầu học hỏi.",
+                "Đi làm và trải nghiệm có thể tăng kỹ năng miễn phí. Bạn không cần mua khóa học để bắt đầu học hỏi.",
             "onboarding.study.paid" =>
                 "Khóa học có giá và yêu cầu riêng. Xem học phí, thời lượng và trình độ trước khi mua; học mới tiêu tốn thời gian.",
             "onboarding.business.compatibility" =>
