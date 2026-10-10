@@ -63,7 +63,8 @@ namespace StartupLife.Tests.PlayMode
             open.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
             yield return null;
             var overlay = GameObject.Find("BusinessManagementOverlay");
-            Assert.That(overlay, Is.Not.Null.And.Property("activeSelf").True,
+            Assert.That(overlay, Is.Not.Null);
+            Assert.That(overlay.activeSelf, Is.True,
                 "Business panel must open from its visible uGUI button");
             Assert.That(bootstrap.Snapshot.Cash, Is.EqualTo(previousCash),
                 "Opening or refreshing UI must never generate money/costs");
@@ -79,7 +80,8 @@ namespace StartupLife.Tests.PlayMode
                 .GetComponent<TMP_Text>().text, Does.Contain("Chưa có doanh nghiệp"));
 
             var launch = GameObject.Find("LaunchonlinestoreButton");
-            Assert.That(launch, Is.Not.Null.And.Property("activeInHierarchy").True,
+            Assert.That(launch, Is.Not.Null);
+            Assert.That(launch.activeInHierarchy, Is.True,
                 "Player must be able to reach business launch through actual scene UI");
             launch.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
             yield return null;
