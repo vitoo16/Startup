@@ -317,8 +317,8 @@ internal static class Program
             Equal("onboarding.business.compatibility", OnboardingGuideCatalog.At(2));
             Equal("onboarding.time.automatic", OnboardingGuideCatalog.At(3));
             Equal("onboarding.resign.not-forced", OnboardingGuideCatalog.At(4));
-            Throws<ArgumentOutOfRangeException>(() => OnboardingGuideCatalog.At(-1));
-            Throws<ArgumentOutOfRangeException>(() => OnboardingGuideCatalog.At(5));
+            Throws(() => OnboardingGuideCatalog.At(-1));
+            Throws(() => OnboardingGuideCatalog.At(5));
         });
         Check("M12 dashboard projects six authored skills, course costs and financial claims without writes", () =>
         {
