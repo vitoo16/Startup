@@ -556,6 +556,9 @@ internal static class Program
         Check("M11 both invalid checkpoints refuse recovery and retain original bytes", () =>
         {
             var f = new Fixture(); f.Create();
+            var expectedRevision = f.State().Revision;
+            f.Accept();
+            var validCandidate = f.Session.ExportCheckpoint();
             var path = PathFor("m11-both-damaged");
             var badPrimary = Encoding.UTF8.GetBytes("truncated-primary");
             var badBackup = Encoding.UTF8.GetBytes("truncated-backup");
@@ -565,22 +568,26 @@ internal static class Program
             var read = store.Read();
             Equal(LoadStatus.Corrupt, read.Status);
             Equal("save.unrecoverable", read.Reason);
-            Equal(WriteStatus.Failed, store.Commit(f.Session.ExportCheckpoint(), f.State().Revision));
+            Equal(WriteStatus.Failed, store.Commit(validCandidate, expectedRevision));
             Bytes(badPrimary, File.ReadAllBytes(path));
             Bytes(badBackup, File.ReadAllBytes(path + ".backup"));
         });
         Check("M11 invalid primary never downgrades a future-version backup", () =>
         {
             var f = new Fixture(); f.Create();
+            var expectedRevision = f.State().Revision;
+            var historical = f.State();
+            f.Accept();
+            var validCandidate = f.Session.ExportCheckpoint();
             var path = PathFor("m11-future-backup");
             var invalid = Encoding.UTF8.GetBytes("broken-primary");
-            var future = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(f.State()),
-                SaveSchema.CurrentVersion + 10, f.State().Revision);
+            var future = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(historical),
+                SaveSchema.CurrentVersion + 10, expectedRevision);
             File.WriteAllBytes(path, invalid);
             File.WriteAllBytes(path + ".backup", future);
             var store = new AtomicFileSaveStore(path, f.Serializer);
             Equal(LoadStatus.FutureVersion, store.Read().Status);
-            Equal(WriteStatus.Failed, store.Commit(f.Session.ExportCheckpoint(), f.State().Revision));
+            Equal(WriteStatus.Failed, store.Commit(validCandidate, expectedRevision));
             Bytes(invalid, File.ReadAllBytes(path));
             Bytes(future, File.ReadAllBytes(path + ".backup"));
         });
