@@ -76,7 +76,14 @@ namespace StartupLife.Infrastructure
         {
             var legacy=JsonSaveSerializer.ReadObject<GameState>(
                 Convert.FromBase64String(body.OriginalV2PayloadBase64));
-            replay.Validate(legacy,body.Current!,body.Activation!.ToAnchor(),archives);
+            var anchor = body.Activation!.ToAnchor();
+            if (body.Current!.Receipts.Count > anchor.LegacyReceiptCount)
+            {
+                if (replay is IVersionedV3ReceiptReplay v3)
+                    v3.ValidateV3(body,archives);
+                else throw new NotSupportedException("V3 suffix evaluator is not registered.");
+            }
+            else replay.Validate(legacy,body.Current!,anchor,archives);
         }
 
         private static string Digest(byte[] payload)
