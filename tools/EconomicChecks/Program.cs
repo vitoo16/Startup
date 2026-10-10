@@ -564,6 +564,86 @@ internal static class Program
                 Array.Empty<string>()));
         });
 
+
+        Check("four-pool epoch connects finite segment demand to wallet reservations", () =>
+        {
+            var d="2026-10-09";
+            var catalog=M9T02FunctionalEconomy.Create();
+            var supplies=catalog.Pools.Values.Select(x=>CustomerDemandCalculator.OpeningSupply(d,catalog,x.PoolId)).ToArray();
+            BusinessMarketEpochParticipant Participant(string id, BusinessType type, string instance, int r, int c,
+                long cost, BusinessOperationMode mode, IEnumerable<int> slots) =>
+                new BusinessMarketEpochParticipant(
+                    new BusinessTimeWalletCandidate(id,instance,mode,r,c,0,0,100,cost,slots),
+                    new BusinessDemandCandidate(instance,id,PricingPosture.Standard),
+                    new BusinessProspectivePolicy(instance,EconomicOperationStatus.Auto,PricingPosture.Standard),true);
+            var portfolio=new[]{
+                Participant("online-store",BusinessType.OnlineStore,"online",120,8,52000,
+                    BusinessOperationMode.SideHustleCompatible,Enumerable.Range(1080,240)),
+                Participant("home-food-preorder",BusinessType.HomeFoodPreorder,"food",120,8,23000,
+                    BusinessOperationMode.SideHustleCompatible,Enumerable.Range(1080,240)),
+                Participant("freelance-service",BusinessType.FreelanceService,"freelance",120,3,20000,
+                    BusinessOperationMode.SideHustleCompatible,Enumerable.Range(1080,240)),
+                Participant("coffee-kiosk",BusinessType.CoffeeKiosk,"kiosk",480,40,12000,
+                    BusinessOperationMode.FullTimeRequired,Enumerable.Range(540,480))
+            };
+            var epoch=BusinessMarketEpochPlanner.Freeze(catalog,"market-epoch",d,800000,
+                supplies,Array.Empty<MarketFulfillmentUnit>(),portfolio,Enumerable.Range(540,480));
+            Assert(epoch.MarketReservations.Count==epoch.OwnerTimeAndWallet.AllUnitReservations.Count,
+                "market units and variable wallet reservations are one-to-one");
+            Assert(epoch.OwnerTimeAndWallet.TotalCostReservedVnd<=800000,"no borrowed cash");
+            Assert(epoch.MarketReservations.All(x=>x.EffectiveUnitPriceVnd>0),"actual unit price attached");
+            Assert(epoch.MarketReservations.All(x=>x.Cost.Id.Length>0),"cost reservation attached");
+            Assert(epoch.MarketReservations.All(x=>x.MarketUnitOrdinal>=0),"ordinal attached");
+            Assert(epoch.MarketReservations.Select(x=>x.MarketPoolId+"/"+x.SegmentId+"/"+x.MarketUnitOrdinal)
+                .Distinct().Count()==epoch.MarketReservations.Count,"no market unit double allocation");
+            Assert(epoch.OwnerTimeAndWallet.ByInstance("kiosk").ReservedUnits==0,
+                "employment blocks kiosk full-time reserve");
+            var reversed=BusinessMarketEpochPlanner.Freeze(catalog,"market-epoch",d,800000,
+                supplies,Array.Empty<MarketFulfillmentUnit>(),portfolio.Reverse(),
+                Enumerable.Range(540,480));
+            Assert(epoch.MarketReservations.Select(x=>x.Cost.Id+"|"+x.MarketPoolId+"|"+x.SegmentId+"|"+
+                x.MarketUnitOrdinal).SequenceEqual(
+                reversed.MarketReservations.Select(x=>x.Cost.Id+"|"+x.MarketPoolId+"|"+x.SegmentId+"|"+
+                x.MarketUnitOrdinal)),"portfolio permutation changed frozen market attribution");
+        });
+
+        Check("same-day market replan cannot reissue committed pool ordinal", () =>
+        {
+            var catalog=M9T02FunctionalEconomy.Create();
+            var date="2026-10-09";
+            var supply=catalog.Pools.Values.Select(x=>CustomerDemandCalculator.OpeningSupply(date,catalog,x.PoolId))
+                .ToArray();
+            BusinessMarketEpochParticipant Make(int alreadyWorked, int fulfilled, int start,
+                string epoch)
+            {
+                var time=new BusinessTimeWalletCandidate("online-store","i",
+                    BusinessOperationMode.SideHustleCompatible,120,8,alreadyWorked,fulfilled,100,52000,
+                    Enumerable.Range(start,1320-start));
+                var policy=new BusinessProspectivePolicy("i",EconomicOperationStatus.Auto,
+                    PricingPosture.Standard,PricingPosture.Premium,"2026-10-10");
+                return new BusinessMarketEpochParticipant(time,
+                    new BusinessDemandCandidate("i","online-store",PricingPosture.Standard),policy,true);
+            }
+            var first=BusinessMarketEpochPlanner.Freeze(catalog,"epoch-original",date,500000,
+                supply,Array.Empty<MarketFulfillmentUnit>(),new[]{Make(0,0,1080,"epoch-original")},
+                Array.Empty<int>());
+            Assert(first.MarketReservations.Count>0,"fixture should allocate at least one sale");
+            var sold=first.MarketReservations[0];
+            var committed=new MarketFulfillmentUnit("sold-1",date,sold.MarketPoolId,sold.SegmentId,
+                sold.MarketUnitOrdinal,"i","slice-1","advance-1");
+            var second=BusinessMarketEpochPlanner.Freeze(catalog,"epoch-after-sale",date,500000,
+                supply,new[]{committed},new[]{Make(15,1,1095,"epoch-after-sale")},Enumerable.Range(1080,15));
+            Assert(second.MarketReservations.All(x=>!(x.MarketPoolId==sold.MarketPoolId &&
+                x.SegmentId==sold.SegmentId && x.MarketUnitOrdinal==sold.MarketUnitOrdinal)),
+                "already sold market unit cannot be reissued by replan");
+            Assert(second.MarketReservations.All(x=>x.EffectiveUnitPriceVnd==95000 &&
+                x.EffectivePosture==PricingPosture.Standard),
+                "pending next-day price cannot affect today's unit sale");
+            Assert(supply.Single(x=>x.PoolId==sold.MarketPoolId).OriginalUnitsBySegment.Values.Sum()==18,
+                "original opening supply remains immutable");
+        });
+
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
