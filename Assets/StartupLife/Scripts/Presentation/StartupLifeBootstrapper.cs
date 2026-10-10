@@ -91,6 +91,7 @@ namespace StartupLife.Presentation
                 characterCreation.Bind(flow, RefreshMode);
                 lifeScreen.Bind(flow, content, workPlayback, daySummary);
                 lifeScreen.BindCommittedFinance(() => session.ReadCommittedFinance());
+                lifeScreen.BindBusinessPortfolio(() => session.ReadBusinesses());
                 lifecycle = new FirstPlayableLifecycle(flow, workPlayback, RefreshMode);
                 daySummary.Hide();
                 IsReady = true;

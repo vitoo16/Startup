@@ -17,6 +17,7 @@ namespace StartupLife.Presentation
         [SerializeField] private TMP_Text timeValue;
         [SerializeField] private TMP_Text cashValue;
         [SerializeField] private TMP_Text lastSettledFinanceValue;
+        [SerializeField] private TMP_Text businessPortfolioValue;
         [SerializeField] private TMP_Text rankValue;
         [SerializeField] private TMP_Text courseProgressValue;
         [SerializeField] private LocalizedKeyLabel careerValue;
@@ -34,6 +35,13 @@ namespace StartupLife.Presentation
         private DaySummaryModal daySummary;
         private StudyActionController studyActions;
         private Func<IReadOnlyList<BusinessFinanceDaySnapshot>> financeReader;
+        private Func<BusinessPortfolioSnapshot> portfolioReader;
+
+        public void BindBusinessPortfolio(Func<BusinessPortfolioSnapshot> readBusinessPortfolio)
+        {
+            portfolioReader = readBusinessPortfolio ?? throw new ArgumentNullException(nameof(readBusinessPortfolio));
+            Refresh();
+        }
 
         public void BindCommittedFinance(Func<IReadOnlyList<BusinessFinanceDaySnapshot>> readCommittedFinance)
         {
@@ -88,6 +96,20 @@ namespace StartupLife.Presentation
                       settled.GrossRevenueVnd.ToString("N0", culture) + " ₫ · Lợi nhuận " +
                       settled.ProfitVnd.ToString("N0", culture) + " ₫";
             }
+            if (businessPortfolioValue)
+            {
+                var businesses = portfolioReader?.Invoke()?.Businesses;
+                if (businesses == null || businesses.Count == 0)
+                    businessPortfolioValue.text = "Chưa có doanh nghiệp";
+                else
+                    businessPortfolioValue.text = string.Join("\n",
+                        businesses.OrderBy(x => x.DefinitionId, StringComparer.Ordinal)
+                            .ThenBy(x => x.InstanceId, StringComparer.Ordinal)
+                            .Select(x => x.DefinitionId + " · " +
+                                (x.IsActive ? "Đang sở hữu" : "Đã đóng") +
+                                " · " + x.PricingPosture));
+            }
+
             if (rankValue) rankValue.text = string.IsNullOrEmpty(snapshot.CareerId)
                 ? "—"
                 : (snapshot.Rank + 1).ToString(CultureInfo.InvariantCulture);
