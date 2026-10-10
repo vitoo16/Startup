@@ -277,6 +277,28 @@ namespace StartupLife.Simulation
                 accepted[chosen]++;
             }
 
+            // Full-time is never allowed to consume prospective owner minutes when
+            // the normalized wallet progression could not fund even one unit.
+            // Drop its uncommitted block and recompute side references from a NEW,
+            // equivalently grounded epoch without granting any retroactive revenue.
+            if (fullTimeCandidate >= 0 && chosenFullTime.Length > 0 &&
+                accepted[fullTimeCandidate] == 0)
+            {
+                var sideOnly = Plan(epochId, spendableCashAfterDueFixedVnd,
+                    candidates.Where((candidate, index) => index != fullTimeCandidate),
+                    unavailable.Select((blocked, minute) => new { blocked, minute })
+                        .Where(x => x.blocked && !chosenFullTime.Contains(x.minute))
+                        .Select(x => x.minute));
+                var adjusted = new List<BusinessTimeWalletAllocation>(sideOnly.Allocations)
+                {
+                    new BusinessTimeWalletAllocation(candidates[fullTimeCandidate], 0, 0,
+                        Array.Empty<int>(), Array.Empty<BusinessUnitCostReservation>())
+                };
+                return new FrozenBusinessTimeWalletPlan(epochId, spendableCashAfterDueFixedVnd,
+                    adjusted.OrderBy(x => x.DefinitionId, StringComparer.Ordinal)
+                        .ThenBy(x => x.InstanceId, StringComparer.Ordinal).ToArray());
+            }
+
             var allocations = new List<BusinessTimeWalletAllocation>();
             for (var i = 0; i < candidates.Length; i++)
             {
