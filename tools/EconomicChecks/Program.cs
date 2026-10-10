@@ -1105,6 +1105,114 @@ internal static class Program
             Throws<ArgumentException>(()=>restored.Validate());
         });
 
+
+        Check("persisted v3 market epoch survives cold save with unspent wallet reservations", () =>
+        {
+            var catalog=M9T02FunctionalEconomy.Create();
+            var date="2026-10-09";
+            var pools=catalog.Pools.Values.Select(x=>CustomerDemandCalculator.OpeningSupply(date,catalog,x.PoolId)).ToArray();
+            var available=Enumerable.Range(1080,120);
+            var business=new BusinessMarketEpochParticipant(
+                new BusinessTimeWalletCandidate("online-store","i",
+                    BusinessOperationMode.SideHustleCompatible,120,8,0,0,18,52000,available),
+                new BusinessDemandCandidate("i","online-store",PricingPosture.Standard),
+                new BusinessProspectivePolicy("i",EconomicOperationStatus.Auto,PricingPosture.Standard),true);
+            var planned=BusinessMarketEpochPlanner.Freeze(catalog,"epoch/cold","2026-10-09",160000,
+                pools,Array.Empty<MarketFulfillmentUnit>(),new[]{business},Array.Empty<int>());
+            var current=new GameState{SaveVersion=3,RunId="test-run",DateIso=date,Minute=1080,
+                Cash=160000};
+            var records=EconomicV3Records.Empty();
+            records.RulesetRevision=catalog.RulesetRevision;
+            V3EpochTransactions.Freeze(current,records,planned,"op/day-start",1080);
+            Assert(current.Cash==160000,"reserving future unit costs must not debit cash");
+            Assert(records.Provenance.ActiveEpoch!=null,"frozen epoch was not persisted");
+            Assert(records.Provenance.ActiveEpoch!.PlannedUnits.Count==
+                planned.OwnerTimeAndWallet.AllUnitReservations.Count,
+                "market and wallet quotas remain one-to-one after persistence");
+            var cold=JsonSaveSerializer.ReadObject<EconomicV3Records>(
+                JsonSaveSerializer.WriteObject(records));
+            cold.Validate();
+            Assert(cold.Provenance.ActiveEpoch!=null &&
+                cold.Provenance.ActiveEpoch.PlannedUnits.Count==
+                    records.Provenance.ActiveEpoch!.PlannedUnits.Count,
+                "cold restored exact market reservations");
+            var originalIds=cold.Provenance.ActiveEpoch!.PlannedUnits.Select(x=>x.CostReservationId);
+            Assert(originalIds.SequenceEqual(records.Provenance.ActiveEpoch.PlannedUnits.Select(x=>x.CostReservationId)),
+                "cold restore reordered committed units");
+            V3EpochTransactions.ConsumeInterval(current,cold,1080,1110,"op/boundary-1");
+            Assert(cold.Provenance.Fulfillments.Count==2,"first 30 minutes yields two market units");
+            Assert(current.Cash==56000,"two variable payments actually debited");
+            V3EpochTransactions.ConsumeInterval(current,cold,1110,1125,"op/boundary-2");
+            Assert(cold.Provenance.Fulfillments.Count==3,"third unit realized after remaining 15m");
+            Assert(current.Cash==4000,"third variable reservation paid once");
+            Assert(cold.Provenance.CostReservations.Count(x=>
+                x.Status==V3CostReservationStatus.Consumed)==3,"all three realized reservations consumed");
+            Assert(cold.Provenance.Fulfillments.Select(x=>x.Id).Distinct().Count()==3,
+                "no duplicate sale identities");
+            Assert(current.Ledger.Where(x=>x.Category=="business.variable.payment")
+                .Sum(x=>x.CashDelta)==-156000,"actual ledger debits exactly three costs");
+            cold.Validate();
+            var again=JsonSaveSerializer.ReadObject<EconomicV3Records>(
+                JsonSaveSerializer.WriteObject(cold));
+            again.Validate();
+            Throws<ArgumentException>(()=>V3EpochTransactions.ConsumeInterval(current,again,
+                1080,1125,"op/replay-duplicated"));
+        });
+
+        Check("prospective replan releases only unconsumed cost and never refunds cash", () =>
+        {
+            var catalog=M9T02FunctionalEconomy.Create(); var date="2026-10-09";
+            var pools=catalog.Pools.Values.Select(x=>CustomerDemandCalculator.OpeningSupply(date,catalog,x.PoolId));
+            var b=new BusinessMarketEpochParticipant(
+                new BusinessTimeWalletCandidate("online-store","i",BusinessOperationMode.SideHustleCompatible,
+                    120,8,0,0,18,52000,Enumerable.Range(1080,120)),
+                new BusinessDemandCandidate("i","online-store",PricingPosture.Standard),
+                new BusinessProspectivePolicy("i",EconomicOperationStatus.Auto,PricingPosture.Standard),true);
+            var plan=BusinessMarketEpochPlanner.Freeze(catalog,"epoch/release",date,160000,pools,
+                Array.Empty<MarketFulfillmentUnit>(),new[]{b},Array.Empty<int>());
+            var current=new GameState{SaveVersion=3,RunId="test-run",DateIso=date,Minute=1080,Cash=160000};
+            var records=EconomicV3Records.Empty(); records.RulesetRevision=catalog.RulesetRevision;
+            V3EpochTransactions.Freeze(current,records,plan,"op/start",1080);
+            V3EpochTransactions.ConsumeInterval(current,records,1080,1095,"op/earned");
+            Assert(records.Provenance.Fulfillments.Count==1,"first unit consumed");
+            var beforeRelease=current.Cash;
+            V3EpochTransactions.ReleaseFuture(records.Provenance);
+            Assert(current.Cash==beforeRelease,"releasing a reservation does not reimburse past cost");
+            Assert(records.Provenance.ActiveEpoch==null,"future plan removed");
+            Assert(records.Provenance.CostReservations.Count(x=>
+                x.Status==V3CostReservationStatus.Consumed)==1,"committed work survives pause");
+            Assert(records.Provenance.CostReservations.Count(x=>
+                x.Status==V3CostReservationStatus.Released)==2,"only uncommitted future reserves released");
+            Assert(records.Provenance.Fulfillments.Count==1,"past sales remain immutable");
+            records.Validate();
+        });
+
+        Check("authoritative epoch validator rejects tampered hours and market reservation mappings", () =>
+        {
+            var catalog=M9T02FunctionalEconomy.Create(); var date="2026-10-09";
+            var pools=catalog.Pools.Values.Select(x=>CustomerDemandCalculator.OpeningSupply(date,catalog,x.PoolId));
+            var b=new BusinessMarketEpochParticipant(
+                new BusinessTimeWalletCandidate("online-store","i",BusinessOperationMode.SideHustleCompatible,
+                    120,8,0,0,18,52000,Enumerable.Range(1080,120)),
+                new BusinessDemandCandidate("i","online-store",PricingPosture.Standard),
+                new BusinessProspectivePolicy("i",EconomicOperationStatus.Auto,PricingPosture.Standard),true);
+            var plan=BusinessMarketEpochPlanner.Freeze(catalog,"epoch/tamper",date,160000,pools,
+                Array.Empty<MarketFulfillmentUnit>(),new[]{b},Array.Empty<int>());
+            var current=new GameState{SaveVersion=3,RunId="test-run",DateIso=date,Minute=1080,Cash=160000};
+            var records=EconomicV3Records.Empty(); records.RulesetRevision=catalog.RulesetRevision;
+            V3EpochTransactions.Freeze(current,records,plan,"op/start",1080);
+            var bytes=JsonSaveSerializer.WriteObject(records);
+            var hourTamper=JsonSaveSerializer.ReadObject<EconomicV3Records>(bytes);
+            hourTamper.Provenance.ActiveEpoch!.Assignments.Single().FrozenFutureOwnerMinutes.Add(1080);
+            Throws<ArgumentException>(()=>hourTamper.Validate());
+            var costTamper=JsonSaveSerializer.ReadObject<EconomicV3Records>(bytes);
+            costTamper.Provenance.ActiveEpoch!.PlannedUnits[0].BusinessUnitOrdinal=999;
+            Throws<ArgumentException>(()=>costTamper.Validate());
+            var soldTamper=JsonSaveSerializer.ReadObject<EconomicV3Records>(bytes);
+            soldTamper.Provenance.CostReservations[0].Status=V3CostReservationStatus.Consumed;
+            Throws<ArgumentException>(()=>soldTamper.Validate());
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
