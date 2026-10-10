@@ -142,7 +142,9 @@ internal static class Program
     private static void AuthoredBusinesses()
     {
         var c = FirstPlayableContentTemplate.BuildCatalog();
-        Equal(2, c.Businesses.Count);
+        Equal(4, c.Businesses.Count);
+        Equal(true, c.Businesses.ContainsKey("online-store"));
+        Equal(true, c.Businesses.ContainsKey("home-food-preorder"));
         var f = c.Businesses[FirstPlayableContentTemplate.FreelanceId];
         var k = c.Businesses[FirstPlayableContentTemplate.CoffeeKioskId];
         Equal(BusinessOperationMode.SideHustleCompatible, f.OperationMode);
