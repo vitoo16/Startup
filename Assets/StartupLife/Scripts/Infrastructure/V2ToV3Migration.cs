@@ -23,10 +23,33 @@ namespace StartupLife.Infrastructure
         public int FromVersion => SaveSchema.HistoricalV2;
         public int ToVersion => 3;
 
-        public byte[] Migrate(byte[] originalV2Payload)
+        public byte[] Migrate(byte[] originalV2Payload) =>
+            MigrateFromOriginalSource(originalV2Payload, SaveSchema.HistoricalV2, originalV2Payload);
+
+        // An adjacent migration receives the exact source wire bytes and *original*
+        // envelope schema from the serializer. Stage 2 remains a validated v2 DTO.
+        public byte[] MigrateFromOriginalSource(byte[] originalV2Payload, int originalSchema,
+            byte[] originalSourcePayload)
         {
             if (originalV2Payload == null || originalV2Payload.Length == 0)
                 throw new ArgumentException("Empty historical v2 payload.");
+            if (originalSchema < 0 || originalSchema > SaveSchema.HistoricalV2 ||
+                originalSourcePayload == null || originalSourcePayload.Length == 0)
+                throw new ArgumentException("Unsupported or missing original legacy save wire.");
+            if (originalSchema == SaveSchema.HistoricalV2)
+            {
+                if (!originalSourcePayload.SequenceEqual(originalV2Payload))
+                    throw new ArgumentException("Direct v2 source checkpoint cannot differ from stage-2 wire.");
+            }
+            else
+            {
+                HistoricalV1Codec.ValidatePayload(originalSourcePayload, originalSchema);
+                var sourceV1 = originalSchema == 0 ?
+                    new SyntheticV0Migration().Migrate(originalSourcePayload) : originalSourcePayload;
+                var raisedV2 = new V1ToV2Migration().Migrate(sourceV1);
+                if (!raisedV2.SequenceEqual(originalV2Payload))
+                    throw new ArgumentException("Source 0/1 bytes do not reproduce the exact staged v2 checkpoint.");
+            }
             var source = JsonSaveSerializer.ReadObject<GameState>(originalV2Payload);
             // The serializer's stage-2 restore/replay validator must run BEFORE this function.
             // These guards additionally reject direct misuse and unsupported source content.
@@ -43,7 +66,7 @@ namespace StartupLife.Infrastructure
                 throw new ArgumentException("Invalid historical receipt frontier.");
             var anchor = EconomicActivationAnchor.FromHistoricalCheckpoint(
                 source.Receipts.Count, last, source.ContentVersion,
-                SaveSchema.HistoricalV2, source.DateIso, source.Minute, ArchivedRuleset);
+                originalSchema, source.DateIso, source.Minute, ArchivedRuleset);
             // No money/time/ledger/history/operation IDs are created by migration.
             source.SaveVersion = 3;
             var target = new EconomicV3Payload
@@ -54,7 +77,10 @@ namespace StartupLife.Infrastructure
                 OriginalV2PayloadBase64 = Convert.ToBase64String(originalV2Payload),
                 OriginalV2PayloadSha256 = Digest(originalV2Payload),
                 OriginalV2ContentVersion = anchor.OriginalContentVersion,
-                OriginalV2RulesetId = anchor.ArchivedRulesetId
+                OriginalV2RulesetId = anchor.ArchivedRulesetId,
+                OriginalSourceSchema = originalSchema,
+                OriginalSourcePayloadBase64 = Convert.ToBase64String(originalSourcePayload),
+                OriginalSourcePayloadSha256 = Digest(originalSourcePayload)
             };
             // The exact archived v2 evaluator and catalog must validate the checkpoint
             // before the migration may produce even an in-memory v3 payload.
@@ -96,12 +122,32 @@ namespace StartupLife.Infrastructure
                 string.IsNullOrEmpty(target.OriginalV2PayloadBase64) ||
                 string.IsNullOrWhiteSpace(target.OriginalV2PayloadSha256) ||
                 target.OriginalV2ContentVersion != "first-playable.v1" ||
-                target.OriginalV2RulesetId != V2ToV3Migration.ArchivedRuleset)
+                target.OriginalV2RulesetId != V2ToV3Migration.ArchivedRuleset ||
+                target.OriginalSourceSchema < 0 ||
+                target.OriginalSourceSchema > SaveSchema.HistoricalV2 ||
+                string.IsNullOrWhiteSpace(target.OriginalSourcePayloadBase64) ||
+                string.IsNullOrWhiteSpace(target.OriginalSourcePayloadSha256))
                 throw new ArgumentException("Incomplete/unsupported v3 migration envelope.");
 
             var originalBytes = Convert.FromBase64String(target.OriginalV2PayloadBase64);
             if (V2ToV3Migration.HashV2Payload(originalBytes) != target.OriginalV2PayloadSha256)
                 throw new ArgumentException("Original v2 checkpoint bytes differ from immutable hash.");
+            var sourceBytes = Convert.FromBase64String(target.OriginalSourcePayloadBase64);
+            if (V2ToV3Migration.HashV2Payload(sourceBytes) != target.OriginalSourcePayloadSha256)
+                throw new ArgumentException("Original source legacy payload checksum mismatch.");
+            if (target.OriginalSourceSchema == SaveSchema.HistoricalV2)
+            {
+                if (!sourceBytes.SequenceEqual(originalBytes))
+                    throw new ArgumentException("Source v2 and stage-2 checkpoint are not identical.");
+            }
+            else
+            {
+                HistoricalV1Codec.ValidatePayload(sourceBytes, target.OriginalSourceSchema);
+                var stageOne = target.OriginalSourceSchema == 0 ?
+                    new SyntheticV0Migration().Migrate(sourceBytes) : sourceBytes;
+                if (!new V1ToV2Migration().Migrate(stageOne).SequenceEqual(originalBytes))
+                    throw new ArgumentException("Original source v0/v1 could not reproduce stored v2 checkpoint.");
+            }
             var v2 = JsonSaveSerializer.ReadObject<GameState>(originalBytes);
             if (v2.SaveVersion != SaveSchema.HistoricalV2 || v2.Receipts == null ||
                 v2.Receipts.Count != v2.Revision || v2.ContentVersion != target.OriginalV2ContentVersion ||
@@ -115,7 +161,7 @@ namespace StartupLife.Infrastructure
             if (anchor.LegacyReceiptCount != v2.Receipts.Count ||
                 anchor.LegacyLastOperationId != last ||
                 anchor.OriginalContentVersion != v2.ContentVersion ||
-                anchor.OriginalSourceSchema != SaveSchema.HistoricalV2 ||
+                anchor.OriginalSourceSchema != target.OriginalSourceSchema ||
                 anchor.MigratedAtDateIso != v2.DateIso ||
                 anchor.MigratedAtMinute != v2.Minute ||
                 anchor.ArchivedRulesetId != target.OriginalV2RulesetId)

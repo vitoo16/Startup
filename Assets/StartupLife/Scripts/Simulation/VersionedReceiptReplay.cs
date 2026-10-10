@@ -38,7 +38,7 @@ namespace StartupLife.Simulation
             var last = originalV2.Receipts.Count == 0 ? "" :
                 originalV2.Receipts[originalV2.Receipts.Count - 1].OperationId;
             if (anchor.OriginalContentVersion != historical.Version ||
-                anchor.OriginalSourceSchema != SaveSchema.HistoricalV2 ||
+                (anchor.OriginalSourceSchema < 0 || anchor.OriginalSourceSchema > SaveSchema.HistoricalV2) ||
                 anchor.LegacyLastOperationId != last ||
                 anchor.MigratedAtDateIso != originalV2.DateIso ||
                 anchor.MigratedAtMinute != originalV2.Minute)

@@ -20,6 +20,9 @@ namespace StartupLife.Core
         [DataMember(Order = 5)] public string OriginalV2PayloadSha256 { get; set; } = "";
         [DataMember(Order = 6)] public string OriginalV2ContentVersion { get; set; } = "";
         [DataMember(Order = 7)] public string OriginalV2RulesetId { get; set; } = "";
+        [DataMember(Order = 8)] public int OriginalSourceSchema { get; set; } = 2;
+        [DataMember(Order = 9)] public string OriginalSourcePayloadBase64 { get; set; } = "";
+        [DataMember(Order = 10)] public string OriginalSourcePayloadSha256 { get; set; } = "";
     }
 
     [DataContract]
