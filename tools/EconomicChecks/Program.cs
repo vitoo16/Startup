@@ -1762,7 +1762,7 @@ internal static class Program
         });
 
 
-        Check("M11 historical schemas v0 v1 v2 v3 cold-restore and byte-identical continuation matrix", () =>
+        Check("M11 released schemas v1 v2 v3 cold-restore and byte-identical continuation matrix", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();
             var economic = M9T02FunctionalEconomy.Create();
@@ -1772,15 +1772,14 @@ internal static class Program
                 GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
                 new StagedV3SaveSerializer(archives, replay));
             var fixtureDir = Path.Combine(AppContext.BaseDirectory, "Fixtures");
-            var zero = File.ReadAllBytes(Path.Combine(fixtureDir, "Legacy", "synthetic-v0.json"));
-            var one = File.ReadAllBytes(Path.Combine(fixtureDir, "Legacy", "current-v1.json"));
+            var one = File.ReadAllBytes(Path.Combine(fixtureDir, "Legacy", "real-v1-employment.json"));
             var sourceOne = JsonSaveSerializer.ReadObject<SaveEnvelope>(one);
             var twoPayload = new V1ToV2Migration().Migrate(
                 Convert.FromBase64String(sourceOne.PayloadBase64));
             var two = JsonSaveSerializer.Wrap(twoPayload, SaveSchema.HistoricalV2, sourceOne.Generation);
             var three = File.ReadAllBytes(Path.Combine(fixtureDir, "pre-fix-v3-pending-business.json"));
             var matrix = new (int Schema, byte[] Wire)[] {
-                (0, zero), (1, one), (2, two), (3, three)
+                (1, one), (2, two), (3, three)
             };
             foreach (var source in matrix)
             {
@@ -1874,6 +1873,26 @@ internal static class Program
                         foreach (var file in new[] { path, path + ".backup", path + ".lock" })
                             if (File.Exists(file)) File.Delete(file);
                 }
+            }
+        });
+
+        Check("M11 test-only V0 and fixture-v1 refuse unknown content without migration", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var econ = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(econ, content);
+            var serializer = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            foreach (var legacyName in new[] { "synthetic-v0.json", "current-v1.json" })
+            {
+                var source = File.ReadAllBytes(Path.Combine(
+                    AppContext.BaseDirectory, "Fixtures", "Legacy", legacyName));
+                var outcome = serializer.DeserializeAndValidate(source);
+                Assert(outcome.Status == LoadStatus.UnsupportedContent,
+                    "unreleased fixture.v1 may not silently import into production: " +
+                    legacyName + " / " + outcome.Status + " / " + outcome.Reason);
             }
         });
 

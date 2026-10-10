@@ -14,6 +14,9 @@
           Link="Fixtures/Legacy/synthetic-v0.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../SimulationChecks/Fixtures/current-v1.json"
           Link="Fixtures/Legacy/current-v1.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Real Android-captured V1 release save; do not regenerate from a new simulator. -->
+    <None Include="../../docs/evidence/M7-T02/RUNTIME-2026-10-04/android-final/B-before-work.save.json"
+          Link="Fixtures/Legacy/real-v1-employment.json" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Core.csproj" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Simulation.csproj" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Application.csproj" />
