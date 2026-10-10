@@ -99,6 +99,14 @@ namespace StartupLife.Application
                 return OwnerDayAllocator.Plan(state, content);
         }
 
+        public IReadOnlyList<BusinessFinanceDaySnapshot> ReadCommittedFinance()
+        {
+            lock (gate)
+                return state.SaveVersion == 3 ?
+                    BusinessFinanceProjection.FromCommittedState(state) :
+                    Array.Empty<BusinessFinanceDaySnapshot>();
+        }
+
         public byte[] ExportCheckpoint() { lock (gate) return serializer.Serialize(state); }
         public CommandResult Execute(CommandEnvelope command)
         {
