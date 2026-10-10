@@ -81,6 +81,10 @@ namespace StartupLife.Application
         }
         public static IRestoreStateValidator CreateRestoreValidator() => new SimulationRestoreValidator();
         public GameSnapshot Snapshot() { lock (gate) return new GameSnapshot(state, content); }
+        public LifeDashboardSnapshot ReadLifeDashboard()
+        {
+            lock (gate) return LifeDashboardProjection.FromCommittedState(state, content);
+        }
         public CareerBiographySnapshot ReadCareerBiography()
         {
             lock (gate) return CareerBiographyProjection.FromCommittedState(state, content);
