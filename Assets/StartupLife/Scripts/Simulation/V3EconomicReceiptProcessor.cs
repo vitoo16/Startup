@@ -75,7 +75,10 @@ namespace StartupLife.Simulation
                 if (game.DateIso != oldDate)
                 {
                     V3BusinessPolicyEngine.ActivateNewDate(game, records, operationId);
-                    EnsureOpened(game, records, operationId);
+                    // GameSession has not yet appended this boundary receipt.
+                    // Cold-proof occupancy cannot be projected at the new date until
+                    // the receipt is in the authoritative v3 history. Open its epoch
+                    // on the next command, with no phantom new-date owner minutes.
                 }
                 return minutes;
             }
@@ -96,7 +99,11 @@ namespace StartupLife.Simulation
                 var instance = game.Businesses.Last(x => x.IsActive);
                 V3BusinessPolicyEngine.OnLaunched(game, records, instance.InstanceId);
             }
-            if (prospective) EnsureOpened(game, records, operationId);
+            // Study may advance the cursor, but its receipt has not been committed
+            // until GameSession finishes this transaction. Never regenerate a plan
+            // using incomplete occupancy evidence.
+            if (prospective && command.Kind != CommandKind.Study)
+                EnsureOpened(game, records, operationId);
             return result;
         }
 

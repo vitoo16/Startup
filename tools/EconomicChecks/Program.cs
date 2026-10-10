@@ -1332,7 +1332,16 @@ internal static class Program
                 "2026-10-09",0,V2ToV3Migration.ArchivedRuleset);
             var processor=new V3EconomicReceiptProcessor(content,economy,anchor);
             var state=new GameState{SaveVersion=3,RunId="run",ContentVersion=content.Version,
-                DateIso="2026-10-09",Minute=1080,Name="Tester",Cash=300000,
+                DateIso="2026-10-09",Minute=480,Name="Tester",Cash=300000,
+                History=new List<string>{"character.created:2026-10-09"},
+                Receipts=new List<CommandReceipt>{
+                    new CommandReceipt{CommandId="create",Payload=new GameCommand(
+                        CommandKind.CreateCharacter,"fresh",18,"Tester","base.male").CanonicalPayload,
+                        OperationId="run/op/1",Revision=1,MinutesConsumed=0},
+                    new CommandReceipt{CommandId="start-day",Payload=new GameCommand(
+                        CommandKind.AdvanceBoundary).CanonicalPayload,
+                        OperationId="run/op/2",Revision=2,MinutesConsumed=480}
+                },
                 Businesses=new List<BusinessState>{
                     new BusinessState{InstanceId="run/business/1",DefinitionId="freelance-service",
                         DefinitionRevision="v1",OpenedIso="2026-10-09",
@@ -1343,12 +1352,16 @@ internal static class Program
                 EconomicRecords=EconomicV3Records.Empty()};
             var before=state.Cash;
             var first=processor.Evaluate(payload,new GameCommand(CommandKind.AdvanceBoundary),"run/op/1");
-            Assert(first==240 && state.Minute==1320 && state.DateIso=="2026-10-09",
+            Assert(first==840 && state.Minute==1320 && state.DateIso=="2026-10-09",
                 "gameplay advanced in-day to bedtime");
             Assert(payload.EconomicRecords!.Provenance.Fulfillments.Count==3,
                 "committed slice earned three actual freelance units");
             Assert(state.Cash==235000,"opened fixed5000 and variable60000 paid from opening cash");
-            var second=processor.Evaluate(payload,new GameCommand(CommandKind.AdvanceBoundary),"run/op/2");
+            state.Revision=3;
+            state.Receipts.Add(new CommandReceipt{CommandId="evening",
+                Payload=new GameCommand(CommandKind.AdvanceBoundary).CanonicalPayload,
+                OperationId="run/op/3",Revision=3,MinutesConsumed=840});
+            var second=processor.Evaluate(payload,new GameCommand(CommandKind.AdvanceBoundary),"run/op/4");
             Assert(second==120 && state.DateIso=="2026-10-10" && state.Minute==0,
                 "midnight child consumes old date then advances simulation date");
             var prior=payload.EconomicRecords.Provenance.Settlements.Single();
@@ -1358,9 +1371,8 @@ internal static class Program
                 prior.ProfitVnd==595000,"revenue minus fixed and variable exactly once");
             Assert(state.Cash==890000,
                 "opening300000-oldfixed5000-variable60000+660000-nextfixed5000=890000");
-            Assert(payload.EconomicRecords.Provenance.ActiveEpoch!=null &&
-                payload.EconomicRecords.Provenance.ActiveEpoch.DateIso=="2026-10-10",
-                "next-day epoch frozen independently of prior midnight sales");
+            Assert(payload.EconomicRecords.Provenance.ActiveEpoch==null,
+                "new-day epoch cannot freeze before its boundary receipt is committed");
             payload.EconomicRecords.Validate();
         });
 
