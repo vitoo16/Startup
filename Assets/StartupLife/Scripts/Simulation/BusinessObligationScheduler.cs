@@ -39,7 +39,10 @@ namespace StartupLife.Simulation
                     if (!eligibleServiceEntitlement || string.IsNullOrWhiteSpace(committedOperationId)) return null;
                     eventKey = "operating-day"; periodKey = dateIso; break;
                 case ObligationCadence.Daily:
-                    if (!eligibleServiceEntitlement) return null;
+                    // Fixed contractual daily bills survive Paused/Closed; only
+                    // service-metered recurrence requires actual eligible service.
+                    if (definition.Proration != ObligationProrationPolicy.FullContractual &&
+                        !eligibleServiceEntitlement) return null;
                     eventKey = "daily-service"; periodKey = dateIso; break;
                 case ObligationCadence.Weekly:
                     var days = (date - start).Days;
