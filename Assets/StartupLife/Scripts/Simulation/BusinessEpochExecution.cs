@@ -105,8 +105,9 @@ namespace StartupLife.Simulation
         {
             Next = next;
             NewlyConsumedReservations = Array.AsReadOnly(consumed.ToArray());
-            NewlyWorkedMinutesByBusiness = new ReadOnlyDictionary<string, int>(
-                new SortedDictionary<string, int>(minutesByBusiness, StringComparer.Ordinal));
+            var worked = new SortedDictionary<string, int>(StringComparer.Ordinal);
+            foreach (var pair in minutesByBusiness) worked.Add(pair.Key, pair.Value);
+            NewlyWorkedMinutesByBusiness = new ReadOnlyDictionary<string, int>(worked);
             VariablePaymentVnd = checked(NewlyConsumedReservations.Sum(x => x.AmountVnd));
             if (NewlyConsumedReservations.Select(x => x.Id).Distinct(StringComparer.Ordinal).Count() !=
                 NewlyConsumedReservations.Count)
