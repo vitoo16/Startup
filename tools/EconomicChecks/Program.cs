@@ -1492,6 +1492,30 @@ internal static class Program
                 Assert(savedPolicy.Status==EconomicOperationStatusCode.Paused &&
                     savedPolicy.HasPendingResume && savedPolicy.HasPendingPricing,
                     "pending resume/price are canonical v3 persisted policy");
+                var kioskLaunch=restored.Execute(new CommandEnvelope("run-m9-smoke",
+                    "launch-kiosk",5,new GameCommand(CommandKind.LaunchBusiness,
+                        "coffee-kiosk",100,appearanceId:"v1")));
+                Assert(kioskLaunch.Status==CommandStatus.Committed,
+                    "v3 founder must launch the full-time coffee kiosk: "+kioskLaunch.ReasonKey);
+                var mixed=restored.ReadBusinessOperations();
+                var kiosk=mixed.OwnedBusinesses.Single(x=>x.Business.DefinitionId=="coffee-kiosk");
+                Assert(kiosk.Business.FixedHelper != null &&
+                    kiosk.Business.FixedHelper.ContractedDailyWageVnd==90000L,
+                    "read model projects fixed helper contract without a new salary transaction");
+                Assert(kiosk.OwnerTime != null &&
+                    kiosk.OwnerTime.Status==BusinessPlanStatus.FullyAllocated &&
+                    kiosk.OwnerTime.AllocatedOwnerMinutes==480 &&
+                    kiosk.OwnerTimeLimitedUnits==40,
+                    "daytime coffee kiosk has a contiguous 480-minute founder block");
+                var side=mixed.OwnedBusinesses.Single(x=>x.Business.DefinitionId=="online-store");
+                Assert(side.OwnerTime != null && side.OwnerTime.AllocatedOwnerMinutes==120 &&
+                    side.OwnerTimeLimitedUnits==8 && !side.CanOperateToday,
+                    "side business shares evening time but remains paused until next-day resume");
+                var kioskInterval=mixed.OwnerDay.Allocations.Single(x=>x.BusinessInstanceId==kiosk.Business.InstanceId).Interval;
+                var sideInterval=mixed.OwnerDay.Allocations.Single(x=>x.BusinessInstanceId==side.Business.InstanceId).Interval;
+                Assert(kioskInterval.EndMinute<=sideInterval.StartMinute &&
+                    kioskInterval.Duration==480 && sideInterval.Duration==120,
+                    "kiosk daytime and online evening owner allocations never overlap");
                 var retry=restored.Execute(new CommandEnvelope("run-m9-smoke","create-character",0,cmd));
                 Assert(retry.Status==CommandStatus.AlreadyCommitted,
                     "same canonical id must not duplicate the creation receipt");
