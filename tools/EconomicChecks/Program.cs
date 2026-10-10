@@ -938,6 +938,53 @@ internal static class Program
             graph.Validate();
         });
 
+
+        Check("v1 source checkpoint migrates through 1-to-2-to-3 with original schema retained", () =>
+        {
+            var catalog = FirstPlayableContentTemplate.BuildCatalog();
+            var original = GameSession.NewState(catalog,"schema-one-origin",27182UL,
+                new SimDate(2026,9,1));
+            var serializer = new JsonSaveSerializer(catalog,GameSession.CreateRestoreValidator(),
+                new SyntheticV0Migration(),new V1ToV2Migration());
+            var v1Wire = serializer.SerializeForSchema(original, SaveSchema.HistoricalV1);
+            var envelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(v1Wire);
+            var v1Bytes = Convert.FromBase64String(envelope.PayloadBase64);
+            var stage2Bytes = new V1ToV2Migration().Migrate(v1Bytes);
+            var migration = new V2ToV3Migration(
+                new BundledHistoricalV2ContentResolver(),new VersionedReceiptReplay());
+            var v3 = EconomicV3PayloadCodec.ReadChecked(
+                migration.MigrateFromOriginalSource(stage2Bytes,1,v1Bytes));
+            Assert(v3.Activation != null && v3.Activation.OriginalSourceSchema==1 &&
+                v3.OriginalSourceSchema==1,
+                "v1 original schema lost at version-3 anchor");
+            Assert(Convert.FromBase64String(v3.OriginalSourcePayloadBase64).SequenceEqual(v1Bytes),
+                "v1 bytes were not retained");
+            Assert(Convert.FromBase64String(v3.OriginalV2PayloadBase64).SequenceEqual(stage2Bytes),
+                "normalized stage2 bytes were not retained");
+            var invalid = (byte[])stage2Bytes.Clone();
+            invalid[invalid.Length-1] ^= 1;
+            Throws<ArgumentException>(()=>migration.MigrateFromOriginalSource(invalid,1,v1Bytes));
+        });
+        Check("synthetic v0 source migrates through each adjacent stage with source0 anchor", () =>
+        {
+            var legacy = GameSession.NewState(FirstPlayableContentTemplate.BuildCatalog(),
+                "schema-zero-origin",27183UL,new SimDate(2026,9,1));
+            legacy.SaveVersion=0;
+            var syntheticWire=JsonSaveSerializer.WriteObject(legacy);
+            var v1=new SyntheticV0Migration().Migrate(syntheticWire);
+            var v2=new V1ToV2Migration().Migrate(v1);
+            var migration=new V2ToV3Migration(new BundledHistoricalV2ContentResolver(),
+                new VersionedReceiptReplay());
+            var payload=EconomicV3PayloadCodec.ReadChecked(
+                migration.MigrateFromOriginalSource(v2,0,syntheticWire));
+            Assert(payload.OriginalSourceSchema==0 &&
+                payload.Activation!.OriginalSourceSchema==0,
+                "synthetic original schema must be recorded as zero");
+            Assert(Convert.FromBase64String(payload.OriginalSourcePayloadBase64).SequenceEqual(syntheticWire),
+                "source-zero wire bytes lost");
+            Throws<ArgumentException>(()=>migration.MigrateFromOriginalSource(v2,2,syntheticWire));
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
