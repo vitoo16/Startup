@@ -41,6 +41,115 @@ namespace StartupLife.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator BusinessManagementOverlayCreatesControlsAndBindsCommittedReadouts()
+        {
+            var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
+            while (!load.isDone) yield return null;
+            yield return LocalizationSettings.InitializationOperation;
+            yield return null;
+
+            var bootstrap = Object.FindAnyObjectByType<StartupLifeBootstrapper>();
+            Assert.That(bootstrap, Is.Not.Null);
+            Assert.That(bootstrap.IsReady, Is.True);
+            var name = GameObject.Find("CharacterNameInput").GetComponent<TMP_InputField>();
+            name.text = "Business UI Tester";
+            GameObject.Find("CreateCharacterButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            yield return null;
+
+            var previousCash = bootstrap.Snapshot.Cash;
+            var open = GameObject.Find("BusinessManagementButton");
+            Assert.That(open, Is.Not.Null, "Visible business management entry point is missing");
+            open.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            yield return null;
+            var overlay = GameObject.Find("BusinessManagementOverlay");
+            Assert.That(overlay, Is.Not.Null);
+            Assert.That(overlay.activeSelf, Is.True,
+                "Business panel must open from its visible uGUI button");
+            Assert.That(bootstrap.Snapshot.Cash, Is.EqualTo(previousCash),
+                "Opening or refreshing UI must never generate money/costs");
+
+            var scroll = GameObject.Find("BusinessManagementScroll")
+                .GetComponent<UnityEngine.UI.ScrollRect>();
+            Assert.That(scroll.content, Is.Not.Null);
+            Assert.That(scroll.viewport, Is.Not.Null);
+            Assert.That(scroll.viewport.GetComponent<UnityEngine.UI.Mask>(), Is.Not.Null);
+            Assert.That(GameObject.Find("LastSettledFinanceValue")
+                .GetComponent<TMP_Text>().text, Does.Contain("Chưa có quyết toán"));
+            Assert.That(GameObject.Find("BusinessPortfolioValue")
+                .GetComponent<TMP_Text>().text, Does.Contain("Chưa có doanh nghiệp"));
+
+            var launch = GameObject.Find("LaunchonlinestoreButton");
+            Assert.That(launch, Is.Not.Null);
+            Assert.That(launch.activeInHierarchy, Is.True,
+                "Player must be able to reach business launch through actual scene UI");
+            launch.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            yield return null;
+            Assert.That(bootstrap.BusinessPortfolio.Businesses.Any(x =>
+                x.DefinitionId == "online-store" && x.IsActive), Is.True,
+                "UI click must commit launch through GameSession");
+            Assert.That(GameObject.Find("BusinessPortfolioValue")
+                .GetComponent<TMP_Text>().text, Does.Contain("online-store"));
+            Assert.That(launch.GetComponent<UnityEngine.UI.Button>().interactable, Is.False,
+                "Duplicate active launch should not be offered");
+            Assert.That(GameObject.Find("PauseBusinessButton"), Is.Not.Null);
+            Assert.That(GameObject.Find("ResumeBusinessButton"), Is.Not.Null);
+            Assert.That(GameObject.Find("BusinessPremiumPricingButton"), Is.Not.Null);
+            Assert.That(GameObject.Find("ReinvestBusinessButton"), Is.Not.Null);
+            Assert.That(GameObject.Find("CloseBusinessButton"), Is.Not.Null);
+
+            GameObject.Find("BusinessManagementCloseButton")
+                .GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            Assert.That(overlay.activeSelf, Is.False);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
+        public IEnumerator V3BusinessLifecycleUsesCommittedFlowWithoutImmediatePriceSwitch()
+        {
+            var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
+            while (!load.isDone) yield return null;
+            yield return LocalizationSettings.InitializationOperation;
+            yield return null;
+
+            var bootstrap = Object.FindAnyObjectByType<StartupLifeBootstrapper>();
+            Assert.That(bootstrap, Is.Not.Null);
+            Assert.That(bootstrap.IsReady, Is.True);
+            var name = GameObject.Find("CharacterNameInput").GetComponent<TMP_InputField>();
+            name.text = "Business Tester";
+            GameObject.Find("CreateCharacterButton").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            yield return null;
+
+            Assert.That(bootstrap.Snapshot.Name, Is.EqualTo("Business Tester"));
+            Assert.That(bootstrap.Catalog.Businesses.Count, Is.EqualTo(4));
+            var launched = bootstrap.Flow.LaunchBusiness("online-store", "v1", 100);
+            Assert.That(launched.Command.Status, Is.EqualTo(CommandStatus.Committed),
+                launched.Command.ReasonKey);
+            var before = bootstrap.Snapshot;
+            var portfolio = bootstrap.Catalog.Businesses;
+            Assert.That(portfolio.ContainsKey("online-store"), Is.True);
+
+            // A pricing request is a prospective mutation only; no same-day
+            // money or current price may be credited by a view refresh.
+            var created = bootstrap.BusinessPortfolio.Businesses.Single(x =>
+                x.DefinitionId == "online-store" && x.IsActive);
+            var businessId = created.InstanceId;
+            Assert.That(businessId, Is.Not.Empty);
+            var price = bootstrap.Flow.SetBusinessPricing(businessId, PricingPosture.Premium);
+            Assert.That(price.Command.Status, Is.EqualTo(CommandStatus.Committed),
+                price.Command.ReasonKey);
+            Assert.That(bootstrap.Snapshot.Cash, Is.EqualTo(before.Cash));
+            var pause = bootstrap.Flow.PauseBusiness(businessId);
+            Assert.That(pause.Command.Status, Is.EqualTo(CommandStatus.Committed),
+                pause.Command.ReasonKey);
+            var resume = bootstrap.Flow.ResumeBusiness(businessId);
+            Assert.That(resume.Command.Status, Is.EqualTo(CommandStatus.Committed),
+                resume.Command.ReasonKey);
+            Assert.That(bootstrap.Snapshot.Revision, Is.EqualTo(before.Revision + 3));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
         public IEnumerator AppearanceSelectionUsesLocalizedLabelsWithoutRawGenderGlyphs()
         {
             var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);

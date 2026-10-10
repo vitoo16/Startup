@@ -244,6 +244,10 @@ namespace StartupLife.Core
             new GameCommand(CommandKind.SetBusinessPricing, instanceId, (int)pricing);
         public static GameCommand Close(string instanceId) =>
             new GameCommand(CommandKind.CloseBusiness, instanceId);
+        public static GameCommand Pause(string instanceId) =>
+            new GameCommand(CommandKind.PauseBusiness, instanceId);
+        public static GameCommand Resume(string instanceId) =>
+            new GameCommand(CommandKind.ResumeBusiness, instanceId);
     }
 
     public sealed class BusinessHistoryRecord

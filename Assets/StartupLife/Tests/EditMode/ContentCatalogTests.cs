@@ -16,7 +16,7 @@ namespace StartupLife.Tests.EditMode
             Assert.That(catalog.Skills.Count, Is.EqualTo(6));
             Assert.That(catalog.Careers.ContainsKey("developer"), Is.True);
             Assert.That(catalog.Courses.ContainsKey("communication-basics"), Is.True);
-            Assert.That(catalog.Businesses.Count, Is.EqualTo(2));
+            Assert.That(catalog.Businesses.Count, Is.EqualTo(4));
             Assert.That(catalog.Businesses[FirstPlayableContentTemplate.FreelanceId].OperatingRequirements.RequiredOwnerMinutes, Is.EqualTo(120));
         }
 
@@ -34,6 +34,12 @@ namespace StartupLife.Tests.EditMode
             Assert.That(freelance.OperatingRequirements.OperatingWindows.Count, Is.EqualTo(7));
             Assert.That(kiosk.OperationMode, Is.EqualTo(BusinessOperationMode.FullTimeRequired));
             Assert.That(kiosk.OperatingRequirements.RequiredOwnerMinutes, Is.EqualTo(480));
+            Assert.That(catalog.Businesses.ContainsKey("online-store"), Is.True);
+            Assert.That(catalog.Businesses.ContainsKey("home-food-preorder"), Is.True);
+            Assert.That(catalog.Businesses["online-store"].Type, Is.EqualTo(BusinessType.OnlineStore));
+            Assert.That(catalog.Businesses["home-food-preorder"].Type, Is.EqualTo(BusinessType.HomeFoodPreorder));
+            Assert.That(catalog.Businesses["online-store"].OperatingRequirements.RequiredOwnerMinutes, Is.EqualTo(120));
+            Assert.That(catalog.Businesses["home-food-preorder"].OperatingRequirements.RequiredOwnerMinutes, Is.EqualTo(120));
         }
 
         [Test]

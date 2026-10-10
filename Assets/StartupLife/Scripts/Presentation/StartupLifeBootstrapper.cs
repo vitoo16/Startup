@@ -4,6 +4,7 @@ using StartupLife.Application;
 using StartupLife.Content;
 using StartupLife.Core;
 using StartupLife.Infrastructure;
+using StartupLife.Simulation;
 using UnityEngine;
 
 namespace StartupLife.Presentation
@@ -30,6 +31,7 @@ namespace StartupLife.Presentation
         public FirstPlayableFlow Flow => flow;
         public ContentCatalog Catalog => content;
         public FirstPlayableState Snapshot => flow?.Refresh();
+        public BusinessPortfolioSnapshot BusinessPortfolio => session?.ReadBusinesses();
 
         private void Awake()
         {
@@ -48,15 +50,18 @@ namespace StartupLife.Presentation
             try
             {
                 content = contentAsset.BuildCatalog();
-                var serializer = new JsonSaveSerializer(
-                    content,
-                    GameSession.CreateRestoreValidator(),
-                    new SyntheticV0Migration(),
-                    new V1ToV2Migration());
+                var historical = new BundledHistoricalV2ContentResolver();
+                var economics = M9T02FunctionalEconomy.Create();
+                var replay = new VersionedReceiptReplay(economics, content);
+                var migration = new V2ToV3Migration(historical, replay);
+                var staged = new StagedV3SaveSerializer(historical, replay);
+                var serializer = new V3SaveCompatibilitySerializer(
+                    content, GameSession.CreateRestoreValidator(), migration, staged);
                 var path = Path.Combine(UnityEngine.Application.persistentDataPath, saveFileName);
                 var store = new AtomicFileSaveStore(path, serializer);
 
-                if (!GameSession.TryRestore(content, serializer, store, out session, out var load))
+                if (!GameSession.TryRestore(content, serializer, store, out session, out var load,
+                    economicRules: economics, archivedRules: historical))
                 {
                     if (load.Status != LoadStatus.Missing)
                     {
@@ -74,12 +79,21 @@ namespace StartupLife.Presentation
                         runId,
                         seed,
                         new SimDate(initialYear, initialMonth, initialDay));
-                    session = new GameSession(initial, content, serializer, store);
+                    // New runs also originate from the frozen v2 baseline. The
+                    // migration itself is zero-economic-effect and writes no save.
+                    var sourceBytes = JsonSaveSerializer.WriteObject(initial);
+                    var promoted = EconomicV3PayloadCodec.ReadChecked(migration.Migrate(sourceBytes));
+                    promoted.Current!.EconomicV3 = promoted;
+                    session = new GameSession(promoted.Current, content, serializer, store,
+                        economicRules: economics, archivedRules: historical);
                 }
 
                 flow = new FirstPlayableFlow(session, new GuidCommandIdSource());
                 characterCreation.Bind(flow, RefreshMode);
                 lifeScreen.Bind(flow, content, workPlayback, daySummary);
+                lifeScreen.BindCommittedFinance(() => session.ReadCommittedFinance());
+                lifeScreen.BindBusinessPortfolio(() => session.ReadBusinesses());
+                lifeScreen.EnsureBusinessManagementUi();
                 lifecycle = new FirstPlayableLifecycle(flow, workPlayback, RefreshMode);
                 daySummary.Hide();
                 IsReady = true;
