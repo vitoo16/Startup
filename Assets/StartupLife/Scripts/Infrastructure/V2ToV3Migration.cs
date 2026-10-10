@@ -69,11 +69,21 @@ namespace StartupLife.Infrastructure
                 originalSchema, source.DateIso, source.Minute, ArchivedRuleset);
             // No money/time/ledger/history/operation IDs are created by migration.
             source.SaveVersion = 3;
+            // A pure one-to-one projection of existing business price/closure;
+            // this creates no receipt, payment, wallet mutation or retroactive operation.
+            var policies = new EconomicV3Records();
+            foreach (var owned in source.Businesses.OrderBy(x => x.InstanceId, StringComparer.Ordinal))
+                policies.BusinessPolicies.Add(new V3BusinessPolicyRecord
+                {
+                    InstanceId = owned.InstanceId,
+                    Status = owned.IsActive ? EconomicOperationStatusCode.Auto : EconomicOperationStatusCode.Closed,
+                    EffectivePricing = owned.PricingPosture
+                });
             var target = new EconomicV3Payload
             {
                 Current = source,
                 Activation = EconomicV3Activation.FromAnchor(anchor),
-                EconomicRecords = EconomicV3Records.Empty(),
+                EconomicRecords = policies,
                 OriginalV2PayloadBase64 = Convert.ToBase64String(originalV2Payload),
                 OriginalV2PayloadSha256 = Digest(originalV2Payload),
                 OriginalV2ContentVersion = anchor.OriginalContentVersion,

@@ -1027,6 +1027,84 @@ internal static class Program
                 "unknown archived ruleset must never silently fall back to current rules");
         });
 
+
+        Check("v3 command wire appends Pause11 and Resume12 without changing v2 payload codes", () =>
+        {
+            Assert((int)CommandKind.SetBusinessPricing==9 && (int)CommandKind.CloseBusiness==10,
+                "v2 command discriminants unchanged");
+            Assert((int)CommandKind.PauseBusiness==11 && (int)CommandKind.ResumeBusiness==12,
+                "new v3 command discriminants must be append-only");
+            var pause=BusinessCommands.Pause("run/business/2");
+            var resume=BusinessCommands.Resume("run/business/2");
+            Assert(GameCommand.ParseCanonicalPayload(pause.CanonicalPayload).Kind==CommandKind.PauseBusiness,
+                "pause roundtrip");
+            Assert(GameCommand.ParseCanonicalPayload(resume.CanonicalPayload).Kind==CommandKind.ResumeBusiness,
+                "resume roundtrip");
+        });
+
+        Check("v3 policy candidate mutates only prospective time and price", () =>
+        {
+            var candidate=new GameState
+            {
+                SaveVersion=3, DateIso="2026-10-10", Minute=1200,
+                Businesses=new List<BusinessState>{
+                    new BusinessState{InstanceId="run/business/1",DefinitionId="freelance-service",
+                        DefinitionRevision="v1",OpenedIso="2026-10-08",OpenedMinute=0,
+                        InitialInvestment=100,PricingPosture=PricingPosture.Standard}
+                }
+            };
+            var records=EconomicV3Records.Empty();
+            V3BusinessPolicyEngine.InitializeFromMigration(candidate,records);
+            Assert(records.BusinessPolicies.Single().Status==EconomicOperationStatusCode.Auto,
+                "historic active business starts Auto");
+            V3BusinessPolicyEngine.ApplyCommand(candidate,records,
+                BusinessCommands.SetPricing("run/business/1",PricingPosture.Premium),"op-price");
+            Assert(candidate.Businesses.Single().PricingPosture==PricingPosture.Standard,
+                "price cannot affect v3 current date");
+            Assert(records.BusinessPolicies.Single().PendingPricing==PricingPosture.Premium &&
+                records.BusinessPolicies.Single().PendingPricingEffectiveIso=="2026-10-11",
+                "v3 pending price persisted");
+            V3BusinessPolicyEngine.ApplyCommand(candidate,records,
+                BusinessCommands.Pause("run/business/1"),"op-pause");
+            Assert(records.BusinessPolicies.Single().Status==EconomicOperationStatusCode.Paused,
+                "pause immediate");
+            V3BusinessPolicyEngine.ApplyCommand(candidate,records,
+                BusinessCommands.Resume("run/business/1"),"op-resume");
+            Assert(records.BusinessPolicies.Single().HasPendingResume,
+                "resume only on next date");
+            candidate.DateIso="2026-10-11"; candidate.Minute=0;
+            V3BusinessPolicyEngine.ActivateNewDate(candidate,records,"op-boundary");
+            Assert(records.BusinessPolicies.Single().Status==EconomicOperationStatusCode.Auto,
+                "auto activates at midnight");
+            Assert(candidate.Businesses.Single().PricingPosture==PricingPosture.Premium,
+                "effective price reflected in existing detached BusinessSnapshot");
+            V3BusinessPolicyEngine.ApplyCommand(candidate,records,
+                BusinessCommands.Close("run/business/1"),"op-close");
+            Assert(records.BusinessPolicies.Single().Status==EconomicOperationStatusCode.Closed &&
+                !candidate.Businesses.Single().IsActive,"close is terminal on existing instance");
+            Throws<RuleFailure>(() => V3BusinessPolicyEngine.ApplyCommand(candidate,records,
+                BusinessCommands.Resume("run/business/1"),"op-illegal"));
+            V3BusinessPolicyEngine.ValidateAgainstBusinesses(candidate,records);
+        });
+
+        Check("v3 policy serialization retains pending fields and fails malformed flags", () =>
+        {
+            var record=new V3BusinessPolicyRecord {
+                InstanceId="run/business/3",Status=EconomicOperationStatusCode.Paused,
+                EffectivePricing=PricingPosture.Standard,
+                HasPendingResume=true,PendingResumeEffectiveIso="2026-10-11",
+                HasPendingPricing=true,PendingPricing=PricingPosture.Premium,
+                PendingPricingEffectiveIso="2026-10-11",LastSourceOperationId="op/9"
+            };
+            var restored=JsonSaveSerializer.ReadObject<V3BusinessPolicyRecord>(
+                JsonSaveSerializer.WriteObject(record));
+            restored.Validate();
+            Assert(restored.HasPendingResume && restored.PendingPricing==PricingPosture.Premium &&
+                restored.LastSourceOperationId=="op/9","record survives JSON");
+            restored.Status=EconomicOperationStatusCode.Closed;
+            Throws<ArgumentException>(()=>restored.Validate());
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
