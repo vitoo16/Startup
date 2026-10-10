@@ -202,6 +202,122 @@ internal static class Program
                 "current fixture must retain four active segments");
         });
 
+
+        Check("P-03 A/B/C exact 100-20-80 wallet time vector", () =>
+        {
+            var sameHours = Enumerable.Range(1080, 240).ToArray();
+            var portfolio = new[] {
+                new BusinessTimeWalletCandidate("a", "A", BusinessOperationMode.SideHustleCompatible,
+                    120, 6, 0, 0, 6, 25, sameHours),
+                new BusinessTimeWalletCandidate("b", "B", BusinessOperationMode.SideHustleCompatible,
+                    120, 6, 0, 0, 6, 15, sameHours),
+                new BusinessTimeWalletCandidate("c", "C", BusinessOperationMode.SideHustleCompatible,
+                    120, 6, 0, 0, 6, 0, sameHours)
+            };
+            var plan = BusinessAffordabilityPlanner.Plan("epoch-abc", 80, portfolio);
+            Assert(plan.ByInstance("A").ReservedUnits == 2, "A needs 2 units");
+            Assert(plan.ByInstance("B").ReservedUnits == 2, "B needs 2 units");
+            Assert(plan.ByInstance("C").ReservedUnits == 6, "C needs 6 zero-cost units");
+            Assert(plan.ByInstance("A").ReservedOwnerMinutes.Count == 40, "A needs 40m");
+            Assert(plan.ByInstance("B").ReservedOwnerMinutes.Count == 40, "B needs 40m");
+            Assert(plan.ByInstance("C").ReservedOwnerMinutes.Count == 120, "C needs 120m");
+            Assert(plan.TotalCostReservedVnd == 80 && plan.SpendableAfterReservationsVnd == 0,
+                "variable wallet 80 only");
+            Assert(plan.AllUnitReservations.Count == 10, "one reservation per accepted unit");
+            Assert(plan.AllUnitReservations.Select(x => x.Id).Distinct().Count() == 10,
+                "unique stable reservation IDs");
+            var permuted = BusinessAffordabilityPlanner.Plan("epoch-abc", 80,
+                new[]{portfolio[2],portfolio[0],portfolio[1]});
+            foreach (var b in new[]{"A","B","C"})
+            {
+                Assert(plan.ByInstance(b).ReservedUnits == permuted.ByInstance(b).ReservedUnits,
+                    "permutation changed units");
+                Assert(plan.ByInstance(b).ReservedOwnerMinutes.SequenceEqual(
+                    permuted.ByInstance(b).ReservedOwnerMinutes), "permutation changed time");
+            }
+        });
+
+        Check("P-03 unequal R is normalized, not equal legacy minute shares", () =>
+        {
+            var slots = Enumerable.Range(0, 120);
+            var a = new BusinessTimeWalletCandidate("a", "a1", BusinessOperationMode.SideHustleCompatible,
+                60, 6, 0, 0, 6, 0, slots);
+            var b = new BusinessTimeWalletCandidate("b", "b1", BusinessOperationMode.SideHustleCompatible,
+                120, 6, 0, 0, 6, 0, slots);
+            var p = BusinessAffordabilityPlanner.Plan("epoch-unequal", 0, new[]{b,a});
+            Assert(p.ByInstance("a1").ReservedUnits == 4, "A normalized quota 4");
+            Assert(p.ByInstance("b1").ReservedUnits == 4, "B normalized quota 4");
+            Assert(p.ByInstance("a1").ReservedOwnerMinutes.Count == 40, "A 40m");
+            Assert(p.ByInstance("b1").ReservedOwnerMinutes.Count == 80, "B 80m");
+            Assert(p.TotalCostReservedVnd == 0, "zero cost is valid");
+        });
+
+        Check("P-03 zero wallet still funds zero-cost units without income", () =>
+        {
+            var expensive = new BusinessTimeWalletCandidate("a", "paid",
+                BusinessOperationMode.SideHustleCompatible, 60, 6, 0, 0, 6, 10, Enumerable.Range(0,120));
+            var free = new BusinessTimeWalletCandidate("b", "free",
+                BusinessOperationMode.SideHustleCompatible, 60, 6, 0, 0, 6, 0, Enumerable.Range(0,120));
+            var p = BusinessAffordabilityPlanner.Plan("epoch-free", 0, new[]{expensive,free});
+            Assert(p.ByInstance("paid").ReservedUnits == 0, "unaffordable business");
+            Assert(p.ByInstance("free").ReservedUnits == 6, "free business must still operate");
+            Assert(p.ByInstance("free").ReservedOwnerMinutes.Count == 60, "free units use actual minutes");
+            Assert(p.TotalCostReservedVnd == 0, "no same-day revenue financing");
+        });
+
+        Check("global matching reassigns occupied shared minute to feasible peer", () =>
+        {
+            var a = new BusinessTimeWalletCandidate("a","a",BusinessOperationMode.SideHustleCompatible,
+                1,1,0,0,1,0,new[]{0,1});
+            var b = new BusinessTimeWalletCandidate("b","b",BusinessOperationMode.SideHustleCompatible,
+                1,1,0,0,1,0,new[]{0});
+            var p = BusinessAffordabilityPlanner.Plan("match",0,new[]{a,b});
+            Assert(p.ByInstance("a").ReservedOwnerMinutes.SequenceEqual(new[]{1}),"A must augment to minute 1");
+            Assert(p.ByInstance("b").ReservedOwnerMinutes.SequenceEqual(new[]{0}),"B must get minute 0");
+        });
+
+        Check("C greater than R cannot mint unreserved units on one-minute floor jump", () =>
+        {
+            var paid = new BusinessTimeWalletCandidate("high-throughput","i1",
+                BusinessOperationMode.SideHustleCompatible,1,4,0,0,4,1,new[]{42});
+            var p = BusinessAffordabilityPlanner.Plan("floor-jump",2,new[]{paid});
+            Assert(p.ByInstance("i1").ReferenceEligibleUnits==4,"one minute supports 4 potential capacity");
+            Assert(p.ByInstance("i1").ReservedUnits==2,"wallet reserves only two units");
+            Assert(p.ByInstance("i1").ReservedOwnerMinutes.Count==1,"one committed minute");
+            Assert(p.AllUnitReservations.Count==2,"no unreserved third or fourth unit");
+            var prior = new BusinessTimeWalletCandidate("high-throughput","i1",
+                BusinessOperationMode.SideHustleCompatible,1,4,1,0,4,0,Array.Empty<int>());
+            var after = BusinessAffordabilityPlanner.Plan("no-retro",0,new[]{prior});
+            Assert(after.ByInstance("i1").ReservedUnits==0, "old unreserved minutes cannot earn later");
+        });
+
+        Check("full-time contiguous reservation excludes overlapping side minutes", () =>
+        {
+            var full = new BusinessTimeWalletCandidate("a","kiosk",
+                BusinessOperationMode.FullTimeRequired,3,3,0,0,3,0,new[]{50,51,52});
+            var side = new BusinessTimeWalletCandidate("b","side",
+                BusinessOperationMode.SideHustleCompatible,1,1,0,0,4,0,new[]{50,51,52,53});
+            var p = BusinessAffordabilityPlanner.Plan("full",0,new[]{side,full});
+            Assert(p.ByInstance("kiosk").ReservedUnits==3,"full-time 3 capacity");
+            Assert(p.ByInstance("kiosk").ReservedOwnerMinutes.SequenceEqual(new[]{50,51,52}),"contiguous full");
+            Assert(p.ByInstance("side").ReservedUnits==1,"side only leftover minute");
+            Assert(p.ByInstance("side").ReservedOwnerMinutes.SequenceEqual(new[]{53}),"side cannot steal kiosk");
+            Throws<ArgumentException>(() => BusinessAffordabilityPlanner.Plan("invalid",0,new[]{full,full}));
+        });
+
+        Check("previously fulfilled and committed time preserved in new epoch", () =>
+        {
+            var partial = new BusinessTimeWalletCandidate("a","a1",
+                BusinessOperationMode.SideHustleCompatible,120,6,60,3,3,0,
+                Enumerable.Range(60,60));
+            var p = BusinessAffordabilityPlanner.Plan("replan",0,new[]{partial},Enumerable.Range(0,60));
+            Assert(p.ByInstance("a1").ReferenceEligibleUnits==3, "only remaining daily capacity");
+            Assert(p.ByInstance("a1").ReservedUnits==3, "can earn remaining 3");
+            Assert(p.ByInstance("a1").ReservedOwnerMinutes.Count==60, "60 new committed minutes");
+            Assert(p.AllUnitReservations.Select(x=>x.AbsoluteBusinessUnitOrdinal).SequenceEqual(new[]{4,5,6}),
+                "ordinals continue through a genuine replan");
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
