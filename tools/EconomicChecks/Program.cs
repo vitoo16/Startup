@@ -644,6 +644,34 @@ internal static class Program
         });
 
 
+
+        Check("migration activation is next date for v2 midday, without retroactive fees", () =>
+        {
+            var anchor=EconomicActivationAnchor.FromHistoricalCheckpoint(12,"run/op/12",
+                "first-playable.v1",2,"2026-10-09",900,"v2-first-playable.v1");
+            Assert(anchor.ActivationDateIso=="2026-10-10","midday checkpoint activates tomorrow");
+            Assert(!anchor.SourceMidnightAlreadyProcessedLegacySettlement,"midday source not past new-day settlement");
+            Assert(!anchor.ShouldOpenEconomicOperationsOnDate("2026-10-09"),"no invented migrated-day operations");
+            Assert(anchor.ShouldOpenEconomicOperationsOnDate("2026-10-10"),"next-day activate");
+            Assert(anchor.IsLegacyReceiptIndex(0) && anchor.IsLegacyReceiptIndex(11) &&
+                !anchor.IsLegacyReceiptIndex(12),"exact receipt-count cutover");
+        });
+
+        Check("v2 midnight cutover is lazy current-day only, without salary/living replay", () =>
+        {
+            var anchor=EconomicActivationAnchor.FromHistoricalCheckpoint(10,"run/op/10",
+                "first-playable.v1",2,"2026-10-10",0,"v2-first-playable.v1");
+            Assert(anchor.ActivationDateIso=="2026-10-10","00:00 may start v3 economy same date");
+            Assert(anchor.SourceMidnightAlreadyProcessedLegacySettlement,
+                "midnight v2 already performed legacy salary/living");
+            Assert(anchor.ShouldOpenEconomicOperationsOnDate("2026-10-10"),
+                "same-day v3 economics can initialize on first committed command");
+            Throws<ArgumentException>(()=>new EconomicActivationAnchor(10,"run/op/10",
+                "first-playable.v1",2,"2026-10-10",900,"2026-10-10",
+                "v2-first-playable.v1","m9-t02.cutover-v1",false));
+        });
+
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
