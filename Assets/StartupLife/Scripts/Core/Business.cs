@@ -201,6 +201,8 @@ namespace StartupLife.Core
         // Legacy PricingPosture remains unchanged for v2-compatible consumers.
         public EconomicOperationStatusCode OperationStatus { get; }
         public PricingPosture EffectivePricing { get; }
+        // Immutable authored fixed helper terms; never a second wage transaction.
+        public FixedBusinessHelperDefinition? FixedHelper { get; }
         public bool HasPendingPricing { get; }
         public PricingPosture PendingPricing { get; }
         public string PendingPricingEffectiveIso { get; }
@@ -211,7 +213,7 @@ namespace StartupLife.Core
         public long TotalInvestment { get; }
 
         public BusinessSnapshot(BusinessState state, BusinessDefinition definition,
-            V3BusinessPolicyRecord? policy = null)
+            V3BusinessPolicyRecord? policy = null, FixedBusinessHelperDefinition? fixedHelper = null)
         {
             InstanceId = state.InstanceId; DefinitionId = state.DefinitionId; DefinitionRevision = state.DefinitionRevision;
             NameKey = definition.NameKey; Type = definition.Type; IsActive = state.IsActive;
@@ -222,6 +224,7 @@ namespace StartupLife.Core
             OperationStatus = !state.IsActive ? EconomicOperationStatusCode.Closed :
                 policy?.Status ?? EconomicOperationStatusCode.Auto;
             EffectivePricing = policy?.EffectivePricing ?? state.PricingPosture;
+            FixedHelper = fixedHelper;
             HasPendingPricing = state.IsActive && policy != null && policy.HasPendingPricing;
             PendingPricing = policy?.PendingPricing ?? EffectivePricing;
             PendingPricingEffectiveIso = HasPendingPricing ? policy!.PendingPricingEffectiveIso : "";

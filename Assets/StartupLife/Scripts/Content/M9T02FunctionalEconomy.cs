@@ -35,8 +35,13 @@ namespace StartupLife.Content
                     new long[]{35000,45000,60000}, 23000, 12000, new[]{9500,12000,10500,9500}),
                 Profile("freelance-service", BusinessType.FreelanceService, "mvp.market.freelance", 120, 3,
                     new long[]{160000,220000,300000}, 20000, 5000, new[]{8000,8500,12500,8500}),
-                Profile("coffee-kiosk", BusinessType.CoffeeKiosk, "mvp.market.coffee", 480, 40,
-                    new long[]{20000,30000,40000}, 12000, 150000, new[]{11000,12500,9500,11500})
+                // Solo capacity 20 plus a contracted helper's 20 units = unchanged 40-unit
+                // v3 economic capacity. The 90k wage is a COMPONENT of the existing
+                // 150k mandatory daily charge, never an additional payable.
+                Profile("coffee-kiosk", BusinessType.CoffeeKiosk, "mvp.market.coffee", 480, 20,
+                    new long[]{20000,30000,40000}, 12000, 150000, new[]{11000,12500,9500,11500},
+                    new FixedBusinessHelperDefinition("kiosk-attendant", "helper.kiosk-attendant",
+                        90000, 20, EconomicDefinitionLimits.Scale))
             };
             return new BusinessEconomicCatalog("m9-t02.functional-fixture-v1", "v1", "m9-t02.rules-v1",
                 segmentDefinitions, pools, profiles);
@@ -54,7 +59,8 @@ namespace StartupLife.Content
         }
 
         private static BusinessEconomicProfile Profile(string id, BusinessType type, string pool, int ownerMinutes,
-            int capacity, long[] prices, long variable, long daily, int[] productFit)
+            int baseCapacity, long[] prices, long variable, long daily, int[] productFit,
+            FixedBusinessHelperDefinition? fixedHelper = null)
         {
             var posture = new[] { PricingPosture.Budget, PricingPosture.Standard, PricingPosture.Premium };
             var priceFit = new[] {
@@ -63,10 +69,11 @@ namespace StartupLife.Content
                 new[]{7200,8500,11500,9500}
             };
             return new BusinessEconomicProfile(id, "v1", type, "m9-t02.profile-v1", pool,
-                ownerMinutes, capacity, variable, daily, SegmentFactors(productFit),
+                ownerMinutes, baseCapacity, variable, daily, SegmentFactors(productFit),
                 posture.Select((p,i) => new KeyValuePair<PricingPosture, IEnumerable<KeyValuePair<string,int>>>(
                     p, SegmentFactors(priceFit[i]))),
-                posture.Select((p,i) => new KeyValuePair<PricingPosture,long>(p, prices[i])));
+                posture.Select((p,i) => new KeyValuePair<PricingPosture,long>(p, prices[i])),
+                fixedHelper);
         }
     }
 }

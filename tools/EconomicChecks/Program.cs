@@ -81,6 +81,27 @@ internal static class Program
                 Assert(p.FullCapacityUnits == x.Item4, "capacity " + x.Item1);
             }
         });
+        Check("M10 kiosk fixed helper contributes capacity without duplicating the wage", () =>
+        {
+            var kiosk = catalog.Profiles["coffee-kiosk"];
+            var helper = kiosk.FixedHelper;
+            Assert(helper != null && helper.Id == "kiosk-attendant", "helper must be authored");
+            Assert(helper!.ContractedDailyWageVnd == 90000L &&
+                kiosk.NonHelperDailyFixedChargeVnd == 60000L,
+                "fixed 150k/day must include helper wage once, not add another invoice");
+            Assert(kiosk.BaseOwnerCapacityUnits == 20 &&
+                helper.EffectiveAdditionalCapacityUnits == 20 &&
+                kiosk.FullCapacityUnits == 40, "solo + helper capacity yields existing v3 effective 40");
+            Assert(catalog.Profiles.Values.Count(x => x.FixedHelper != null) == 1,
+                "MVP has exactly one contracted helper at the kiosk");
+            Assert(catalog.Profiles.Where(x => x.Key != "coffee-kiosk")
+                .All(x => x.Value.BaseOwnerCapacityUnits == x.Value.FullCapacityUnits),
+                "other business capacity must not change");
+            Throws<ArgumentException>(() => new FixedBusinessHelperDefinition(
+                "invalid-helper", "helper.invalid", 0, 20, EconomicDefinitionLimits.Scale));
+            Throws<ArgumentException>(() => new FixedBusinessHelperDefinition(
+                "invalid-helper", "helper.invalid", 90000, 0, EconomicDefinitionLimits.Scale));
+        });
         var supply = CustomerDemandCalculator.OpeningSupply("2026-10-09", catalog, "mvp.market.online-retail");
         Check("largest remainder pool supply is exact, tie by segment ID", () =>
         {
