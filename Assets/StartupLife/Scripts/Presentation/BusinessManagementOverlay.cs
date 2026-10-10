@@ -288,7 +288,7 @@ namespace StartupLife.Presentation
                 "/" + operating.OwnerTime.RequiredOwnerMinutes.ToString(CultureInfo.InvariantCulture) +
                 " phút · " + PlanReason(operating.OwnerTime.Status);
             var helperText = current?.FixedHelper == null ? "" :
-                "\nNhân viên phụ quầy cố định"
+                "\nNhân viên phụ quầy cố định" +
                 " · hỗ trợ " + current.FixedHelper.EffectiveAdditionalCapacityUnits.ToString(CultureInfo.InvariantCulture) +
                 " đơn vị · lương trong phí cố định " +
                 current.FixedHelper.ContractedDailyWageVnd.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
