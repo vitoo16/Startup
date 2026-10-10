@@ -122,6 +122,8 @@ namespace StartupLife.Content
                 },
                 Businesses = new[]
                 {
+                    FunctionalBusiness("online-store", BusinessType.OnlineStore, BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120),
+                    FunctionalBusiness("home-food-preorder", BusinessType.HomeFoodPreorder, BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120),
                     FunctionalBusiness(FreelanceId, BusinessType.FreelanceService, BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120),
                     FunctionalBusiness(CoffeeKioskId, BusinessType.CoffeeKiosk, BusinessOperationMode.FullTimeRequired, 540, 1020, 480)
                 },
