@@ -1436,6 +1436,61 @@ internal static class Program
             }
         });
 
+
+        Check("v2 primary migrates in-memory and first v3 command preserves byte-exact v2 backup", () =>
+        {
+            var content=FirstPlayableContentTemplate.BuildCatalog();
+            var archive=new BundledHistoricalV2ContentResolver();
+            var economic=M9T02FunctionalEconomy.Create();
+            var replay=new VersionedReceiptReplay(economic,content);
+            var legacy=new JsonSaveSerializer(content,GameSession.CreateRestoreValidator(),
+                new SyntheticV0Migration(),new V1ToV2Migration());
+            var serializer=new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(),
+                new V2ToV3Migration(archive,replay),
+                new StagedV3SaveSerializer(archive,replay));
+            var original=GameSession.NewState(content,"run-migration-smoke",9988,
+                new SimDate(2026,9,1));
+            var originalBytes=legacy.Serialize(original);
+            var path=Path.Combine(Path.GetTempPath(),"m9-t02-migration-"+
+                Guid.NewGuid().ToString("N")+".json");
+            try
+            {
+                File.WriteAllBytes(path,originalBytes);
+                var store=new AtomicFileSaveStore(path,serializer);
+                var previous=store.Read();
+                Assert(previous.Status==LoadStatus.Valid && previous.SourceSchemaVersion==2,
+                    "source-v2 remains a tagged in-memory migrated checkpoint");
+                Assert(File.ReadAllBytes(path).SequenceEqual(originalBytes),
+                    "read and migration cannot rewrite primary bytes");
+                Assert(GameSession.TryRestore(content,serializer,store,
+                    out var session,out var restored,economicRules:economic,archivedRules:archive),
+                    "restore historical v2 under active v3 serializer");
+                Assert(restored.SourceSchemaVersion==2,"original source schema retained");
+                var create=new GameCommand(CommandKind.CreateCharacter,"fresh",18,
+                    "Migration","base.male");
+                var cmd=session!.Execute(new CommandEnvelope("run-migration-smoke",
+                    "create-migrated",0,create));
+                Assert(cmd.Status==CommandStatus.Committed,
+                    "first v3 gameplay command must commit atomically: "+cmd.ReasonKey);
+                Assert(store.Read().Status==LoadStatus.Valid &&
+                    store.Read().SourceSchemaVersion==3,"new primary promoted to version3");
+                Assert(File.Exists(path+".backup") &&
+                    File.ReadAllBytes(path+".backup").SequenceEqual(originalBytes),
+                    "original v2 wire bytes remain unmodified in atomic backup");
+                Assert(GameSession.TryRestore(content,serializer,store,
+                    out var cold,out var saved,economicRules:economic,archivedRules:archive),
+                    "cold restore committed schema3");
+                Assert(cold!.Snapshot().Revision==1 && saved.SourceSchemaVersion==3,
+                    "cold v3 replay preserves original receipt generation");
+            }
+            finally
+            {
+                foreach (var file in new[]{path,path+".backup",path+".lock"})
+                    if (File.Exists(file)) File.Delete(file);
+            }
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
