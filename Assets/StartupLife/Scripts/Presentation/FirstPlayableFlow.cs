@@ -126,6 +126,25 @@ namespace StartupLife.Presentation
         public FirstPlayableActionResult Resign() =>
             Execute("resign", new GameCommand(CommandKind.Resign));
 
+        public FirstPlayableActionResult LaunchBusiness(string definitionId, string definitionRevision,
+            int initialInvestment) =>
+            Execute("launch-business", BusinessCommands.Launch(definitionId, definitionRevision, initialInvestment));
+
+        public FirstPlayableActionResult ReinvestBusiness(string instanceId, int amount) =>
+            Execute("reinvest-business", BusinessCommands.Reinvest(instanceId, amount));
+
+        public FirstPlayableActionResult SetBusinessPricing(string instanceId, PricingPosture pricing) =>
+            Execute("business-pricing", BusinessCommands.SetPricing(instanceId, pricing));
+
+        public FirstPlayableActionResult PauseBusiness(string instanceId) =>
+            Execute("pause-business", BusinessCommands.Pause(instanceId));
+
+        public FirstPlayableActionResult ResumeBusiness(string instanceId) =>
+            Execute("resume-business", BusinessCommands.Resume(instanceId));
+
+        public FirstPlayableActionResult CloseBusiness(string instanceId) =>
+            Execute("close-business", BusinessCommands.Close(instanceId));
+
         public FirstPlayableActionResult AcknowledgePlayback(int cursor)
         {
             var snapshot = commands.Snapshot();

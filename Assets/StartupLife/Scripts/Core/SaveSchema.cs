@@ -4,6 +4,7 @@ namespace StartupLife.Core
     public static class SaveSchema
     {
         public const int HistoricalV1 = 1;
+        public const int HistoricalV2 = 2;
         public const int CurrentVersion = 2;
     }
 }

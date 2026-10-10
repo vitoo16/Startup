@@ -1,0 +1,2 @@
+Published text logs redact Unity access-token values and user-home paths. Raw logs, private user-save backups and dynamic font before/after bytes remain outside this ZIP. The synthetic test save from the graphical flow is included.
+Committed text copies also use LF line endings and omit trailing whitespace. Private original logs retain their original bytes.

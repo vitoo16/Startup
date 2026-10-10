@@ -190,10 +190,12 @@ namespace StartupLife.Infrastructure
     public sealed class V1ToV2Migration : ISaveMigration
     {
         public int FromVersion => SaveSchema.HistoricalV1;
-        public int ToVersion => SaveSchema.CurrentVersion;
+        public int ToVersion => SaveSchema.HistoricalV2;
         public byte[] Migrate(byte[] payload)
         {
             var state = HistoricalV1Codec.DecodeToCurrent(payload);
+            // Adjacent migration must stay v2 even after CurrentVersion becomes 3.
+            state.SaveVersion = SaveSchema.HistoricalV2;
             return JsonSaveSerializer.WriteObject(state);
         }
     }

@@ -149,6 +149,74 @@ MonoBehaviour:
         StartMinute: 1080
         EndMinute: 1320
       RequiredOwnerMinutes: 120
+    - Id: online-store
+      Revision: v1
+      NameKey: business.online-store
+      Type: 1
+      OperationMode: 1
+      MinimumStartupInvestment: 100
+      MaximumStartupInvestment: 1000
+      AllowedPricingPostures: 010000000200000003000000
+      DefaultPricingPosture: 2
+      MinimumReinvestment: 1
+      MaximumReinvestment: 1000
+      OperatingWindows:
+      - DayOfWeek: 0
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 1
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 2
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 3
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 4
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 5
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 6
+        StartMinute: 1080
+        EndMinute: 1320
+      RequiredOwnerMinutes: 120
+    - Id: home-food-preorder
+      Revision: v1
+      NameKey: business.home-food-preorder
+      Type: 2
+      OperationMode: 1
+      MinimumStartupInvestment: 100
+      MaximumStartupInvestment: 1000
+      AllowedPricingPostures: 010000000200000003000000
+      DefaultPricingPosture: 2
+      MinimumReinvestment: 1
+      MaximumReinvestment: 1000
+      OperatingWindows:
+      - DayOfWeek: 0
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 1
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 2
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 3
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 4
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 5
+        StartMinute: 1080
+        EndMinute: 1320
+      - DayOfWeek: 6
+        StartMinute: 1080
+        EndMinute: 1320
+      RequiredOwnerMinutes: 120
     - Id: coffee-kiosk
       Revision: v1
       NameKey: business.coffee-kiosk

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Startup Life" tests="9" failures="0" errors="0" skipped="0" time="0.742">
+  <testsuite name="StartupLife.Tests.EditMode.ContentCatalogTests" tests="4" failures="0" errors="0" skipped="0" time="0.029">
+    <testcase name="FirstPlayableTemplateBuildsThroughContentAssembly" classname="StartupLife.Tests.EditMode.ContentCatalogTests" time="0.023" />
+    <testcase name="InvalidAuthoringDataFailsBeforeRuntimeCatalogPublication" classname="StartupLife.Tests.EditMode.ContentCatalogTests" time="0.002" />
+    <testcase name="ScriptableObjectWrapperBuildsDetachedCatalog" classname="StartupLife.Tests.EditMode.ContentCatalogTests" time="0.001" />
+    <testcase name="SerializedFirstPlayableAssetContainsScheduledBusinesses" classname="StartupLife.Tests.EditMode.ContentCatalogTests" time="0.003" />
+  </testsuite>
+  <testsuite name="StartupLife.Tests.EditMode.FirstPlayableShellTests" tests="2" failures="0" errors="0" skipped="0" time="0.694">
+    <testcase name="GeneratedContentAssetImportsAndBuildsTheFirstPlayableCatalog" classname="StartupLife.Tests.EditMode.FirstPlayableShellTests" time="0.000" />
+    <testcase name="GeneratedSceneReopensWithSerializedContentAndControllerBindings" classname="StartupLife.Tests.EditMode.FirstPlayableShellTests" time="0.694" />
+  </testsuite>
+  <testsuite name="StartupLife.Tests.EditMode.FoundationTests" tests="3" failures="0" errors="0" skipped="0" time="0.019">
+    <testcase name="DeveloperQuotasAndOrderingRemainDeterministicInUnity" classname="StartupLife.Tests.EditMode.FoundationTests" time="0.015" />
+    <testcase name="LeapDatesAndCheckedMoneyUseEngineIndependentContracts" classname="StartupLife.Tests.EditMode.FoundationTests" time="0.001" />
+    <testcase name="SafeAreaReappliesAfterResolutionChangeWithoutAccumulatingOffsets" classname="StartupLife.Tests.EditMode.FoundationTests" time="0.003">
+      <system-out>Saving results to: [USER_HOME]/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

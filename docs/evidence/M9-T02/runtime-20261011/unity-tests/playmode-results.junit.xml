@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Startup Life" tests="14" failures="0" errors="0" skipped="0" time="13.878">
+  <testsuite name="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" tests="4" failures="0" errors="0" skipped="0" time="4.081">
+    <testcase name="AppearanceSelectionUsesLocalizedLabelsWithoutRawGenderGlyphs" classname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" time="0.998" />
+    <testcase name="BusinessManagementOverlayCreatesControlsAndBindsCommittedReadouts" classname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" time="0.431" />
+    <testcase name="CreateWorkStudyAndAdvanceDayThroughViews" classname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" time="2.052" />
+    <testcase name="V3BusinessLifecycleUsesCommittedFlowWithoutImmediatePriceSwitch" classname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" time="0.601" />
+  </testsuite>
+  <testsuite name="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" tests="9" failures="0" errors="0" skipped="0" time="9.573">
+    <testcase name="AcknowledgedWorkCueDoesNotReplayAfterRestart" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" time="1.488" />
+    <testcase name="BothInvalidSavesFailWithoutStartingNewRun" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" time="0.615" />
+    <testcase name="CorruptPrimaryRecoversBackupAndAllowsNextWrite" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" time="0.986" />
+    <testcase name="FreshLaunchWithoutSaveShowsCharacterCreation" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" time="0.247" />
+    <testcase name="MidCourseRestartRestoresExactProgressAndCompletesOnce" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" time="2.647" />
+    <testcase name="NextDayRestartDoesNotRecommitBoundary" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" time="1.340" />
+    <testcase name="PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" time="1.044" />
+    <testcase name="RealElapsedPauseDoesNotAdvanceSimulation" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" time="0.666" />
+    <testcase name="UnreadablePrimaryFailsClosedWithoutUsingBackup" classname="StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests" time="0.540" />
+  </testsuite>
+  <testsuite name="StartupLife.Tests.PlayMode.MobileBaselineTests" tests="1" failures="0" errors="0" skipped="0" time="0.223">
+    <testcase name="MobileBaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage" classname="StartupLife.Tests.PlayMode.MobileBaselineTests" time="0.223">
+      <system-out>Saving results to: [USER_HOME]/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

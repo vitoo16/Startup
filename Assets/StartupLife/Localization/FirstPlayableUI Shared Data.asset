@@ -331,6 +331,30 @@ MonoBehaviour:
     m_Key: reason.save.unrecoverable
     m_Metadata:
       m_Items: []
+  - m_Id: 628973644
+    m_Key: status.business.launched
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973645
+    m_Key: status.business.paused
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973646
+    m_Key: status.business.resumed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973647
+    m_Key: status.business.pricing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973648
+    m_Key: status.business.reinvested
+    m_Metadata:
+      m_Items: []
+  - m_Id: 628973649
+    m_Key: status.business.closed
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

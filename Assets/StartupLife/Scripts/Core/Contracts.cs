@@ -17,7 +17,9 @@ namespace StartupLife.Core
         LaunchBusiness = 7,
         ReinvestBusiness = 8,
         SetBusinessPricing = 9,
-        CloseBusiness = 10
+        CloseBusiness = 10,
+        PauseBusiness = 11,
+        ResumeBusiness = 12
     }
     public sealed class GameCommand
     {
@@ -182,6 +184,10 @@ namespace StartupLife.Core
         AdvanceResult AdvanceDay(CommandEnvelope request);
         AdvanceResult AdvanceMonth(CommandEnvelope request);
         GameSnapshot Snapshot();
+    }
+    public interface IActiveSaveSchema
+    {
+        int ActiveSchemaVersion { get; }
     }
     public interface ISaveSerializer
     {

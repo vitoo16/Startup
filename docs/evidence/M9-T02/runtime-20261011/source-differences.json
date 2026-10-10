@@ -1,0 +1,10 @@
+[
+  {
+    "InputObject": "Assets/StartupLife/UI/Fonts/NotoSansVietnamese.asset:FDEA5231FFC04931EB46493F5D0DC71F94626FC2EFB938F984FEFAEB6E1A91CB",
+    "SideIndicator": "=>"
+  },
+  {
+    "InputObject": "Assets/StartupLife/UI/Fonts/NotoSansVietnamese.asset:27EC2CDD9F5D3DED216E384268930025031D4ED986F5D90CB2EE38EEF7DCA5D1",
+    "SideIndicator": "<="
+  }
+]

@@ -1,0 +1,15 @@
+M  .gitattributes
+M  Assets/StartupLife/Scripts/Application/GameSession.cs
+ M Assets/StartupLife/Scripts/Presentation/BusinessManagementOverlay.cs
+M  Assets/StartupLife/Scripts/Simulation/V3EconomicReceiptProcessor.cs
+M  Assets/StartupLife/Scripts/Simulation/V3ObligationTransactions.cs
+M  Assets/StartupLife/Scripts/Simulation/VersionedReceiptReplay.cs
+M  Assets/StartupLife/Tests/EditMode/ContentCatalogTests.cs
+ M Assets/StartupLife/Tests/PlayMode/FirstPlayableFlowTests.cs
+ M Assets/StartupLife/UI/Fonts/NotoSansVietnamese.asset
+A  docs/evidence/M9-T02/TRANSACTION_FINALIZATION_FIX.md
+M  tools/EconomicChecks/EconomicChecks.csproj
+A  tools/EconomicChecks/Fixtures/README.md
+A  tools/EconomicChecks/Fixtures/pre-fix-v3-pending-business.json
+M  tools/EconomicChecks/Program.cs
+?? docs/evidence/M9-T02/BUSINESS_TOUCH_TARGET_FIX.md

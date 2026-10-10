@@ -10,6 +10,10 @@ namespace StartupLife.Core
     public sealed class GameState
     {
         public int SaveVersion { get; set; } = SaveSchema.CurrentVersion;
+        // Runtime-only, detached schema-3 wire authority. Never nested in GameState
+        // serialization, which must preserve the byte-exact historical v2 DTO.
+        [System.Runtime.Serialization.IgnoreDataMember]
+        public EconomicV3Payload? EconomicV3 { get; set; }
         public string ContentVersion { get; set; } = "";
         public string RunId { get; set; } = "";
         public ulong Seed { get; set; }

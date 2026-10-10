@@ -257,6 +257,48 @@ internal static class Program
             f.Session.AdvanceMonth(new CommandEnvelope("run", "resigned-month", f.Session.Snapshot().Revision, new GameCommand(CommandKind.AdvanceBoundary)));
             Equal(1454545L, f.State().Cash); Equal(new RationalAmount(5, 11), SimulationEngine.ClaimAmount(f.State().Claims.Single()));
         });
+        Check("M10 biography projection preserves employment and exact deferred pay", () =>
+        {
+            var f = new Fixture(); f.Create();
+            var untouched = f.Session.ReadCareerBiography();
+            True(untouched.HasCharacter); True(!untouched.IsEmployed);
+            True(!untouched.IsFounderAfterResignation);
+            Equal(0, untouched.PreviousEmployments.Count);
+
+            f.Accept(); f.Evening();
+            var before = f.Session.ExportCheckpoint();
+            var employed = f.Session.ReadCareerBiography();
+            True(employed.IsEmployed); True(!employed.IsFounderAfterResignation);
+            Equal("developer", employed.CurrentEmployment!.CareerId);
+            Equal("career.developer", employed.CurrentEmployment.CareerNameKey);
+            Equal(10000000L, employed.CurrentEmployment.MonthlySalaryAtRecordedRankVnd!.Value);
+            Equal(1, employed.CurrentEmployment.UnpaidClaimCount);
+            Equal(new RationalAmount(10000000, 22), employed.OutstandingSalary);
+            Bytes(before, f.Session.ExportCheckpoint()); // reads are side-effect free
+
+            f.SendOk(new GameCommand(CommandKind.Resign));
+            var resigned = f.Session.ReadCareerBiography();
+            True(!resigned.IsEmployed); True(resigned.IsFounderAfterResignation);
+            Equal(1, resigned.PreviousEmployments.Count);
+            Equal(employed.CurrentEmployment.EmploymentId,
+                resigned.PreviousEmployments.Single().EmploymentId);
+            Equal(new RationalAmount(10000000, 22), resigned.OutstandingSalary);
+            Equal("2026-09-01", resigned.PreviousEmployments.Single().EndedIso);
+
+            var restored = new Fixture(f.Content, f.State());
+            var cold = restored.Session.ReadCareerBiography();
+            True(cold.IsFounderAfterResignation);
+            Equal(resigned.PreviousEmployments.Single().EmploymentId,
+                cold.PreviousEmployments.Single().EmploymentId);
+            Equal(resigned.OutstandingSalary, cold.OutstandingSalary);
+
+            f.Accept();
+            var reemployed = f.Session.ReadCareerBiography();
+            True(reemployed.IsEmployed); True(!reemployed.IsFounderAfterResignation);
+            Equal(1, reemployed.PreviousEmployments.Count);
+            True(reemployed.CurrentEmployment!.EmploymentId !=
+                reemployed.PreviousEmployments.Single().EmploymentId);
+        });
         Check("oldest arrears settle before spending and employment recovers", () =>
         {
             var f = new Fixture(Catalog(cash: 0)); f.Create(); f.Accept(); Equal(1000000L, f.Session.Snapshot().Arrears);

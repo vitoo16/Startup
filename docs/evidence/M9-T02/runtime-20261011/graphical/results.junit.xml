@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Startup Life" tests="1" failures="0" errors="0" skipped="0" time="11.023">
+  <testsuite name="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" tests="1" failures="0" errors="0" skipped="0" time="11.023">
+    <testcase name="CreateWorkStudyAndAdvanceDayThroughViews" classname="StartupLife.Tests.PlayMode.FirstPlayableFlowTests" time="11.023">
+      <system-out>[StartupLifeM7Visual] 01-character-creation 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0000 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 02-life-developer 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0001 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 03-work-playback 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0002 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0003 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0004 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0005 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0006 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0007 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0008 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0009 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0010 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0011 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0012 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0013 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0014 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0015 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0016 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0017 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0018 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0019 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0020 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0021 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0022 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0023 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0024 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0025 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0026 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0027 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0028 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0029 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0030 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0031 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0032 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0033 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0034 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0035 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 04-evening-study 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0036 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 05-day-summary 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] recording/frame-0037 1080x1920; UI-inclusive camera capture; simulatedNotch=False
+[StartupLifeM7Visual] 06-simulated-notched-safe-area 1080x1920; UI-inclusive camera capture; simulatedNotch=True
+Saving results to: [USER_HOME]/AppData/LocalLow/Startup Life/Startup Life\TestResults.xml</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

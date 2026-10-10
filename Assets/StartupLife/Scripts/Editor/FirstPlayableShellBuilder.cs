@@ -438,6 +438,12 @@ namespace StartupLife.Editor
             Add(table, "status.course.completed", "Đã hoàn thành khóa học.");
             Add(table, "status.work.complete", "Ca làm việc đã hoàn tất.");
             Add(table, "status.day.completed", "Đã sang ngày mới.");
+            Add(table, "status.business.launched", "Đã mở doanh nghiệp.");
+            Add(table, "status.business.paused", "Đã tạm dừng hoạt động.");
+            Add(table, "status.business.resumed", "Đã lên lịch tiếp tục hoạt động.");
+            Add(table, "status.business.pricing", "Giá mới có hiệu lực từ ngày mô phỏng kế tiếp.");
+            Add(table, "status.business.reinvested", "Đã tái đầu tư vào doanh nghiệp.");
+            Add(table, "status.business.closed", "Đã đóng doanh nghiệp.");
 
             Add(table, "scene.coding", "Tập trung viết mã");
             Add(table, "scene.meeting", "Họp cùng đội");

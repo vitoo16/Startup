@@ -95,7 +95,8 @@ namespace StartupLife.Infrastructure
                     {
                         var candidate = serializer.DeserializeAndValidate(validatedBytes);
                         if (candidate.Status != LoadStatus.Valid ||
-                            (expectedCheckpoint == null && candidate.SourceSchemaVersion != SaveSchema.CurrentVersion) ||
+                            (expectedCheckpoint == null && candidate.SourceSchemaVersion !=
+                                (serializer is IActiveSaveSchema active ? active.ActiveSchemaVersion : SaveSchema.CurrentVersion)) ||
                             candidate.State!.Revision !=
                             (expectedCheckpoint == null ? checked(expectedRevision + 1) : expectedRevision)) return WriteStatus.Failed;
                         var previous = Read();

@@ -1,0 +1,125 @@
+[
+  {
+    "mode": "EditMode",
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "reportsAgree": true,
+    "tests": [
+      {
+        "name": "StartupLife.Tests.EditMode.ContentCatalogTests.FirstPlayableTemplateBuildsThroughContentAssembly",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.EditMode.ContentCatalogTests.InvalidAuthoringDataFailsBeforeRuntimeCatalogPublication",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.EditMode.ContentCatalogTests.ScriptableObjectWrapperBuildsDetachedCatalog",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.EditMode.ContentCatalogTests.SerializedFirstPlayableAssetContainsScheduledBusinesses",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.EditMode.FirstPlayableShellTests.GeneratedContentAssetImportsAndBuildsTheFirstPlayableCatalog",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.EditMode.FirstPlayableShellTests.GeneratedSceneReopensWithSerializedContentAndControllerBindings",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.EditMode.FoundationTests.DeveloperQuotasAndOrderingRemainDeterministicInUnity",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.EditMode.FoundationTests.LeapDatesAndCheckedMoneyUseEngineIndependentContracts",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.EditMode.FoundationTests.SafeAreaReappliesAfterResolutionChangeWithoutAccumulatingOffsets",
+        "result": "Passed"
+      }
+    ]
+  },
+  {
+    "mode": "PlayMode",
+    "total": 14,
+    "passed": 14,
+    "failed": 0,
+    "reportsAgree": true,
+    "tests": [
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableFlowTests.AppearanceSelectionUsesLocalizedLabelsWithoutRawGenderGlyphs",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableFlowTests.BusinessManagementOverlayCreatesControlsAndBindsCommittedReadouts",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableFlowTests.CreateWorkStudyAndAdvanceDayThroughViews",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableFlowTests.V3BusinessLifecycleUsesCommittedFlowWithoutImmediatePriceSwitch",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.AcknowledgedWorkCueDoesNotReplayAfterRestart",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.BothInvalidSavesFailWithoutStartingNewRun",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.CorruptPrimaryRecoversBackupAndAllowsNextWrite",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.FreshLaunchWithoutSaveShowsCharacterCreation",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.MidCourseRestartRestoresExactProgressAndCompletesOnce",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.NextDayRestartDoesNotRecommitBoundary",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.PauseDuringWorkRestoresPendingCueWithoutDuplicateRewards",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.RealElapsedPauseDoesNotAdvanceSimulation",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableLifecycleTests.UnreadablePrimaryFailsClosedWithoutUsingBackup",
+        "result": "Passed"
+      },
+      {
+        "name": "StartupLife.Tests.PlayMode.MobileBaselineTests.MobileBaselineLoadsVietnameseThroughLocalizationWithGlyphCoverage",
+        "result": "Passed"
+      }
+    ]
+  },
+  {
+    "mode": "Graphical",
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "reportsAgree": true,
+    "tests": [
+      {
+        "name": "StartupLife.Tests.PlayMode.FirstPlayableFlowTests.CreateWorkStudyAndAdvanceDayThroughViews",
+        "result": "Passed"
+      }
+    ]
+  }
+]
