@@ -119,6 +119,14 @@ namespace StartupLife.Simulation
             EnsureOpened(game, records, sourceOperation);
         }
 
+        public static bool HasPostCutoverContractPeriod(string? closedIso, string activationIso)
+        {
+            _ = BusinessObligationDefinition.ParseDate(activationIso);
+            if (closedIso == null) return true;
+            _ = BusinessObligationDefinition.ParseDate(closedIso);
+            return string.CompareOrdinal(closedIso, activationIso) >= 0;
+        }
+
         private void EnsureOpened(GameState game, EconomicV3Records records, string operation)
         {
             if (!activation.ShouldOpenEconomicOperationsOnDate(game.DateIso)) return;
@@ -132,6 +140,13 @@ namespace StartupLife.Simulation
             var pending = new List<BusinessObligationDefinition>();
             foreach (var instance in entries)
             {
+                // A legacy business that closed BEFORE v3 activation has no v3
+                // service period. Building a contract with activation > closure
+                // would both reject an otherwise valid migrated save and invent
+                // economic obligations for a historical-only business.
+                if (!HasPostCutoverContractPeriod(instance.ClosedIso,
+                    activation.ActivationDateIso))
+                    continue;
                 if (!economics.Profiles.TryGetValue(instance.DefinitionId, out var profile))
                     throw new ContentCompatibilityException("save.content_id",
                         "Business economic profile is not archived or authored.");
