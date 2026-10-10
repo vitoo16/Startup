@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace StartupLife.Core
@@ -77,6 +78,7 @@ namespace StartupLife.Core
         [DataMember(Order = 9)] public long V3RecognizedFixedVnd { get; set; }
         [DataMember(Order = 10)] public long V3AppliedToArrearsVnd { get; set; }
         [DataMember(Order = 11)] public long V3NetBusinessCreditVnd { get; set; }
+        [DataMember(Order = 12)] public V3FinancialProvenance Provenance { get; set; } = new V3FinancialProvenance();
 
         public void Validate()
         {
@@ -89,8 +91,24 @@ namespace StartupLife.Core
                 throw new ArgumentException("Invalid v3 financial record graph.");
             if (checked(V3AppliedToArrearsVnd + V3NetBusinessCreditVnd) != V3RecognizedRevenueVnd)
                 throw new ArgumentException("V3 gross/arrears/net credit conservation.");
+            if (Provenance == null) throw new ArgumentException("Missing authoritative v3 provenance.");
+            Provenance.Validate();
+            RequireRoster(CommittedSliceIds, Provenance.OperationSlices.Select(x=>x.Id));
+            RequireRoster(CommittedFulfillmentIds, Provenance.Fulfillments.Select(x=>x.Id));
+            RequireRoster(CommittedCostReservationIds, Provenance.CostReservations.Select(x=>x.Id));
+            RequireRoster(SettledDayIds, Provenance.Settlements.Select(x=>x.Id));
+            if (Provenance.OperationSlices.Any(x=>!CommittedEpochIds.Contains(x.EpochId)) ||
+                Provenance.CostReservations.Any(x=>!CommittedEpochIds.Contains(x.EpochId)))
+                throw new ArgumentException("Economic graph uses an uncommitted epoch.");
             Unique(CommittedEpochIds); Unique(CommittedSliceIds); Unique(CommittedFulfillmentIds);
             Unique(CommittedObligationIds); Unique(CommittedCostReservationIds); Unique(SettledDayIds);
+        }
+
+        private static void RequireRoster(IEnumerable<string> declared, IEnumerable<string> observed)
+        {
+            if (!declared.OrderBy(x=>x,StringComparer.Ordinal).SequenceEqual(
+                observed.OrderBy(x=>x,StringComparer.Ordinal)))
+                throw new ArgumentException("V3 financial record index is inconsistent with saved provenance.");
         }
 
         private static void Unique(List<string> values)

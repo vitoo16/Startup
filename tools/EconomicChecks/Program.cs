@@ -875,6 +875,69 @@ internal static class Program
                     migrated.Current!,anchor,archive));
         });
 
+
+        Check("typed v3 provenance preserves one sale / reservation / market unit / settlement", () =>
+        {
+            var graph = new V3FinancialProvenance();
+            graph.MarketPools.Add(new V3MarketDayPool {
+                DateIso="2026-10-09",PoolId="market-fixture",DefinitionRevision="v1",
+                Segments=new List<V3PoolSegmentSupply>{new V3PoolSegmentSupply{
+                    SegmentId="budget-sensitive",OriginalUnits=1
+                }}
+            });
+            graph.CostReservations.Add(new V3CostReservation {
+                Id="cost-1",DateIso="2026-10-09",EpochId="epoch-1",
+                BusinessInstanceId="business-A",BusinessUnitOrdinal=0,AmountVnd=25,
+                Status=V3CostReservationStatus.Consumed,SourceOperationId="operation-1"
+            });
+            graph.OperationSlices.Add(new V3BusinessOperationSlice {
+                Id="slice-1",DateIso="2026-10-09",EpochId="epoch-1",
+                BusinessInstanceId="business-A",StartMinute=1100,EndMinute=1200,
+                CommittedOwnerMinuteDelta=100,UnitsDelta=1,VariablePaidVnd=25,
+                SourceBoundaryOperationId="advance-1",
+                FulfillmentIds=new List<string>{"sale-1"}
+            });
+            graph.Fulfillments.Add(new V3UnitFulfillment {
+                Id="sale-1",DateIso="2026-10-09",SliceId="slice-1",
+                EpochId="epoch-1",BusinessInstanceId="business-A",
+                PoolId="market-fixture",SegmentId="budget-sensitive",
+                MarketUnitOrdinal=0,BusinessUnitOrdinal=0,SourceCostReservationId="cost-1",
+                UnitPriceVnd=80,VariablePaidVnd=25,ProfileRevision="v1",
+                RulesetRevision="m9-t02.rules-v1",SourceBoundaryOperationId="advance-1"
+            });
+            graph.Settlements.Add(new V3BusinessDaySettlement {
+                Id="run/business-day/2026-10-09",OldDateIso="2026-10-09",
+                SourceBoundaryOperationId="advance-midnight",
+                FulfillmentIds=new List<string>{"sale-1"},GrossVnd=80,
+                VariablePaidVnd=25,FixedRecognizedVnd=10,ProfitVnd=45,
+                AppliedToArrearsVnd=0,NetCashCreditVnd=80
+            });
+            graph.Validate();
+            var record = new EconomicV3Records {
+                CommittedEpochIds=new List<string>{"epoch-1"},
+                CommittedSliceIds=new List<string>{"slice-1"},
+                CommittedFulfillmentIds=new List<string>{"sale-1"},
+                CommittedCostReservationIds=new List<string>{"cost-1"},
+                SettledDayIds=new List<string>{"run/business-day/2026-10-09"},
+                Provenance=graph,V3RecognizedRevenueVnd=80,V3PaidVariableVnd=25,
+                V3RecognizedFixedVnd=10,V3NetBusinessCreditVnd=80
+            };
+            record.Validate();
+            graph.Fulfillments[0].MarketUnitOrdinal=1;
+            Throws<ArgumentException>(()=>graph.Validate());
+            graph.Fulfillments[0].MarketUnitOrdinal=0;
+            graph.CostReservations[0].Status=V3CostReservationStatus.Released;
+            Throws<ArgumentException>(()=>graph.Validate());
+            graph.CostReservations[0].Status=V3CostReservationStatus.Consumed;
+            graph.Settlements[0].NetCashCreditVnd=79;
+            Throws<ArgumentException>(()=>graph.Validate());
+            graph.Settlements[0].NetCashCreditVnd=80;
+            graph.OperationSlices[0].FulfillmentIds.Clear();
+            Throws<ArgumentException>(()=>graph.Validate());
+            graph.OperationSlices[0].FulfillmentIds.Add("sale-1");
+            graph.Validate();
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
