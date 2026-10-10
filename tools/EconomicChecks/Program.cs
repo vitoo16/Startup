@@ -843,6 +843,38 @@ internal static class Program
                 "frozen evaluator and original evaluator results differ");
         });
 
+
+        Check("versioned replay validates zero-effect v2 prefix against frozen evaluator", () =>
+        {
+            var historical = GameSession.NewState(FirstPlayableContentTemplate.BuildCatalog(),
+                "archived-prefix-replay", 98768UL, new SimDate(2026,9,1));
+            var oldBytes = JsonSaveSerializer.WriteObject(historical);
+            var migrated = EconomicV3PayloadCodec.ReadChecked(
+                new V2ToV3Migration().Migrate(oldBytes));
+            Assert(migrated.Current != null && migrated.Activation != null,"staged v3 body");
+            var archive = new BundledHistoricalV2ContentResolver();
+            var dispatcher = new VersionedReceiptReplay();
+            dispatcher.Validate(JsonSaveSerializer.ReadObject<GameState>(oldBytes),
+                migrated.Current!,migrated.Activation!.ToAnchor(),archive);
+            var anchor = migrated.Activation.ToAnchor();
+            var missing = new EconomicActivationAnchor(anchor.LegacyReceiptCount,
+                anchor.LegacyLastOperationId,anchor.OriginalContentVersion,anchor.OriginalSourceSchema,
+                anchor.MigratedAtDateIso,anchor.MigratedAtMinute,anchor.ActivationDateIso,
+                "archive-not-installed",anchor.CutoverTransformVersion,
+                anchor.SourceMidnightAlreadyProcessedLegacySettlement);
+            Throws<ContentCompatibilityException>(()=>
+                dispatcher.Validate(JsonSaveSerializer.ReadObject<GameState>(oldBytes),
+                    migrated.Current!,missing,archive));
+            // A fabricated v3 suffix must not be blessed without a v3 replay evaluator.
+            migrated.Current!.Receipts.Add(new CommandReceipt {
+                CommandId="fabricated",Payload="0:0:0:0:0",
+                OperationId="archived-prefix-replay/op/1",Revision=1 });
+            migrated.Current.Revision=1;
+            Throws<NotSupportedException>(()=>
+                dispatcher.Validate(JsonSaveSerializer.ReadObject<GameState>(oldBytes),
+                    migrated.Current!,anchor,archive));
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
