@@ -259,7 +259,7 @@ namespace StartupLife.Presentation
 
         public void Refresh()
         {
-            if (panel == null || readPortfolio == null) return;
+            if (panel == null || readOperations == null) return;
             var operations = readOperations();
             var list = operations.Portfolio.Businesses.OrderBy(x => x.DefinitionId, StringComparer.Ordinal)
                 .ThenBy(x => x.InstanceId, StringComparer.Ordinal).ToArray();
