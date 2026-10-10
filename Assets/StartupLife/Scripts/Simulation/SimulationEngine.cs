@@ -214,7 +214,7 @@ namespace StartupLife.Simulation
                 Fail("business.invalid_payload");
             if (!content.Businesses.TryGetValue(command.ContentId, out var definition)) Fail("content.missing");
             if (definition!.Revision != command.AppearanceId) Fail("business.definition_revision");
-            if (state.Businesses.Count(x => x.IsActive) >= 4) Fail("business.active_limit");
+            if (state.Businesses.Count(x => x.IsActive) >= BusinessPortfolioRules.MaxActiveBusinesses) Fail("business.active_limit");
             if (state.Businesses.Where(x => x.IsActive).Any(x =>
                 content.Businesses.TryGetValue(x.DefinitionId, out var existing) && existing.Type == definition.Type))
                 Fail("business.type_active");

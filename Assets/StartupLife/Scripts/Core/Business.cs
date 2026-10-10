@@ -7,6 +7,13 @@ using System.Linq;
 
 namespace StartupLife.Core
 {
+    // One authoritative portfolio cap for current gameplay and UI projections.
+    // Historical V2 replay keeps its byte-frozen business rules unchanged.
+    public static class BusinessPortfolioRules
+    {
+        public const int MaxActiveBusinesses = 4;
+    }
+
     public enum BusinessType
     {
         OnlineStore = 1,

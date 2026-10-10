@@ -97,6 +97,12 @@ namespace StartupLife.Application
                         v3EconomicRules.Profiles.TryGetValue(x.DefinitionId, out var profile)
                             ? profile.FixedHelper : null)).ToArray());
         }
+        public BusinessOperationsSnapshot ReadBusinessOperations()
+        {
+            lock (gate)
+                return BusinessOperationsProjection.FromCommittedState(state, content, v3EconomicRules);
+        }
+
         public BusinessEligibilitySnapshot ReadEligibility(string definitionId, string definitionRevision)
         {
             lock (gate)
