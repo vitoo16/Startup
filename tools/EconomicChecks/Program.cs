@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using StartupLife.Content;
+using StartupLife.Infrastructure;
 using StartupLife.Core;
 using StartupLife.Simulation;
 
@@ -684,6 +685,75 @@ internal static class Program
                 "v2-first-playable.v1","m9-t02.cutover-v1",false));
         });
 
+
+
+        Check("staged v2-to-v3 migration retains exact source checkpoint bytes", () =>
+        {
+            var historicalCatalog = FirstPlayableContentTemplate.BuildCatalog();
+            var legacy = GameSession.NewState(historicalCatalog, "v2-stage-test", 98765UL,
+                new SimDate(2026, 9, 1));
+            StateValidation.Validate(legacy, historicalCatalog, GameSession.CreateRestoreValidator());
+            var original = JsonSaveSerializer.WriteObject(legacy);
+            var migration = new V2ToV3Migration();
+            Assert(migration.FromVersion == 2 && migration.ToVersion == 3,
+                "adjacent 2-to-3 schema contract");
+            var migrated = EconomicV3PayloadCodec.ReadChecked(migration.Migrate(original));
+            var recoveredSource = Convert.FromBase64String(migrated.OriginalV2PayloadBase64);
+            Assert(original.SequenceEqual(recoveredSource), "v2 checkpoint must stay byte-identical");
+            Assert(migrated.OriginalV2PayloadSha256 == V2ToV3Migration.HashV2Payload(original),
+                "exact source payload checksum");
+            Assert(migrated.Current != null && migrated.Current.SaveVersion == 3 &&
+                migrated.Current.Revision == legacy.Revision &&
+                migrated.Current.Cash == legacy.Cash &&
+                migrated.Current.NextEntity == legacy.NextEntity &&
+                migrated.Current.NextOperation == legacy.NextOperation,
+                "v3 zero-economic-effect cutover");
+            Assert(migrated.Activation != null &&
+                migrated.Activation.OriginalSourceSchema == 2 &&
+                migrated.Activation.LegacyReceiptCount == 0 &&
+                migrated.Activation.ActivationDateIso == "2026-09-01",
+                "00:00 cutover activates same date without old salary double-settlement");
+            Assert(migrated.EconomicRecords != null &&
+                migrated.EconomicRecords.CommittedEpochIds.Count == 0 &&
+                migrated.EconomicRecords.CommittedSliceIds.Count == 0 &&
+                migrated.EconomicRecords.CommittedFulfillmentIds.Count == 0 &&
+                migrated.EconomicRecords.V3RecognizedRevenueVnd == 0,
+                "no v3 economic records may be fabricated by migration");
+            Assert(JsonSaveSerializer.ReadObject<GameState>(recoveredSource).SaveVersion == 2,
+                "old wire schema must remain 2 in embedded original");
+            var roundtrip = EconomicV3PayloadCodec.ReadChecked(EconomicV3PayloadCodec.SerializeChecked(migrated));
+            Assert(roundtrip.OriginalV2PayloadBase64 == migrated.OriginalV2PayloadBase64,
+                "v3 decode/encode retains source bytes exactly");
+        });
+        Check("staged v3 codec rejects fabricated revenue and post-cutover root mutation", () =>
+        {
+            var legacy = GameSession.NewState(FirstPlayableContentTemplate.BuildCatalog(),
+                "v2-stage-tamper", 98766UL, new SimDate(2026, 9, 2));
+            var migration = new V2ToV3Migration();
+            var original = JsonSaveSerializer.WriteObject(legacy);
+            var payload = EconomicV3PayloadCodec.ReadChecked(migration.Migrate(original));
+            Assert(payload.EconomicRecords != null && payload.Current != null, "v3 initialized");
+            payload.EconomicRecords!.V3RecognizedRevenueVnd = 1;
+            Throws<ArgumentException>(() => EconomicV3PayloadCodec.SerializeChecked(payload));
+            payload.EconomicRecords.V3RecognizedRevenueVnd = 0;
+            payload.Current!.Cash++;
+            Throws<ArgumentException>(() => EconomicV3PayloadCodec.SerializeChecked(payload));
+            payload.Current.Cash--;
+            payload.OriginalV2PayloadSha256 = new string('0', 64);
+            Throws<ArgumentException>(() => EconomicV3PayloadCodec.SerializeChecked(payload));
+        });
+        Check("staged v2-to-v3 migration fails closed for unknown history ruleset and schema", () =>
+        {
+            var legacy = GameSession.NewState(FirstPlayableContentTemplate.BuildCatalog(),
+                "v2-stage-unknown", 98767UL, new SimDate(2026, 9, 3));
+            legacy.ContentVersion = "other-unknown-historical-catalog";
+            Throws<ArgumentException>(() =>
+                new V2ToV3Migration().Migrate(JsonSaveSerializer.WriteObject(legacy)));
+            legacy.ContentVersion = "first-playable.v1";
+            legacy.SaveVersion = 3;
+            Throws<ArgumentException>(() =>
+                new V2ToV3Migration().Migrate(JsonSaveSerializer.WriteObject(legacy)));
+        });
 
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
