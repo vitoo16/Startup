@@ -6,7 +6,7 @@ using System.Linq;
 using StartupLife.Core;
 using StartupLife.Simulation;
 
-namespace StartupLife.Application
+namespace StartupLife.Simulation
 {
     // One deterministic v3 *candidate* evaluator. Never mutate a published state.
     // The GameSession receipt/CAS path must call this instead of invoking legacy
