@@ -371,6 +371,55 @@ internal static class Program
             Assert(p.TotalCostReservedVnd==60,"wallet exactly reserved once");
         });
 
+
+        Check("frozen epoch time crossing equals sum of split AdvanceBoundary children", () =>
+        {
+            var candidate=new BusinessTimeWalletCandidate("a","epoch-a",BusinessOperationMode.SideHustleCompatible,
+                120,6,0,0,6,5,Enumerable.Range(1000,120));
+            var plan=BusinessAffordabilityPlanner.Plan("epoch-immutable",30,new[]{candidate});
+            var initial=FrozenBusinessEpochCursor.Begin(plan,1000);
+            var first=initial.AdvanceTo(plan,1060);
+            var second=first.Next.AdvanceTo(plan,1120);
+            var whole=initial.AdvanceTo(plan,1120);
+            Assert(first.Next.ByBusiness["epoch-a"].UnitsEarnedInEpoch==3,"first 60m 3 units");
+            Assert(first.NewlyConsumedReservations.Count==3 && first.VariablePaymentVnd==15,
+                "first 60m has three linked variable reservations");
+            Assert(second.Next.ByBusiness["epoch-a"].UnitsEarnedInEpoch==6,"120m total 6 units");
+            Assert(whole.Next.ByBusiness["epoch-a"].UnitsEarnedInEpoch==6,"one-shot total 6 units");
+            var splitIds=first.NewlyConsumedReservations.Concat(second.NewlyConsumedReservations).Select(x=>x.Id);
+            Assert(splitIds.SequenceEqual(whole.NewlyConsumedReservations.Select(x=>x.Id)),
+                "receipt boundary splitting changed unit reservation IDs");
+            Assert(first.VariablePaymentVnd+second.VariablePaymentVnd==whole.VariablePaymentVnd,
+                "variable costs re-charged or lost by split");
+        });
+
+        Check("epoch consumes C greater than R only up to reserved two units", () =>
+        {
+            var item=new BusinessTimeWalletCandidate("a","floor-i",BusinessOperationMode.SideHustleCompatible,
+                1,4,0,0,4,1,new[]{42});
+            var plan=BusinessAffordabilityPlanner.Plan("floor-epoch",2,new[]{item});
+            var result=FrozenBusinessEpochCursor.Begin(plan,42).AdvanceTo(plan,43);
+            Assert(result.NewlyConsumedReservations.Count==2,"floor jump cannot mint more than reserved units");
+            Assert(result.VariablePaymentVnd==2,"cost charged once per reserved fulfilled unit");
+            Assert(result.Next.ByBusiness["floor-i"].OwnerMinutesWorkedInEpoch==1,"actual worked minute");
+            Assert(result.Next.ByBusiness["floor-i"].UnitsEarnedInEpoch==2,"earned capped at reservation quota");
+        });
+
+        Check("Study never credits business work and invalidates frozen epoch", () =>
+        {
+            var item=new BusinessTimeWalletCandidate("a","study-business",BusinessOperationMode.SideHustleCompatible,
+                2,2,0,0,2,0,new[]{50,51});
+            var plan=BusinessAffordabilityPlanner.Plan("study-epoch",0,new[]{item});
+            var initial=FrozenBusinessEpochCursor.Begin(plan,50);
+            var result=initial.AdvanceTo(plan,51,isStudyCommand:true);
+            Assert(result.NewlyConsumedReservations.Count==0 && result.VariablePaymentVnd==0,
+                "study may not generate business revenue/variable charges");
+            Assert(result.Next.RequiresGenuineReplan,"study must trigger prospective epoch recomputation");
+            Throws<ArgumentException>(()=>result.Next.AdvanceTo(plan,52));
+            Throws<ArgumentException>(()=>initial.AdvanceTo(plan,49));
+        });
+
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
