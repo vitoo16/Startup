@@ -152,7 +152,7 @@ namespace StartupLife.Application
                     Revision = candidate.Revision, Cue = candidate.CurrentCue, MinutesConsumed = minutes, AdvanceTargetIso = advanceTarget, ParentPayload = parentPayload };
                 candidate.Receipts.Add(receipt);
                 if (candidate.SaveVersion == 3)
-                    EconomicV3PayloadCodec.Validate(candidate.EconomicV3!);
+                    candidate.EconomicV3!.EconomicRecords!.Validate();
                 else StateValidation.Validate(candidate, content);
                 outcome = BuildOutcome(baseline, candidate, receipt);
                 candidateBytes = serializer.Serialize(candidate);
