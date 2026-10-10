@@ -11,7 +11,13 @@ namespace StartupLife.Simulation
     public sealed class SimulationEngine
     {
         private readonly ContentCatalog content;
+        private readonly EconomicV3Records? v3Economics;
         public SimulationEngine(ContentCatalog catalog) { content = catalog; }
+        public SimulationEngine(ContentCatalog catalog, EconomicV3Records economicRecords)
+        {
+            content = catalog;
+            v3Economics = economicRecords ?? throw new ArgumentNullException(nameof(economicRecords));
+        }
         public int Evaluate(GameState candidate, GameCommand command, string operationId)
         {
             if (candidate.PendingChoiceId.Length > 0 && command.Kind == CommandKind.AdvanceBoundary) Fail("choice.required");
@@ -335,6 +341,12 @@ namespace StartupLife.Simulation
         }
         private void Income(GameState state, long amount, string operation)
         {
+            if (state.SaveVersion == 3 && v3Economics != null)
+            {
+                V3ObligationTransactions.CreditIncome(state, v3Economics, operation,
+                    amount, "salary.payment", "personal");
+                return;
+            }
             var remaining = amount;
             // OrderBy is stable: persisted creation order breaks equal due-date ties, not lexicographic entity numbers.
             foreach (var arrear in state.Arrears.OrderBy(x => x.DueIso, StringComparer.Ordinal))
