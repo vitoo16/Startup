@@ -1835,7 +1835,7 @@ internal static class Program
                         right!.Snapshot().Revision == originalRevision,
                         "cold reads must preserve original revision");
                     _ = left.Snapshot();
-                    _ = right.ReadBusinesses();
+                    _ = right!.ReadBusinesses();
                     Assert(File.ReadAllBytes(leftPath).SequenceEqual(source.Wire) &&
                         File.ReadAllBytes(rightPath).SequenceEqual(source.Wire),
                         "cold-read migrated historical source must not rewrite original wire");
