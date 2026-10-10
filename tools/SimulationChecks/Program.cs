@@ -306,6 +306,20 @@ internal static class Program
             True(reemployed.CurrentEmployment!.EmploymentId !=
                 reemployed.PreviousEmployments.Single().EmploymentId);
         });
+        Check("M12 onboarding topics are stable, ordered, unique and complete", () =>
+        {
+            Equal(1, OnboardingGuideCatalog.Version);
+            Equal(5, OnboardingGuideCatalog.Topics.Count);
+            True(OnboardingGuideCatalog.Topics.Distinct(StringComparer.Ordinal).Count() ==
+                OnboardingGuideCatalog.Topics.Count);
+            Equal("onboarding.skills.free", OnboardingGuideCatalog.At(0));
+            Equal("onboarding.study.paid", OnboardingGuideCatalog.At(1));
+            Equal("onboarding.business.compatibility", OnboardingGuideCatalog.At(2));
+            Equal("onboarding.time.automatic", OnboardingGuideCatalog.At(3));
+            Equal("onboarding.resign.not-forced", OnboardingGuideCatalog.At(4));
+            Throws(() => OnboardingGuideCatalog.At(-1));
+            Throws(() => OnboardingGuideCatalog.At(5));
+        });
         Check("M12 dashboard projects six authored skills, course costs and financial claims without writes", () =>
         {
             var f = new Fixture(); f.Create();

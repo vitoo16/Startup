@@ -56,6 +56,17 @@ namespace StartupLife.Presentation
         private TMP_Text arrears = null!;
         private TMP_Text business = null!;
         private TMP_Text profile = null!;
+        private TMP_Text guideTitle = null!;
+        private TMP_Text guideBody = null!;
+        private TMP_Text textScaleLabel = null!;
+        private Button previousGuide = null!;
+        private Button nextGuide = null!;
+        private Button finishGuide = null!;
+        private int guideIndex;
+        private float textScale = 1f;
+        private readonly Dictionary<TMP_Text, float> originalFontSizes = new Dictionary<TMP_Text, float>();
+        private const string TextScalePreference = "startup-life.ui.text-scale.v1";
+        private const string TutorialPreferencePrefix = "startup-life.ui.guide.v";
 
         public static LifeDashboardOverlay Install(LifeScreenViewController view,
             Func<LifeDashboardSnapshot> read, TMP_Text fontSource)
@@ -175,7 +186,96 @@ namespace StartupLife.Presentation
                     career.PreviousEmployments.Count.ToString(CultureInfo.InvariantCulture) +
                 "\nSố doanh nghiệp đang hoạt động: " +
                     career.ActiveBusinessCount.ToString(CultureInfo.InvariantCulture);
+            RefreshGuidance(model.Game.RunId);
+            textScaleLabel.text = "Cỡ chữ giao diện: " +
+                Math.Round(textScale * 100f).ToString(CultureInfo.InvariantCulture) + "%";
         }
+
+        private static string GuidePreference(string runId) =>
+            TutorialPreferencePrefix +
+            OnboardingGuideCatalog.Version.ToString(CultureInfo.InvariantCulture) +
+            "." + runId;
+
+        private void RefreshGuidance(string runId)
+        {
+            var completed = PlayerPrefs.GetInt(GuidePreference(runId), 0) ==
+                OnboardingGuideCatalog.Version;
+            var key = OnboardingGuideCatalog.At(guideIndex);
+            guideTitle.text = completed ? "Đã xem hướng dẫn" :
+                "Bước " + (guideIndex + 1).ToString(CultureInfo.InvariantCulture) +
+                "/" + OnboardingGuideCatalog.Topics.Count.ToString(CultureInfo.InvariantCulture) +
+                " · " + GuideHeading(key);
+            guideBody.text = completed
+                ? "Bạn có thể xem lại hướng dẫn bất kỳ lúc nào."
+                : GuideExplanation(key);
+            previousGuide.interactable = !completed && guideIndex > 0;
+            nextGuide.interactable = !completed &&
+                guideIndex < OnboardingGuideCatalog.Topics.Count - 1;
+            finishGuide.interactable = !completed;
+        }
+
+        private void ChangeGuide(int delta)
+        {
+            guideIndex = Mathf.Clamp(guideIndex + delta, 0,
+                OnboardingGuideCatalog.Topics.Count - 1);
+            Refresh();
+        }
+
+        private void CompleteGuide()
+        {
+            var model = reader();
+            PlayerPrefs.SetInt(GuidePreference(model.Game.RunId), OnboardingGuideCatalog.Version);
+            PlayerPrefs.Save();
+            Refresh();
+        }
+
+        private void ReplayGuide()
+        {
+            var model = reader();
+            guideIndex = 0;
+            PlayerPrefs.DeleteKey(GuidePreference(model.Game.RunId));
+            PlayerPrefs.Save();
+            Refresh();
+        }
+
+        private void ChangeTextScale(float step)
+        {
+            textScale = Mathf.Clamp(
+                (float)Math.Round((textScale + step) * 10f) / 10f, 0.9f, 1.2f);
+            PlayerPrefs.SetFloat(TextScalePreference, textScale);
+            PlayerPrefs.Save();
+            foreach (var item in originalFontSizes)
+                if (item.Key) item.Key.fontSize = item.Value * textScale;
+            Refresh();
+        }
+
+        // First-playable Vietnamese fallback strings. Before release, transfer
+        // these whole sentences into the FirstPlayableUI string table with
+        // ICU variables; never concatenate translated fragments.
+        private static string GuideHeading(string key) => key switch
+        {
+            "onboarding.skills.free" => "Kỹ năng có thể luyện miễn phí",
+            "onboarding.study.paid" => "Khóa học cần học phí",
+            "onboarding.business.compatibility" => "Chọn kinh doanh phù hợp",
+            "onboarding.time.automatic" => "Lịch được phân bổ tự động",
+            "onboarding.resign.not-forced" => "Nghỉ việc không bắt buộc khởi nghiệp",
+            _ => throw new ArgumentOutOfRangeException(nameof(key))
+        };
+
+        private static string GuideExplanation(string key) => key switch
+        {
+            "onboarding.skills.free" =>
+                "Đi làm và trải nghiệm có thể tăng kỹ năng miễn phí. Bạn không cần mua khóa học để bắt đầu học hỏi.",
+            "onboarding.study.paid" =>
+                "Khóa học có giá và yêu cầu riêng. Xem học phí, thời lượng và trình độ trước khi mua; học mới tiêu tốn thời gian.",
+            "onboarding.business.compatibility" =>
+                "Một số nghề có thể kinh doanh thêm buổi tối. Quầy cà phê cần thời gian trực tiếp ban ngày và không phù hợp khi còn làm toàn thời gian.",
+            "onboarding.time.automatic" =>
+                "Game tự chia thời gian cho công việc và các doanh nghiệp. Xem thời gian phân bổ trước khi mở thêm; không cần tự xếp lịch từng giờ.",
+            "onboarding.resign.not-forced" =>
+                "Nghỉ việc giúp giải phóng thời gian, nhưng không bắt buộc mở doanh nghiệp. Bạn có thể học, tìm việc lại hoặc khởi nghiệp khi đã sẵn sàng.",
+            _ => throw new ArgumentOutOfRangeException(nameof(key))
+        };
 
         private void OpenBusiness()
         {
@@ -185,6 +285,7 @@ namespace StartupLife.Presentation
 
         private void Build()
         {
+            textScale = Mathf.Clamp(PlayerPrefs.GetFloat(TextScalePreference, 1f), 0.9f, 1.2f);
             var open = ButtonNode("LifeDashboardButton", "Tổng quan", transform, Open);
             var openLayout = open.GetComponent<LayoutElement>();
             openLayout.ignoreLayout = true;
@@ -331,6 +432,23 @@ namespace StartupLife.Presentation
             TextNode("LifeProfileHelp", profilePage,
                 "Bạn có thể làm việc, học kỹ năng và khởi nghiệp theo tốc độ của mình.",
                 28, Muted);
+            Subheading(profilePage, "Cài đặt hiển thị");
+            textScaleLabel = TextNode("LifeTextScaleValue", profilePage, "", 30, Ink);
+            ButtonNode("LifeTextSmallerButton", "Chữ nhỏ hơn",
+                profilePage, () => ChangeTextScale(-0.1f));
+            ButtonNode("LifeTextLargerButton", "Chữ lớn hơn",
+                profilePage, () => ChangeTextScale(0.1f));
+            Subheading(profilePage, "Hướng dẫn hành trình");
+            guideTitle = TextNode("LifeGuideTitle", profilePage, "", 32, Accent);
+            guideBody = TextNode("LifeGuideBody", profilePage, "", 29, Ink);
+            previousGuide = ButtonNode("LifeGuidePreviousButton", "Bước trước",
+                profilePage, () => ChangeGuide(-1)).GetComponent<Button>();
+            nextGuide = ButtonNode("LifeGuideNextButton", "Bước tiếp",
+                profilePage, () => ChangeGuide(1)).GetComponent<Button>();
+            finishGuide = ButtonNode("LifeGuideFinishButton", "Đã hiểu",
+                profilePage, CompleteGuide).GetComponent<Button>();
+            ButtonNode("LifeGuideReplayButton", "Xem lại hướng dẫn",
+                profilePage, ReplayGuide);
             panel.SetActive(false);
         }
 
@@ -363,7 +481,8 @@ namespace StartupLife.Presentation
             var node = Node(name, parent, typeof(TextMeshProUGUI), typeof(LayoutElement));
             var label = node.GetComponent<TextMeshProUGUI>();
             label.font = font;
-            label.fontSize = size;
+            originalFontSizes.Add(label, size);
+            label.fontSize = size * textScale;
             label.color = color;
             label.enableWordWrapping = true;
             label.overflowMode = TextOverflowModes.Overflow;

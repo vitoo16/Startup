@@ -17,11 +17,18 @@ namespace StartupLife.Tests.PlayMode
     public sealed class FirstPlayableFlowTests
     {
         private readonly Dictionary<string, byte[]> preservedSaves = new Dictionary<string, byte[]>();
+        private const string FontScaleKey = "startup-life.ui.text-scale.v1";
+        private bool hadFontScale;
+        private float savedFontScale;
+        private readonly Dictionary<string, int?> savedGuidePreferences = new Dictionary<string, int?>();
 
         [UnitySetUp]
         public IEnumerator SetUp()
         {
             preservedSaves.Clear();
+            savedGuidePreferences.Clear();
+            hadFontScale = PlayerPrefs.HasKey(FontScaleKey);
+            savedFontScale = PlayerPrefs.GetFloat(FontScaleKey, 1f);
             if (Directory.Exists(UnityEngine.Application.persistentDataPath))
                 foreach (var path in Directory.GetFiles(UnityEngine.Application.persistentDataPath, "startup-life.json*"))
                     preservedSaves.Add(path, File.ReadAllBytes(path));
@@ -37,7 +44,75 @@ namespace StartupLife.Tests.PlayMode
             DeleteSave();
             foreach (var save in preservedSaves) File.WriteAllBytes(save.Key, save.Value);
             preservedSaves.Clear();
+            if (hadFontScale) PlayerPrefs.SetFloat(FontScaleKey, savedFontScale);
+            else PlayerPrefs.DeleteKey(FontScaleKey);
+            foreach (var setting in savedGuidePreferences)
+            {
+                if (setting.Value.HasValue) PlayerPrefs.SetInt(setting.Key, setting.Value.Value);
+                else PlayerPrefs.DeleteKey(setting.Key);
+            }
+            savedGuidePreferences.Clear();
+            PlayerPrefs.Save();
             yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator ProfileGuideAndTextSizePersistWithoutGameplayCommands()
+        {
+            PlayerPrefs.SetFloat(FontScaleKey, 1f);
+            PlayerPrefs.Save();
+            var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
+            while (!load.isDone) yield return null;
+            yield return LocalizationSettings.InitializationOperation;
+            yield return null;
+            var bootstrap = Object.FindAnyObjectByType<StartupLifeBootstrapper>();
+            Assert.That(bootstrap.IsReady, Is.True);
+            GameObject.Find("CharacterNameInput").GetComponent<TMP_InputField>().text = "Hồ Sơ Việt";
+            GameObject.Find("CreateCharacterButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            yield return null;
+            var runKey = "startup-life.ui.guide.v1." + bootstrap.Flow.Refresh().RunId;
+            savedGuidePreferences[runKey] = PlayerPrefs.HasKey(runKey)
+                ? PlayerPrefs.GetInt(runKey) : (int?)null;
+            PlayerPrefs.DeleteKey(runKey);
+            PlayerPrefs.Save();
+
+            var priorRevision = bootstrap.Snapshot.Revision;
+            var priorCash = bootstrap.Snapshot.Cash;
+            GameObject.Find("LifeDashboardButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            GameObject.Find("LifeTabProfileButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            var firstStep = GameObject.Find("LifeGuideTitle").GetComponent<TMP_Text>();
+            var guideText = GameObject.Find("LifeGuideBody").GetComponent<TMP_Text>();
+            Assert.That(firstStep.text, Does.Contain("1/5"));
+            Assert.That(guideText.text, Does.Contain("miễn phí"));
+            GameObject.Find("LifeGuideNextButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            Assert.That(firstStep.text, Does.Contain("2/5"));
+            Assert.That(guideText.text, Does.Contain("học phí"));
+            var beforeFont = guideText.fontSize;
+            GameObject.Find("LifeTextLargerButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            Assert.That(guideText.fontSize, Is.GreaterThan(beforeFont));
+            Assert.That(PlayerPrefs.GetFloat(FontScaleKey), Is.EqualTo(1.1f).Within(0.01f));
+            GameObject.Find("LifeGuideFinishButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            Assert.That(PlayerPrefs.GetInt(runKey), Is.EqualTo(1));
+            Assert.That(firstStep.text, Does.Contain("Đã xem"));
+            GameObject.Find("LifeDashboardCloseButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            GameObject.Find("LifeDashboardButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            Assert.That(firstStep.text, Does.Contain("Đã xem"),
+                "Closing and reopening must preserve run-specific guide completion");
+            GameObject.Find("LifeGuideReplayButton").GetComponent<UnityEngine.UI.Button>()
+                .onClick.Invoke();
+            Assert.That(firstStep.text, Does.Contain("1/5"));
+            Assert.That(PlayerPrefs.HasKey(runKey), Is.False);
+            Assert.That(bootstrap.Snapshot.Revision, Is.EqualTo(priorRevision));
+            Assert.That(bootstrap.Snapshot.Cash, Is.EqualTo(priorCash));
+            LogAssert.NoUnexpectedReceived();
         }
 
         [UnityTest]
