@@ -420,6 +420,51 @@ internal static class Program
         });
 
 
+
+        Check("v3 price changes are next-day, overwritten, and can be cleared", () =>
+        {
+            var initial=new BusinessProspectivePolicy("i",EconomicOperationStatus.Auto,
+                PricingPosture.Standard);
+            var premium=BusinessPolicyTransitions.RequestPrice(initial,PricingPosture.Premium,
+                "2026-10-10","price-1");
+            Assert(premium.EffectivePricing==PricingPosture.Standard,"same day keeps old selling price");
+            Assert(premium.PendingPricing==PricingPosture.Premium &&
+                premium.PendingPricingEffectiveIso=="2026-10-11","price pending next simulation day");
+            var budget=BusinessPolicyTransitions.RequestPrice(premium,PricingPosture.Budget,
+                "2026-10-10","price-2");
+            Assert(budget.PendingPricing==PricingPosture.Budget,"latest same-day pricing overwrites pending");
+            var cancelled=BusinessPolicyTransitions.RequestPrice(budget,PricingPosture.Standard,
+                "2026-10-10","price-3");
+            Assert(cancelled.PendingPricing==null && cancelled.EffectivePricing==PricingPosture.Standard,
+                "request effective price cancels pending");
+            var beforeMidnight=BusinessPolicyTransitions.ActivateNewDate(budget,"2026-10-10","boundary-1");
+            Assert(beforeMidnight.EffectivePricing==PricingPosture.Standard,"no same-day promotion");
+            var nextDay=BusinessPolicyTransitions.ActivateNewDate(budget,"2026-10-11","boundary-2");
+            Assert(nextDay.EffectivePricing==PricingPosture.Budget && nextDay.PendingPricing==null,
+                "pending takes effect only next day");
+        });
+
+        Check("v3 Pause immediate, Resume next day, Close terminal with no fee fabricated", () =>
+        {
+            var initial=new BusinessProspectivePolicy("i",EconomicOperationStatus.Auto,
+                PricingPosture.Standard);
+            var paused=BusinessPolicyTransitions.Pause(initial,"pause-1");
+            Assert(!paused.IsOperationEligible && paused.EffectiveStatus==EconomicOperationStatus.Paused,
+                "pause immediately ends future operations");
+            var resume=BusinessPolicyTransitions.RequestResume(paused,"2026-10-10","resume-1");
+            Assert(!resume.IsOperationEligible && resume.PendingResumeEffectiveIso=="2026-10-11",
+                "resume must wait for next date");
+            var promoted=BusinessPolicyTransitions.ActivateNewDate(resume,"2026-10-11","day-change");
+            Assert(promoted.IsOperationEligible && !promoted.PendingResume,"resume next day");
+            var closed=BusinessPolicyTransitions.Close(resume,"close-1");
+            Assert(closed.EffectiveStatus==EconomicOperationStatus.Closed &&
+                !closed.PendingResume && closed.PendingPricing==null, "terminal close cancels pending");
+            Throws<ArgumentException>(()=>BusinessPolicyTransitions.RequestPrice(closed,
+                PricingPosture.Budget,"2026-10-11","illegal"));
+            Throws<ArgumentException>(()=>BusinessPolicyTransitions.RequestResume(closed,
+                "2026-10-11","illegal"));
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
