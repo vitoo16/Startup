@@ -803,6 +803,46 @@ internal static class Program
                 "frozen old capital bounds must remain v2");
         });
 
+
+        Check("frozen v2 evaluator preserves immediate pricing and original command effects", () =>
+        {
+            var resolver = new BundledHistoricalV2ContentResolver();
+            Assert(resolver.TryResolve(BundledHistoricalV2ContentResolver.ArchiveId,
+                BundledHistoricalV2ContentResolver.ContentVersion,out var c) && c!=null,
+                "missing historical engine content");
+            var content = c!;
+            var seed = GameSession.NewState(content,"archived-v2-parity",324154UL,new SimDate(2026,9,1));
+            var bytes = JsonSaveSerializer.WriteObject(seed);
+            var active = JsonSaveSerializer.ReadObject<GameState>(bytes);
+            var historic = JsonSaveSerializer.ReadObject<GameState>(bytes);
+            var normalEngine = new SimulationEngine(content);
+            var frozenEngine = new ArchivedV2SimulationEngine(content);
+            var create = new GameCommand(CommandKind.CreateCharacter,"fresh",25,
+                "Archived Player","base.female");
+            Assert(normalEngine.Evaluate(active,create,"archived-v2-parity/op/1") ==
+                frozenEngine.Evaluate(historic,create,"archived-v2-parity/op/1"),
+                "create differs");
+            Assert(JsonSaveSerializer.WriteObject(active).SequenceEqual(JsonSaveSerializer.WriteObject(historic)),
+                "v2 initial salary/living/character effects differ");
+            var launch = new GameCommand(CommandKind.LaunchBusiness,"freelance-service",100,
+                appearanceId:"v1");
+            Assert(normalEngine.Evaluate(active,launch,"archived-v2-parity/op/2") ==
+                frozenEngine.Evaluate(historic,launch,"archived-v2-parity/op/2"),
+                "v2 launch differs");
+            Assert(active.Businesses.Single().InstanceId==historic.Businesses.Single().InstanceId,
+                "frozen v2 business identity differs");
+            var price = new GameCommand(CommandKind.SetBusinessPricing,
+                active.Businesses.Single().InstanceId,(int)PricingPosture.Premium);
+            Assert(normalEngine.Evaluate(active,price,"archived-v2-parity/op/3") ==
+                frozenEngine.Evaluate(historic,price,"archived-v2-parity/op/3"),
+                "v2 pricing command differs");
+            Assert(active.Businesses.Single().PricingPosture==PricingPosture.Premium &&
+                historic.Businesses.Single().PricingPosture==PricingPosture.Premium,
+                "historical v2 pricing MUST be immediate");
+            Assert(JsonSaveSerializer.WriteObject(active).SequenceEqual(JsonSaveSerializer.WriteObject(historic)),
+                "frozen evaluator and original evaluator results differ");
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)

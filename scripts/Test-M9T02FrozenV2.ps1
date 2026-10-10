@@ -27,6 +27,21 @@ $expectedSha256 = [ordered]@{
     'JsonSaveSerializer.cs.txt' = 'ac4d8def1e01841ba8cd65a76f122962993f228cb483c72db7f390b8381450d4'
     'SimulationEngine.cs.txt' = '871d51d694e1ad5451a08d1eb120f3ccf9ddff7e42d0b4eb247250776ad7a0e0'
 }
+# Reconstructed archived evaluator may differ only by the two class identifiers.
+# Any other content mutation is a hard error, even when gameplay CI still passes.
+$frozenEvaluatorPath = Join-Path $root 'Assets/StartupLife/Scripts/Simulation/ArchivedV2SimulationEngine.cs'
+$frozenSourcePath = Join-Path $root ($archive + 'SimulationEngine.cs.txt')
+$frozenRuntime = [IO.File]::ReadAllText($frozenEvaluatorPath).Replace("`r`n", "`n")
+$frozenBaseline = [IO.File]::ReadAllText($frozenSourcePath).Replace("`r`n", "`n")
+$begin = $frozenRuntime.IndexOf('#nullable enable', [StringComparison]::Ordinal)
+if ($begin -lt 0) { throw 'Frozen v2 evaluator missing original C# source marker' }
+$renamed = [regex]::Replace($frozenBaseline, '\bSimulationRestoreValidator\b','ArchivedV2RestoreValidator')
+$renamed = [regex]::Replace($renamed, '\bSimulationEngine\b','ArchivedV2SimulationEngine')
+if (-not [string]::Equals($frozenRuntime.Substring($begin),$renamed,[StringComparison]::Ordinal)) {
+    throw 'Frozen v2 evaluator changed relative to byte-archived baseline beyond identifier renames'
+}
+Write-Output 'PASS frozen v2 runtime evaluator exactly matches original semantics (identifier renames only)'
+
 $results = [System.Collections.Generic.List[object]]::new()
 foreach ($name in $expected.Keys) {
     $relative = $archive + $name
