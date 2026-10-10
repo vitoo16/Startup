@@ -3,6 +3,9 @@ using System.Globalization;
 using TMPro;
 using UnityEngine;
 using StartupLife.Core;
+using StartupLife.Application;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace StartupLife.Presentation
 {
@@ -13,6 +16,7 @@ namespace StartupLife.Presentation
         [SerializeField] private TMP_Text dateValue;
         [SerializeField] private TMP_Text timeValue;
         [SerializeField] private TMP_Text cashValue;
+        [SerializeField] private TMP_Text lastSettledFinanceValue;
         [SerializeField] private TMP_Text rankValue;
         [SerializeField] private TMP_Text courseProgressValue;
         [SerializeField] private LocalizedKeyLabel careerValue;
@@ -29,6 +33,13 @@ namespace StartupLife.Presentation
         private WorkShiftPlaybackController workPlayback;
         private DaySummaryModal daySummary;
         private StudyActionController studyActions;
+        private Func<IReadOnlyList<BusinessFinanceDaySnapshot>> financeReader;
+
+        public void BindCommittedFinance(Func<IReadOnlyList<BusinessFinanceDaySnapshot>> readCommittedFinance)
+        {
+            financeReader = readCommittedFinance ?? throw new ArgumentNullException(nameof(readCommittedFinance));
+            Refresh();
+        }
 
         public void Bind(
             FirstPlayableFlow coordinator,
@@ -67,6 +78,16 @@ namespace StartupLife.Presentation
                                  minute.ToString("00", CultureInfo.InvariantCulture);
             }
             if (cashValue) cashValue.text = snapshot.Cash.ToString("N0", culture) + " ₫";
+            if (lastSettledFinanceValue)
+            {
+                var settled = financeReader?.Invoke()?.OrderByDescending(x => x.DateIso,
+                    StringComparer.Ordinal).FirstOrDefault();
+                lastSettledFinanceValue.text = settled == null
+                    ? "Chưa có quyết toán kinh doanh"
+                    : settled.DateIso + " · Doanh thu " +
+                      settled.GrossRevenueVnd.ToString("N0", culture) + " ₫ · Lợi nhuận " +
+                      settled.ProfitVnd.ToString("N0", culture) + " ₫";
+            }
             if (rankValue) rankValue.text = string.IsNullOrEmpty(snapshot.CareerId)
                 ? "—"
                 : (snapshot.Rank + 1).ToString(CultureInfo.InvariantCulture);
@@ -140,6 +161,39 @@ namespace StartupLife.Presentation
         {
             Publish(flow.Resign().Command, "status.career.resigned");
         }
+
+        // UnityEvent bindings for optional business management UI. No implicit
+        // cost or simulation step is executed when this view merely refreshes.
+        public void LaunchOnlineStore() => Publish(
+            flow.LaunchBusiness("online-store", "v1", 100),
+            "status.business.launched");
+
+        public void LaunchHomeFoodPreorder() => Publish(
+            flow.LaunchBusiness("home-food-preorder", "v1", 100),
+            "status.business.launched");
+
+        public void LaunchFreelanceService() => Publish(
+            flow.LaunchBusiness("freelance-service", "v1", 100),
+            "status.business.launched");
+
+        public void LaunchCoffeeKiosk() => Publish(
+            flow.LaunchBusiness("coffee-kiosk", "v1", 100),
+            "status.business.launched");
+
+        public void PauseBusiness(string instanceId) => Publish(
+            flow.PauseBusiness(instanceId), "status.business.paused");
+
+        public void ResumeBusiness(string instanceId) => Publish(
+            flow.ResumeBusiness(instanceId), "status.business.resumed");
+
+        public void SetBusinessPricing(string instanceId, PricingPosture pricing) => Publish(
+            flow.SetBusinessPricing(instanceId, pricing), "status.business.pricing");
+
+        public void ReinvestBusiness(string instanceId, int amount) => Publish(
+            flow.ReinvestBusiness(instanceId, amount), "status.business.reinvested");
+
+        public void CloseBusiness(string instanceId) => Publish(
+            flow.CloseBusiness(instanceId), "status.business.closed");
 
         private void Publish(CommandResult result, string successKey)
         {

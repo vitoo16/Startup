@@ -90,6 +90,7 @@ namespace StartupLife.Presentation
                 flow = new FirstPlayableFlow(session, new GuidCommandIdSource());
                 characterCreation.Bind(flow, RefreshMode);
                 lifeScreen.Bind(flow, content, workPlayback, daySummary);
+                lifeScreen.BindCommittedFinance(() => session.ReadCommittedFinance());
                 lifecycle = new FirstPlayableLifecycle(flow, workPlayback, RefreshMode);
                 daySummary.Hide();
                 IsReady = true;
