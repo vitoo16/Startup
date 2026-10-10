@@ -41,7 +41,13 @@ Add-Check 'Duplicate command seam is removed' (-not (Test-Path (Join-Path $repos
 Add-Check 'Duplicate presentation harness is removed' (-not (Test-Path (Join-Path $repositoryRoot 'tools/PresentationFlowChecks/PresentationFlowChecks.csproj'))) 'unique assertions merged into PresentationChecks'
 
 Add-Check 'Bootstrap requires authored Content asset' ($bootstrap -match 'StartupLifeContentCatalogAsset\s+contentAsset') 'content asset must be serialized into composition root'
-Add-Check 'Bootstrap builds Json serializer' ($bootstrap -match 'new\s+JsonSaveSerializer') 'expected JsonSaveSerializer'
+Add-Check 'Bootstrap builds approved save pipeline' (
+    ($bootstrap -match 'new\s+JsonSaveSerializer') -or
+    (($bootstrap -match 'new\s+V3SaveCompatibilitySerializer') -and
+     ($bootstrap -match 'new\s+V2ToV3Migration') -and
+     ($bootstrap -match 'new\s+StagedV3SaveSerializer') -and
+     ($bootstrap -match 'new\s+VersionedReceiptReplay'))
+) 'expected legacy v2 or complete replay-checked versioned v3 serializer'
 Add-Check 'Bootstrap uses atomic local store' ($bootstrap -match 'new\s+AtomicFileSaveStore') 'expected AtomicFileSaveStore'
 Add-Check 'Bootstrap restores before creating a new run' ($bootstrap -match 'GameSession\.TryRestore') 'expected TryRestore'
 Add-Check 'Bootstrap does not hardcode first playable catalog' (-not ($bootstrap -match 'FirstPlayableContentTemplate|new\s+ContentCatalog')) 'Presentation must consume Content asset'
