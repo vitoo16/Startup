@@ -157,8 +157,13 @@ internal static class Program
                 "no fabricated per-operation");
             Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.PerOperatingDay),"b1",
                 "2026-02-01",true,committedOperationId:"op8")!=null,"per-operating-day due");
-            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.Daily),"b1","2026-02-01",false)==null,
-                "no service entitlement");
+            Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.Daily),"b1","2026-02-01",false)!=null,
+                "contractual fixed daily charge survives pause");
+            var dayMetered = new BusinessObligationDefinition("metered","v1","online-store","v1",
+                ObligationCadence.Daily,ObligationProrationPolicy.DayMetered,
+                ObligationClosurePolicy.CancellableAfterServiceDate,"2026-01-31",null,100,false);
+            Assert(BusinessObligationScheduler.DueOnDate(dayMetered,"b1","2026-02-01",false)==null,
+                "day-metered recurrence requires eligible service");
             Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.Daily),"b1","2026-02-01",true)!=null,
                 "day-metered daily");
             Assert(BusinessObligationScheduler.DueOnDate(Definition(ObligationCadence.Weekly),"b1","2026-02-07",false)!=null,
@@ -1211,6 +1216,111 @@ internal static class Program
             var soldTamper=JsonSaveSerializer.ReadObject<EconomicV3Records>(bytes);
             soldTamper.Provenance.CostReservations[0].Status=V3CostReservationStatus.Consumed;
             Throws<ArgumentException>(()=>soldTamper.Validate());
+        });
+
+
+        Check("v3 invoice persists one payable and income clears oldest without second debit", () =>
+        {
+            var candidate=new GameState{SaveVersion=3,RunId="run",DateIso="2026-10-10",
+                Minute=0,Cash=40,Businesses=new List<BusinessState>{
+                    new BusinessState{InstanceId="run/business/1",DefinitionId="online-store",
+                        DefinitionRevision="v1",OpenedIso="2026-10-10",OpenedMinute=0,
+                        InitialInvestment=100,PricingPosture=PricingPosture.Standard}
+                }};
+            var records=EconomicV3Records.Empty();
+            var fixedDaily=new BusinessObligationDefinition("rent","v1","online-store","rent-v1",
+                ObligationCadence.Daily,ObligationProrationPolicy.FullContractual,
+                ObligationClosurePolicy.EnforceableThroughContractEnd,"2026-10-10",null,
+                100,true);
+            var opened=V3ObligationTransactions.OpenDue(candidate,records,new[]{fixedDaily},
+                new Dictionary<string,bool>(), "run/op/open");
+            Assert(opened.Count==1 && opened[0].AmountDueVnd==100,"contractual invoice due during pause");
+            Assert(records.CommittedObligationIds.Single()==opened[0].Id,"invoice indexed once");
+            Assert(candidate.Cash==40,"invoice accrual not a cash debit");
+            Assert(V3ObligationTransactions.PayDue(candidate,records,"run/op/payment")==40,
+                "pay only available 40 at due");
+            Assert(candidate.Cash==0 && records.ObligationTranches.Single().OutstandingVnd==60,
+                "source invoice and remaining debt persist once");
+            var income=V3ObligationTransactions.CreditIncome(candidate,records,"run/op/sale",
+                80,"business.revenue","run/business/1");
+            Assert(income.WithheldToOldestArrearsVnd==60 && income.NetCreditedToCashVnd==20,
+                "income80 pays60 and credits20");
+            Assert(candidate.Cash==20 && records.ObligationTranches.Single().PaidVnd==100 &&
+                records.ObligationTranches.Single().OutstandingVnd==0,
+                "old fixed invoice cleared with no second cash debit");
+            Assert(records.V3RecognizedRevenueVnd==80 &&
+                records.V3AppliedToArrearsVnd==60 && records.V3NetBusinessCreditVnd==20,
+                "revenue = arrears + cash");
+            Assert(candidate.Ledger.Sum(x=>x.CashDelta)==20,"wallet ledger conserved 40-40+20");
+            records.Validate();
+            Throws<ArgumentException>(()=>V3ObligationTransactions.OpenDue(candidate,records,
+                new[]{fixedDaily},new Dictionary<string,bool>(),"run/op/duplicate"));
+            candidate.DateIso="2026-10-11"; candidate.Minute=0;
+            candidate.Businesses[0].ClosedIso="2026-10-10";
+            candidate.Businesses[0].ClosedMinute=600;
+            Assert(V3ObligationTransactions.OpenDue(candidate,records,new[]{fixedDaily},
+                new Dictionary<string,bool>(),"run/op/next").Count==1,
+                "next contractual liability survives closed status");
+            Assert(records.ObligationTranches.Count==2,"one per contractual service date");
+            records.Validate();
+        });
+
+        Check("persisted v3 old-day settlement conserves actual wallet and invoice profit", () =>
+        {
+            var catalog=M9T02FunctionalEconomy.Create();
+            var date="2026-10-09";
+            var candidate=new GameState{SaveVersion=3,RunId="run",DateIso=date,
+                Minute=1080,Cash=160020,Businesses=new List<BusinessState>{
+                    new BusinessState{InstanceId="i",DefinitionId="online-store",
+                        DefinitionRevision="v1",OpenedIso=date,OpenedMinute=0,
+                        InitialInvestment=100,PricingPosture=PricingPosture.Standard}
+                }};
+            var records=EconomicV3Records.Empty();
+            records.RulesetRevision=catalog.RulesetRevision;
+            var fixedDaily=new BusinessObligationDefinition("rent","v1","online-store","rent-v1",
+                ObligationCadence.Daily,ObligationProrationPolicy.FullContractual,
+                ObligationClosurePolicy.EnforceableThroughContractEnd,date,null,20,true);
+            V3ObligationTransactions.OpenDue(candidate,records,new[]{fixedDaily},
+                new Dictionary<string,bool>{{"i",true}},"op/open");
+            Assert(V3ObligationTransactions.PayDue(candidate,records,"op/pay")==20,"pay fixed first");
+            Assert(candidate.Cash==160000,"opening variable budget is exact preexisting cash");
+            var pools=catalog.Pools.Values.Select(x=>
+                CustomerDemandCalculator.OpeningSupply(date,catalog,x.PoolId));
+            var business=new BusinessMarketEpochParticipant(
+                new BusinessTimeWalletCandidate("online-store","i",
+                    BusinessOperationMode.SideHustleCompatible,120,8,0,0,18,52000,
+                    Enumerable.Range(1080,120)),
+                new BusinessDemandCandidate("i","online-store",PricingPosture.Standard),
+                new BusinessProspectivePolicy("i",EconomicOperationStatus.Auto,
+                    PricingPosture.Standard),true);
+            var plan=BusinessMarketEpochPlanner.Freeze(catalog,"epoch","2026-10-09",
+                candidate.Cash,pools,Array.Empty<MarketFulfillmentUnit>(),
+                new[]{business},Array.Empty<int>());
+            V3EpochTransactions.Freeze(candidate,records,plan,"op/freeze",1080);
+            V3EpochTransactions.ConsumeInterval(candidate,records,1080,1110,"op/advance-1");
+            V3EpochTransactions.ConsumeInterval(candidate,records,1110,1125,"op/advance-2");
+            candidate.Minute=1125;
+            Assert(candidate.Cash==4000,"cash already paid three times 52000");
+            Assert(records.Provenance.Fulfillments.Count==3,"three sale source lines earned");
+            var settlement=V3MidnightTransactions.SettleOldDate(candidate,records,date,"op/midnight");
+            Assert(settlement.GrossVnd==285000,"three units at effective price95000");
+            Assert(settlement.VariablePaidVnd==156000 &&
+                settlement.FixedRecognizedVnd==20,"variable and fixed source amounts");
+            Assert(settlement.ProfitVnd==128980,"profit = gross - var - fixed");
+            Assert(settlement.AppliedToArrearsVnd==0 &&
+                settlement.NetCashCreditVnd==285000,"no debt all old-day revenue paid");
+            Assert(candidate.Cash==289000,"160020-20-156000+285000=289000");
+            Assert(records.V3RecognizedRevenueVnd==285000 &&
+                records.V3PaidVariableVnd==156000 &&
+                records.V3RecognizedFixedVnd==20,"stored economic totals conserve");
+            Assert(records.Provenance.ActiveEpoch==null,"midnight releases future uncommitted units");
+            Assert(records.SettledDayIds.Single()==settlement.Id,"settlement exactly once");
+            records.Validate();
+            var cold=JsonSaveSerializer.ReadObject<EconomicV3Records>(
+                JsonSaveSerializer.WriteObject(records));
+            cold.Validate();
+            Throws<ArgumentException>(()=>V3MidnightTransactions.SettleOldDate(candidate,cold,
+                date,"op/retry"));
         });
 
         var count=passed+Failures.Count;
