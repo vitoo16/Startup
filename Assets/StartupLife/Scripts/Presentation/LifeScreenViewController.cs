@@ -187,35 +187,35 @@ namespace StartupLife.Presentation
         // UnityEvent bindings for optional business management UI. No implicit
         // cost or simulation step is executed when this view merely refreshes.
         public void LaunchOnlineStore() => Publish(
-            flow.LaunchBusiness("online-store", "v1", 100),
+            flow.LaunchBusiness("online-store", "v1", 100).Command,
             "status.business.launched");
 
         public void LaunchHomeFoodPreorder() => Publish(
-            flow.LaunchBusiness("home-food-preorder", "v1", 100),
+            flow.LaunchBusiness("home-food-preorder", "v1", 100).Command,
             "status.business.launched");
 
         public void LaunchFreelanceService() => Publish(
-            flow.LaunchBusiness("freelance-service", "v1", 100),
+            flow.LaunchBusiness("freelance-service", "v1", 100).Command,
             "status.business.launched");
 
         public void LaunchCoffeeKiosk() => Publish(
-            flow.LaunchBusiness("coffee-kiosk", "v1", 100),
+            flow.LaunchBusiness("coffee-kiosk", "v1", 100).Command,
             "status.business.launched");
 
         public void PauseBusiness(string instanceId) => Publish(
-            flow.PauseBusiness(instanceId), "status.business.paused");
+            flow.PauseBusiness(instanceId).Command, "status.business.paused");
 
         public void ResumeBusiness(string instanceId) => Publish(
-            flow.ResumeBusiness(instanceId), "status.business.resumed");
+            flow.ResumeBusiness(instanceId).Command, "status.business.resumed");
 
         public void SetBusinessPricing(string instanceId, PricingPosture pricing) => Publish(
-            flow.SetBusinessPricing(instanceId, pricing), "status.business.pricing");
+            flow.SetBusinessPricing(instanceId, pricing).Command, "status.business.pricing");
 
         public void ReinvestBusiness(string instanceId, int amount) => Publish(
-            flow.ReinvestBusiness(instanceId, amount), "status.business.reinvested");
+            flow.ReinvestBusiness(instanceId, amount).Command, "status.business.reinvested");
 
         public void CloseBusiness(string instanceId) => Publish(
-            flow.CloseBusiness(instanceId), "status.business.closed");
+            flow.CloseBusiness(instanceId).Command, "status.business.closed");
 
         private void Publish(CommandResult result, string successKey)
         {
