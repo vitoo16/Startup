@@ -1438,6 +1438,15 @@ internal static class Program
                 Assert(result.Status==CommandStatus.Committed,
                     "real v3 create command must commit to atomic store: "+result.ReasonKey);
                 Assert(session.Snapshot().Revision==1,"revision one after character create");
+                var freshReadiness = session.ReadBusinessOperations();
+                Assert(freshReadiness.OwnerDay.StateRevision == freshReadiness.Portfolio.Game.Revision &&
+                    freshReadiness.LaunchOptions.Count == 4 &&
+                    freshReadiness.LaunchOptions.All(x => x.CanRequestLaunch),
+                    "authoritative same-revision v3 launch projection exposes four openable businesses");
+                var readOnlyBytes = File.ReadAllBytes(temp);
+                _ = session.ReadBusinessOperations();
+                Assert(File.ReadAllBytes(temp).SequenceEqual(readOnlyBytes),
+                    "reading readiness never writes or replans the source checkpoint");
                 Assert(store.Read().Status==LoadStatus.Valid &&
                     store.Read().SourceSchemaVersion==3,"primary is a validated schema3 save");
                 Assert(GameSession.TryRestore(content,serializer,store,
@@ -1451,6 +1460,12 @@ internal static class Program
                     "v3 live-only business must launch and replay through active content: "+launched.ReasonKey);
                 Assert(restored.ReadBusinesses().Businesses.Any(x=>x.DefinitionId=="online-store"),
                     "newly authored online-store business is available to v3 gameplay");
+                var launchedProjection = restored.ReadBusinessOperations();
+                Assert(launchedProjection.LaunchOptions.Single(x=>x.DefinitionId=="online-store").Code ==
+                    BusinessLaunchReadinessCode.BusinessTypeAlreadyActive,
+                    "duplicate owner type disabled without UI hardcoding");
+                Assert(launchedProjection.OwnedBusinesses.Single(x=>x.Business.DefinitionId=="online-store")
+                    .OwnerTime != null, "owned business has authoritative time projection");
                 Assert(store.Read().Status==LoadStatus.Valid &&
                     store.Read().State!.Businesses.Any(x=>x.DefinitionId=="online-store"),
                     "cold reloaded v3 source contains launch beyond frozen v2 business roster");
@@ -1464,6 +1479,8 @@ internal static class Program
                 var pause=restored.Execute(new CommandEnvelope("run-m9-smoke",
                     "pause-online",3,BusinessCommands.Pause(owned.InstanceId)));
                 Assert(pause.Status==CommandStatus.Committed,"v3 pause must commit: "+pause.ReasonKey);
+                Assert(!restored.ReadBusinessOperations().OwnedBusinesses.Single().CanOperateToday,
+                    "paused operation must not display eligible owner-time activity");
                 var resume=restored.Execute(new CommandEnvelope("run-m9-smoke",
                     "resume-online",4,BusinessCommands.Resume(owned.InstanceId)));
                 Assert(resume.Status==CommandStatus.Committed,"v3 next-day resume must commit: "+resume.ReasonKey);
@@ -1475,6 +1492,30 @@ internal static class Program
                 Assert(savedPolicy.Status==EconomicOperationStatusCode.Paused &&
                     savedPolicy.HasPendingResume && savedPolicy.HasPendingPricing,
                     "pending resume/price are canonical v3 persisted policy");
+                var kioskLaunch=restored.Execute(new CommandEnvelope("run-m9-smoke",
+                    "launch-kiosk",5,new GameCommand(CommandKind.LaunchBusiness,
+                        "coffee-kiosk",100,appearanceId:"v1")));
+                Assert(kioskLaunch.Status==CommandStatus.Committed,
+                    "v3 founder must launch the full-time coffee kiosk: "+kioskLaunch.ReasonKey);
+                var mixed=restored.ReadBusinessOperations();
+                var kiosk=mixed.OwnedBusinesses.Single(x=>x.Business.DefinitionId=="coffee-kiosk");
+                Assert(kiosk.Business.FixedHelper != null &&
+                    kiosk.Business.FixedHelper.ContractedDailyWageVnd==90000L,
+                    "read model projects fixed helper contract without a new salary transaction");
+                Assert(kiosk.OwnerTime != null &&
+                    kiosk.OwnerTime.Status==BusinessPlanStatus.FullyAllocated &&
+                    kiosk.OwnerTime.AllocatedOwnerMinutes==480 &&
+                    kiosk.OwnerTimeLimitedUnits==40,
+                    "daytime coffee kiosk has a contiguous 480-minute founder block");
+                var side=mixed.OwnedBusinesses.Single(x=>x.Business.DefinitionId=="online-store");
+                Assert(side.OwnerTime != null && side.OwnerTime.AllocatedOwnerMinutes==120 &&
+                    side.OwnerTimeLimitedUnits==8 && !side.CanOperateToday,
+                    "side business shares evening time but remains paused until next-day resume");
+                var kioskInterval=mixed.OwnerDay.Allocations.Single(x=>x.BusinessInstanceId==kiosk.Business.InstanceId).Interval;
+                var sideInterval=mixed.OwnerDay.Allocations.Single(x=>x.BusinessInstanceId==side.Business.InstanceId).Interval;
+                Assert(kioskInterval.EndMinute<=sideInterval.StartMinute &&
+                    kioskInterval.Duration==480 && sideInterval.Duration==120,
+                    "kiosk daytime and online evening owner allocations never overlap");
                 var retry=restored.Execute(new CommandEnvelope("run-m9-smoke","create-character",0,cmd));
                 Assert(retry.Status==CommandStatus.AlreadyCommitted,
                     "same canonical id must not duplicate the creation receipt");
@@ -1535,6 +1576,11 @@ internal static class Program
                     "operating an owned business without a job is a full-time founder");
                 Commit("accept", new GameCommand(CommandKind.AcceptJob, "developer"));
                 Assert(session.Snapshot().CareerId == "developer", "accepted career persists");
+                var blockedKiosk = session.ReadBusinessOperations().LaunchOptions.Single(x =>
+                    x.DefinitionId == "coffee-kiosk");
+                Assert(blockedKiosk.Code == BusinessLaunchReadinessCode.EmploymentIncompatible &&
+                    !blockedKiosk.CanRequestLaunch,
+                    "employed worker is clearly blocked from daytime coffee kiosk ownership");
                 Assert(session.ReadCareerBiography().Stage == CareerJourneyStage.SideBusinessOwner,
                     "employment with an active side business is not full-time founding");
                 var acceptedBytes = File.ReadAllBytes(path);
@@ -1572,6 +1618,13 @@ internal static class Program
                 Assert(founder.Stage == CareerJourneyStage.FullTimeFounder &&
                     founder.HasResignedEmployment && founder.PreviousEmployments.Count == 1,
                     "resignation with an active business transitions to founder without discarding biography");
+                var availableKiosk = session.ReadBusinessOperations().LaunchOptions.Single(x =>
+                    x.DefinitionId == "coffee-kiosk");
+                Assert(availableKiosk.CanRequestLaunch &&
+                    availableKiosk.RequiredOwnerMinutes == 480 &&
+                    availableKiosk.MinimumInvestmentVnd ==
+                        content.Businesses["coffee-kiosk"].MinimumStartupInvestment,
+                    "resignation unlocks the authored daytime kiosk without inventing UI balance");
                 var resignedState = store.Read().State!;
                 var occupancy = CommittedTimeTrace.Project(resignedState, content);
                 var workStart = content.Careers["developer"].StartMinute;

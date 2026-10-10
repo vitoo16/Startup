@@ -98,6 +98,11 @@ namespace StartupLife.Tests.PlayMode
                 .GetComponent<TMP_Text>().text, Does.Contain("Cửa hàng trực tuyến"));
             Assert.That(launch.GetComponent<UnityEngine.UI.Button>().interactable, Is.False,
                 "Duplicate active launch should not be offered");
+            var duplicateCaption = launch.GetComponentInChildren<TMP_Text>(true);
+            Assert.That(duplicateCaption.text, Does.Contain("Đã sở hữu loại hình này"));
+            Assert.That(GameObject.Find("SelectedBusinessValue").GetComponent<TMP_Text>().text,
+                Does.Contain("Thời gian hôm nay"),
+                "Player sees authoritative owner-day availability instead of raw IDs");
             var pauseControl = GameObject.Find("PauseBusinessButton")
                 .GetComponent<UnityEngine.UI.Button>();
             var resumeControl = GameObject.Find("ResumeBusinessButton")

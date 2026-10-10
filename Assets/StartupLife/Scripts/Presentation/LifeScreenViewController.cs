@@ -36,6 +36,7 @@ namespace StartupLife.Presentation
         private StudyActionController studyActions;
         private Func<IReadOnlyList<BusinessFinanceDaySnapshot>> financeReader;
         private Func<BusinessPortfolioSnapshot> portfolioReader;
+        private Func<BusinessOperationsSnapshot> operationsReader;
         private BusinessManagementOverlay businessOverlay;
 
         public void AttachBusinessReadouts(TMP_Text financeText, TMP_Text portfolioText)
@@ -47,11 +48,11 @@ namespace StartupLife.Presentation
 
         public void EnsureBusinessManagementUi()
         {
-            if (portfolioReader == null || financeReader == null)
+            if (portfolioReader == null || financeReader == null || operationsReader == null)
                 throw new InvalidOperationException("Business and finance read models must be bound before UI installation.");
             var fontSource = cashValue != null ? cashValue :
                 GetComponentInChildren<TMP_Text>(true);
-            businessOverlay = BusinessManagementOverlay.Install(this, portfolioReader, fontSource);
+            businessOverlay = BusinessManagementOverlay.Install(this, operationsReader, fontSource);
             Refresh();
         }
 
@@ -59,6 +60,12 @@ namespace StartupLife.Presentation
         public void BindBusinessPortfolio(Func<BusinessPortfolioSnapshot> readBusinessPortfolio)
         {
             portfolioReader = readBusinessPortfolio ?? throw new ArgumentNullException(nameof(readBusinessPortfolio));
+            Refresh();
+        }
+
+        public void BindBusinessOperations(Func<BusinessOperationsSnapshot> reader)
+        {
+            operationsReader = reader ?? throw new ArgumentNullException(nameof(reader));
             Refresh();
         }
 

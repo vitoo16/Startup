@@ -88,15 +88,14 @@ namespace StartupLife.Application
         public BusinessPortfolioSnapshot ReadBusinesses()
         {
             lock (gate)
-                return new BusinessPortfolioSnapshot(new GameSnapshot(state, content),
-                    state.Businesses.Select(x => new BusinessSnapshot(
-                        x, content.Businesses[x.DefinitionId],
-                        state.EconomicV3?.EconomicRecords?.BusinessPolicies?
-                            .FirstOrDefault(p => p.InstanceId == x.InstanceId),
-                        v3EconomicRules != null &&
-                        v3EconomicRules.Profiles.TryGetValue(x.DefinitionId, out var profile)
-                            ? profile.FixedHelper : null)).ToArray());
+                return BusinessOperationsProjection.ProjectPortfolio(state, content, v3EconomicRules);
         }
+        public BusinessOperationsSnapshot ReadBusinessOperations()
+        {
+            lock (gate)
+                return BusinessOperationsProjection.FromCommittedState(state, content, v3EconomicRules);
+        }
+
         public BusinessEligibilitySnapshot ReadEligibility(string definitionId, string definitionRevision)
         {
             lock (gate)

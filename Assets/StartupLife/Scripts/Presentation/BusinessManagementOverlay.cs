@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using TMPro;
 using StartupLife.Core;
+using StartupLife.Application;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,7 +19,7 @@ namespace StartupLife.Presentation
         // Match the portrait UI's minimum touch target in 1080x1920 reference units.
         private const float ButtonHeight = 96f;
         private LifeScreenViewController host = null!;
-        private Func<BusinessPortfolioSnapshot> readPortfolio = null!;
+        private Func<BusinessOperationsSnapshot> readOperations = null!;
         private TMP_FontAsset font = null!;
         private GameObject panel = null!;
         private TMP_Text selectedValue = null!;
@@ -34,20 +35,22 @@ namespace StartupLife.Presentation
         private Button close = null!;
         private readonly Dictionary<string, Button> launchButtons =
             new Dictionary<string, Button>(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> launchCaptions =
+            new Dictionary<string, string>(StringComparer.Ordinal);
         private string selectedId = "";
         private bool closeArmed;
 
         public static BusinessManagementOverlay Install(LifeScreenViewController view,
-            Func<BusinessPortfolioSnapshot> portfolio, TMP_Text existingFontSource)
+            Func<BusinessOperationsSnapshot> operations, TMP_Text existingFontSource)
         {
-            if (view == null || portfolio == null || existingFontSource == null ||
+            if (view == null || operations == null || existingFontSource == null ||
                 existingFontSource.font == null)
                 throw new ArgumentException("Business UI requires the existing life screen, portfolio and font.");
             var component = view.GetComponent<BusinessManagementOverlay>();
             if (component == null) component = view.gameObject.AddComponent<BusinessManagementOverlay>();
             if (component.panel != null) return component;
             component.host = view;
-            component.readPortfolio = portfolio;
+            component.readOperations = operations;
             component.font = existingFontSource.font;
             component.Build();
             component.Refresh();
@@ -156,7 +159,7 @@ namespace StartupLife.Presentation
             Label("ManageBusinessHeading", "Doanh nghiệp đang sở hữu",
                 content.transform, 30, 62);
             selectedValue = Label("SelectedBusinessValue", "Chưa có doanh nghiệp",
-                content.transform, 29, 118);
+                content.transform, 27, 268);
             previous = ButtonObject("PreviousBusinessButton", "Doanh nghiệp trước",
                 content.transform, () => Select(-1), ButtonHeight).GetComponent<Button>();
             next = ButtonObject("NextBusinessButton", "Doanh nghiệp tiếp",
@@ -193,6 +196,7 @@ namespace StartupLife.Presentation
                     Refresh();
                 }, ButtonHeight);
             launchButtons.Add(id, go.GetComponent<Button>());
+            launchCaptions.Add(id, caption);
         }
 
         private void RequestClose()
@@ -209,7 +213,7 @@ namespace StartupLife.Presentation
 
         private void ForSelected(Action<string> command)
         {
-            var owned = readPortfolio().Businesses.FirstOrDefault(x => x.InstanceId == selectedId);
+            var owned = readOperations().Portfolio.Businesses.FirstOrDefault(x => x.InstanceId == selectedId);
             if (owned == null || !owned.IsActive) return;
             closeArmed = false;
             command(owned.InstanceId);
@@ -227,7 +231,7 @@ namespace StartupLife.Presentation
         }
 
         private BusinessSnapshot[] OrderedBusinesses() =>
-            readPortfolio().Businesses.OrderBy(x => x.DefinitionId, StringComparer.Ordinal)
+            readOperations().Portfolio.Businesses.OrderBy(x => x.DefinitionId, StringComparer.Ordinal)
                 .ThenBy(x => x.InstanceId, StringComparer.Ordinal).ToArray();
 
         // Current MVP catalog has Vietnamese captions, while the authoring keys
@@ -255,23 +259,48 @@ namespace StartupLife.Presentation
 
         public void Refresh()
         {
-            if (panel == null || readPortfolio == null) return;
-            var list = OrderedBusinesses();
+            if (panel == null || readOperations == null) return;
+            var operations = readOperations();
+            var list = operations.Portfolio.Businesses.OrderBy(x => x.DefinitionId, StringComparer.Ordinal)
+                .ThenBy(x => x.InstanceId, StringComparer.Ordinal).ToArray();
             if (list.All(x => x.InstanceId != selectedId))
                 selectedId = list.Length == 0 ? "" : list[0].InstanceId;
             foreach (var item in launchButtons)
-                item.Value.interactable = !list.Any(x =>
-                    x.IsActive && x.DefinitionId == item.Key);
+            {
+                var readiness = operations.LaunchOptions.FirstOrDefault(x => x.DefinitionId == item.Key);
+                item.Value.interactable = readiness != null && readiness.CanRequestLaunch;
+                var caption = item.Value.GetComponentInChildren<TMP_Text>(true);
+                if (caption != null)
+                    caption.text = launchCaptions[item.Key] +
+                        (readiness != null && !readiness.CanRequestLaunch ?
+                            " · " + LaunchReason(readiness.Code) : "");
+            }
             var index = Array.FindIndex(list, x => x.InstanceId == selectedId);
             var current = index < 0 ? null : list[index];
             var active = current != null && current.IsActive;
             var status = !active ? "Đã đóng" :
                 current!.OperationStatus == EconomicOperationStatusCode.Paused ? "Đang tạm dừng" :
                 "Đang hoạt động";
+            var operating = current == null ? null : operations.OwnedBusinesses
+                .FirstOrDefault(x => x.Business.InstanceId == current.InstanceId);
+            var ownerText = operating?.OwnerTime == null ? "Thời gian: chưa xác định" :
+                "Thời gian hôm nay: " + operating.OwnerTime.AllocatedOwnerMinutes.ToString(CultureInfo.InvariantCulture) +
+                "/" + operating.OwnerTime.RequiredOwnerMinutes.ToString(CultureInfo.InvariantCulture) +
+                " phút · " + PlanReason(operating.OwnerTime.Status);
+            var helperText = current?.FixedHelper == null ? "" :
+                "\nNhân viên phụ quầy cố định" +
+                " · hỗ trợ " + current.FixedHelper.EffectiveAdditionalCapacityUnits.ToString(CultureInfo.InvariantCulture) +
+                " đơn vị · lương trong phí cố định " +
+                current.FixedHelper.ContractedDailyWageVnd.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
             selectedValue.text = current == null ? "Chưa có doanh nghiệp để quản lý" :
                 DisplayBusinessName(current) + " (" + (index + 1).ToString(CultureInfo.InvariantCulture) +
                 "/" + list.Length.ToString(CultureInfo.InvariantCulture) + ")\n" +
                 status + " · Giá hiện tại: " + DisplayPricing(current.EffectivePricing) +
+                "\n" + ownerText +
+                (operating?.OwnerTimeLimitedUnits != null ?
+                    " · trần công suất theo thời gian: " +
+                    operating.OwnerTimeLimitedUnits.Value.ToString(CultureInfo.InvariantCulture) : "") +
+                helperText +
                 (current.HasPendingPricing ? "\nGiá dự kiến từ " + current.PendingPricingEffectiveIso +
                     ": " + DisplayPricing(current.PendingPricing) : "") +
                 (current.HasPendingResume ? "\nTiếp tục từ ngày " + current.PendingResumeEffectiveIso : "");
@@ -283,6 +312,31 @@ namespace StartupLife.Presentation
             reinvest.interactable = close.interactable = active;
             if (!closeArmed) closeCaption.text = "Đóng doanh nghiệp";
         }
+
+        private static string LaunchReason(BusinessLaunchReadinessCode reason) => reason switch
+        {
+            BusinessLaunchReadinessCode.CharacterMissing => "Cần tạo nhân vật",
+            BusinessLaunchReadinessCode.BusinessTypeAlreadyActive => "Đã sở hữu loại hình này",
+            BusinessLaunchReadinessCode.PortfolioAtLimit => "Đã đạt giới hạn doanh nghiệp",
+            BusinessLaunchReadinessCode.PersonalArrears => "Cần thanh toán nợ",
+            BusinessLaunchReadinessCode.InsufficientCash => "Chưa đủ tiền mở",
+            BusinessLaunchReadinessCode.EmploymentIncompatible => "Cần nghỉ việc toàn thời gian",
+            BusinessLaunchReadinessCode.InsufficientOwnerTime => "Thiếu thời gian vận hành",
+            BusinessLaunchReadinessCode.UnsupportedMode => "Chưa hỗ trợ quản lý thuê",
+            _ => "Chưa đủ điều kiện"
+        };
+
+        private static string PlanReason(BusinessPlanStatus status) => status switch
+        {
+            BusinessPlanStatus.FullyAllocated => "Đủ thời gian",
+            BusinessPlanStatus.PartiallyAllocated => "Chỉ hoạt động một phần",
+            BusinessPlanStatus.IndividuallyIneligible => "Không tương thích lịch làm việc",
+            BusinessPlanStatus.FullTimeBlockUnavailable => "Thiếu khung giờ liên tục",
+            BusinessPlanStatus.MultipleFullTimeUnsupported => "Xung đột doanh nghiệp toàn thời gian",
+            BusinessPlanStatus.UnsupportedOperationMode => "Chưa hỗ trợ thuê quản lý",
+            BusinessPlanStatus.NoAvailableTime => "Hết thời gian hôm nay",
+            _ => "Chưa thể phân bổ"
+        };
 
         private GameObject ButtonObject(string name, string caption, Transform parent,
             Action clicked, float height)
