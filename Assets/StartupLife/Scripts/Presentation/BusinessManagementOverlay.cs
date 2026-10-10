@@ -230,6 +230,29 @@ namespace StartupLife.Presentation
             readPortfolio().Businesses.OrderBy(x => x.DefinitionId, StringComparer.Ordinal)
                 .ThenBy(x => x.InstanceId, StringComparer.Ordinal).ToArray();
 
+        // Current MVP catalog has Vietnamese captions, while the authoring keys
+        // for business names have not yet been populated into FirstPlayableUI.
+        // Display localized player-facing labels rather than raw IDs/enum names.
+        internal static string DisplayBusinessName(BusinessSnapshot business)
+        {
+            return business.Type switch
+            {
+                BusinessType.OnlineStore => "Cửa hàng trực tuyến",
+                BusinessType.HomeFoodPreorder => "Bếp đặt trước",
+                BusinessType.FreelanceService => "Dịch vụ tự do",
+                BusinessType.CoffeeKiosk => "Quầy cà phê",
+                _ => "Doanh nghiệp"
+            };
+        }
+
+        internal static string DisplayPricing(PricingPosture posture) => posture switch
+        {
+            PricingPosture.Budget => "Tiết kiệm",
+            PricingPosture.Standard => "Tiêu chuẩn",
+            PricingPosture.Premium => "Cao cấp",
+            _ => "Chưa xác định"
+        };
+
         public void Refresh()
         {
             if (panel == null || readPortfolio == null) return;
@@ -242,13 +265,20 @@ namespace StartupLife.Presentation
             var index = Array.FindIndex(list, x => x.InstanceId == selectedId);
             var current = index < 0 ? null : list[index];
             var active = current != null && current.IsActive;
+            var status = !active ? "Đã đóng" :
+                current!.OperationStatus == EconomicOperationStatusCode.Paused ? "Đang tạm dừng" :
+                "Đang hoạt động";
             selectedValue.text = current == null ? "Chưa có doanh nghiệp để quản lý" :
-                current.DefinitionId + " (" + (index + 1).ToString(CultureInfo.InvariantCulture) +
+                DisplayBusinessName(current) + " (" + (index + 1).ToString(CultureInfo.InvariantCulture) +
                 "/" + list.Length.ToString(CultureInfo.InvariantCulture) + ")\n" +
-                (active ? "Đang sở hữu" : "Đã đóng") +
-                " · Giá hiện tại: " + current.PricingPosture;
+                status + " · Giá hiện tại: " + DisplayPricing(current.EffectivePricing) +
+                (current.HasPendingPricing ? "\nGiá dự kiến từ " + current.PendingPricingEffectiveIso +
+                    ": " + DisplayPricing(current.PendingPricing) : "") +
+                (current.HasPendingResume ? "\nTiếp tục từ ngày " + current.PendingResumeEffectiveIso : "");
             previous.interactable = next.interactable = list.Length > 1;
-            pause.interactable = resume.interactable = active;
+            pause.interactable = active && current!.OperationStatus == EconomicOperationStatusCode.Auto;
+            resume.interactable = active && current!.OperationStatus == EconomicOperationStatusCode.Paused &&
+                !current.HasPendingResume;
             budget.interactable = standard.interactable = premium.interactable = active;
             reinvest.interactable = close.interactable = active;
             if (!closeArmed) closeCaption.text = "Đóng doanh nghiệp";

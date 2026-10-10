@@ -95,11 +95,25 @@ namespace StartupLife.Tests.PlayMode
                 x.DefinitionId == "online-store" && x.IsActive), Is.True,
                 "UI click must commit launch through GameSession");
             Assert.That(GameObject.Find("BusinessPortfolioValue")
-                .GetComponent<TMP_Text>().text, Does.Contain("online-store"));
+                .GetComponent<TMP_Text>().text, Does.Contain("Cửa hàng trực tuyến"));
             Assert.That(launch.GetComponent<UnityEngine.UI.Button>().interactable, Is.False,
                 "Duplicate active launch should not be offered");
-            Assert.That(GameObject.Find("PauseBusinessButton"), Is.Not.Null);
-            Assert.That(GameObject.Find("ResumeBusinessButton"), Is.Not.Null);
+            var pauseControl = GameObject.Find("PauseBusinessButton")
+                .GetComponent<UnityEngine.UI.Button>();
+            var resumeControl = GameObject.Find("ResumeBusinessButton")
+                .GetComponent<UnityEngine.UI.Button>();
+            Assert.That(pauseControl.interactable, Is.True, "Auto business can pause");
+            Assert.That(resumeControl.interactable, Is.False, "Auto business cannot resume");
+            Assert.That(GameObject.Find("SelectedBusinessValue")
+                .GetComponent<TMP_Text>().text, Does.Contain("Giá hiện tại: Tiêu chuẩn"));
+            pauseControl.onClick.Invoke();
+            yield return null;
+            Assert.That(pauseControl.interactable, Is.False, "Paused business cannot pause again");
+            Assert.That(resumeControl.interactable, Is.True, "Paused business can request resume");
+            resumeControl.onClick.Invoke();
+            yield return null;
+            Assert.That(resumeControl.interactable, Is.False,
+                "Pending next-day resume cannot be requested twice");
             Assert.That(GameObject.Find("BusinessPremiumPricingButton"), Is.Not.Null);
             Assert.That(GameObject.Find("ReinvestBusinessButton"), Is.Not.Null);
             Assert.That(GameObject.Find("CloseBusinessButton"), Is.Not.Null);

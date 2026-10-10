@@ -197,11 +197,21 @@ namespace StartupLife.Core
         public SimInstant Opened { get; }
         public SimInstant? Closed { get; }
         public PricingPosture PricingPosture { get; }
+        // V3 policy state is exposed only as detached, immutable read-model values.
+        // Legacy PricingPosture remains unchanged for v2-compatible consumers.
+        public EconomicOperationStatusCode OperationStatus { get; }
+        public PricingPosture EffectivePricing { get; }
+        public bool HasPendingPricing { get; }
+        public PricingPosture PendingPricing { get; }
+        public string PendingPricingEffectiveIso { get; }
+        public bool HasPendingResume { get; }
+        public string PendingResumeEffectiveIso { get; }
         public long InitialInvestment { get; }
         public long ReinvestedAmount { get; }
         public long TotalInvestment { get; }
 
-        public BusinessSnapshot(BusinessState state, BusinessDefinition definition)
+        public BusinessSnapshot(BusinessState state, BusinessDefinition definition,
+            V3BusinessPolicyRecord? policy = null)
         {
             InstanceId = state.InstanceId; DefinitionId = state.DefinitionId; DefinitionRevision = state.DefinitionRevision;
             NameKey = definition.NameKey; Type = definition.Type; IsActive = state.IsActive;
@@ -209,6 +219,14 @@ namespace StartupLife.Core
             Closed = state.IsActive ? (SimInstant?)null : new SimInstant(ParseDate(state.ClosedIso!), state.ClosedMinute!.Value);
             PricingPosture = state.PricingPosture; InitialInvestment = state.InitialInvestment;
             ReinvestedAmount = state.ReinvestedAmount; TotalInvestment = checked(state.InitialInvestment + state.ReinvestedAmount);
+            OperationStatus = !state.IsActive ? EconomicOperationStatusCode.Closed :
+                policy?.Status ?? EconomicOperationStatusCode.Auto;
+            EffectivePricing = policy?.EffectivePricing ?? state.PricingPosture;
+            HasPendingPricing = state.IsActive && policy != null && policy.HasPendingPricing;
+            PendingPricing = policy?.PendingPricing ?? EffectivePricing;
+            PendingPricingEffectiveIso = HasPendingPricing ? policy!.PendingPricingEffectiveIso : "";
+            HasPendingResume = state.IsActive && policy != null && policy.HasPendingResume;
+            PendingResumeEffectiveIso = HasPendingResume ? policy!.PendingResumeEffectiveIso : "";
         }
 
         private static SimDate ParseDate(string value)

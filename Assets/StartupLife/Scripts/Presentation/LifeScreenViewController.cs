@@ -124,9 +124,13 @@ namespace StartupLife.Presentation
                     businessPortfolioValue.text = string.Join("\n",
                         businesses.OrderBy(x => x.DefinitionId, StringComparer.Ordinal)
                             .ThenBy(x => x.InstanceId, StringComparer.Ordinal)
-                            .Select(x => x.DefinitionId + " · " +
-                                (x.IsActive ? "Đang sở hữu" : "Đã đóng") +
-                                " · " + x.PricingPosture));
+                            .Select(x => BusinessManagementOverlay.DisplayBusinessName(x) + " · " +
+                                (!x.IsActive ? "Đã đóng" :
+                                    x.OperationStatus == EconomicOperationStatusCode.Paused
+                                        ? "Đang tạm dừng" : "Đang hoạt động") +
+                                " · Giá: " + BusinessManagementOverlay.DisplayPricing(x.EffectivePricing) +
+                                (x.HasPendingPricing ? " · Sắp đổi: " +
+                                    BusinessManagementOverlay.DisplayPricing(x.PendingPricing) : "")));
             }
 
             if (rankValue) rankValue.text = string.IsNullOrEmpty(snapshot.CareerId)

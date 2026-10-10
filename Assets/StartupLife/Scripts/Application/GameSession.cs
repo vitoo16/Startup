@@ -85,7 +85,10 @@ namespace StartupLife.Application
         {
             lock (gate)
                 return new BusinessPortfolioSnapshot(new GameSnapshot(state, content),
-                    state.Businesses.Select(x => new BusinessSnapshot(x, content.Businesses[x.DefinitionId])).ToArray());
+                    state.Businesses.Select(x => new BusinessSnapshot(
+                        x, content.Businesses[x.DefinitionId],
+                        state.EconomicV3?.EconomicRecords?.BusinessPolicies?
+                            .FirstOrDefault(p => p.InstanceId == x.InstanceId))).ToArray());
         }
         public BusinessEligibilitySnapshot ReadEligibility(string definitionId, string definitionRevision)
         {
