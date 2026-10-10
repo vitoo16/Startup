@@ -185,6 +185,10 @@ namespace StartupLife.Core
         AdvanceResult AdvanceMonth(CommandEnvelope request);
         GameSnapshot Snapshot();
     }
+    public interface IActiveSaveSchema
+    {
+        int ActiveSchemaVersion { get; }
+    }
     public interface ISaveSerializer
     {
         byte[] Serialize(GameState state);
