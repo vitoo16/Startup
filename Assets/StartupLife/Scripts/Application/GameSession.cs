@@ -18,6 +18,8 @@ namespace StartupLife.Application
         private readonly ISaveSerializer serializer;
         private readonly ISaveStore store;
         private readonly SimulationEngine simulation;
+        private readonly BusinessEconomicCatalog? v3EconomicRules;
+        private readonly IHistoricalEconomicRulesResolver? historicalRules;
         private readonly object gate = new object();
         private readonly Dictionary<string, string> legacyBatchOwners;
         private bool recoveryRequired;
@@ -25,9 +27,12 @@ namespace StartupLife.Application
         // Bindings must come from trusted save provenance, never from the caller's retry request.
         // Key: ambiguous persisted child prefix (e.g. "$batch/3:abc/"); value: its actual caller root.
         public GameSession(GameState initial, ContentCatalog catalog, ISaveSerializer saveSerializer, ISaveStore saveStore,
-            IReadOnlyDictionary<string, string>? legacyBatchOwners = null)
+            IReadOnlyDictionary<string, string>? legacyBatchOwners = null,
+            BusinessEconomicCatalog? economicRules = null, IHistoricalEconomicRulesResolver? archivedRules = null)
         {
             content = catalog; serializer = saveSerializer; store = saveStore; simulation = new SimulationEngine(catalog);
+            v3EconomicRules = economicRules;
+            historicalRules = archivedRules;
             this.legacyBatchOwners = CopyLegacyOwners(legacyBatchOwners);
             state = Clone(initial);
             var persisted = store.Read();
@@ -50,12 +55,15 @@ namespace StartupLife.Application
             return copy;
         }
         public static bool TryRestore(ContentCatalog catalog, ISaveSerializer serializer, ISaveStore store,
-            out GameSession? session, out LoadResult result, IReadOnlyDictionary<string, string>? legacyBatchOwners = null)
+            out GameSession? session, out LoadResult result,
+            IReadOnlyDictionary<string, string>? legacyBatchOwners = null,
+            BusinessEconomicCatalog? economicRules = null, IHistoricalEconomicRulesResolver? archivedRules = null)
         {
             session = null;
             result = store.Read();
             if (result.Status != LoadStatus.Valid && result.Status != LoadStatus.RecoveredBackup) return false;
-            var restored = new GameSession(result.State!, catalog, serializer, store, legacyBatchOwners);
+            var restored = new GameSession(result.State!, catalog, serializer, store,
+                legacyBatchOwners, economicRules, archivedRules);
             restored.sourceSchemaVersion = result.SourceSchemaVersion;
             var ownershipFailure = restored.PrepareReceiptOwnership(result.Reason == BatchReceiptIdentity.BackupRepairReason);
             if (ownershipFailure.Length > 0)
@@ -123,13 +131,29 @@ namespace StartupLife.Application
                 candidate = Clone(state);
                 NormalizeBatchReceipts(candidate);
                 var operation = candidate.NewOperation();
-                var minutes = simulation.Evaluate(candidate, envelope.Command, operation);
+                int minutes;
+                if (candidate.SaveVersion == 3)
+                {
+                    if (candidate.EconomicV3 == null ||
+                        !ReferenceEquals(candidate.EconomicV3.Current,candidate) ||
+                        candidate.EconomicV3.Activation == null ||
+                        candidate.EconomicV3.EconomicRecords == null ||
+                        v3EconomicRules == null || historicalRules == null)
+                        throw new RuleFailure("save.v3_evaluator_unavailable");
+                    minutes = new V3EconomicReceiptProcessor(content, v3EconomicRules,
+                        candidate.EconomicV3.Activation.ToAnchor()).Evaluate(
+                        candidate.EconomicV3,envelope.Command,operation);
+                }
+                else minutes = simulation.Evaluate(candidate, envelope.Command, operation);
                 candidate.Revision = checked(state.Revision + 1);
                 if (envelope.Command.Kind != CommandKind.AdvanceBoundary && envelope.Command.Kind != CommandKind.AcknowledgePlayback)
                 { candidate.CurrentActivity = operation; candidate.PlaybackCursor = 0; }
                 receipt = new CommandReceipt { CommandId = envelope.CommandId, Payload = envelope.Command.CanonicalPayload, OperationId = operation,
                     Revision = candidate.Revision, Cue = candidate.CurrentCue, MinutesConsumed = minutes, AdvanceTargetIso = advanceTarget, ParentPayload = parentPayload };
-                candidate.Receipts.Add(receipt); StateValidation.Validate(candidate, content);
+                candidate.Receipts.Add(receipt);
+                if (candidate.SaveVersion == 3)
+                    EconomicV3PayloadCodec.Validate(candidate.EconomicV3!);
+                else StateValidation.Validate(candidate, content);
                 outcome = BuildOutcome(baseline, candidate, receipt);
                 candidateBytes = serializer.Serialize(candidate);
             }
@@ -143,7 +167,9 @@ namespace StartupLife.Application
             if ((verified.Status != LoadStatus.Valid && verified.Status != LoadStatus.RecoveredBackup) || verified.State!.Revision != candidate.Revision ||
                 !verified.State.Receipts.Any(x => x.CommandId == receipt.CommandId && x.OperationId == receipt.OperationId && x.Payload == receipt.Payload))
             { recoveryRequired = true; return Result(CommandStatus.RecoveryRequired, "save.recovery_required"); }
-            state = candidate; sourceSchemaVersion = SaveSchema.CurrentVersion;
+            state = candidate;
+            sourceSchemaVersion = serializer is IActiveSaveSchema active ?
+                active.ActiveSchemaVersion : SaveSchema.CurrentVersion;
             return new CommandResult(CommandStatus.Committed, "", state.Revision, receipt.OperationId, receipt.MinutesConsumed, outcome);
         }
         public LoadResult Recover(IReadOnlyDictionary<string, string>? legacyBatchOwners = null)
@@ -311,7 +337,13 @@ namespace StartupLife.Application
             return suffix.Length > 0 && int.TryParse(suffix, NumberStyles.None, CultureInfo.InvariantCulture, out index) && index >= 0;
         }
         private CommandResult FromReceipt(CommandReceipt receipt) =>
-            new CommandResult(CommandStatus.AlreadyCommitted, "", receipt.Revision, receipt.OperationId, receipt.MinutesConsumed, OutcomeForReceipt(receipt));
+            // V3 authoritative replay runs in the serializer on all current receipts.
+            // Never project a v3 historical outcome through the immediate-price v2 evaluator.
+            state.SaveVersion == 3 ?
+                new CommandResult(CommandStatus.AlreadyCommitted, "", receipt.Revision,
+                    receipt.OperationId, receipt.MinutesConsumed) :
+                new CommandResult(CommandStatus.AlreadyCommitted, "", receipt.Revision,
+                    receipt.OperationId, receipt.MinutesConsumed, OutcomeForReceipt(receipt));
 
         private SimulationOutcome OutcomeForReceipt(CommandReceipt target)
         {
