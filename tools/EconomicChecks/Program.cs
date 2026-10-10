@@ -1376,6 +1376,51 @@ internal static class Program
             payload.EconomicRecords.Validate();
         });
 
+
+        Check("real GameSession commits schema3 character and cold restores source-verified receipt", () =>
+        {
+            var content=FirstPlayableContentTemplate.BuildCatalog();
+            var econ=M9T02FunctionalEconomy.Create();
+            var archive=new BundledHistoricalV2ContentResolver();
+            var versioned=new VersionedReceiptReplay(econ);
+            var migration=new V2ToV3Migration(archive,versioned);
+            var serializer=new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(),migration,
+                new StagedV3SaveSerializer(archive,versioned));
+            var source=GameSession.NewState(content,"run-m9-smoke",123456,
+                new SimDate(2026,9,1));
+            var promoted=EconomicV3PayloadCodec.ReadChecked(
+                migration.Migrate(JsonSaveSerializer.WriteObject(source)));
+            promoted.Current!.EconomicV3=promoted;
+            var temp=Path.Combine(Path.GetTempPath(),
+                "m9-t02-integration-"+Guid.NewGuid().ToString("N")+".json");
+            try
+            {
+                var store=new AtomicFileSaveStore(temp,serializer);
+                var session=new GameSession(promoted.Current,content,serializer,store,
+                    economicRules:econ,archivedRules:archive);
+                var cmd=new GameCommand(CommandKind.CreateCharacter,"fresh",18,"Tester","base.male");
+                var result=session.Execute(new CommandEnvelope("run-m9-smoke","create-character",0,cmd));
+                Assert(result.Status==CommandStatus.Committed,
+                    "real v3 create command must commit to atomic store: "+result.ReasonKey);
+                Assert(session.Snapshot().Revision==1,"revision one after character create");
+                Assert(store.Read().Status==LoadStatus.Valid &&
+                    store.Read().SourceSchemaVersion==3,"primary is a validated schema3 save");
+                Assert(GameSession.TryRestore(content,serializer,store,
+                    out var restored,out var outcome,economicRules:econ,archivedRules:archive),
+                    "cold restore v3 GameSession must be valid: "+outcome.Reason);
+                Assert(restored!.Snapshot().Revision==1,"restored revision");
+                var retry=restored.Execute(new CommandEnvelope("run-m9-smoke","create-character",0,cmd));
+                Assert(retry.Status==CommandStatus.AlreadyCommitted,
+                    "same canonical id must not duplicate the creation receipt");
+            }
+            finally
+            {
+                foreach (var filename in new[]{temp,temp+".backup",temp+".lock"})
+                    if (File.Exists(filename)) File.Delete(filename);
+            }
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
