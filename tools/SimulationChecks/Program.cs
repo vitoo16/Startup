@@ -306,6 +306,36 @@ internal static class Program
             True(reemployed.CurrentEmployment!.EmploymentId !=
                 reemployed.PreviousEmployments.Single().EmploymentId);
         });
+        Check("M12 dashboard projects six authored skills, course costs and financial claims without writes", () =>
+        {
+            var f = new Fixture(); f.Create();
+            var initialBytes = f.Session.ExportCheckpoint();
+            var initial = f.Session.ReadLifeDashboard();
+            Equal(f.Session.Snapshot().Revision, initial.Game.Revision);
+            Equal(6, initial.Skills.Count);
+            True(initial.Skills.All(x => x.Level == 0 && x.GrantedLevel == 0 && x.Exposure == 0));
+            True(initial.Skills.All(x => x.NameKey.StartsWith("skill.", StringComparison.Ordinal)));
+            True(initial.Courses.All(x => x.PriceVnd >= 0 && x.BaseStudyMinutes > 0));
+            Equal(f.Session.Snapshot().Cash, initial.Finance.CashVnd);
+            Equal(0L, initial.Finance.OutstandingArrearsVnd);
+            Equal(RationalAmount.Zero, initial.Finance.UnpaidSalaryExact);
+            Equal(0L, initial.Finance.CommittedBusinessGrossVnd);
+            Bytes(initialBytes, f.Session.ExportCheckpoint());
+            f.Accept(); f.Evening();
+            var afterWork = f.Session.ExportCheckpoint();
+            var active = f.Session.ReadLifeDashboard();
+            Equal(CareerJourneyStage.Employed, active.Career.Stage);
+            Equal(active.Career.OutstandingSalary, active.Finance.UnpaidSalaryExact);
+            Equal(new RationalAmount(10000000, 22), active.Finance.UnpaidSalaryExact);
+            Equal(f.Session.Snapshot().Revision, active.Game.Revision);
+            Bytes(afterWork, f.Session.ExportCheckpoint());
+            var cold = new Fixture(f.Content, f.State());
+            var restored = cold.Session.ReadLifeDashboard();
+            Equal(active.Finance.UnpaidSalaryExact, restored.Finance.UnpaidSalaryExact);
+            Equal(active.Finance.CashVnd, restored.Finance.CashVnd);
+            True(active.Skills.Select(x => (x.SkillId, x.Level, x.Exposure))
+                .SequenceEqual(restored.Skills.Select(x => (x.SkillId, x.Level, x.Exposure))));
+        });
         Check("oldest arrears settle before spending and employment recovers", () =>
         {
             var f = new Fixture(Catalog(cash: 0)); f.Create(); f.Accept(); Equal(1000000L, f.Session.Snapshot().Arrears);
