@@ -82,10 +82,12 @@ namespace StartupLife.Core
         [DataMember(Order = 10)] public long V3AppliedToArrearsVnd { get; set; }
         [DataMember(Order = 11)] public long V3NetBusinessCreditVnd { get; set; }
         [DataMember(Order = 12)] public V3FinancialProvenance Provenance { get; set; } = new V3FinancialProvenance();
+        // Prospective v3 business state is the authority, never v2's immediate price evaluator.
+        [DataMember(Order = 13)] public List<V3BusinessPolicyRecord> BusinessPolicies { get; set; } = new List<V3BusinessPolicyRecord>();
 
         public void Validate()
         {
-            if (RulesetRevision == null || CommittedEpochIds == null ||
+            if (RulesetRevision == null || BusinessPolicies == null || CommittedEpochIds == null ||
                 CommittedSliceIds == null || CommittedFulfillmentIds == null ||
                 CommittedObligationIds == null || CommittedCostReservationIds == null ||
                 SettledDayIds == null || V3RecognizedRevenueVnd < 0 ||
@@ -103,6 +105,8 @@ namespace StartupLife.Core
             if (Provenance.OperationSlices.Any(x=>!CommittedEpochIds.Contains(x.EpochId)) ||
                 Provenance.CostReservations.Any(x=>!CommittedEpochIds.Contains(x.EpochId)))
                 throw new ArgumentException("Economic graph uses an uncommitted epoch.");
+            foreach (var policy in BusinessPolicies) policy.Validate();
+            Unique(BusinessPolicies.Select(x => x.InstanceId).ToList());
             Unique(CommittedEpochIds); Unique(CommittedSliceIds); Unique(CommittedFulfillmentIds);
             Unique(CommittedObligationIds); Unique(CommittedCostReservationIds); Unique(SettledDayIds);
         }

@@ -17,7 +17,9 @@ namespace StartupLife.Core
         LaunchBusiness = 7,
         ReinvestBusiness = 8,
         SetBusinessPricing = 9,
-        CloseBusiness = 10
+        CloseBusiness = 10,
+        PauseBusiness = 11,
+        ResumeBusiness = 12
     }
     public sealed class GameCommand
     {
