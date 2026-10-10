@@ -173,6 +173,19 @@ namespace StartupLife.Tests.PlayMode
                 "UI click must commit launch through GameSession");
             Assert.That(GameObject.Find("BusinessPortfolioValue")
                 .GetComponent<TMP_Text>().text, Does.Contain("Cửa hàng trực tuyến"));
+            var firstCard = GameObject.Find("OwnedBusinessCard1Button");
+            Assert.That(firstCard, Is.Not.Null,
+                "Owned businesses must be directly selectable without cycling blindly");
+            Assert.That(firstCard.GetComponent<RectTransform>().rect.height,
+                Is.GreaterThanOrEqualTo(135.9f), "Card touch target must remain generous");
+            Assert.That(firstCard.GetComponentInChildren<TMP_Text>(true).text,
+                Does.Contain("Cửa hàng trực tuyến").And.Contain("Hoạt động"));
+            var selector = firstCard.GetComponent<UnityEngine.UI.Button>();
+            var revisionBeforeCard = bootstrap.Snapshot.Revision;
+            selector.onClick.Invoke();
+            yield return null;
+            Assert.That(bootstrap.Snapshot.Revision, Is.EqualTo(revisionBeforeCard),
+                "Selecting a business card must not submit an economic command");
             Assert.That(launch.GetComponent<UnityEngine.UI.Button>().interactable, Is.False,
                 "Duplicate active launch should not be offered");
             var duplicateCaption = launch.GetComponentInChildren<TMP_Text>(true);

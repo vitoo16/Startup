@@ -24,6 +24,11 @@ namespace StartupLife.Presentation
         private GameObject panel = null!;
         private TMP_Text selectedValue = null!;
         private TMP_Text closeCaption = null!;
+        private TMP_Text founderGuidance = null!;
+        private readonly Button[] businessCards =
+            new Button[BusinessPortfolioRules.MaxActiveBusinesses];
+        private readonly TMP_Text[] businessCardLabels =
+            new TMP_Text[BusinessPortfolioRules.MaxActiveBusinesses];
         private Button previous = null!;
         private Button next = null!;
         private Button pause = null!;
@@ -151,6 +156,9 @@ namespace StartupLife.Presentation
             scroll.scrollSensitivity = 35;
 
             Label("OpenBusinessHeading", "Mở doanh nghiệp", content.transform, 30, 62);
+            founderGuidance = Label("FounderEligibilityGuidance",
+                "Điều kiện sở hữu và thời gian sẽ được kiểm tra trước khi mở",
+                content.transform, 26, 102);
             AddLaunch(content.transform, "online-store", "Mở cửa hàng trực tuyến", host.LaunchOnlineStore);
             AddLaunch(content.transform, "home-food-preorder", "Mở bếp đặt trước", host.LaunchHomeFoodPreorder);
             AddLaunch(content.transform, "freelance-service", "Nhận việc tự do", host.LaunchFreelanceService);
@@ -158,6 +166,16 @@ namespace StartupLife.Presentation
 
             Label("ManageBusinessHeading", "Doanh nghiệp đang sở hữu",
                 content.transform, 30, 62);
+            // Reuse the current read model and existing actions; cards are
+            // navigation-only and never schedule/settle/reinvest on their own.
+            for (var slot = 0; slot < businessCards.Length; slot++)
+            {
+                var index = slot;
+                var buttonObject = ButtonObject("OwnedBusinessCard" + (slot + 1) + "Button",
+                    "Doanh nghiệp", content.transform, () => SelectCard(index), 136);
+                businessCards[slot] = buttonObject.GetComponent<Button>();
+                businessCardLabels[slot] = buttonObject.GetComponentInChildren<TMP_Text>(true);
+            }
             selectedValue = Label("SelectedBusinessValue", "Chưa có doanh nghiệp",
                 content.transform, 27, 268);
             previous = ButtonObject("PreviousBusinessButton", "Doanh nghiệp trước",
@@ -234,6 +252,15 @@ namespace StartupLife.Presentation
             readOperations().Portfolio.Businesses.OrderBy(x => x.DefinitionId, StringComparer.Ordinal)
                 .ThenBy(x => x.InstanceId, StringComparer.Ordinal).ToArray();
 
+        private void SelectCard(int slot)
+        {
+            var list = OrderedBusinesses();
+            if (slot < 0 || slot >= list.Length) return;
+            selectedId = list[slot].InstanceId;
+            closeArmed = false;
+            Refresh();
+        }
+
         // Current MVP catalog has Vietnamese captions, while the authoring keys
         // for business names have not yet been populated into FirstPlayableUI.
         // Display localized player-facing labels rather than raw IDs/enum names.
@@ -265,6 +292,34 @@ namespace StartupLife.Presentation
                 .ThenBy(x => x.InstanceId, StringComparer.Ordinal).ToArray();
             if (list.All(x => x.InstanceId != selectedId))
                 selectedId = list.Length == 0 ? "" : list[0].InstanceId;
+            var employmentBlock = operations.LaunchOptions
+                .Any(x => x.Code == BusinessLaunchReadinessCode.EmploymentIncompatible);
+            founderGuidance.text = employmentBlock
+                ? "Một số loại hình cần chủ trực tiếp làm ban ngày. Hãy cân nhắc nghỉ việc trước khi mở quầy."
+                : "Có thể vận hành nhiều doanh nghiệp khi đủ vốn và thời gian. Lịch được phân bổ tự động.";
+            for (var slot = 0; slot < businessCards.Length; slot++)
+            {
+                var visible = slot < list.Length;
+                var card = businessCards[slot];
+                if (card.gameObject.activeSelf != visible) card.gameObject.SetActive(visible);
+                if (!visible) continue;
+                var owned = list[slot];
+                var plan = operations.OwnedBusinesses.FirstOrDefault(x =>
+                    x.Business.InstanceId == owned.InstanceId);
+                var operationText = !owned.IsActive ? "Đã đóng" :
+                    owned.OperationStatus == EconomicOperationStatusCode.Paused
+                        ? "Tạm dừng" : "Hoạt động";
+                var minutes = plan?.OwnerTime == null ? "Chưa rõ lịch" :
+                    plan.OwnerTime.AllocatedOwnerMinutes.ToString(CultureInfo.InvariantCulture) +
+                    " phút";
+                businessCardLabels[slot].text =
+                    DisplayBusinessName(owned) + "  ·  " + operationText +
+                    "\n" + minutes + "  ·  " + DisplayPricing(owned.EffectivePricing);
+                card.GetComponent<Image>().color =
+                    owned.InstanceId == selectedId
+                        ? new Color(0.09f, 0.36f, 0.41f, 1f)
+                        : new Color(0.16f, 0.45f, 0.50f, 1f);
+            }
             foreach (var item in launchButtons)
             {
                 var readiness = operations.LaunchOptions.FirstOrDefault(x => x.DefinitionId == item.Key);
