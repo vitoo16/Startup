@@ -1822,11 +1822,13 @@ internal static class Program
                     File.WriteAllBytes(rightPath, source.Wire);
                     var leftStore = new AtomicFileSaveStore(leftPath, serializer);
                     var rightStore = new AtomicFileSaveStore(rightPath, serializer);
-                    Assert(GameSession.TryRestore(content, serializer, leftStore,
-                        out var left, out var leftLoad, economicRules: economic, archivedRules: archives) &&
-                        GameSession.TryRestore(content, serializer, rightStore,
-                        out var right, out var rightLoad, economicRules: economic, archivedRules: archives),
-                        "two independent cold restores of schema " + source.Schema + " failed");
+                    var leftOk = GameSession.TryRestore(content, serializer, leftStore,
+                        out var left, out var leftLoad, economicRules: economic, archivedRules: archives);
+                    var rightOk = GameSession.TryRestore(content, serializer, rightStore,
+                        out var right, out var rightLoad, economicRules: economic, archivedRules: archives);
+                    Assert(leftOk && rightOk,
+                        "two independent cold restores of schema " + source.Schema +
+                        " failed: " + leftLoad.Reason + ", " + rightLoad.Reason);
                     Assert(leftLoad.SourceSchemaVersion == source.Schema &&
                         rightLoad.SourceSchemaVersion == source.Schema,
                         "cold restore discarded original schema identity");
