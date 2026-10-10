@@ -30,6 +30,15 @@ internal static class Program
         catch (Exception e) { Failures.Add(name + ": " + e); Console.Error.WriteLine("FAIL " + name + ": " + e.Message); }
     }
 
+    private sealed class UnavailableArchive : IHistoricalEconomicRulesResolver
+    {
+        public bool TryResolve(string archiveId,string version,out ContentCatalog? content)
+        {
+            content=null;
+            return false;
+        }
+    }
+
     private static int Main(string[] args)
     {
         var catalog = M9T02FunctionalEconomy.Create();
@@ -983,6 +992,39 @@ internal static class Program
             Assert(Convert.FromBase64String(payload.OriginalSourcePayloadBase64).SequenceEqual(syntheticWire),
                 "source-zero wire bytes lost");
             Throws<ArgumentException>(()=>migration.MigrateFromOriginalSource(v2,2,syntheticWire));
+        });
+
+
+        Check("staged schema3 envelope validates checksum generation and future schema precedence", () =>
+        {
+            var legacy=GameSession.NewState(FirstPlayableContentTemplate.BuildCatalog(),
+                "staged-wire-check",314159UL,new SimDate(2026,9,1));
+            var staged=new V2ToV3Migration(new BundledHistoricalV2ContentResolver(),
+                new VersionedReceiptReplay());
+            var payload=EconomicV3PayloadCodec.ReadChecked(
+                staged.Migrate(JsonSaveSerializer.WriteObject(legacy)));
+            var serializer=new StagedV3SaveSerializer(
+                new BundledHistoricalV2ContentResolver(),new VersionedReceiptReplay());
+            var good=serializer.SerializeVerified(payload);
+            var restored=serializer.DeserializeVerified(good);
+            Assert(restored.Status==LoadStatus.Valid && restored.Payload!=null &&
+                restored.Payload.OriginalV2PayloadSha256==payload.OriginalV2PayloadSha256,
+                "v3 staged save did not round-trip");
+            var envelope=JsonSaveSerializer.ReadObject<SaveEnvelope>(good);
+            envelope.Generation++;
+            Assert(serializer.DeserializeVerified(JsonSaveSerializer.WriteObject(envelope)).Status==
+                LoadStatus.Corrupt,"different revision must fail even with matching checksum");
+            envelope.Generation--;
+            envelope.Checksum="0";
+            Assert(serializer.DeserializeVerified(JsonSaveSerializer.WriteObject(envelope)).ReasonKey==
+                "save.checksum","tampered checksum not identified");
+            envelope.SchemaVersion=4;
+            envelope.PayloadBase64="%% invalid %%";
+            Assert(serializer.DeserializeVerified(JsonSaveSerializer.WriteObject(envelope)).Status==
+                LoadStatus.FutureVersion,"future schema must take precedence over payload corruption");
+            var unavailable=new StagedV3SaveSerializer(new UnavailableArchive(),new VersionedReceiptReplay());
+            Assert(unavailable.DeserializeVerified(good).Status==LoadStatus.UnsupportedContent,
+                "unknown archived ruleset must never silently fall back to current rules");
         });
 
         var count=passed+Failures.Count;
