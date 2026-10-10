@@ -18,20 +18,21 @@
 - Byte-identical v2 source snapshots: `docs/evidence/M9-T02/frozen-v2-source/` (8 original Git blobs).
 - `FROZEN_V2_SOURCE_MANIFEST.md` pins each original SHA-1 + SHA-256.
 - `scripts/Test-M9T02FrozenV2.ps1` checks all 8 original copies in CI; all 8 verified in prior successful runs.
-- This is not yet a compiled archival runtime evaluator/dispatcher for complete v2 prefix replay. Do not claim migration is done from frozen source alone.
+- `Simulation/ArchivedV2SimulationEngine.cs` contains the original v2 evaluator and `ArchivedV2RestoreValidator` with class-name-only changes, verified byte-semantically against archived `SimulationEngine.cs.txt` by CI. `Content/BundledHistoricalV2ContentResolver.cs` builds a frozen catalog from exact authored baseline values, independent of editable v3 content/templates; semantic parity is tested.
+- `Simulation/VersionedReceiptReplay.cs` validates the complete v2 checkpoint/prefix with these frozen rules and rejects an unregistered v3 suffix. It is NOT yet connected to all real restore, retry and `GameSession.OutcomeForReceipt` consumers.
 
 ## Scoped source artifacts
 
 | Slice | Scope committed | Actual status |
 |---|---|---|
-| S0 | SHA-locked v2 source + 8 SHA-256 manifest entries; local/upstream skill inventory | Source archive PASS; historical evaluator bundle still incomplete |
+| S0 | SHA-locked original v2 source/8 hashes; frozen v2 evaluator with verified class-name-only copy; baseline-authored v2 content resolver | Archive/evaluator/checkpoint parity PASS; v3 runtime-registration and dependent historical helpers review pending |
 | S1 | `Core/EconomicDefinitions.cs`, `Content/M9T02FunctionalEconomy.cs` — immutable 6 ID-keyed segments (4 active), 4 finite pools/profiles, per-posture price | Pure model PASS, production authored content activation pending |
 | S2 | `Simulation/CustomerDemandCalculator.cs` — BigInteger demand, largest remainder, stable ties, finite original/day remaining, no double-sell | Pure calculator PASS, actual persisted fulfillment bridge pending |
 | S3 | `Core/ObligationContracts.cs`, `Simulation/BusinessObligationScheduler.cs`, `ObligationIncomeDistributor.cs` — 8 cadence triggers, cumulative exact proration, due ordering, source-linked withheld income | Pure model PASS, linked v3 GameState/arrear ledger posting pending |
 | S4 | `Simulation/BusinessAffordabilityPlanner.cs`, `BusinessEpochExecution.cs`, `BusinessMarketEpochPlanner.cs` — quota-normalized P-03 + global owner-slot matching + one-wallet reserved units + frozen epoch + market/price reservation mapping, Study exclusion | Pure model PASS; real committed GameSession/AdvanceBoundary integration pending |
 | S5 | `Simulation/BusinessPolicyTransitions.cs`, `BusinessDaySettlement.cs` — P-04 pure transitions and old-day cash/profit/arrears conservation against attributed market+cost units | Pure model PASS; actual command IDs 11/12, v3 transaction, ledger and midnight source posting pending |
-| S6 | `Core/EconomicActivationAnchor.cs` — historical receipt-prefix length, midpoint/00:00 activation gate; `Core/SaveSchema.cs` adds HistoricalV2 constant=2 while CurrentVersion remains 2; `JsonSaveSerializer.V1ToV2Migration` pinned to 2 | Primitives implemented; **v3 DTO/codec, 2→3 migration, historical replay dispatcher, CAS repair unimplemented** |
-| S7 | Detached v3 finance interface/UI adapter | NOT STARTED |
+| S6 | `EconomicActivationAnchor`, `EconomicV3Payload`, `V3FinancialProvenance`, `V2ToV3Migration`, `StagedV3SaveSerializer`, `IVersionedReceiptReplay`/frozen-prefix implementation; stage-2 checkpoint plus original source v0/1/2 bytes, activation, schema3 checksum and generation | **Staged migration/wire verification PASS**; full v3 suffix validator, live `GameSession`/restore/archived dispatcher consumers, same-generation CAS and CurrentVersion=3 **NOT IMPLEMENTED** |
+| S7 | `Application/BusinessFinanceProjection.cs` verified detached read model built only from conserved committed day settlement | Pure adapter tested (old head and later S6 builds); player-facing UI integration pending |
 | S8 | Independent Astra source audit → canonical Unity runtime acceptance → independent final evidence audit | NOT STARTED |
 
 The implementation intentionally does not credit money or units, change schema version or mutate the real Unity asset until all v3 replay/migration and wallet invariants can be wired atomically.
@@ -47,12 +48,16 @@ The implementation intentionally does not credit money or units, change schema v
 - `aa5f062fbf693acd7e20a7fe485cdf6dad2dc1d1`: [CI #38046296969](https://github.com/vitoo16/Startup/actions/runs/38046296969) SUCCESS, 35/35 checks (midnight/midday activation anchor).
 - `131571359f5898f3efb64ff8c4d4123df8e484e7`: [CI #38046433155](https://github.com/vitoo16/Startup/actions/runs/38046433155) SUCCESS, 35/35 M9-T02 economic checks plus 35/35 restore invariant checks and 0 compile errors; historical V1→V2 stage remains fixed to 2.
 
+- `adee67876eb4c70e4480715398861f28ae71c4a5`: [CI #38048284886](https://github.com/vitoo16/Startup/actions/runs/38048284886) **SUCCESS**, 44/44 M9-T02 checks, staged 0/1/2→3 migration, typed provenance, frozen v2 semantic evaluator, full baseline regression and 0 .NET errors.
+- `a489fca03c991671c2b5943672f1f29e68e27b63`: [CI #38048504688](https://github.com/vitoo16/Startup/actions/runs/38048504688) **SUCCESS**, 45/45 M9-T02 checks, standalone schema3 checksum/generation/FutureVersion/UnsupportedContent admission, baseline regressions PASS and 0 .NET errors.
+- These are tests of staged/isolated source. No live v3 save or financial gameplay is claimed.
+
 ## Remaining hard safety gates (DO NOT BYPASS)
 
-1. Full content-authoring and ruleset archive resolver: freeze exact historical v2 evaluator, not just source hashes.
-2. Typed v3 state + unique per-operation/slice/fulfillment financial provenance in `GameState` and intrinsic/replay validators.
+1. Bundle registered frozen v2 resolver/evaluator in the active Unity bootstrap and verify dependent frozen helpers; preserve real authored v2 business definitions when enabling new v3 economic profiles.
+2. Persist newly introduced typed v3 provenance inside the authoritative live `GameState` transaction/restore flow; enforce full obligation/arrears, calendar, operation, market and cash ledger invariants beyond the standalone graph tests.
 3. Atomic GameSession source mutation: advance boundaries, Study replanning, salary/living ordering, fixed dues and income/arrear ledger without same-day revenue funding.
-4. Adjacent 0→1→2→3 lossless source migration and v2 same-generation CAS/backup-repair before first v3 write; single historical prefix dispatcher reused by restore, idempotency and replay. Future schema4 preservation test.
+4. Move tested staged 0→1→2→3 source migration and schema3 admission into production `JsonSaveSerializer`, preserve original-source CAS/backup repair, implement v3 suffix replay (currently intentionally rejected), and route ALL restore/idempotency/receipt consumers through the same dispatcher. Standalone schema4 FutureVersion precedence already has CI proof.
 5. Unity 6000.3.25f1 fresh import, EditMode/PlayMode, raw logs/XML/evidence ZIP, local acceptance.
 6. Independent Astra source audit and final evidence audit on exact CI/Unity SHA; owner-authorized merge/closeout only after all gates.
 
