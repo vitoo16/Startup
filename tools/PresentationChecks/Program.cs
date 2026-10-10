@@ -19,6 +19,7 @@ internal static class Program
         Check("initial snapshot selects character creation and copies read model", InitialProjection);
         Check("create character dispatches current run revision and injected command id", CreateDispatch);
         Check("life actions dispatch frozen commands from latest snapshot revision", ActionDispatch);
+        Check("business commands preserve canonical kind, revision and payload", BusinessManagementDispatch);
         Check("playback acknowledgement binds current activity", PlaybackDispatch);
         Check("day and month advancement use boundary intent and project reached state", AdvanceDispatch);
         Check("active course read model flows through unchanged", ActiveCourseProjection);
@@ -39,6 +40,39 @@ internal static class Program
         foreach (var failure in failures) Console.Error.WriteLine(failure);
         Console.WriteLine($"{passed}/{passed + failures.Count} passed." + (args.Length > 0 ? " Report: " + Path.GetFullPath(args[0]) : ""));
         return failures.Count == 0 ? 0 : 1;
+    }
+
+    private static void BusinessManagementDispatch()
+    {
+        var gateway = new FakeGateway(Snapshot(name: "Player", revision: 8));
+        var flow = new FirstPlayableFlow(gateway, new SequenceIds());
+
+        flow.LaunchBusiness("online-store", "v1", 100);
+        Equal(CommandKind.LaunchBusiness, gateway.LastEnvelope!.Command.Kind);
+        Equal("online-store", gateway.LastEnvelope.Command.ContentId);
+        Equal("v1", gateway.LastEnvelope.Command.AppearanceId);
+        Equal(100, gateway.LastEnvelope.Command.Amount);
+        Equal(8L, gateway.LastEnvelope.ExpectedRevision);
+        Equal("launch-business/1", gateway.LastEnvelope.CommandId);
+
+        flow.ReinvestBusiness("run/business/1", 50);
+        Equal(CommandKind.ReinvestBusiness, gateway.LastEnvelope!.Command.Kind);
+        Equal(50, gateway.LastEnvelope.Command.Amount);
+
+        flow.SetBusinessPricing("run/business/1", PricingPosture.Premium);
+        Equal(CommandKind.SetBusinessPricing, gateway.LastEnvelope!.Command.Kind);
+        Equal((int)PricingPosture.Premium, gateway.LastEnvelope.Command.Amount);
+
+        flow.PauseBusiness("run/business/1");
+        Equal(CommandKind.PauseBusiness, gateway.LastEnvelope!.Command.Kind);
+        Equal("run/business/1", gateway.LastEnvelope.Command.ContentId);
+
+        flow.ResumeBusiness("run/business/1");
+        Equal(CommandKind.ResumeBusiness, gateway.LastEnvelope!.Command.Kind);
+
+        flow.CloseBusiness("run/business/1");
+        Equal(CommandKind.CloseBusiness, gateway.LastEnvelope!.Command.Kind);
+        Equal("close-business/6", gateway.LastEnvelope.CommandId);
     }
 
     private static void InitialProjection()
