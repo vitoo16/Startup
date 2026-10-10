@@ -41,6 +41,51 @@ namespace StartupLife.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator V3BusinessLifecycleUsesCommittedFlowWithoutImmediatePriceSwitch()
+        {
+            var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
+            while (!load.isDone) yield return null;
+            yield return LocalizationSettings.InitializationOperation;
+            yield return null;
+
+            var bootstrap = Object.FindAnyObjectByType<StartupLifeBootstrapper>();
+            Assert.That(bootstrap, Is.Not.Null);
+            Assert.That(bootstrap.IsReady, Is.True);
+            var name = GameObject.Find("CharacterNameInput").GetComponent<TMP_InputField>();
+            name.text = "Business Tester";
+            GameObject.Find("CreateCharacterButton").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            yield return null;
+
+            Assert.That(bootstrap.Snapshot.Name, Is.EqualTo("Business Tester"));
+            Assert.That(bootstrap.Catalog.Businesses.Count, Is.EqualTo(4));
+            var launched = bootstrap.Flow.LaunchBusiness("online-store", "v1", 100);
+            Assert.That(launched.Command.Status, Is.EqualTo(CommandStatus.Committed),
+                launched.Command.ReasonKey);
+            var before = bootstrap.Snapshot;
+            var portfolio = bootstrap.Catalog.Businesses;
+            Assert.That(portfolio.ContainsKey("online-store"), Is.True);
+
+            // A pricing request is a prospective mutation only; no same-day
+            // money or current price may be credited by a view refresh.
+            var owned = launched.Command.Outcome;
+            Assert.That(owned, Is.Not.Null);
+            var businessId = launched.Command.Outcome.GrantedIds.FirstOrDefault();
+            Assert.That(businessId, Is.Not.Null.And.Not.Empty);
+            var price = bootstrap.Flow.SetBusinessPricing(businessId, PricingPosture.Premium);
+            Assert.That(price.Command.Status, Is.EqualTo(CommandStatus.Committed),
+                price.Command.ReasonKey);
+            Assert.That(bootstrap.Snapshot.Cash, Is.EqualTo(before.Cash));
+            var pause = bootstrap.Flow.PauseBusiness(businessId);
+            Assert.That(pause.Command.Status, Is.EqualTo(CommandStatus.Committed),
+                pause.Command.ReasonKey);
+            var resume = bootstrap.Flow.ResumeBusiness(businessId);
+            Assert.That(resume.Command.Status, Is.EqualTo(CommandStatus.Committed),
+                resume.Command.ReasonKey);
+            Assert.That(bootstrap.Snapshot.Revision, Is.EqualTo(before.Revision + 3));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
         public IEnumerator AppearanceSelectionUsesLocalizedLabelsWithoutRawGenderGlyphs()
         {
             var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
