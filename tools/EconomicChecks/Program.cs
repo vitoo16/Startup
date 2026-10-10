@@ -1491,6 +1491,29 @@ internal static class Program
             }
         });
 
+
+        Check("same-generation v2 CAS projection rejects edited cash and latent v3 economy", () =>
+        {
+            var content=FirstPlayableContentTemplate.BuildCatalog();
+            var archive=new BundledHistoricalV2ContentResolver();
+            var economic=M9T02FunctionalEconomy.Create();
+            var replay=new VersionedReceiptReplay(economic,content);
+            var migrator=new V2ToV3Migration(archive,replay);
+            var serializer=new V3SaveCompatibilitySerializer(content,GameSession.CreateRestoreValidator(),
+                migrator,new StagedV3SaveSerializer(archive,replay));
+            var original=GameSession.NewState(content,"run-cas-smoke",99891,new SimDate(2026,9,1));
+            var originalBytes=JsonSaveSerializer.WriteObject(original);
+            var migrated=EconomicV3PayloadCodec.ReadChecked(migrator.Migrate(originalBytes));
+            migrated.Current!.EconomicV3=migrated;
+            var unchanged=serializer.SerializeForSchema(migrated.Current,2);
+            Assert(unchanged.Length>0,"unmodified v2 source may be projected to its exact version");
+            migrated.Current.Cash++;
+            Throws<ArgumentException>(()=>serializer.SerializeForSchema(migrated.Current!,2));
+            migrated.Current.Cash--;
+            migrated.EconomicRecords!.RulesetRevision="unauthorized-pending-rule";
+            Throws<ArgumentException>(()=>serializer.SerializeForSchema(migrated.Current!,2));
+        });
+
         var count=passed+Failures.Count;
         Console.WriteLine(passed+"/"+count+" M9-T02 economy checks passed.");
         if (args.Length>0)
