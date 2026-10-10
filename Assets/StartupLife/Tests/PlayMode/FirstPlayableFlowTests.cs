@@ -67,10 +67,10 @@ namespace StartupLife.Tests.PlayMode
 
             // A pricing request is a prospective mutation only; no same-day
             // money or current price may be credited by a view refresh.
-            var owned = launched.Command.Outcome;
-            Assert.That(owned, Is.Not.Null);
-            var businessId = launched.Command.Outcome.GrantedIds.FirstOrDefault();
-            Assert.That(businessId, Is.Not.Null.And.Not.Empty);
+            var created = bootstrap.BusinessPortfolio.Businesses.Single(x =>
+                x.DefinitionId == "online-store" && x.IsActive);
+            var businessId = created.InstanceId;
+            Assert.That(businessId, Is.Not.Empty);
             var price = bootstrap.Flow.SetBusinessPricing(businessId, PricingPosture.Premium);
             Assert.That(price.Command.Status, Is.EqualTo(CommandStatus.Committed),
                 price.Command.ReasonKey);

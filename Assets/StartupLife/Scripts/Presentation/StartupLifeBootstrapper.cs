@@ -31,6 +31,7 @@ namespace StartupLife.Presentation
         public FirstPlayableFlow Flow => flow;
         public ContentCatalog Catalog => content;
         public FirstPlayableState Snapshot => flow?.Refresh();
+        public BusinessPortfolioSnapshot BusinessPortfolio => session?.ReadBusinesses();
 
         private void Awake()
         {
