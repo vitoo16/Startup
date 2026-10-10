@@ -254,9 +254,11 @@ namespace StartupLife.Presentation
 
         private void SelectCard(int slot)
         {
-            var list = OrderedBusinesses();
-            if (slot < 0 || slot >= list.Length) return;
-            selectedId = list[slot].InstanceId;
+            // Only active businesses occupy the four live management cards.
+            // Closed businesses remain available through the legacy history selector.
+            var live = OrderedBusinesses().Where(x => x.IsActive).ToArray();
+            if (slot < 0 || slot >= live.Length) return;
+            selectedId = live[slot].InstanceId;
             closeArmed = false;
             Refresh();
         }
@@ -291,7 +293,9 @@ namespace StartupLife.Presentation
             var list = operations.Portfolio.Businesses.OrderBy(x => x.DefinitionId, StringComparer.Ordinal)
                 .ThenBy(x => x.InstanceId, StringComparer.Ordinal).ToArray();
             if (list.All(x => x.InstanceId != selectedId))
-                selectedId = list.Length == 0 ? "" : list[0].InstanceId;
+                selectedId = list.FirstOrDefault(x => x.IsActive)?.InstanceId ??
+                    (list.Length == 0 ? "" : list[0].InstanceId);
+            var live = list.Where(x => x.IsActive).ToArray();
             var employmentBlock = operations.LaunchOptions
                 .Any(x => x.Code == BusinessLaunchReadinessCode.EmploymentIncompatible);
             founderGuidance.text = employmentBlock
@@ -299,11 +303,11 @@ namespace StartupLife.Presentation
                 : "Có thể vận hành nhiều doanh nghiệp khi đủ vốn và thời gian. Lịch được phân bổ tự động.";
             for (var slot = 0; slot < businessCards.Length; slot++)
             {
-                var visible = slot < list.Length;
+                var visible = slot < live.Length;
                 var card = businessCards[slot];
                 if (card.gameObject.activeSelf != visible) card.gameObject.SetActive(visible);
                 if (!visible) continue;
-                var owned = list[slot];
+                var owned = live[slot];
                 var plan = operations.OwnedBusinesses.FirstOrDefault(x =>
                     x.Business.InstanceId == owned.InstanceId);
                 var operationText = !owned.IsActive ? "Đã đóng" :
