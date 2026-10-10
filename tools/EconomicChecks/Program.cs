@@ -1425,6 +1425,27 @@ internal static class Program
                 Assert(store.Read().Status==LoadStatus.Valid &&
                     store.Read().State!.Businesses.Any(x=>x.DefinitionId=="online-store"),
                     "cold reloaded v3 source contains launch beyond frozen v2 business roster");
+                var owned=restored.ReadBusinesses().Businesses.Single(x=>x.DefinitionId=="online-store");
+                var price=restored.Execute(new CommandEnvelope("run-m9-smoke",
+                    "price-premium",2,BusinessCommands.SetPricing(owned.InstanceId,PricingPosture.Premium)));
+                Assert(price.Status==CommandStatus.Committed,"v3 next-day pricing must commit: "+price.ReasonKey);
+                Assert(restored.ReadBusinesses().Businesses.Single(x=>x.InstanceId==owned.InstanceId)
+                    .PricingPosture==PricingPosture.Standard,
+                    "v3 price request does not change effective price same day");
+                var pause=restored.Execute(new CommandEnvelope("run-m9-smoke",
+                    "pause-online",3,BusinessCommands.Pause(owned.InstanceId)));
+                Assert(pause.Status==CommandStatus.Committed,"v3 pause must commit: "+pause.ReasonKey);
+                var resume=restored.Execute(new CommandEnvelope("run-m9-smoke",
+                    "resume-online",4,BusinessCommands.Resume(owned.InstanceId)));
+                Assert(resume.Status==CommandStatus.Committed,"v3 next-day resume must commit: "+resume.ReasonKey);
+                var coldPolicy=store.Read();
+                Assert(coldPolicy.Status==LoadStatus.Valid &&
+                    coldPolicy.SourceSchemaVersion==3,"cold restore of v3 pending policy");
+                var savedPolicy=coldPolicy.State!.EconomicV3!.EconomicRecords!.BusinessPolicies.Single(
+                    x=>x.InstanceId==owned.InstanceId);
+                Assert(savedPolicy.Status==EconomicOperationStatusCode.Paused &&
+                    savedPolicy.HasPendingResume && savedPolicy.HasPendingPricing,
+                    "pending resume/price are canonical v3 persisted policy");
                 var retry=restored.Execute(new CommandEnvelope("run-m9-smoke","create-character",0,cmd));
                 Assert(retry.Status==CommandStatus.AlreadyCommitted,
                     "same canonical id must not duplicate the creation receipt");
