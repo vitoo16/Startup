@@ -49,11 +49,15 @@ namespace StartupLife.Core
         public IReadOnlyList<string> RequiredTags { get; }
         public IReadOnlyList<string> ForbiddenTags { get; }
         public IReadOnlyList<EventChoiceDefinition> Choices { get; }
+        // Optional authored narrative keys. Empty keys retain compatibility with
+        // pre-narrative deterministic test catalogs and historical V4 journal fixtures.
+        public string TitleKey { get; }
+        public string BodyKey { get; }
 
         public GameEventDefinition(string id, string categoryId, int minimumYear, int minimumStage,
             int weight, int cooldownDays, int maxOccurrences, int windowPeriodDays, int windowOffsetDays,
             IEnumerable<string> requiredTags, IEnumerable<string> forbiddenTags,
-            IEnumerable<EventChoiceDefinition> choices)
+            IEnumerable<EventChoiceDefinition> choices, string titleKey = "", string bodyKey = "")
         {
             _ = new ContentId(id);
             _ = new ContentId(categoryId);
@@ -72,6 +76,14 @@ namespace StartupLife.Core
                 options.Select(x => x.Id).Distinct(StringComparer.Ordinal).Count() != options.Length)
                 throw new ArgumentException("Invalid event tag or choice configuration.");
 
+            if (titleKey == null || bodyKey == null ||
+                (titleKey.Length == 0) != (bodyKey.Length == 0) ||
+                (titleKey.Length > 0 && (string.IsNullOrWhiteSpace(titleKey) ||
+                    string.IsNullOrWhiteSpace(bodyKey))))
+                throw new ArgumentException("Event narrative title and body keys must be paired.");
+
+            TitleKey = titleKey;
+            BodyKey = bodyKey;
             Id = id;
             CategoryId = categoryId;
             MinimumYear = minimumYear;
