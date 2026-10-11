@@ -1118,6 +1118,12 @@ internal static class Program
             var runtime = new EventV4CoreCommandRunner(content, v3, econ, archives);
             var origin = GameSession.NewState(content, "run-v4-core", 317749UL,
                 new SimDate(2026, 10, 1));
+            Assert(origin.Date.Day == content.Economy.ExpenseDay,
+                "fixture must cross the authored living-expense settlement day");
+            var expectedAfterCreate = checked(content.Starts["fresh"].Cash -
+                content.Economy.LivingCost);
+            var expectedAfterCourse = checked(expectedAfterCreate -
+                content.Courses["communication-basics"].Price);
             var originalV2 = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(origin), 2, 0);
             var folder = Path.Combine(Path.GetTempPath(), "m15-interleaved-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(folder);
@@ -1137,7 +1143,7 @@ internal static class Program
                     throw new InvalidOperationException("V4 first commit missing core projection.");
                 var firstJournal = first.EventV4?.Journal ??
                     throw new InvalidOperationException("V4 first commit missing event journal.");
-                Assert(first.Name == "V4 Tester" && first.Cash == 3000000 &&
+                Assert(first.Name == "V4 Tester" && first.Cash == expectedAfterCreate &&
                     first.Receipts.Count == 1 && firstJournal.Revision == 0,
                     "V4 projection includes authoritative V3 receipt and starting cash: name=" +
                     first.Name + "; cash=" + first.Cash + "; receipts=" + first.Receipts.Count +
@@ -1172,11 +1178,11 @@ internal static class Program
                 Assert(paid.Status == EventCommitStatus.Committed &&
                     paid.Revision == 4, "purchase must use existing V3 economic evaluator");
                 var saved = gateway.Read().State!;
-                Assert(saved.Cash == 2800000 && saved.Receipts.Count == 2 &&
+                Assert(saved.Cash == expectedAfterCourse && saved.Receipts.Count == 2 &&
                     saved.EventV4!.Journal!.Revision == 2 &&
                     saved.Revision == 4 && saved.EventRng != origin.EventRng &&
                     saved.SchedulerRng == origin.SchedulerRng,
-                    "200,000 VND course debit is receipt-backed; journal and RNG remain isolated");
+                    "authored course price is debited once; journal and RNG remain isolated");
                 var courseBytes = File.ReadAllBytes(filename);
                 var cold = new EventV4CommitGateway(serializer,
                     new AtomicFileSaveStore(filename, serializer), definitions, policies, runtime);
@@ -1203,7 +1209,7 @@ internal static class Program
                 Assert(restarted.Status == LoadStatus.Valid &&
                     restoredState.Receipts.Count == 3 &&
                     restoredState.EventV4!.Journal!.Tickets.Count == 1 &&
-                    restoredState.Cash == 2800000 &&
+                    restoredState.Cash == expectedAfterCourse &&
                     restoredState.PendingChoiceId.Length == 0,
                     "cold replay validates interleaved V3 receipts and event history");
                 Assert(Convert.FromBase64String(restoredState.EventV4!.EmbeddedV3EnvelopeBase64)
