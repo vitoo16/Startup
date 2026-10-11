@@ -22,10 +22,28 @@ namespace StartupLife.Simulation
             IReadOnlyList<GameEventDefinition> definitions, IReadOnlyList<EventCategoryPolicy> policies,
             GameEventContext context, long expectedRevision, string offerCommandId = "",
             long coreRevisionAtOffer = -1)
+            OfferInternal(source, definitions, policies, context, expectedRevision,
+                offerCommandId, coreRevisionAtOffer, false);
+
+        // The daily driver persists a negative check as a single V4 journal
+        // transition. Legacy read-only Offer() retains NoEligibleEvent semantics.
+        public static EventJournalResult CheckDay(EventJournalState source,
+            IReadOnlyList<GameEventDefinition> definitions, IReadOnlyList<EventCategoryPolicy> policies,
+            GameEventContext context, long expectedRevision, string commandId,
+            long coreRevisionAtCheck) =>
+            OfferInternal(source, definitions, policies, context, expectedRevision,
+                commandId, coreRevisionAtCheck, true);
+
+        private static EventJournalResult OfferInternal(EventJournalState source,
+            IReadOnlyList<GameEventDefinition> definitions, IReadOnlyList<EventCategoryPolicy> policies,
+            GameEventContext context, long expectedRevision, string offerCommandId,
+            long coreRevisionAtOffer, bool persistEmpty)
         {
             var policyIndex = Validate(source, definitions, policies);
             if (context == null) throw new ArgumentNullException(nameof(context));
-            if (offerCommandId == null || coreRevisionAtOffer < -1)
+            if (offerCommandId == null || coreRevisionAtOffer < -1 ||
+                (persistEmpty && (coreRevisionAtOffer < 0 ||
+                    string.IsNullOrWhiteSpace(offerCommandId))))
                 return Reject(source, "event.invalid_command");
             if (source.OriginDateIso.Length > 0 && source.OriginDateIso != context.OriginDate.ToString())
                 return Reject(source, "event.origin_mismatch");
@@ -48,6 +66,16 @@ namespace StartupLife.Simulation
                         : Reject(source, "event.command_id_conflict");
                 if (source.Tickets.Any(x => x.ResolutionCommandId == offerCommandId))
                     return Reject(source, "event.command_id_conflict");
+                var priorEmpty = source.NoEligibleDays.FirstOrDefault(x =>
+                    x.CommandId == offerCommandId);
+                if (priorEmpty != null)
+                    return priorEmpty.DateIso == context.Date.ToString() &&
+                           priorEmpty.OriginDateIso == context.OriginDate.ToString() &&
+                           priorEmpty.Stage == context.Stage &&
+                           priorEmpty.Tags.SequenceEqual(context.Tags)
+                        ? new EventJournalResult(EventJournalStatus.AlreadyCommitted,
+                            "", source.Copy())
+                        : Reject(source, "event.command_id_conflict");
             }
             if (expectedRevision != source.Revision) return Reject(source, "event.stale_revision");
             if (source.PendingTicketId.Length > 0) return Reject(source, "event.choice_required");
@@ -55,7 +83,9 @@ namespace StartupLife.Simulation
                 source.Tickets[0].OriginDateIso != context.OriginDate.ToString())
                 return Reject(source, "event.origin_mismatch");
             if (source.Tickets.Count > 0 &&
-                string.CompareOrdinal(context.Date.ToString(), source.Tickets[source.Tickets.Count - 1].OpenedDateIso) <= 0)
+                string.CompareOrdinal(context.Date.ToString(), source.Tickets[source.Tickets.Count - 1].OpenedDateIso) <= 0 ||
+                source.NoEligibleDays.Count > 0 &&
+                string.CompareOrdinal(context.Date.ToString(), source.NoEligibleDays[source.NoEligibleDays.Count - 1].DateIso) <= 0)
                 return Reject(source, "event.window_already_processed");
 
             // Build once from committed journal. The same selector powers cold replay.
@@ -64,7 +94,23 @@ namespace StartupLife.Simulation
             var nextRng = source.EventRng;
             var selected = history.Select(definitions, policyIndex, context, ref nextRng);
             if (selected == null)
-                return new EventJournalResult(EventJournalStatus.NoEligibleEvent, "event.none", source.Copy());
+            {
+                if (!persistEmpty)
+                    return new EventJournalResult(EventJournalStatus.NoEligibleEvent,
+                        "event.none", source.Copy());
+                var empty = source.Copy();
+                empty.NoEligibleDays.Add(new EventNoEligibleDayRecord
+                {
+                    CommandId = offerCommandId,
+                    DateIso = context.Date.ToString(),
+                    OriginDateIso = context.OriginDate.ToString(),
+                    Stage = context.Stage, Tags = context.Tags.ToList(),
+                    CoreRevisionAtCheck = coreRevisionAtOffer
+                });
+                empty.Revision = checked(empty.Revision + 1);
+                return new EventJournalResult(EventJournalStatus.NoEligibleEvent,
+                    "event.none", empty);
+            }
 
             var candidate = source.Copy();
             var ticketId = candidate.RunId + "/event/" +
@@ -142,11 +188,13 @@ namespace StartupLife.Simulation
                 string.IsNullOrWhiteSpace(state.RunId) || state.EventRng == 0 || state.InitialEventRng == 0 ||
                 state.Tickets == null || state.PendingTicketId == null ||
                 state.OutcomeReceipts == null || state.AdvanceBatches == null ||
+                state.NoEligibleDays == null ||
                 state.NextTicketSequence != state.Tickets.Count + 1L ||
                 (state.OriginDateIso.Length > 0 &&
                     EventSelectionHistory.Parse(state.OriginDateIso).ToString() != state.OriginDateIso) ||
                 state.Revision < 0 ||
-                state.Revision > 2L * state.Tickets.Count + state.AdvanceBatches.Count ||
+                state.Revision > 2L * state.Tickets.Count + state.AdvanceBatches.Count +
+                    state.NoEligibleDays.Count ||
                 (state.Tickets.Count == 0 && state.EventRng != state.InitialEventRng))
                 throw new ArgumentException("Invalid event journal or catalog.");
             if (definitions.Any(x => x == null) ||
@@ -215,6 +263,32 @@ namespace StartupLife.Simulation
                     state.PendingTicketId != ticket.Id)
                     throw new ArgumentException("Only the last event may have an unresolved choice.");
             }
+            var checkedDates = new HashSet<string>(state.Tickets.Select(x => x.OpenedDateIso),
+                StringComparer.Ordinal);
+            var lastChecked = "";
+            foreach (var day in state.NoEligibleDays)
+            {
+                if (day == null || string.IsNullOrWhiteSpace(day.CommandId) ||
+                    day.CommandId.Length > 256 ||
+                    ConflictsWithBatchIdentity(state, day.CommandId) ||
+                    !usedCommands.Add(day.CommandId) ||
+                    day.CoreRevisionAtCheck < 0 ||
+                    string.IsNullOrWhiteSpace(day.DateIso) ||
+                    EventSelectionHistory.Parse(day.DateIso).ToString() != day.DateIso ||
+                    !checkedDates.Add(day.DateIso) ||
+                    (lastChecked.Length > 0 &&
+                        string.CompareOrdinal(lastChecked, day.DateIso) >= 0) ||
+                    string.IsNullOrWhiteSpace(day.OriginDateIso) ||
+                    EventSelectionHistory.Parse(day.OriginDateIso).ToString() != day.OriginDateIso ||
+                    day.OriginDateIso != state.OriginDateIso ||
+                    string.CompareOrdinal(day.OriginDateIso, day.DateIso) > 0 ||
+                    day.Stage < 0 || day.Tags == null ||
+                    day.Tags.Any(x => !ContentId.IsValid(x)) ||
+                    !day.Tags.SequenceEqual(day.Tags.Distinct(StringComparer.Ordinal)
+                        .OrderBy(x => x, StringComparer.Ordinal)))
+                    throw new ArgumentException("Invalid no-eligible event day checkpoint.");
+                lastChecked = day.DateIso;
+            }
             foreach (var batch in state.AdvanceBatches)
             {
                 if (batch == null || string.IsNullOrWhiteSpace(batch.RootCommandId) ||
@@ -228,7 +302,8 @@ namespace StartupLife.Simulation
                 // EventAdvanceBatchHistory.Validate, not against UI-provided dates.
             }
             if (state.OutcomeReceipts.Count != completed ||
-                state.Revision != state.Tickets.Count + completed + state.AdvanceBatches.Count ||
+                state.Revision != state.Tickets.Count + completed + state.AdvanceBatches.Count +
+                    state.NoEligibleDays.Count ||
                 (state.Tickets.Count == 0 || state.Tickets[state.Tickets.Count - 1].ResolutionCommandId.Length > 0) &&
                     state.PendingTicketId.Length != 0)
                 throw new ArgumentException("Event choice commands or revision are inconsistent.");

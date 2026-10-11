@@ -291,3 +291,14 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Visual evidence:** NOT RUN, no visible UI or asset changes. **Save impact:** None: V2/V3 frozen fixtures, V4 wire model and serializer output bytes remain unchanged.
 - **Known limitations:** No automatic event scheduling from day boundary, spendable financial XP event rewards, live V4 bootstrap cutover, or Unity runtime/device QA; remain explicitly NOT IMPLEMENTED/NOT RUN.
 - **Files changed:** Integration/StagedEventV4SaveSerializer.cs, tools/EconomicChecks/Program.cs, docs/evidence/M15-T01/JOURNAL.md.
+
+
+## Increment 19 — Replay-safe negative event-day checkpoints (journal foundation)
+
+**Owner:** GPT-6 Technical Director. **M15-T01 PARTIAL**, PR #52 Draft. Code-only source slice.
+- A new **prospective V4-only** `EventNoEligibleDayRecord` captures a day, exact offer context, independent V3 receipt frontier, and command ID when the production selector finds no eligible event. Every recorded empty day consumes exactly one V4 journal revision but no event RNG.
+- `EventDecisionJournal.CheckDay` reuses the existing offer implementation with a persistence flag; ordinary `Offer` retains read-only no-eligible behavior for legacy callers. Both share cold-idempotent command identities and same-day/chronology admission checks.
+- `EventJournalReplay` traverses ticket offers and empty days chronologically with the existing `EventSelectionHistory.Select`, so a forged empty checkpoint cannot cover an eligible event or silently change RNG. No duplicated selector/algorithm.
+- **Skills:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler.
+- **Verification:** engine-free CI pending exact SHA. **Visual:** NOT RUN (source only). **Save:** prospective V4 journal adds NoEligibleDays, with mandatory full cold replay; V2/V3 bytes and immutable fixtures untouched. Historical experimental V4 checkpoints without this field need a future explicit format policy, not silent activation.
+- **Remaining:** V3 historical frontier binding and opt-in gateway/day-batch scheduling to be completed before auto-event claims; production bootstrap unchanged. **Files:** Core/EventJournalContracts.cs, Simulation/EventDecisionJournal.cs, Simulation/EventJournalReplay.cs, this journal.

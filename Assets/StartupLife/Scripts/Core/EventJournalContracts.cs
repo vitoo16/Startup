@@ -52,6 +52,26 @@ namespace StartupLife.Core
         };
     }
 
+    // An evaluated day with no eligible event still needs a durable negative
+    // result; otherwise a cold retry can recheck the day with a different state.
+    [DataContract]
+    public sealed class EventNoEligibleDayRecord
+    {
+        [DataMember(Order = 0)] public string CommandId { get; set; } = "";
+        [DataMember(Order = 1)] public string DateIso { get; set; } = "";
+        [DataMember(Order = 2)] public string OriginDateIso { get; set; } = "";
+        [DataMember(Order = 3)] public int Stage { get; set; }
+        [DataMember(Order = 4)] public List<string> Tags { get; set; } = new List<string>();
+        [DataMember(Order = 5)] public long CoreRevisionAtCheck { get; set; } = -1;
+
+        public EventNoEligibleDayRecord Copy() => new EventNoEligibleDayRecord
+        {
+            CommandId = CommandId, DateIso = DateIso, OriginDateIso = OriginDateIso,
+            Stage = Stage, Tags = new List<string>(Tags),
+            CoreRevisionAtCheck = CoreRevisionAtCheck
+        };
+    }
+
     // Durable batch request. Step receipts stay in the authoritative inner V3
     // receipt stream: no second time engine, no extra copy of each child receipt.
     [DataContract]
@@ -87,6 +107,8 @@ namespace StartupLife.Core
             new List<EventOutcomeReceipt>();
         [DataMember(Order = 9)] public List<EventAdvanceBatchRecord> AdvanceBatches { get; set; } =
             new List<EventAdvanceBatchRecord>();
+        [DataMember(Order = 10)] public List<EventNoEligibleDayRecord> NoEligibleDays { get; set; } =
+            new List<EventNoEligibleDayRecord>();
 
         public EventJournalState Copy() => new EventJournalState
         {
@@ -95,7 +117,8 @@ namespace StartupLife.Core
             OriginDateIso = OriginDateIso,
             Tickets = Tickets.ConvertAll(ticket => ticket.Copy()),
             OutcomeReceipts = OutcomeReceipts.ConvertAll(receipt => receipt.Copy()),
-            AdvanceBatches = AdvanceBatches.ConvertAll(batch => batch.Copy())
+            AdvanceBatches = AdvanceBatches.ConvertAll(batch => batch.Copy()),
+            NoEligibleDays = NoEligibleDays.ConvertAll(day => day.Copy())
         };
     }
 
