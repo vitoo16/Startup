@@ -1047,7 +1047,7 @@ internal static class Program
             var v3 = new V3SaveCompatibilitySerializer(content, GameSession.CreateRestoreValidator(),
                 new V2ToV3Migration(resolver, replay),
                 new StagedV3SaveSerializer(resolver, replay));
-            var definitions = new[] { new GameEventDefinition("career-intro", "career", 2026, 1, 1, 0, 5, 4, 0,
+            var definitions = new[] { new GameEventDefinition("career-intro", "career", 2026, 0, 1, 0, 5, 4, 0,
                 Array.Empty<string>(), Array.Empty<string>(),
                 new[] { new EventChoiceDefinition("continue", "event.continue", "outcome.continue") }) };
             var policies = new[] { new EventCategoryPolicy("career", 0, 7, 2) };
@@ -1066,9 +1066,10 @@ internal static class Program
             Equal(3, JsonSaveSerializer.ReadObject<SaveEnvelope>(v3Bytes).SchemaVersion);
             Equal(LoadStatus.Valid, v3.DeserializeAndValidate(v3Bytes).Status);
             Equal(LoadStatus.Valid, stage.MigrateVerified(v3Bytes).Status);
-            var context = new GameEventContext(original.Date, original.Date, 1,
+            var context = new GameEventContext(original.Date, original.Date, 0,
                 Array.Empty<string>(), Array.Empty<EventOccurrence>());
-            var offer = EventDecisionJournal.Offer(migrated.Payload.Journal, definitions, policies, context, 0);
+            var offer = EventDecisionJournal.Offer(migrated.Payload.Journal, definitions, policies,
+                context, 0, "migration-offer", migrated.CoreState!.Revision);
             Equal(EventJournalStatus.Offered, offer.Status);
             migrated.Payload.Journal = offer.Next;
             var v4Bytes = stage.SerializeVerified(migrated.Payload);
@@ -1154,9 +1155,20 @@ internal static class Program
                     EventCommitStatus.AlreadyCommitted &&
                     File.ReadAllBytes(filename).SequenceEqual(afterCreate),
                     "cold retry of a V3 game command may not duplicate receipt or bytes");
-                var context = new GameEventContext(origin.Date, origin.Date, 0,
-                    Array.Empty<string>(), Array.Empty<EventOccurrence>());
-                var offered = gateway.Offer(origin.RunId, "event-offer-v4", 1, context);
+                var context = new GameEventContext(origin.Date, origin.Date, 1,
+                    new[] { "character-created", "unemployed" }, Array.Empty<EventOccurrence>());
+                var beforeForged = File.ReadAllBytes(filename);
+                Assert(gateway.Offer(origin.RunId, "event-offer-v4", 1,
+                    new GameEventContext(origin.Date, origin.Date, 2,
+                        new[] { "business-active", "employed" },
+                        Array.Empty<EventOccurrence>())).ReasonKey ==
+                    "event.context_not_authoritative" &&
+                    File.ReadAllBytes(filename).SequenceEqual(beforeForged),
+                    "client may not impersonate business or employment tags/stage");
+                var offered = gateway.Offer(origin.RunId, "event-offer-v4", 1);
+                Assert(gateway.Offer(origin.RunId, "event-offer-v4", 1, context).Status ==
+                    EventCommitStatus.AlreadyCommitted,
+                    "legacy context input is accepted only when it matches the committed offer");
                 Assert(offered.Status == EventCommitStatus.Committed && offered.Revision == 2 &&
                     gateway.Read().State!.PendingChoiceId == offered.TicketId,
                     "V4 persisted event blocks pending transition");
@@ -1243,7 +1255,7 @@ internal static class Program
             var v3 = new V3SaveCompatibilitySerializer(content, GameSession.CreateRestoreValidator(),
                 new V2ToV3Migration(archived, replay),
                 new StagedV3SaveSerializer(archived, replay));
-            var eventDefinition = new GameEventDefinition("career-intro", "career", 2026, 1,
+            var eventDefinition = new GameEventDefinition("career-intro", "career", 2026, 0,
                 1, 0, 5, 4, 0, Array.Empty<string>(), Array.Empty<string>(),
                 new[] { new EventChoiceDefinition("continue", "event.continue", "outcome.continue") });
             var defs = new[] { eventDefinition };
@@ -1266,13 +1278,13 @@ internal static class Program
                     "v2 read must migrate only in memory");
                 Assert(File.ReadAllBytes(file).SequenceEqual(prior),
                     "V2 original must remain byte-identical before first command");
-                var context = new GameEventContext(initial.Date, initial.Date, 1,
-                    new[] { "employed" }, Array.Empty<EventOccurrence>());
+                var context = new GameEventContext(initial.Date, initial.Date, 0,
+                    Array.Empty<string>(), Array.Empty<EventOccurrence>());
                 Assert(gateway.Offer("m15-cas", "offer-a", 0, new GameEventContext(
-                    initial.Date, initial.Date.AddDays(1), 1, Array.Empty<string>(),
+                    initial.Date, initial.Date.AddDays(1), 0, Array.Empty<string>(),
                     Array.Empty<EventOccurrence>())).ReasonKey == "event.date_mismatch",
                     "event must not offer into a different V3 calendar day");
-                var offered = gateway.Offer("m15-cas", "offer-a", 0, context);
+                var offered = gateway.Offer("m15-cas", "offer-a", 0);
                 Assert(offered.Status == EventCommitStatus.Committed && offered.Revision == 1,
                     "first offer must commit through physical CAS");
                 var persisted = File.ReadAllBytes(file);
@@ -1338,7 +1350,7 @@ internal static class Program
             var v3 = new V3SaveCompatibilitySerializer(content, GameSession.CreateRestoreValidator(),
                 new V2ToV3Migration(archived, replay),
                 new StagedV3SaveSerializer(archived, replay));
-            var defs = new[] { new GameEventDefinition("career-intro", "career", 2026, 1,
+            var defs = new[] { new GameEventDefinition("career-intro", "career", 2026, 0,
                 1, 0, 5, 4, 0, Array.Empty<string>(), Array.Empty<string>(),
                 new[] { new EventChoiceDefinition("continue", "event.continue", "outcome.continue") }) };
             var policies = new[] { new EventCategoryPolicy("career", 0, 7, 3) };
@@ -1353,7 +1365,7 @@ internal static class Program
             try
             {
                 File.WriteAllBytes(file, v2Bytes);
-                var context = new GameEventContext(original.Date, original.Date, 1,
+                var context = new GameEventContext(original.Date, original.Date, 0,
                     Array.Empty<string>(), Array.Empty<EventOccurrence>());
                 var failed = new EventV4CommitGateway(serializer,
                     new AtomicFileSaveStore(file, serializer,
