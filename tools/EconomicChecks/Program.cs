@@ -1609,6 +1609,19 @@ internal static class Program
                     "event.choice_required" &&
                     File.ReadAllBytes(filename).SequenceEqual(afterOffer),
                     "inner V3 cannot bypass pending event choice with direct advance");
+                var blockedCourse = new GameCommand(CommandKind.PurchaseCourse,
+                    "communication-basics");
+                Assert(gateway.ExecuteCore(new CommandEnvelope(origin.RunId,
+                        "course-while-event", 2, blockedCourse)).ReasonKey ==
+                        "event.choice_required" &&
+                    gateway.ExecuteCore(new CommandEnvelope(origin.RunId,
+                        "resign-while-event", 2,
+                        new GameCommand(CommandKind.Resign))).ReasonKey ==
+                        "event.choice_required" &&
+                    gateway.Read().State!.Cash == expectedAfterCreate &&
+                    gateway.Read().State!.Receipts.Count == 1 &&
+                    File.ReadAllBytes(filename).SequenceEqual(afterOffer),
+                    "pending event freezes economic commands and saves without spending money");
                 Assert(gateway.ExecuteCore(new CommandEnvelope(origin.RunId, "event-offer-v4", 2,
                     new GameCommand(CommandKind.Resign))).ReasonKey == "command.id_conflict",
                     "event command IDs and V3 receipt IDs share a collision domain");

@@ -341,8 +341,13 @@ namespace StartupLife.Integration
                     : Reject(current, "command.id_conflict");
             if (current.Revision != command.ExpectedRevision)
                 return Reject(current, "command.stale_state");
+            // A required choice pauses gameplay, not only the clock. Otherwise
+            // a course purchase, resignation or business change could mutate
+            // the authenticated V3 world while the player sees a blocking event.
+            // Playback acknowledgement carries no game progression and remains
+            // allowed so already-committed presentation cues can finish.
             if (journal.PendingTicketId.Length > 0 &&
-                command.Command.Kind == CommandKind.AdvanceBoundary)
+                command.Command.Kind != CommandKind.AcknowledgePlayback)
                 return Reject(current, "event.choice_required");
             if (coreRunner == null)
                 return Reject(current, "save.v4_core_evaluator_unavailable");

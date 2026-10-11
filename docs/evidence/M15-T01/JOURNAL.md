@@ -263,3 +263,18 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Save impact:** None. No schema changes, no historical fixture mutations and no new reward ledger. Previously unapproved/invalid internal-namespace journal identities now fail closed.
 - **Known limitations:** Production bootstrap remains V3; events still grant authenticated `event/` tags only, not spendable cash/XP. Runtime and catalog-version acceptance remain deferred.
 - **Files changed:** Simulation/EventDecisionJournal.cs; tools/EconomicChecks/Program.cs; this journal.
+
+
+## Increment 17 — Pending event freezes core gameplay until authoritative resolve
+
+**Owner:** GPT-6 Technical Director. **Branch:** `feat/m15-event-selection-foundation`; **M15-T01 remains PARTIAL**, PR #52 Draft/unmerged.
+
+- Changed the existing `EventV4CommitGateway.ExecuteCoreInternal` pending choice gate to reject **all gameplay commands** except `AcknowledgePlayback` (which is a presentation-only acknowledgement). Previously only `AdvanceBoundary` was blocked, allowing purchases, resignation or business actions while a modal event decision remained unresolved. Existing V3 gameplay engine, V4 CAS and journal are reused; no second command authority.
+- Retains retry precedence: a committed command ID is still recognized as `AlreadyCommitted` before pending-state gating; stale IDs and conflicting IDs still reject before evaluation.
+- Added actual-file EconomicChecks assertions using the existing V2→V3→V4 integrated scenario: both `PurchaseCourse` and `Resign` must return `event.choice_required`, leave cash and V3 receipt count stable and preserve the entire save file byte-for-byte. Existing post-resolution course charge and cold retry tests remain unchanged.
+- **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler; project workflow/manifest reviewed.
+- **Tests:** Engine-free CI must be checked for the exact implementation SHA; Unity Editor/PlayMode/device tests NOT RUN.
+- **Visual evidence:** Not applicable to this source-only admission rule; no view or art altered.
+- **Save impact:** None; no wire/schema change or frozen historical fixture edit.
+- **Known limitations:** Staged V4 only, no production bootstrap cutover, automatic event-day trigger, spendable event cash/XP or production Unity proof.
+- **Files changed:** Integration/EventV4CommitGateway.cs, tools/EconomicChecks/Program.cs, docs/evidence/M15-T01/JOURNAL.md.
