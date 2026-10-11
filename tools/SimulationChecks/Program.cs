@@ -148,12 +148,18 @@ internal static class Program
             state.Employment = null;
             Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
                 "pay-reward", offered.TicketId, "take-bonus"));
+            void ThrowsOverflow(Action action)
+            {
+                try { action(); }
+                catch (OverflowException) { return; }
+                throw new Exception("Expected checked reward arithmetic overflow");
+            }
             state.Employment = new EmploymentState { Xp = long.MaxValue };
-            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+            ThrowsOverflow(() => EventDecisionJournal.PlanReward(state, defs, policies,
                 "pay-reward", offered.TicketId, "take-bonus"));
             state.Employment.Xp = 100;
             state.Cash = long.MaxValue;
-            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+            ThrowsOverflow(() => EventDecisionJournal.PlanReward(state, defs, policies,
                 "pay-reward", offered.TicketId, "take-bonus"));
             state.Cash = 200000;
             state.EventRng++;
