@@ -14,6 +14,21 @@ namespace StartupLife.Editor
     // Unity Editor writes both table and SharedTableData; never hand-edit YAML IDs.
     public static class DashboardLocalizationEditorSync
     {
+        [InitializeOnLoadMethod]
+        private static void AutoSyncOnReload()
+        {
+            // Install required keys on the next safe Editor tick. Do not rewrite
+            // assets if unchanged, avoiding needless source-control churn.
+            EditorApplication.delayCall += () =>
+            {
+                if (EditorApplication.isPlayingOrWillChangePlaymode ||
+                    EditorApplication.isCompiling || EditorApplication.isUpdating) return;
+                try { SyncVietnamese(); }
+                catch (Exception error) { Debug.LogWarning(
+                    "Dashboard localization auto-sync deferred: " + error.Message); }
+            };
+        }
+
         private const string LocalePath = "Assets/StartupLife/Localization";
         private const string FontPath = "Assets/StartupLife/UI/Fonts/NotoSansVietnamese.asset";
 
@@ -27,24 +42,31 @@ namespace StartupLife.Editor
                 LocalizationEditorSettings.CreateStringTableCollection(LocalizedKeyLabel.Table, LocalePath);
             var table = (StringTable)collection.GetTable(locale.Identifier);
             if (table == null) throw new InvalidOperationException("Missing Vietnamese FirstPlayableUI table.");
-            Apply(table);
+            var changed = Apply(table);
+            if (changed == 0) return;
             EditorUtility.SetDirty(table);
             EditorUtility.SetDirty(collection.SharedData);
             EditorUtility.SetDirty(collection);
             AssetDatabase.SaveAssets();
-            Debug.Log("Startup Life: synced " + DashboardLocalizationCatalog.Entries.Count +
+            Debug.Log("Startup Life: imported " + changed +
                 " Vietnamese dashboard entries.");
         }
 
-        public static void Apply(StringTable table)
+        public static int Apply(StringTable table)
         {
             if (table == null) throw new ArgumentNullException(nameof(table));
+            var changed = 0;
             foreach (var translation in DashboardLocalizationCatalog.Entries)
             {
                 var entry = table.GetEntry(translation.Key);
-                if (entry == null) table.AddEntry(translation.Key, translation.Value);
-                else if (entry.Value != translation.Value) entry.Value = translation.Value;
+                if (entry == null) { table.AddEntry(translation.Key, translation.Value); changed++; }
+                else if (entry.Value != translation.Value)
+                {
+                    entry.Value = translation.Value;
+                    changed++;
+                }
             }
+            return changed;
         }
 
         [MenuItem("Tools/Startup Life/Localization/Validate Dashboard Vietnamese")]

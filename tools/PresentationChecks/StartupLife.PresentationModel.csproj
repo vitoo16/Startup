@@ -10,5 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="../SimulationChecks/StartupLife.Core.csproj" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/FirstPlayableFlow.cs" />
+    <Compile Include="../../Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs" />
   </ItemGroup>
 </Project>
