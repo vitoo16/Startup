@@ -6,6 +6,24 @@ using System.Linq;
 
 namespace StartupLife.Core
 {
+    // Author-controlled financial/career consequence, never an applied receipt.
+    // The V4 choice gateway must refuse this specification until it can
+    // atomically pair a V3 economic receipt with the selected V4 outcome.
+    public sealed class EventChoiceReward
+    {
+        public long CashDeltaVnd { get; }
+        public long CareerXpDelta { get; }
+
+        public EventChoiceReward(long cashDeltaVnd, long careerXpDelta)
+        {
+            if ((cashDeltaVnd == 0 && careerXpDelta == 0) ||
+                cashDeltaVnd == long.MinValue || careerXpDelta < 0)
+                throw new ArgumentException("Invalid authored event reward.");
+            CashDeltaVnd = cashDeltaVnd;
+            CareerXpDelta = careerXpDelta;
+        }
+    }
+
     // Immutable authored content. Event execution and state persistence belong to later layers.
     public sealed class EventChoiceDefinition
     {
@@ -15,9 +33,11 @@ namespace StartupLife.Core
         // Only event-scoped gameplay tags. Never impersonate payroll, business
         // ownership, courses or any other verified V3 core fact.
         public IReadOnlyList<string> GrantedTags { get; }
+        // Null means tag-only outcome; no payout is silently implied.
+        public EventChoiceReward? Reward { get; }
 
         public EventChoiceDefinition(string id, string labelKey, string outcomeId,
-            IEnumerable<string>? grantedTags = null)
+            IEnumerable<string>? grantedTags = null, EventChoiceReward? reward = null)
         {
             _ = new ContentId(id);
             _ = new ContentId(outcomeId);
@@ -31,6 +51,7 @@ namespace StartupLife.Core
             Id = id;
             LabelKey = labelKey;
             OutcomeId = outcomeId;
+            Reward = reward;
             GrantedTags = Array.AsReadOnly(tags.OrderBy(x => x, StringComparer.Ordinal).ToArray());
         }
     }

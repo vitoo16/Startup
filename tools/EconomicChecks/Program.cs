@@ -2103,6 +2103,87 @@ internal static class Program
                 catch (IOException) { }
             }
         });
+        Check("M15 financial reward choices reject without a V3 receipt and preserve pending save", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay();
+            var v3 = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var definitions = new[] { new GameEventDefinition(
+                "cash-test", "life", 2026, 0, 1, 0, 1, 1, 0,
+                Array.Empty<string>(), Array.Empty<string>(), new[]
+                {
+                    new EventChoiceDefinition("reward", "event.reward", "outcome.reward",
+                        reward: new EventChoiceReward(125000, 30)),
+                    new EventChoiceDefinition("pass", "event.pass", "outcome.pass")
+                }) };
+            var policies = new[] { new EventCategoryPolicy("life", 0, 7, 1) };
+            var strict = new StagedEventV4SaveSerializer(v3, definitions, policies);
+            var serializer = new EventV4CompatibilitySerializer(strict);
+            var initial = GameSession.NewState(content, "m15-reward-guard", 37919UL,
+                new SimDate(2026, 10, 1));
+            var dir = Path.Combine(Path.GetTempPath(),
+                "m15-reward-guard-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            var path = Path.Combine(dir, "game.save");
+            try
+            {
+                File.WriteAllBytes(path, JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(initial), 2, 0));
+                EventV4CommitGateway Cold() => new EventV4CommitGateway(
+                    serializer, new AtomicFileSaveStore(path, serializer),
+                    definitions, policies);
+                var offered = Cold().Offer(initial.RunId, "reward-offer", 0);
+                Assert(offered.Status == EventCommitStatus.Committed,
+                    "reward-bearing choice must still offer without posting money");
+                var before = Cold().Read().State!;
+                var bytes = File.ReadAllBytes(path);
+                var rejected = Cold().Resolve(initial.RunId, "reward-resolve",
+                    offered.Revision, offered.TicketId, "reward");
+                Assert(rejected.Status == EventCommitStatus.Rejected &&
+                    rejected.ReasonKey == "event.reward_processor_unavailable" &&
+                    Cold().Read().State!.Cash == before.Cash &&
+                    Cold().Read().State!.Revision == before.Revision &&
+                    Cold().ReadPendingChoice()!.TicketId == offered.TicketId &&
+                    File.ReadAllBytes(path).SequenceEqual(bytes),
+                    "unimplemented payout cannot consume choice, wallet or CAS revision");
+                var safe = Cold().Resolve(initial.RunId, "reward-pass",
+                    offered.Revision, offered.TicketId, "pass");
+                Assert(safe.Status == EventCommitStatus.Committed &&
+                    Cold().ReadPendingChoice() == null &&
+                    Cold().Read().State!.Cash == before.Cash &&
+                    Cold().Read().State!.EventV4!.Journal!.OutcomeReceipts.Count == 1,
+                    "tag-only fallback must resolve once through existing V4 path");
+                var afterBytes = File.ReadAllBytes(path);
+                Assert(Cold().Resolve(initial.RunId, "reward-pass",
+                    offered.Revision, offered.TicketId, "pass").Status ==
+                    EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(path).SequenceEqual(afterBytes),
+                    "cold retry cannot resolve the fallback twice");
+                var changed = new[] { new GameEventDefinition(
+                    "cash-test", "life", 2026, 0, 1, 0, 1, 1, 0,
+                    Array.Empty<string>(), Array.Empty<string>(), new[]
+                    {
+                        new EventChoiceDefinition("reward", "event.reward", "outcome.reward",
+                            reward: new EventChoiceReward(125000, 30)),
+                        new EventChoiceDefinition("pass", "event.pass", "outcome.pass",
+                            reward: new EventChoiceReward(15000, 0))
+                    }) };
+                // A catalog update must never retroactively credit a settled
+                // tag-only outcome. The altered catalog is not cold-compatible.
+                var incompatible = new StagedEventV4SaveSerializer(v3, changed, policies);
+                Assert(incompatible.DeserializeVerified(afterBytes).Status == LoadStatus.Corrupt &&
+                    File.ReadAllBytes(path).SequenceEqual(afterBytes),
+                    "old resolved choices cannot acquire silent cash on catalog change");
+            }
+            finally
+            {
+                try { Directory.Delete(dir, true); }
+                catch (IOException) { }
+            }
+        });
         Check("M15 V4 existing atomic store commits pending and resolve, with cold idempotent retry", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();

@@ -45,6 +45,23 @@ internal static class Program
             Throws(() => new GameEventDefinition("offer", "career", 2026, 0, 1, 0, 1, 7, 0,
                 Array.Empty<string>(), Array.Empty<string>(), new[] { option, option }));
         });
+        Check("M15 authored event rewards are immutable specifications, not wallet mutations", () =>
+        {
+            Throws(() => new EventChoiceReward(0, 0));
+            Throws(() => new EventChoiceReward(0, -1));
+            Throws(() => new EventChoiceReward(long.MinValue, 0));
+            var bonus = new EventChoiceReward(120000, 25);
+            var cost = new EventChoiceReward(-30000, 0);
+            var rewarded = new EventChoiceDefinition("accept", "event.accept",
+                "outcome.accept", new[] { "event/promise" }, bonus);
+            True(rewarded.Reward != null && rewarded.Reward.CashDeltaVnd == 120000 &&
+                rewarded.Reward.CareerXpDelta == 25 &&
+                rewarded.GrantedTags.SequenceEqual(new[] { "event/promise" }));
+            True(cost.CashDeltaVnd == -30000 && cost.CareerXpDelta == 0);
+            var unchanged = new EventChoiceDefinition("decline", "event.decline",
+                "outcome.decline");
+            True(unchanged.Reward == null && unchanged.GrantedTags.Count == 0);
+        });
         Check("M15 ineligible events never consume RNG, with window, tags, stage and max-use gates", () =>
         {
             var eventDef = Event("offer", 2, 2, 5, 4, 1, new[] { "employed" }, new[] { "blocked" });

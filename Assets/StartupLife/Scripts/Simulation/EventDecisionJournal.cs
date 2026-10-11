@@ -248,7 +248,12 @@ namespace StartupLife.Simulation
                 {
                     var choice = definition.Choices.FirstOrDefault(x =>
                         x.Id == ticket.ChoiceId && x.OutcomeId == ticket.OutcomeId);
+                    // A newly authored money/XP consequence cannot be
+                    // retroactively attached to an older tag-only V4 receipt.
+                    // Until V3-native financial receipts are coupled to this
+                    // ticket, cold admission must fail instead of inventing credit.
                     if (string.IsNullOrWhiteSpace(ticket.ChoiceId) ||
+                        choice?.Reward != null ||
                         ConflictsWithBatchIdentity(state, ticket.ResolutionCommandId) ||
                         !usedCommands.Add(ticket.ResolutionCommandId) || choice == null ||
                         completed >= state.OutcomeReceipts.Count)

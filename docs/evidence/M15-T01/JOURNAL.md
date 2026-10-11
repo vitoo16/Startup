@@ -353,3 +353,17 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Tests:** new exact-head CI required. **Visual:** NOT RUN. **Save:** no wire or schema changes, frozen historical sources untouched.
 - **Known limitations:** production bootstrap and monetary/XP event payout still pending.
 - **Files changed:** Integration/EventV4CompatibilitySerializer.cs, this journal.
+
+
+## Increment 25 — Financial event reward authoring and fail-closed admission
+
+**Owner:** GPT-6 Technical Director. **Milestone:** M15-T01 remains PARTIAL, PR #52 Draft.
+- Introduced immutable `EventChoiceReward` content with signed VND cash delta and nonnegative Career XP (invalid zero-effect or nonrepresentable minimum-long amounts reject). `EventChoiceDefinition.Reward` is optional; existing twenty Vietnamese event choices remain tag-only and unchanged. These numbers are **authored intents, not executed grants**.
+- `EventV4CommitGateway.Resolve` refuses a choice containing a financial reward with `event.reward_processor_unavailable` until a V3-native authenticated reward receipt evaluator exists. No V4-only wallet edits or shadow ledger. Pending choice and save bytes are preserved. Tag-only choices continue through the existing CAS.
+- The V4 journal validator also rejects a previously resolved tag-only choice if catalog content is edited to introduce a payout. This prevents silently adopting reward effects for old committed saves; an explicit catalog/migration policy will be necessary before enabling them.
+- **Tests:** engine-free SimulationChecks validates authoring and immutability; real-file EconomicChecks offers a rewarded event, proves rejected payout leaves cash/pending/revision/bytes unchanged, verifies an alternate tag-only resolution is cold-idempotent, and rejects a rewritten catalog's payout on old resolved bytes. Await exact-head CI.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Visual evidence:** NOT RUN (no production UI/art changes).
+- **Save impact:** None to frozen V2/V3 and current V4 wire; authored reward data is not persisted/applied. Historical paid-event catalog migration and V3-native reward command still NOT IMPLEMENTED.
+- **Known limitations:** Real spendable cash/XP outcomes remain blocked until both GameSession receipt replay and V4 cause binding verify exactly once. Production V4 bootstrap/Unity runtime QA remain deferred.
+- **Files changed:** EventDefinitions.cs, EventDecisionJournal.cs, EventV4CommitGateway.cs, tools/SimulationChecks/Program.cs, tools/EconomicChecks/Program.cs, this journal.
