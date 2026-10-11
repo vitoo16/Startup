@@ -94,9 +94,14 @@ namespace StartupLife.Integration
             };
         }
 
-        public byte[] SerializeVerified(EventV4Payload payload)
+        public byte[] SerializeVerified(EventV4Payload payload) =>
+            SerializeVerified(payload, out _);
+
+        // Reuse the already validated core projection during a candidate write.
+        // Do not force a second complete V3 + event replay just to compare DTOs.
+        internal byte[] SerializeVerified(EventV4Payload payload, out GameState core)
         {
-            var core = ValidatePayload(payload);
+            core = ValidatePayload(payload);
             return JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(payload), 4,
                 checked(core.Revision + payload.Journal!.Revision));
         }

@@ -41,14 +41,10 @@ namespace StartupLife.Integration
         {
             if (state == null || state.SaveVersion != 4 || state.EventV4 == null)
                 throw new ArgumentException("A V4 attached state is required.");
-            var validatedWire = staged.SerializeVerified(state.EventV4);
-            var admitted = staged.DeserializeVerified(validatedWire);
-            if (admitted.Status != LoadStatus.Valid ||
-                admitted.CoreState == null || admitted.Payload == null)
-                throw new ArgumentException("V4 candidate did not survive cold validation.");
+            var validatedWire = staged.SerializeVerified(state.EventV4, out var core);
             // Refuse any state mutation outside the projected EventJournal. That also
             // protects V3 salary, economics, receipts and scheduler RNG from silent writes.
-            var expected = Project(admitted.CoreState, admitted.Payload);
+            var expected = Project(core, state.EventV4);
             var claimed = JsonSaveSerializer.WriteObject(state);
             var canonical = JsonSaveSerializer.WriteObject(expected);
             if (!claimed.SequenceEqual(canonical))
