@@ -8,6 +8,7 @@ using StartupLife.Core;
 using StartupLife.Application;
 using StartupLife.Infrastructure;
 using StartupLife.Presentation;
+using StartupLife.Content;
 
 internal static class Program
 {
@@ -48,11 +49,18 @@ internal static class Program
     private static void EventChoiceTranslations()
     {
         var entries = EventLocalizationCatalog.Entries;
-        Equal(5, entries.Count);
+        Equal(5 + FirstPlayableEventContent.VietnameseEntries.Count, entries.Count);
         Equal(entries.Count, entries.Select(x => x.Key)
             .Distinct(StringComparer.Ordinal).Count());
-        True(entries.All(x => x.Key.StartsWith("event.choice.", StringComparison.Ordinal)
+        True(entries.All(x => x.Key.StartsWith("event.", StringComparison.Ordinal)
             && !string.IsNullOrWhiteSpace(x.Value)));
+        var keys = new HashSet<string>(entries.Select(x => x.Key), StringComparer.Ordinal);
+        foreach (var story in FirstPlayableEventContent.Definitions)
+        {
+            True(keys.Contains(story.TitleKey));
+            True(keys.Contains(story.BodyKey));
+            True(story.Choices.All(x => keys.Contains(x.LabelKey)));
+        }
         foreach (var key in new[] { "title", "prompt", "retry", "changed", "unavailable" })
             True(entries.Any(x => x.Key == "event.choice." + key));
         ThrowsNotSupported(() =>
