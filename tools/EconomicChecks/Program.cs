@@ -1133,6 +1133,13 @@ internal static class Program
                 EventV4CommitGateway Cold() =>
                     Gateway(new AtomicFileSaveStore(filename, serializer));
                 var gateway = Cold();
+                var beforeCreation = File.ReadAllBytes(filename);
+                Assert(gateway.AdvanceDay(new CommandEnvelope(original.RunId,
+                    "batch-before-character", 0,
+                    new GameCommand(CommandKind.AdvanceBoundary))).StopReason ==
+                    "InvalidRequest" &&
+                    File.ReadAllBytes(filename).SequenceEqual(beforeCreation),
+                    "pre-character advance cannot create an unfinishable durable batch");
                 var created = gateway.ExecuteGameplay(new CommandEnvelope(
                     original.RunId, "batch-create-character", 0,
                     new GameCommand(CommandKind.CreateCharacter, "fresh", 22,
