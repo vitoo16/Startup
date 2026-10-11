@@ -9,11 +9,6 @@ namespace StartupLife.Presentation
     {
         private static readonly KeyValuePair<string,string>[] Source =
         {
-            new KeyValuePair<string,string>("event.choice.title", "Sự kiện cần quyết định"),
-            new KeyValuePair<string,string>("event.choice.prompt", "Chọn một phương án để tiếp tục."),
-            new KeyValuePair<string,string>("event.choice.retry", "Lưu chưa chắc chắn. Nhấn lại cùng phương án để thử lại."),
-            new KeyValuePair<string,string>("event.choice.changed", "Trạng thái đã thay đổi. Hãy kiểm tra và chọn lại."),
-            new KeyValuePair<string,string>("event.choice.unavailable", "Chưa thể kiểm tra dữ liệu sự kiện. Vui lòng thử lại sau."),
             new KeyValuePair<string,string>("dashboard.tab.career", "Nghề nghiệp"),
             new KeyValuePair<string,string>("dashboard.tab.skills", "Kỹ năng"),
             new KeyValuePair<string,string>("dashboard.tab.finance", "Tài chính"),
