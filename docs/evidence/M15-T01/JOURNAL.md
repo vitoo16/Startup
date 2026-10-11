@@ -378,3 +378,13 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-head CI pending. **Visual:** NOT RUN. **Save impact:** none, V2/V3 and V4 wire untouched. **Known limitations:** economic reward receipt and gameplay bootstrap remain future increments.
 - **Files changed:** Simulation/EventDecisionJournal.cs; Integration/EventV4CommitGateway.cs; tools/SimulationChecks/Program.cs; JOURNAL.md.
+
+
+## Increment 27 — Prevent reward-only event softlocks
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL; PR #52 Draft/unmerged.
+
+- During the temporary fail-closed phase before V3 financial reward receipts, journal/catalog validation now refuses an event in which **every** choice has an authored financial reward. Such a catalog would create a pending choice with no resolvable path. Tag-only fallback choices keep gameplay recoverable, and the ordinary planner still rejects rewarded outcomes without persistence.
+- SimulationChecks verifies that reward-only catalogs reject at admission, not only at resolve time.
+- **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler. **Tests:** exact-head engine-free CI pending. **Visual:** NOT RUN. **Save:** no wire/schema change. **Limitations:** no spendable event cash/XP yet; bootstrap & Unity QA deferred.
+- **Files changed:** EventDecisionJournal.cs, SimulationChecks/Program.cs, JOURNAL.md.

@@ -212,6 +212,11 @@ namespace StartupLife.Simulation
             var categories = policies.ToDictionary(x => x.Id, StringComparer.Ordinal);
             if (definitions.Any(x => !categories.ContainsKey(x.CategoryId)))
                 throw new ArgumentException("An event has no category policy.");
+            // Until V3-native reward receipts are implemented, a reward-only
+            // event would trap the player in an unresolvable pending choice.
+            // Every eligible event needs at least one safe tag-only option.
+            if (definitions.Any(x => x.Choices.All(choice => choice.Reward != null)))
+                throw new ArgumentException("Reward-only events cannot yet be resolved.");
             var completed = 0;
             var usedCommands = new HashSet<string>(StringComparer.Ordinal);
             string lastDay = "";

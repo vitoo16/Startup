@@ -64,7 +64,13 @@ internal static class Program
             var defs = new[] { new GameEventDefinition("bonus-day", "career", 2026,
                 0, 1, 0, 1, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
                 new[] { rewarded, unchanged }) };
+            var rewardOnly = new[] { new GameEventDefinition("reward-only", "career",
+                2026, 0, 1, 0, 1, 1, 0, Array.Empty<string>(),
+                Array.Empty<string>(), new[] { rewarded }) };
             var policies = new[] { new EventCategoryPolicy("career", 0, 5, 1) };
+            Throws(() => EventDecisionJournal.Validate(
+                EventDecisionJournal.New("reward-only-run", 1),
+                rewardOnly, policies));
             var origin = new SimDate(2026, 10, 1);
             var offered = EventDecisionJournal.Offer(
                 EventDecisionJournal.New("intent-only", 1), defs, policies,
