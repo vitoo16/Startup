@@ -1136,7 +1136,9 @@ internal static class Program
                 var first = gateway.Read().State!;
                 Assert(first.Name == "V4 Tester" && first.Cash == 3000000 &&
                     first.Receipts.Count == 1 && first.EventV4!.Journal!.Revision == 0,
-                    "V4 projection includes authoritative V3 receipt and starting cash");
+                    "V4 projection includes authoritative V3 receipt and starting cash: name=" +
+                    first.Name + "; cash=" + first.Cash + "; receipts=" + first.Receipts.Count +
+                    "; journal=" + first.EventV4.Journal.Revision);
                 var afterCreate = File.ReadAllBytes(filename);
                 Assert(gateway.ExecuteCore(new CommandEnvelope(
                     origin.RunId, "create-v4", 0, created)).Status ==
