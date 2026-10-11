@@ -2067,6 +2067,35 @@ internal static class Program
                     Cold().AdvanceDay(secondRoot).StopReason == "TargetReached" &&
                     File.ReadAllBytes(file).SequenceEqual(savedBytes),
                     "automatic empty day is cold replayable and original batch retries read-only");
+                // Exercise the actual V3 economic ledger via the same V4 CAS
+                // after an automatic event window, not an empty UI portfolio.
+                var launchRequest = new CommandEnvelope(source.RunId,
+                    "auto-business-launch", next.Revision,
+                    new GameCommand(CommandKind.LaunchBusiness, "online-store", 100,
+                        appearanceId: "v1"));
+                var launched = Cold().ExecuteCore(launchRequest);
+                Assert(launched.Status == EventCommitStatus.Committed,
+                    "verified V4 must still launch a real V3 business: " + launched.ReasonKey);
+                var view = new EventV4GameCommands(Cold(), content, economics);
+                var portfolio = view.ReadBusinesses();
+                var operations = view.ReadBusinessOperations();
+                var dashboard = view.ReadLifeDashboard();
+                var financial = view.ReadCommittedFinance();
+                Assert(portfolio.Businesses.Count == 1 &&
+                    portfolio.Businesses[0].DefinitionId == "online-store" &&
+                    portfolio.Game.Revision == launched.Revision &&
+                    operations.Portfolio.Game.Revision == launched.Revision &&
+                    operations.OwnedBusinesses.Count == 1 &&
+                    operations.OwnedBusinesses[0].Business.DefinitionId == "online-store" &&
+                    dashboard.Game.Revision == launched.Revision &&
+                    dashboard.Finance.CashVnd == portfolio.Game.Cash &&
+                    financial != null,
+                    "V4 UI must project the actual V3 business and wallet at one CAS frontier");
+                var afterLaunchBytes = File.ReadAllBytes(file);
+                Assert(Cold().ExecuteCore(launchRequest).Status ==
+                        EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(file).SequenceEqual(afterLaunchBytes),
+                    "cold V4 business launch retry must never repeat an investment");
             }
             finally
             {
