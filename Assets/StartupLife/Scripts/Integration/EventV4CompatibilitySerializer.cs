@@ -84,7 +84,7 @@ namespace StartupLife.Integration
             return new EconomicV3Payload
             {
                 WireSchema = economic.WireSchema,
-                Current = projected,
+                Current = target,
                 Activation = economic.Activation,
                 EconomicRecords = economic.EconomicRecords,
                 OriginalV2PayloadBase64 = economic.OriginalV2PayloadBase64,
