@@ -407,3 +407,13 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - The presentation bridge resumes a durable unfinished batch after restart with the authenticated original root. No second clock engine, receipt book, wallet, or separate save file.
 - **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-head engine-free CI/static Unity checks pending; no Unity Editor/PlayMode device pass claimed. **Visual evidence:** NOT RUN, bootstrap feature flag defaults OFF. **Save impact:** none for existing V2/V3 fixtures; V4 opt-in commits schema4 through verified gateway only. **Known limitations:** no authenticated financial event payouts, fresh V4 genesis, or on-device integration test. **Files changed:** Presentation/StartupLifeBootstrapper.cs; JOURNAL.md.
+
+
+## Increment 30 — Recovery-safe presentation batch reconciliation
+
+**Owner model:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL, PR #52 Draft/unmerged.
+
+- `EventV4GameCommands.ResumeInterruptedBatch` now checks the verified-store load status before consulting batch history. Missing, unreadable or untrusted projections are delegated to the unchanged authoritative gateway, which returns its own `RecoveryRequired` stop without a UI adapter exception or synthetic state.
+- The file-backed M15 automatic-day regression explicitly invokes a presentation adapter against a missing save and verifies `RecoveryRequired`; existing durable batch-root resume and exactly-once date tests remain unchanged.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Tests:** exact-head CI pending; **Visual evidence:** NOT RUN (Unity deferred); **Save impact:** none; **Known limitations:** opt-in V4 bootstrap requires existing save; V3-native event payout not implemented. **Files changed:** EventV4GameCommands.cs, tools/EconomicChecks/Program.cs, JOURNAL.md.

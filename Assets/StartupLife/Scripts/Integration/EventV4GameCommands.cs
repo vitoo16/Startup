@@ -44,8 +44,14 @@ namespace StartupLife.Integration
             if (request.Command == null ||
                 request.Command.Kind != CommandKind.AdvanceBoundary)
                 return request;
-            var current = Verified();
-            var active = current.EventV4!.Journal!.AdvanceBatches.FirstOrDefault(x =>
+            var read = gateway.Read();
+            if ((read.Status != LoadStatus.Valid &&
+                 read.Status != LoadStatus.RecoveredBackup) ||
+                read.State?.SaveVersion != 4 ||
+                read.State.EventV4?.Journal == null)
+                return request; // Gateway owns recovery/error classification.
+            var current = read.State;
+            var active = current.EventV4.Journal.AdvanceBatches.FirstOrDefault(x =>
                 string.CompareOrdinal(current.DateIso, x.TargetDateIso) < 0);
             if (active == null || active.Mode != mode || current.RunId != request.RunId)
                 return request;

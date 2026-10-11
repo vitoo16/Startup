@@ -2013,6 +2013,15 @@ internal static class Program
             {
                 File.WriteAllBytes(file, JsonSaveSerializer.Wrap(
                     JsonSaveSerializer.WriteObject(source), 2, 0));
+                var missing = new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(file + ".missing", serializer),
+                    definitions, policies, runner, automaticDailyChecks: true);
+                var missingPort = new EventV4GameCommands(missing, content, economics);
+                Assert(missingPort.AdvanceDay(new CommandEnvelope(source.RunId,
+                    "missing-adapter-day", 0,
+                    new GameCommand(CommandKind.AdvanceBoundary))).StopReason ==
+                    "RecoveryRequired",
+                    "missing V4 checkpoint is reported by gateway, not thrown by UI adapter");
                 EventV4CommitGateway Cold() => new EventV4CommitGateway(
                     serializer, new AtomicFileSaveStore(file, serializer),
                     definitions, policies, runner, automaticDailyChecks: true);
