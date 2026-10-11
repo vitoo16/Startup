@@ -1217,6 +1217,25 @@ internal static class Program
                     gateway.Read().State!.PendingChoiceId == offered.TicketId,
                     "V4 persisted event blocks pending transition");
                 var afterOffer = File.ReadAllBytes(filename);
+                var sourceWire = gateway.Read().State!.EventV4!;
+                var strictV4 = new StagedEventV4SaveSerializer(v3, definitions, policies);
+                EventV4Payload AlteredOffer() =>
+                    JsonSaveSerializer.ReadObject<EventV4Payload>(
+                        JsonSaveSerializer.WriteObject(sourceWire));
+                var forgedStage = AlteredOffer();
+                forgedStage.Journal!.Tickets[0].Stage = 2;
+                Throws<ArgumentException>(() => strictV4.SerializeVerified(forgedStage));
+                var forgedTags = AlteredOffer();
+                forgedTags.Journal!.Tickets[0].Tags.Clear();
+                Throws<ArgumentException>(() => strictV4.SerializeVerified(forgedTags));
+                var forgedOrigin = AlteredOffer();
+                forgedOrigin.Journal!.OriginDateIso = "2026-09-01";
+                Throws<ArgumentException>(() => strictV4.SerializeVerified(forgedOrigin));
+                var futureFrontier = AlteredOffer();
+                futureFrontier.Journal!.Tickets[0].CoreRevisionAtOffer++;
+                Throws<ArgumentException>(() => strictV4.SerializeVerified(futureFrontier));
+                Assert(File.ReadAllBytes(filename).SequenceEqual(afterOffer),
+                    "context/activation tampering must never rewrite committed file");
                 Assert(gateway.ExecuteCore(new CommandEnvelope(origin.RunId, "clock-v4", 2,
                     new GameCommand(CommandKind.AdvanceBoundary))).ReasonKey ==
                     "event.choice_required" &&
