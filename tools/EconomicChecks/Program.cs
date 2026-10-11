@@ -1201,7 +1201,7 @@ internal static class Program
                     restoredState.Cash == 2800000 &&
                     restoredState.PendingChoiceId.Length == 0,
                     "cold replay validates interleaved V3 receipts and event history");
-                Assert(Convert.FromBase64String(restoredState.EventV4.EmbeddedV3EnvelopeBase64)
+                Assert(Convert.FromBase64String(restoredState.EventV4!.EmbeddedV3EnvelopeBase64)
                     .Length > 0 && JsonSaveSerializer.ReadObject<SaveEnvelope>(
                         File.ReadAllBytes(filename)).SchemaVersion == 4,
                     "authoritative save remains single nested V3 within V4, not independent files");
