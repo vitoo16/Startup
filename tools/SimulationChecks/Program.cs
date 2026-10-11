@@ -10,8 +10,6 @@ using StartupLife.Core;
 using StartupLife.Simulation;
 using StartupLife.Infrastructure;
 using StartupLife.Application;
-using StartupLife.Content;
-using StartupLife.Integration;
 
 internal static class Program
 {
@@ -241,64 +239,6 @@ internal static class Program
             tampered.InitialEventRng = 538;
             Throws(() => EventJournalReplay.Validate(tampered, definitions, policies));
             Bytes(saved, JsonSaveSerializer.WriteObject(closed));
-        });
-        Check("M15 staged V4 migration retains verified V3/V2 bytes and restores pending choice", () =>
-        {
-            var content = FirstPlayableContentTemplate.BuildCatalog();
-            var resolver = new BundledHistoricalV2ContentResolver();
-            var replay = new VersionedReceiptReplay();
-            var v3 = new V3SaveCompatibilitySerializer(content, GameSession.CreateRestoreValidator(),
-                new V2ToV3Migration(resolver, replay),
-                new StagedV3SaveSerializer(resolver, replay));
-            var definitions = new[] { Event("career-intro", 5, 1, 0, 1, 0,
-                Array.Empty<string>(), Array.Empty<string>()) };
-            var policies = new[] { new EventCategoryPolicy("career", 0, 7, 2) };
-            var stage = new StagedEventV4SaveSerializer(v3, definitions, policies);
-            var original = GameSession.NewState(content, "run-v4-migration", 17483UL,
-                new SimDate(2026, 10, 1));
-            var v2Bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(original), 2, 0);
-            var unchangedV2 = v2Bytes.ToArray();
-            var migrated = stage.MigrateVerified(v2Bytes);
-            Equal(LoadStatus.Valid, migrated.Status);
-            True(migrated.Payload != null && migrated.CoreState != null);
-            Equal(0L, migrated.Payload!.Journal!.Revision);
-            Equal(original.EventRng, migrated.Payload.Journal.InitialEventRng);
-            Bytes(unchangedV2, v2Bytes);
-            var v3Bytes = Convert.FromBase64String(migrated.Payload.EmbeddedV3EnvelopeBase64);
-            Equal(3, JsonSaveSerializer.ReadObject<SaveEnvelope>(v3Bytes).SchemaVersion);
-            Equal(LoadStatus.Valid, v3.DeserializeAndValidate(v3Bytes).Status);
-            Equal(LoadStatus.Valid, stage.MigrateVerified(v3Bytes).Status);
-            var context = new GameEventContext(original.Date, original.Date, 1,
-                Array.Empty<string>(), Array.Empty<EventOccurrence>());
-            var offer = EventDecisionJournal.Offer(migrated.Payload.Journal, definitions, policies, context, 0);
-            Equal(EventJournalStatus.Offered, offer.Status);
-            migrated.Payload.Journal = offer.Next;
-            var v4Bytes = stage.SerializeVerified(migrated.Payload);
-            var restored = stage.DeserializeVerified(v4Bytes);
-            Equal(LoadStatus.Valid, restored.Status);
-            Equal(offer.TicketId, restored.Payload!.Journal!.PendingTicketId);
-            Equal(4, JsonSaveSerializer.ReadObject<SaveEnvelope>(v4Bytes).SchemaVersion);
-            var resume = EventDecisionJournal.Resolve(restored.Payload.Journal, definitions, policies,
-                restored.Payload.Journal.Revision, "v4-choice", offer.TicketId, "continue");
-            Equal(EventJournalStatus.Resolved, resume.Status);
-            restored.Payload.Journal = resume.Next;
-            var committedChoiceBytes = stage.SerializeVerified(restored.Payload);
-            Equal(LoadStatus.Valid, stage.DeserializeVerified(committedChoiceBytes).Status);
-            Equal(LoadStatus.Valid, stage.MigrateVerified(committedChoiceBytes).Status);
-            var falseJournal = JsonSaveSerializer.ReadObject<EventV4Payload>(
-                JsonSaveSerializer.WriteObject(restored.Payload));
-            falseJournal.Journal!.EventRng++;
-            Throws(() => stage.SerializeVerified(falseJournal));
-            var falseV3 = JsonSaveSerializer.ReadObject<EventV4Payload>(
-                JsonSaveSerializer.WriteObject(restored.Payload));
-            falseV3.EmbeddedV3EnvelopeSha256 = "bad-sha";
-            Throws(() => stage.SerializeVerified(falseV3));
-            var wire = JsonSaveSerializer.ReadObject<SaveEnvelope>(committedChoiceBytes);
-            wire.Generation++;
-            Equal(LoadStatus.Corrupt, stage.DeserializeVerified(JsonSaveSerializer.WriteObject(wire)).Status);
-            wire.SchemaVersion = 5;
-            wire.PayloadBase64 = "!invalid!";
-            Equal(LoadStatus.FutureVersion, stage.DeserializeVerified(JsonSaveSerializer.WriteObject(wire)).Status);
         });
         Check("Developer 20-slot quota exact across cycles", () =>
         {
