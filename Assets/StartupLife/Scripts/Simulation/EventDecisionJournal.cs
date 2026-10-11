@@ -7,6 +7,38 @@ using StartupLife.Core;
 
 namespace StartupLife.Simulation
 {
+    // Prospective V3/V4 composite effect: an immutable binding between the
+    // authoritative pending ticket, authored outcome and one V3 receipt identity.
+    // Constructed only by EventDecisionJournal.PlanReward; this is NOT a grant
+    // or a second wallet authority.
+    public sealed class EventRewardSettlementPlan
+    {
+        public string TicketId { get; }
+        public string EventId { get; }
+        public string ChoiceId { get; }
+        public string OutcomeId { get; }
+        public string ResolutionCommandId { get; }
+        public long CoreRevision { get; }
+        public long GlobalRevision { get; }
+        public long CashDeltaVnd { get; }
+        public long CareerXpDelta { get; }
+
+        internal EventRewardSettlementPlan(EventTicketRecord ticket,
+            EventChoiceDefinition choice, string commandId,
+            long coreRevision, long globalRevision)
+        {
+            TicketId = ticket.Id;
+            EventId = ticket.EventId;
+            ChoiceId = choice.Id;
+            OutcomeId = choice.OutcomeId;
+            ResolutionCommandId = commandId;
+            CoreRevision = coreRevision;
+            GlobalRevision = globalRevision;
+            CashDeltaVnd = choice.Reward!.CashDeltaVnd;
+            CareerXpDelta = choice.Reward.CareerXpDelta;
+        }
+    }
+
     // Pure transition planner: caller is responsible for committing Next atomically
     // with the normal GameSession receipt/CAS + versioned migration/replay proof.
     public static class EventDecisionJournal
@@ -201,7 +233,10 @@ namespace StartupLife.Simulation
             Validate(journal, definitions, policies);
             if (journal.RunId != current.RunId ||
                 current.Revision != checked(current.Receipts.Count + journal.Revision) ||
-                journal.PendingTicketId != ticketId || journal.Tickets.Count == 0 ||
+                journal.PendingTicketId != ticketId ||
+                current.PendingChoiceId != journal.PendingTicketId ||
+                current.EventRng != journal.EventRng ||
+                journal.Tickets.Count == 0 ||
                 current.Name.Length == 0 || current.DateIso.Length == 0)
                 throw new ArgumentException("Reward requires a current pending event.");
             var ticket = journal.Tickets[journal.Tickets.Count - 1];

@@ -24,38 +24,6 @@ namespace StartupLife.Core
         }
     }
 
-    // Prospective V3/V4 composite effect: an immutable binding between the
-    // authoritative pending ticket, authored outcome and one V3 receipt identity.
-    // Constructed only by EventDecisionJournal.PlanReward; this is NOT a grant
-    // or a second wallet authority.
-    public sealed class EventRewardSettlementPlan
-    {
-        public string TicketId { get; }
-        public string EventId { get; }
-        public string ChoiceId { get; }
-        public string OutcomeId { get; }
-        public string ResolutionCommandId { get; }
-        public long CoreRevision { get; }
-        public long GlobalRevision { get; }
-        public long CashDeltaVnd { get; }
-        public long CareerXpDelta { get; }
-
-        internal EventRewardSettlementPlan(EventTicketRecord ticket,
-            EventChoiceDefinition choice, string commandId,
-            long coreRevision, long globalRevision)
-        {
-            TicketId = ticket.Id;
-            EventId = ticket.EventId;
-            ChoiceId = choice.Id;
-            OutcomeId = choice.OutcomeId;
-            ResolutionCommandId = commandId;
-            CoreRevision = coreRevision;
-            GlobalRevision = globalRevision;
-            CashDeltaVnd = choice.Reward!.CashDeltaVnd;
-            CareerXpDelta = choice.Reward.CareerXpDelta;
-        }
-    }
-
     // Immutable authored content. Event execution and state persistence belong to later layers.
     public sealed class EventChoiceDefinition
     {

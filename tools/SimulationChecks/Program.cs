@@ -113,6 +113,8 @@ internal static class Program
             state.Cash = 200000;
             state.Revision = offered.Next.Revision;
             state.EventV4 = new EventV4Payload { Journal = offered.Next };
+            state.EventRng = offered.Next.EventRng;
+            state.PendingChoiceId = offered.TicketId;
             state.Employment = new EmploymentState { CareerId = "office-worker",
                 Xp = 100 };
             var cashBefore = state.Cash;
@@ -154,6 +156,19 @@ internal static class Program
             Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
                 "pay-reward", offered.TicketId, "take-bonus"));
             state.Cash = 200000;
+            state.EventRng++;
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "take-bonus"));
+            state.EventRng = offered.Next.EventRng;
+            state.PendingChoiceId = "";
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "take-bonus"));
+            state.PendingChoiceId = offered.TicketId;
+            state.Receipts.Add(new CommandReceipt { CommandId = "claimed-receipt" });
+            state.Revision++;
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "claimed-receipt", offered.TicketId, "take-bonus"));
+            state.Receipts.Clear();
             state.Revision++;
             Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
                 "pay-reward", offered.TicketId, "take-bonus"));

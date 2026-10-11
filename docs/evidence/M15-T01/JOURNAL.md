@@ -493,3 +493,12 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-HEAD engine-free CI pending. **Visual:** NOT RUN. **Save impact:** none (no persisted field, no V3 wire change). **Known limits:** V3 payout receipt and V4 cross-replay proof, Unity runtime/device QA are unfinished.
 - **Files:** Core/EventDefinitions.cs; Simulation/EventDecisionJournal.cs; tools/SimulationChecks/Program.cs; this journal.
+
+
+## Increment 38 — Preserve nonforgeable settlement-plan constructor across assembly boundaries
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL, PR #52 Draft/unmerged.
+- Exact-head CI found `CS1729`: Core's `internal EventRewardSettlementPlan` constructor was inaccessible from the Simulation assembly. Moved the immutable value type next to its sole constructing authority `EventDecisionJournal` in Simulation, retaining an **internal constructor** and public read-only properties. No public factory that could bypass validation.
+- Strengthened plan admission to require projected event RNG and pending choice identity to equal the checked journal. Added adversarial tests for diverging RNG, pending choice and a reused V3 receipt ID in addition to the existing overflow/affordability tests.
+- **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler. **Tests:** exact-head CI pending. **Visual:** NOT RUN. **Save:** none; schema/fixtures unchanged. **Limitations:** no spendable reward receipt yet.
+- **Files:** Core/EventDefinitions.cs, Simulation/EventDecisionJournal.cs, tools/SimulationChecks/Program.cs, JOURNAL.md.
