@@ -40,12 +40,16 @@ namespace StartupLife.Integration
         public long Revision { get; }
         public string TicketId { get; }
         public string EventId { get; }
+        public string TitleKey { get; }
+        public string BodyKey { get; }
         public IReadOnlyList<EventChoiceDefinition> Choices { get; }
 
         public EventPendingChoiceSnapshot(string runId, long revision, string ticketId,
-            string eventId, IEnumerable<EventChoiceDefinition> choices)
+            string eventId, IEnumerable<EventChoiceDefinition> choices,
+            string titleKey = "", string bodyKey = "")
         {
             RunId = runId; Revision = revision; TicketId = ticketId; EventId = eventId;
+            TitleKey = titleKey; BodyKey = bodyKey;
             Choices = Array.AsReadOnly(choices.ToArray());
         }
     }
@@ -91,7 +95,8 @@ namespace StartupLife.Integration
             var ticket = journal.Tickets.Single(x => x.Id == journal.PendingTicketId);
             var definition = definitions.Single(x => x.Id == ticket.EventId);
             return new EventPendingChoiceSnapshot(state.RunId, state.Revision,
-                ticket.Id, definition.Id, definition.Choices);
+                ticket.Id, definition.Id, definition.Choices, definition.TitleKey,
+                definition.BodyKey);
         }
 
         // Production API: the client sends only command identity and global CAS
