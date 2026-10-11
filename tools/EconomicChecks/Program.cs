@@ -2169,7 +2169,9 @@ internal static class Program
                         new EventChoiceDefinition("reward", "event.reward", "outcome.reward",
                             reward: new EventChoiceReward(125000, 30)),
                         new EventChoiceDefinition("pass", "event.pass", "outcome.pass",
-                            reward: new EventChoiceReward(15000, 0))
+                            reward: new EventChoiceReward(15000, 0)),
+                        new EventChoiceDefinition("fallback", "event.fallback",
+                            "outcome.fallback")
                     }) };
                 // A catalog update must never retroactively credit a settled
                 // tag-only outcome. The altered catalog is not cold-compatible.
