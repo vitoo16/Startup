@@ -73,7 +73,8 @@ namespace StartupLife.Simulation
             var elapsed = (date - dates[dates.Count - 1]).Days;
             if (elapsed < 0) throw new ArgumentException("Event journal contains a future ticket.");
             if (elapsed < policy.CooldownDays) return false;
-            var earliest = date.AddDays(-(policy.WindowDays - 1));
+            var earliest = policy.WindowDays - 1 >= (date - DateTime.MinValue).Days
+                ? DateTime.MinValue : date.AddDays(-(policy.WindowDays - 1));
             var first = dates.BinarySearch(earliest);
             if (first < 0) first = ~first;
             else
