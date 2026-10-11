@@ -1,0 +1,149 @@
+{
+  "schema": "startup-life.golden-targets.v1",
+  "style_id": "vietnam_cozy_chibi_cutout_v1",
+  "art_spec": "Assets/StartupLife/Art/_ArtDirection/art-spec.yaml",
+  "composition": "Assets/StartupLife/Art/_ArtDirection/composition.yaml",
+  "source_root": "Assets/StartupLife/Art/Source",
+  "approved_registry": "Assets/StartupLife/Art/Approved/registry.json",
+  "approval_policy": {
+    "golden_threshold": 15,
+    "total_max": 16,
+    "criteria": [
+      "style_match",
+      "silhouette",
+      "palette",
+      "anatomy_perspective",
+      "vietnam_context",
+      "technical_cleanliness",
+      "mobile_readability",
+      "reusability"
+    ],
+    "no_zero": true,
+    "requires_human_or_separate_art_director_review": true
+  },
+  "targets": [
+    {
+      "id": "golden-character",
+      "category": "character",
+      "asset_state": "brief",
+      "approved": false,
+      "min_candidates": 8,
+      "source_type": "to_be_generated",
+      "source_path": null,
+      "unity_path": null,
+      "reference": "front/3-4/side turnaround and expressions; male/female appearance consistency",
+      "requirements": [
+        "2.6-head chibi ratio",
+        "independent cutout joint layers with stable IDs",
+        "neutral idle/typing/talking",
+        "distinct limb animation rather than sliding sprite"
+      ],
+      "local_anchors": [
+        "urban daily outfit",
+        "practical contemporary hair styling"
+      ],
+      "scene": "golden-character"
+    },
+    {
+      "id": "golden-home",
+      "category": "environment",
+      "asset_state": "brief",
+      "approved": false,
+      "min_candidates": 8,
+      "source_type": "to_be_generated",
+      "source_path": null,
+      "unity_path": null,
+      "reference": "evening study and startup corner",
+      "requirements": [
+        "warm desk lamp",
+        "clear character focal area",
+        "camera geometry matches Golden office",
+        "separate blank sign/poster layers"
+      ],
+      "local_anchors": [
+        "wall fan",
+        "scooter helmet",
+        "compact night desk"
+      ],
+      "scene": "golden-home"
+    },
+    {
+      "id": "golden-office",
+      "category": "environment",
+      "asset_state": "brief",
+      "approved": false,
+      "min_candidates": 8,
+      "source_type": "to_be_generated",
+      "source_path": null,
+      "unity_path": null,
+      "reference": "software developer office workday",
+      "requirements": [
+        "same sprite perspective",
+        "clean silhouettes at 360x640",
+        "room for typing animation",
+        "no fake readable text"
+      ],
+      "local_anchors": [
+        "water dispenser",
+        "shared meeting table",
+        "entry helmet rack"
+      ],
+      "scene": "golden-office"
+    },
+    {
+      "id": "golden-business",
+      "category": "environment",
+      "asset_state": "brief",
+      "approved": false,
+      "min_candidates": 8,
+      "source_type": "to_be_generated",
+      "source_path": null,
+      "unity_path": null,
+      "reference": "coffee kiosk with helper",
+      "requirements": [
+        "two-character action space",
+        "stainless prep counter",
+        "separate signage text layer",
+        "character and prop pivots align"
+      ],
+      "local_anchors": [
+        "QR stand",
+        "takeaway cups",
+        "compact street stall"
+      ],
+      "scene": "golden-business"
+    },
+    {
+      "id": "golden-life-ui",
+      "category": "ui",
+      "asset_state": "brief",
+      "approved": false,
+      "min_candidates": 8,
+      "source_type": "to_be_authored",
+      "source_path": null,
+      "unity_path": null,
+      "reference": "portrait five-tab Life dashboard",
+      "requirements": [
+        "safe-area portrait",
+        "96 reference-pixel touch targets",
+        "NotoSansVietnamese font coverage",
+        "reuse art-spec color roles and Unity Localization"
+      ],
+      "local_anchors": [
+        "VND format",
+        "Vietnamese headings"
+      ],
+      "scene": "golden-life-ui"
+    }
+  ],
+  "registry_initial_state": "empty_until_real_unity_import_and_art_gate",
+  "approval_evidence_required": [
+    "chosen_candidate",
+    "source_layers",
+    "rig_pose_or_scene_import_report",
+    "phone_beautycell_screenshot",
+    "scorecard_8_dimensions",
+    "separate_art_approval"
+  ],
+  "comments": "Provisional art direction and briefs are not human-approved assets and must not be placed into runtime scenes."
+}

@@ -1,0 +1,168 @@
+{
+  "schema": "startup-life.art-direction.v1",
+  "style_id": "vietnam_cozy_chibi_cutout_v1",
+  "status": "provisional_contract_not_asset_approval",
+  "project": "StartupLife",
+  "scope": "portrait-first HD 2D mobile, contemporary Vietnam, non-pixel chibi",
+  "craft": {
+    "finish": "soft_matte_2d_cel_cutout",
+    "pixels_per_unit": 100,
+    "source_master_height_px": 2048,
+    "outline_px_at_master": [
+      3,
+      5
+    ],
+    "light_direction": "upper_left_soft",
+    "shading_bands": 2,
+    "texture_noise": "subtle_none_on_faces",
+    "alpha_edges": "clean_straight_unfringed"
+  },
+  "camera": {
+    "projection": "orthographic",
+    "ortho_size": 5,
+    "depth": "flat_2d_layered",
+    "reference_resolution": [
+      1080,
+      1920
+    ],
+    "reference_orientation": "portrait",
+    "target_aspect": "9:16"
+  },
+  "characters": {
+    "chibi_total_heads": 2.6,
+    "head_height_fraction": 0.385,
+    "reference_world_height_units": 2.35,
+    "silhouette_readability_screen_px": 110,
+    "view_angles": [
+      "front",
+      "three_quarter_left",
+      "side"
+    ],
+    "character_variants": [
+      "base.female",
+      "base.male"
+    ],
+    "rig_standard": "2d_animation_sprite_skin_bones",
+    "mandatory_layers": [
+      "hair_back",
+      "torso",
+      "pelvis",
+      "upper_arm_l",
+      "forearm_l",
+      "hand_l",
+      "upper_arm_r",
+      "forearm_r",
+      "hand_r",
+      "upper_leg_l",
+      "lower_leg_l",
+      "foot_l",
+      "upper_leg_r",
+      "lower_leg_r",
+      "foot_r",
+      "head",
+      "face",
+      "hair_front",
+      "outfit_torso",
+      "outfit_legs"
+    ],
+    "pivot": "feet",
+    "reimport_policy": "stable_layer_ids_no_name_regen",
+    "allowed_motions": [
+      "idle_breathe",
+      "walk_with_leg_joint_motion",
+      "type_keys",
+      "talk_gesture",
+      "night_laptop",
+      "kiosk_service"
+    ],
+    "rig_must_deform": true,
+    "rigid_sprite_translation_does_not_count_as_walk": true
+  },
+  "shape_language": {
+    "large": "rounded rectangles and gentle asymmetry",
+    "medium": "clean softened silhouettes",
+    "small": "sparse purposeful details",
+    "silhouette": "strong at 100px character height",
+    "materials": "matte cloth, subdued soft wood, simple painted metal; no photographic gloss"
+  },
+  "palette": {
+    "roles": {
+      "background": "#F2EBDE",
+      "panel": "#FFFBF2",
+      "ink": "#2D3D39",
+      "accent": "#3A6C58"
+    },
+    "decorative": {
+      "coffee_brown": "#85583E",
+      "warm_lamp": "#F3C97A",
+      "muted_blue": "#7296A3",
+      "foliage": "#69885F",
+      "brick": "#BD806C"
+    },
+    "master_source": "Assets/StartupLife/Data/MobileTheme.asset",
+    "rule": "palette.roles colors must match committed MobileTheme exactly; derive UI accent colors later"
+  },
+  "lighting": {
+    "key": "upper_left_soft",
+    "environment": "warm indirect indoor",
+    "night": "warm desk lamp over cool indirect room",
+    "shadows": "soft minimal contact; no directional hard black outlines"
+  },
+  "mobile_budget": {
+    "target_fps": 60,
+    "texture_max_dimension": 2048,
+    "character_spritesheet_max_dimension": 2048,
+    "environment_static_max_dimension": 2048,
+    "ui_reference_px": [
+      1080,
+      1920
+    ],
+    "ui_touch_target_reference_px": 96,
+    "atlas_policy": "pack by scene + rig family; mobile texture compression tested on device",
+    "performance_claim": "target_not_measured"
+  },
+  "conditioning": {
+    "status": "no_approved_reference_yet",
+    "master_palette_source": "palette.roles",
+    "style_anchor_images": [],
+    "approved_golden_ids": []
+  },
+  "accepted_asset_sources": [
+    "generated",
+    "human",
+    "hybrid"
+  ],
+  "rejection": [
+    "fake_vietnamese_text",
+    "watermark",
+    "third_party_trademark",
+    "generic_asian_stereotype_collage",
+    "broken_joint_layers",
+    "unapproved_runtime_raw_source",
+    "text_baked_into_background",
+    "photo_real_pbr",
+    "rigid_whole_sprite_slide_as_walk"
+  ],
+  "acceptance": {
+    "golden_min_score": 15,
+    "max_score": 16,
+    "min_each_dimension": 1,
+    "dimensions": [
+      "style_match",
+      "silhouette",
+      "palette",
+      "anatomy_perspective",
+      "vietnam_context",
+      "technical_cleanliness",
+      "mobile_readability",
+      "reusability"
+    ],
+    "source_can_self_approve": false,
+    "approved_requires_unity_import_and_beautycell": true
+  },
+  "derived_artifacts": [
+    "Assets/StartupLife/Art/_ArtDirection/composition.yaml",
+    "Assets/StartupLife/Art/_ArtDirection/golden-targets.json"
+  ],
+  "notes": "All numeric art values are new provisional art-direction decisions for M13, not historical game balance or asset approval."
+}

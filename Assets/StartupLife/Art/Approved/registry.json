@@ -1,0 +1,12 @@
+{
+  "schema": "startup-life.approved-assets.v1",
+  "style_id": "vietnam_cozy_chibi_cutout_v1",
+  "approved_entries": [],
+  "rules": [
+    "only validated imported Unity prefab/sprite references",
+    "golden score >=15/16 with no zero dimension",
+    "source must survive rig/import/beautycell and separate approval",
+    "raw-generated source can never be a runtime dependency"
+  ],
+  "note": "Intentionally empty until source and Unity evidence pass."
+}
