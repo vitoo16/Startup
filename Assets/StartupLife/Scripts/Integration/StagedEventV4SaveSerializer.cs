@@ -75,6 +75,31 @@ namespace StartupLife.Integration
             { return new StagedEventV4LoadResult(LoadStatus.Corrupt, reason: "save.migration_invalid"); }
         }
 
+        // The V3 checkpoint advances ONLY through the existing GameSession receipt
+        // evaluator. Keep the same event journal in the single outer V4 transaction.
+        internal EventV4Payload ReplaceCore(EventV4Payload source, byte[] newV3Envelope)
+        {
+            if (source?.Journal == null) throw new ArgumentException("Missing V4 journal.");
+            var core = ReadV3Core(newV3Envelope);
+            if (core.RunId != source.Journal.RunId ||
+                core.EventRng != source.Journal.InitialEventRng)
+                throw new ArgumentException("V3 core and event RNG/run identity must be stable.");
+            var candidate = JsonSaveSerializer.ReadObject<EventV4Payload>(
+                JsonSaveSerializer.WriteObject(source));
+            candidate.EmbeddedV3EnvelopeBase64 = Convert.ToBase64String(newV3Envelope);
+            candidate.EmbeddedV3EnvelopeSha256 = Digest(newV3Envelope);
+            return candidate;
+        }
+
+        internal GameState ReadV3Core(byte[] envelope)
+        {
+            var result = v3.DeserializeAndValidate(envelope);
+            if (result.Status != LoadStatus.Valid || result.State == null ||
+                result.State.SaveVersion != 3)
+                throw new ArgumentException("V3 command failed independent receipt replay.");
+            return result.State;
+        }
+
         public EventV4Payload FromV3(byte[] verifiedV3Envelope, GameState core)
         {
             if (verifiedV3Envelope == null || core == null || core.SaveVersion != 3 ||

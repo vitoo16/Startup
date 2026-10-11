@@ -52,6 +52,24 @@ namespace StartupLife.Integration
             return validatedWire;
         }
 
+        internal EventV4Payload ReplaceCore(EventV4Payload source, byte[] newV3Envelope) =>
+            staged.ReplaceCore(source, newV3Envelope);
+
+        internal GameState ReadV3Core(byte[] v3Envelope) => staged.ReadV3Core(v3Envelope);
+
+        internal static GameState RestoreCoreProjection(GameState current)
+        {
+            if (current.SaveVersion != 4 || current.EventV4?.Journal == null)
+                throw new ArgumentException("Attached V4 state required.");
+            var core = JsonSaveSerializer.ReadObject<GameState>(
+                JsonSaveSerializer.WriteObject(current));
+            core.SaveVersion = 3;
+            core.Revision = checked(current.Revision - current.EventV4.Journal.Revision);
+            core.EventRng = current.EventV4.Journal.InitialEventRng;
+            core.PendingChoiceId = "";
+            return core;
+        }
+
         internal static GameState Project(GameState v3Core, EventV4Payload payload)
         {
             if (payload.Journal == null) throw new ArgumentException("Missing event journal.");

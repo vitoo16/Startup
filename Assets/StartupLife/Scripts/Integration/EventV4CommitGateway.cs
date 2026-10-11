@@ -38,12 +38,15 @@ namespace StartupLife.Integration
         private readonly ISaveStore store;
         private readonly IReadOnlyList<GameEventDefinition> definitions;
         private readonly IReadOnlyList<EventCategoryPolicy> policies;
+        private readonly EventV4CoreCommandRunner? coreRunner;
 
         public EventV4CommitGateway(EventV4CompatibilitySerializer serializer, ISaveStore store,
-            IEnumerable<GameEventDefinition> definitions, IEnumerable<EventCategoryPolicy> policies)
+            IEnumerable<GameEventDefinition> definitions, IEnumerable<EventCategoryPolicy> policies,
+            EventV4CoreCommandRunner? coreRunner = null)
         {
             this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             this.store = store ?? throw new ArgumentNullException(nameof(store));
+            this.coreRunner = coreRunner;
             if (definitions == null || policies == null)
                 throw new ArgumentNullException("event catalog");
             this.definitions = Array.AsReadOnly(definitions.ToArray());
@@ -64,6 +67,8 @@ namespace StartupLife.Integration
                 return Reject(current, "event.invalid_command");
             if (context == null || current.Date != context.Date)
                 return Reject(current, "event.date_mismatch");
+            if (current.Receipts.Any(x => x.CommandId == commandId))
+                return Reject(current, "event.command_id_conflict");
 
             var payload = current.EventV4!;
             // Always perform journal command ID lookup before checking stale client
@@ -87,6 +92,8 @@ namespace StartupLife.Integration
             var current = read.State!;
             if (!ValidIdentity(runId, commandId, current))
                 return Reject(current, "event.invalid_command");
+            if (current.Receipts.Any(x => x.CommandId == commandId))
+                return Reject(current, "event.command_id_conflict");
             var payload = current.EventV4!;
             var result = EventDecisionJournal.Resolve(payload.Journal!, definitions, policies,
                 payload.Journal!.Revision, commandId, ticketId, choiceId);
@@ -99,26 +106,70 @@ namespace StartupLife.Integration
             return Commit(current, result);
         }
 
+        // The same V4 CAS frontier now covers all ordinary V3 GameSession receipts
+        // and event decisions. V2/V3 replay stays authoritative for the inner state.
+        public EventCommitResult ExecuteCore(CommandEnvelope command)
+        {
+            var read = Read();
+            if (!Valid(read)) return LoadFailure(read);
+            var current = read.State!;
+            if (command == null || command.Command == null ||
+                !ValidIdentity(command.RunId, command.CommandId, current))
+                return Reject(current, "command.invalid_id");
+            var journal = current.EventV4!.Journal!;
+            if (journal.Tickets.Any(x => x.OfferCommandId == command.CommandId ||
+                x.ResolutionCommandId == command.CommandId))
+                return Reject(current, "command.id_conflict");
+            var prior = current.Receipts.FirstOrDefault(x => x.CommandId == command.CommandId);
+            if (prior != null)
+                return prior.Payload == command.Command.CanonicalPayload
+                    ? new EventCommitResult(EventCommitStatus.AlreadyCommitted, "", current.Revision)
+                    : Reject(current, "command.id_conflict");
+            if (current.Revision != command.ExpectedRevision)
+                return Reject(current, "command.stale_state");
+            if (journal.PendingTicketId.Length > 0 &&
+                command.Command.Kind == CommandKind.AdvanceBoundary)
+                return Reject(current, "event.choice_required");
+            if (coreRunner == null)
+                return Reject(current, "save.v4_core_evaluator_unavailable");
+            try
+            {
+                var oldV3 = Convert.FromBase64String(current.EventV4.EmbeddedV3EnvelopeBase64);
+                var outcome = coreRunner.Evaluate(oldV3, command, out var nextV3);
+                if (outcome.Status != CommandStatus.Committed || nextV3 == null)
+                    return new EventCommitResult(MapCoreStatus(outcome.Status),
+                        outcome.ReasonKey, current.Revision);
+                var updated = serializer.ReplaceCore(current.EventV4, nextV3);
+                var inner = serializer.ReadV3Core(nextV3);
+                return CommitCandidate(current, inner, updated);
+            }
+            catch (Exception error) when (error is ArgumentException ||
+                error is InvalidOperationException || error is OverflowException)
+            { return Reject(current, "save.v4_invalid_core_candidate"); }
+        }
+
         private EventCommitResult Commit(GameState current, EventJournalResult result)
+        {
+            var payload = JsonSaveSerializer.ReadObject<EventV4Payload>(
+                JsonSaveSerializer.WriteObject(current.EventV4!));
+            payload.Journal = result.Next;
+            var core = EventV4CompatibilitySerializer.RestoreCoreProjection(current);
+            return CommitCandidate(current, core, payload, result.TicketId, result.OutcomeId);
+        }
+
+        private EventCommitResult CommitCandidate(GameState current, GameState nextCore,
+            EventV4Payload payload, string ticketId = "", string outcomeId = "")
         {
             byte[] candidateBytes;
             try
             {
-                // Copy only the event payload. The V3 checkpoint remains sealed.
-                var payload = JsonSaveSerializer.ReadObject<EventV4Payload>(
-                    JsonSaveSerializer.WriteObject(current.EventV4!));
-                payload.Journal = result.Next;
-                var core = JsonSaveSerializer.ReadObject<GameState>(
-                    JsonSaveSerializer.WriteObject(current));
-                core.SaveVersion = 3;
-                core.Revision = checked(current.Revision - current.EventV4!.Journal!.Revision);
-                core.EventRng = current.EventV4.Journal.InitialEventRng;
-                core.PendingChoiceId = "";
-                var candidate = EventV4CompatibilitySerializer.Project(core, payload);
+                var candidate = EventV4CompatibilitySerializer.Project(nextCore, payload);
+                if (candidate.Revision != checked(current.Revision + 1))
+                    return Reject(current, "save.v4_revision_gap");
                 candidateBytes = serializer.Serialize(candidate);
             }
-            catch (Exception e) when (e is ArgumentException || e is OverflowException ||
-                e is InvalidOperationException)
+            catch (Exception error) when (error is ArgumentException ||
+                error is InvalidOperationException || error is OverflowException)
             { return Reject(current, "event.invalid_candidate"); }
 
             var written = store.Commit(candidateBytes, current.Revision);
@@ -128,17 +179,25 @@ namespace StartupLife.Integration
             if (written == WriteStatus.Ambiguous)
                 return new EventCommitResult(EventCommitStatus.RecoveryRequired,
                     "save.recovery_required", current.Revision);
-            // Verify the post-CAS journal, not merely a matching generation: another
-            // writer could have committed a different command to the same revision.
             var verified = Read();
             if (!Valid(verified) || verified.State!.Revision != checked(current.Revision + 1) ||
-                verified.State.EventV4!.Journal!.Revision != result.Next.Revision ||
-                !JsonSaveSerializer.WriteObject(verified.State.EventV4.Journal)
-                    .SequenceEqual(JsonSaveSerializer.WriteObject(result.Next)))
+                !JsonSaveSerializer.WriteObject(verified.State.EventV4!)
+                    .SequenceEqual(JsonSaveSerializer.WriteObject(payload)))
                 return new EventCommitResult(EventCommitStatus.RecoveryRequired,
                     "save.recovery_required", current.Revision);
             return new EventCommitResult(EventCommitStatus.Committed, "",
-                verified.State.Revision, result.TicketId, result.OutcomeId);
+                verified.State.Revision, ticketId, outcomeId);
+        }
+
+        private static EventCommitStatus MapCoreStatus(CommandStatus status)
+        {
+            switch (status)
+            {
+                case CommandStatus.AlreadyCommitted: return EventCommitStatus.AlreadyCommitted;
+                case CommandStatus.PersistenceFailed: return EventCommitStatus.PersistenceFailed;
+                case CommandStatus.RecoveryRequired: return EventCommitStatus.RecoveryRequired;
+                default: return EventCommitStatus.Rejected;
+            }
         }
 
         private static bool Valid(LoadResult read) =>
