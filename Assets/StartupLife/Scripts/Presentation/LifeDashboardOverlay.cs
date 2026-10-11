@@ -111,7 +111,7 @@ namespace StartupLife.Presentation
                 if (label != null) label.color = button.Key == section ? Color.white : Ink;
                 button.Value.interactable = button.Key != section;
             }
-            heading.text = Titles[(int)section];
+            ApplyStaticTranslation(heading, Titles[(int)section]);
             if (scroll != null) scroll.verticalNormalizedPosition = 1f;
             Refresh();
         }
@@ -205,9 +205,9 @@ namespace StartupLife.Presentation
                 "Bước " + (guideIndex + 1).ToString(CultureInfo.InvariantCulture) +
                 "/" + OnboardingGuideCatalog.Topics.Count.ToString(CultureInfo.InvariantCulture) +
                 " · " + GuideHeading(key);
-            guideBody.text = completed
+            ApplyStaticTranslation(guideBody, completed
                 ? "Bạn có thể xem lại hướng dẫn bất kỳ lúc nào."
-                : GuideExplanation(key);
+                : GuideExplanation(key));
             previousGuide.interactable = !completed && guideIndex > 0;
             nextGuide.interactable = !completed &&
                 guideIndex < OnboardingGuideCatalog.Topics.Count - 1;
@@ -276,6 +276,13 @@ namespace StartupLife.Presentation
                 "Nghỉ việc giúp giải phóng thời gian, nhưng không bắt buộc mở doanh nghiệp. Bạn có thể học, tìm việc lại hoặc khởi nghiệp khi đã sẵn sàng.",
             _ => throw new ArgumentOutOfRangeException(nameof(key))
         };
+
+        private static void ApplyStaticTranslation(TMP_Text text, string fallback)
+        {
+            text.text = fallback;
+            if (DashboardLocalizationCatalog.TryFindKey(fallback, out var key))
+                LocalizedKeyLabel.EnsureFor(text).SetKey(key);
+        }
 
         private void OpenBusiness()
         {
@@ -487,7 +494,7 @@ namespace StartupLife.Presentation
             label.enableWordWrapping = true;
             label.overflowMode = TextOverflowModes.Overflow;
             label.raycastTarget = false;
-            label.text = value;
+            ApplyStaticTranslation(label, value);
             node.GetComponent<LayoutElement>().minHeight = 50;
             return label;
         }
