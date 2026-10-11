@@ -99,7 +99,12 @@ namespace StartupLife.Application
         // no forecasts, no unit generation and no mutation of GameSession.
         public static IReadOnlyList<BusinessFinanceDaySnapshot> FromCommittedState(GameState state)
         {
-            if (state == null || state.SaveVersion != 3 || state.EconomicV3 == null ||
+            // V4 is a detached, receipt-verified projection of the same V3
+            // financial records; do not compute a second business settlement.
+            if (state == null ||
+                (state.SaveVersion != 3 &&
+                 (state.SaveVersion != 4 || state.EventV4?.Journal == null)) ||
+                state.EconomicV3 == null ||
                 state.EconomicV3.Current != state || state.EconomicV3.EconomicRecords == null)
                 throw new ArgumentException("A source-verified schema3 checkpoint is required.");
             var records = state.EconomicV3.EconomicRecords;

@@ -78,6 +78,29 @@ namespace StartupLife.Integration
             projected.EventRng = payload.Journal.EventRng;
             projected.PendingChoiceId = payload.Journal.PendingTicketId;
             projected.EventV4 = payload;
+            // GameState.EconomicV3 is [IgnoreDataMember]: the ordinary V3
+            // projection clone loses its *validated* business ledger view.
+            // Attach a fresh non-wire wrapper over the already receipt-verified
+            // records, with Current pointing to this exact projected state.
+            // No economic values are recomputed, credited, or serialized by V4.
+            var economic = v3Core.EconomicV3;
+            if (economic?.Current != v3Core || economic.Activation == null ||
+                economic.EconomicRecords == null)
+                throw new ArgumentException("Verified V3 economic projection required.");
+            projected.EconomicV3 = new EconomicV3Payload
+            {
+                WireSchema = economic.WireSchema,
+                Current = projected,
+                Activation = economic.Activation,
+                EconomicRecords = economic.EconomicRecords,
+                OriginalV2PayloadBase64 = economic.OriginalV2PayloadBase64,
+                OriginalV2PayloadSha256 = economic.OriginalV2PayloadSha256,
+                OriginalV2ContentVersion = economic.OriginalV2ContentVersion,
+                OriginalV2RulesetId = economic.OriginalV2RulesetId,
+                OriginalSourceSchema = economic.OriginalSourceSchema,
+                OriginalSourcePayloadBase64 = economic.OriginalSourcePayloadBase64,
+                OriginalSourcePayloadSha256 = economic.OriginalSourcePayloadSha256
+            };
             return projected;
         }
     }

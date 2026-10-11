@@ -326,3 +326,17 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Tests:** exact-commit engine-free CI to be recorded; local Unity runtime and device QA NOT RUN. **Visual evidence:** NOT RUN (save-only).
 - **Save impact:** older staged V4 wire shape admitted in memory; write-after-commit upgrades optional field, no bulk migration of bytes. **Known limitations:** spendable cash/XP event effects require a V3-native receipt kind with V4 event proof; no new reward API added in this increment. V4 production bootstrap stays inactive.
 - **Files changed:** `Assets/StartupLife/Scripts/Core/EventJournalContracts.cs`, `tools/EconomicChecks/Program.cs`, this journal.
+
+
+## Increment 23 — Expose existing V3 financial read projections through validated V4 state
+
+**Owner:** GPT-6 Technical Director; **M15-T01 PARTIAL**, PR #52 Draft/unmerged.
+
+- `EventV4CompatibilitySerializer.Project` serialized the V3 core into a V4 `GameState` clone; its `EconomicV3` member is intentionally ignored by wire serialization, so V4 snapshots lost the authenticated financial-policy/settlement read context. The projection now attaches a new in-memory `EconomicV3Payload` wrapper with `Current` bound to the projected object and **already validated** V3 records/activation. The physical V4/V3 wire bytes, economic receipts and settlement evaluation remain exactly as before.
+- The shared `BusinessFinanceProjection` accepts a V4 state *only* with an attached verified event journal, V3 economic records and matching current-state identity. `LifeDashboardProjection` includes those committed settlements; no new calculations.
+- `EventV4GameCommands` exposes committed finance, business portfolio/operations and life dashboard via the **same existing** projections used by `GameSession`; optional economic catalog parameter is backward-compatible for existing V4 caller construction. The adapter reads verified V4 state fresh; never copies wallet/provenance into an alternate ledger.
+- Extended existing real-file V2→V3→V4 GameSession test to check the attached V3 economic record graph and presentation readouts at the exact global V4 CAS revision.
+- **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler.
+- **Tests:** exact-head engine-free CI pending. **Visual evidence:** Unity runtime/device NOT RUN; no view asset changes. **Save impact:** none (nonserialized read-model attachment only), V2/V3 frozen fixtures unchanged.
+- **Known limitations:** V4 is still a staged source path, not production bootstrap; the new shared finance read models do not create spendable event money or XP. Event rewards require V3 receipt + V4 cause coupling.
+- **Files changed:** Integration/EventV4CompatibilitySerializer.cs; Application/BusinessFinanceProjection.cs; Application/LifeDashboardProjection.cs; Integration/EventV4GameCommands.cs; tools/EconomicChecks/Program.cs; this journal.

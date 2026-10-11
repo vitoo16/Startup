@@ -132,7 +132,8 @@ namespace StartupLife.Application
             });
             var courses = content.Courses.Values.OrderBy(x => x.Id, StringComparer.Ordinal)
                 .Select(x => new CourseDashboardItem(x, game.ActiveCourse));
-            var settled = state.SaveVersion == 3
+            var settled = state.SaveVersion == 3 || (state.SaveVersion == 4 &&
+                state.EventV4?.Journal != null)
                 ? BusinessFinanceProjection.FromCommittedState(state)
                 : Array.Empty<BusinessFinanceDaySnapshot>();
             return new LifeDashboardSnapshot(game, career, skills, courses,

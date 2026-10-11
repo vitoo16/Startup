@@ -1643,6 +1643,17 @@ internal static class Program
                     "V4 projection includes authoritative V3 receipt and starting cash: name=" +
                     first.Name + "; cash=" + first.Cash + "; receipts=" + first.Receipts.Count +
                     "; journal=" + firstJournal.Revision);
+                // V4's outer DTO ignores EconomicV3 on the wire, but the UI
+                // must still receive the *same* authenticated ledger projection.
+                var presentation = new EventV4GameCommands(gateway, content, econ);
+                Assert(first.EconomicV3?.Current == first &&
+                    first.EconomicV3.EconomicRecords != null &&
+                    presentation.ReadCommittedFinance().Count == 0 &&
+                    presentation.ReadBusinesses().Businesses.Count == 0 &&
+                    presentation.ReadBusinessOperations().Portfolio.Game.Revision == 1 &&
+                    presentation.ReadLifeDashboard().Finance.CashVnd == expectedAfterCreate &&
+                    presentation.ReadLifeDashboard().Game.Revision == 1,
+                    "V4 readouts must preserve authenticated V3 economic attachment");
                 var afterCreate = File.ReadAllBytes(filename);
                 Assert(gateway.ExecuteCore(new CommandEnvelope(
                     origin.RunId, "create-v4", 0, created)).Status ==
