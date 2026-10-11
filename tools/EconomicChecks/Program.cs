@@ -1193,13 +1193,15 @@ internal static class Program
                 Assert(tick.Status == EventCommitStatus.Committed && tick.Revision == 5,
                     "normal time progression continues after resolved event");
                 var restarted = cold.Read();
+                var restoredState = restarted.State ??
+                    throw new InvalidOperationException("V4 cold read has no validated projection.");
                 Assert(restarted.Status == LoadStatus.Valid &&
-                    restarted.State!.Receipts.Count == 3 &&
-                    restarted.State.EventV4!.Journal!.Tickets.Count == 1 &&
-                    restarted.State.Cash == 2800000 &&
-                    restarted.State.PendingChoiceId.Length == 0,
+                    restoredState.Receipts.Count == 3 &&
+                    restoredState.EventV4!.Journal!.Tickets.Count == 1 &&
+                    restoredState.Cash == 2800000 &&
+                    restoredState.PendingChoiceId.Length == 0,
                     "cold replay validates interleaved V3 receipts and event history");
-                Assert(Convert.FromBase64String(restarted.State.EventV4.EmbeddedV3EnvelopeBase64)
+                Assert(Convert.FromBase64String(restoredState.EventV4.EmbeddedV3EnvelopeBase64)
                     .Length > 0 && JsonSaveSerializer.ReadObject<SaveEnvelope>(
                         File.ReadAllBytes(filename)).SchemaVersion == 4,
                     "authoritative save remains single nested V3 within V4, not independent files");
