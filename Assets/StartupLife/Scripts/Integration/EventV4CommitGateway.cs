@@ -99,6 +99,19 @@ namespace StartupLife.Integration
                 definition.BodyKey);
         }
 
+        // Persist a negative event-day check with the existing V4 CAS writer.
+        public EventCommitResult CheckCurrentDay(string runId, long expectedRevision)
+        {
+            var read = Read();
+            if (!Valid(read)) return LoadFailure(read);
+            var current = read.State!;
+            if (current.RunId != runId || string.IsNullOrEmpty(current.Name))
+                return Reject(current, "event.character_required");
+            return OfferInternal(runId,
+                EventDecisionJournal.DailyCommandId(current.DateIso),
+                expectedRevision, null, persistEmpty: true);
+        }
+
         // Production API: the client sends only command identity and global CAS
         // revision. All event eligibility inputs come from the verified V3 save.
         public EventCommitResult Offer(string runId, string commandId, long expectedRevision) =>
@@ -111,13 +124,18 @@ namespace StartupLife.Integration
             OfferInternal(runId, commandId, expectedRevision, context);
 
         private EventCommitResult OfferInternal(string runId, string commandId,
-            long expectedRevision, GameEventContext? supplied)
+            long expectedRevision, GameEventContext? supplied, bool persistEmpty = false)
         {
             var read = Read();
             if (!Valid(read)) return LoadFailure(read);
             var current = read.State!;
             if (!ValidIdentity(runId, commandId, current))
                 return Reject(current, "event.invalid_command");
+            if (commandId.StartsWith(EventDecisionJournal.DailyCheckPrefix,
+                    StringComparison.Ordinal) &&
+                (!persistEmpty || commandId !=
+                    EventDecisionJournal.DailyCommandId(current.DateIso)))
+                return Reject(current, "event.command_id_conflict");
             if (ConflictsWithCoreOrBatch(current, commandId))
                 return Reject(current, "event.command_id_conflict");
 
@@ -132,6 +150,11 @@ namespace StartupLife.Integration
                 return new EventCommitResult(EventCommitStatus.AlreadyCommitted, "",
                     current.Revision, prior.Id);
             }
+            var previousEmpty = journal.NoEligibleDays.FirstOrDefault(
+                x => x.CommandId == commandId);
+            if (previousEmpty != null)
+                return new EventCommitResult(EventCommitStatus.AlreadyCommitted,
+                    "", current.Revision);
             // Reject before evaluating any author-controlled tag, stage or origin.
             var context = AuthoritativeEventContext.FromCore(current, journal);
             if (supplied != null)
@@ -146,8 +169,19 @@ namespace StartupLife.Integration
             if (current.Revision != expectedRevision)
                 return Reject(current, "event.stale_revision");
             var innerRevision = checked(current.Revision - journal.Revision);
-            var result = EventDecisionJournal.Offer(journal, definitions, policies,
-                context, journal.Revision, commandId, innerRevision);
+            var result = persistEmpty
+                ? EventDecisionJournal.CheckDay(journal, definitions, policies,
+                    context, journal.Revision, commandId, innerRevision)
+                : EventDecisionJournal.Offer(journal, definitions, policies,
+                    context, journal.Revision, commandId, innerRevision);
+            if (result.Status == EventJournalStatus.NoEligibleEvent && persistEmpty)
+            {
+                var committed = Commit(current, result);
+                return committed.Status == EventCommitStatus.Committed
+                    ? new EventCommitResult(EventCommitStatus.NoEligibleEvent,
+                        "event.none", committed.Revision)
+                    : committed;
+            }
             if (result.Status != EventJournalStatus.Offered)
                 return FromPlanner(result, current.Revision);
             return Commit(current, result);
@@ -161,7 +195,9 @@ namespace StartupLife.Integration
             var current = read.State!;
             if (!ValidIdentity(runId, commandId, current))
                 return Reject(current, "event.invalid_command");
-            if (ConflictsWithCoreOrBatch(current, commandId))
+            if (ConflictsWithCoreOrBatch(current, commandId) ||
+                commandId.StartsWith(EventDecisionJournal.DailyCheckPrefix,
+                    StringComparison.Ordinal))
                 return Reject(current, "event.command_id_conflict");
             var payload = current.EventV4!;
             var result = EventDecisionJournal.Resolve(payload.Journal!, definitions, policies,
@@ -192,8 +228,10 @@ namespace StartupLife.Integration
             if (request == null || request.Command == null ||
                 request.Command.Kind != CommandKind.AdvanceBoundary ||
                 !ValidIdentity(request.RunId, request.CommandId, state) ||
-                request.CommandId.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
-                    StringComparison.Ordinal))
+                (request.CommandId.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
+                     StringComparison.Ordinal) ||
+                 request.CommandId.StartsWith(EventDecisionJournal.DailyCheckPrefix,
+                     StringComparison.Ordinal)))
                 return BatchStop(results, state, "InvalidRequest");
             var journal = state.EventV4!.Journal!;
             if (state.Receipts.Any(x => x.CommandId == request.CommandId) ||
@@ -323,7 +361,9 @@ namespace StartupLife.Integration
                     return Reject(current, "batch.invalid_child");
             }
             else if (command.CommandId.StartsWith(
-                EventAdvanceBatchHistory.ReservedChildPrefix, StringComparison.Ordinal))
+                EventAdvanceBatchHistory.ReservedChildPrefix, StringComparison.Ordinal) ||
+                command.CommandId.StartsWith(
+                    EventDecisionJournal.DailyCheckPrefix, StringComparison.Ordinal))
                 return Reject(current, "command.reserved_id");
             if (!batchChild && journal.AdvanceBatches.Any(x =>
                 string.CompareOrdinal(current.DateIso, x.TargetDateIso) < 0) &&
