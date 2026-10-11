@@ -16,11 +16,16 @@ namespace StartupLife.Core
         [DataMember(Order = 4)] public string ChoiceId { get; set; } = "";
         [DataMember(Order = 5)] public string ResolutionCommandId { get; set; } = "";
         [DataMember(Order = 6)] public string OutcomeId { get; set; } = "";
+        // Exact immutable offer context: needed to reproduce weighted selection on cold read.
+        [DataMember(Order = 7)] public string OriginDateIso { get; set; } = "";
+        [DataMember(Order = 8)] public int Stage { get; set; }
+        [DataMember(Order = 9)] public List<string> Tags { get; set; } = new List<string>();
 
         public EventTicketRecord Copy() => new EventTicketRecord
         {
             Id = Id, EventId = EventId, CategoryId = CategoryId, OpenedDateIso = OpenedDateIso,
-            ChoiceId = ChoiceId, ResolutionCommandId = ResolutionCommandId, OutcomeId = OutcomeId
+            ChoiceId = ChoiceId, ResolutionCommandId = ResolutionCommandId, OutcomeId = OutcomeId,
+            OriginDateIso = OriginDateIso, Stage = Stage, Tags = new List<string>(Tags)
         };
     }
 
@@ -33,11 +38,12 @@ namespace StartupLife.Core
         [DataMember(Order = 3)] public uint EventRng { get; set; }
         [DataMember(Order = 4)] public string PendingTicketId { get; set; } = "";
         [DataMember(Order = 5)] public List<EventTicketRecord> Tickets { get; set; } = new List<EventTicketRecord>();
+        [DataMember(Order = 6)] public uint InitialEventRng { get; set; }
 
         public EventJournalState Copy() => new EventJournalState
         {
             RunId = RunId, Revision = Revision, NextTicketSequence = NextTicketSequence,
-            EventRng = EventRng, PendingTicketId = PendingTicketId,
+            EventRng = EventRng, InitialEventRng = InitialEventRng, PendingTicketId = PendingTicketId,
             Tickets = Tickets.ConvertAll(ticket => ticket.Copy())
         };
     }

@@ -15,7 +15,7 @@ namespace StartupLife.Simulation
         {
             if (string.IsNullOrWhiteSpace(runId) || eventRng == 0)
                 throw new ArgumentException("A valid run identity and seeded event RNG are required.");
-            return new EventJournalState { RunId = runId, EventRng = eventRng };
+            return new EventJournalState { RunId = runId, EventRng = eventRng, InitialEventRng = eventRng };
         }
 
         public static EventJournalResult Offer(EventJournalState source,
@@ -50,7 +50,10 @@ namespace StartupLife.Simulation
             candidate.Tickets.Add(new EventTicketRecord
             {
                 Id = ticketId, EventId = selected.Id, CategoryId = selected.CategoryId,
-                OpenedDateIso = context.Date.ToString()
+                OpenedDateIso = context.Date.ToString(),
+                OriginDateIso = context.OriginDate.ToString(),
+                Stage = context.Stage,
+                Tags = context.Tags.ToList()
             });
             candidate.PendingTicketId = ticketId;
             candidate.Revision = checked(candidate.Revision + 1);
@@ -97,10 +100,11 @@ namespace StartupLife.Simulation
             IReadOnlyList<GameEventDefinition> definitions, IReadOnlyList<EventCategoryPolicy> policies)
         {
             if (state == null || definitions == null || policies == null ||
-                string.IsNullOrWhiteSpace(state.RunId) || state.EventRng == 0 ||
+                string.IsNullOrWhiteSpace(state.RunId) || state.EventRng == 0 || state.InitialEventRng == 0 ||
                 state.Tickets == null || state.PendingTicketId == null ||
                 state.NextTicketSequence != state.Tickets.Count + 1L ||
-                state.Revision < 0 || state.Revision > 2L * state.Tickets.Count)
+                state.Revision < 0 || state.Revision > 2L * state.Tickets.Count ||
+                (state.Tickets.Count == 0 && state.EventRng != state.InitialEventRng))
                 throw new ArgumentException("Invalid event journal or catalog.");
             if (definitions.Any(x => x == null) ||
                 definitions.Select(x => x.Id).Distinct(StringComparer.Ordinal).Count() != definitions.Count ||
@@ -124,8 +128,15 @@ namespace StartupLife.Simulation
                     (lastDay.Length > 0 && string.CompareOrdinal(lastDay, ticket.OpenedDateIso) >= 0))
                     throw new ArgumentException("Invalid event ticket identity, content or chronology.");
                 var date = Parse(ticket.OpenedDateIso);
-                if (date.ToString() != ticket.OpenedDateIso)
-                    throw new ArgumentException("Noncanonical event date.");
+                if (date.ToString() != ticket.OpenedDateIso ||
+                    string.IsNullOrWhiteSpace(ticket.OriginDateIso) ||
+                    Parse(ticket.OriginDateIso).ToString() != ticket.OriginDateIso ||
+                    ticket.OriginDateIso.CompareTo(ticket.OpenedDateIso) > 0 ||
+                    ticket.Stage < 0 || ticket.Tags == null ||
+                    ticket.Tags.Any(x => !ContentId.IsValid(x)) ||
+                    !ticket.Tags.SequenceEqual(ticket.Tags.Distinct(StringComparer.Ordinal)
+                        .OrderBy(x => x, StringComparer.Ordinal)))
+                    throw new ArgumentException("Noncanonical event offer context.");
                 lastDay = ticket.OpenedDateIso;
 
                 var resolved = ticket.ResolutionCommandId.Length > 0;
