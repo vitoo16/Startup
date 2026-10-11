@@ -170,6 +170,27 @@ namespace StartupLife.Integration
             return Commit(current, result);
         }
 
+        // Presentation-compatible single-command API: global revision belongs
+        // to V4; operation, duration and outcome are the verified V3 evaluator's.
+        // Multi-boundary day/month batches require their own durable intent and
+        // are deliberately NOT synthesized here.
+        public CommandResult ExecuteGameplay(CommandEnvelope command)
+        {
+            var result = ExecuteCore(command);
+            var status = result.Status switch
+            {
+                EventCommitStatus.Committed => CommandStatus.Committed,
+                EventCommitStatus.AlreadyCommitted => CommandStatus.AlreadyCommitted,
+                EventCommitStatus.PersistenceFailed => CommandStatus.PersistenceFailed,
+                EventCommitStatus.RecoveryRequired => CommandStatus.RecoveryRequired,
+                _ => CommandStatus.Rejected
+            };
+            var core = result.CoreCommand;
+            return new CommandResult(status, result.ReasonKey, result.Revision,
+                core?.OperationId ?? "", core?.MinutesConsumed ?? 0,
+                status == CommandStatus.Committed ? core?.Outcome : null);
+        }
+
         // The same V4 CAS frontier now covers all ordinary V3 GameSession receipts
         // and event decisions. V2/V3 replay stays authoritative for the inner state.
         public EventCommitResult ExecuteCore(CommandEnvelope command)
