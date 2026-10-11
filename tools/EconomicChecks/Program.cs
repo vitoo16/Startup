@@ -1924,7 +1924,7 @@ internal static class Program
                 var root = new CommandEnvelope(source.RunId, "auto-day-root",
                     created.Revision, new GameCommand(CommandKind.AdvanceBoundary));
                 var blocked = Cold().AdvanceDay(root);
-                Assert(blocked.StopReason == "PlayerChoice" && blocked.Commands.Count == 0,
+                Assert(blocked.StopReason == "PlayerChoice" && blocked.Boundaries.Count == 0,
                     "day batch must open the deterministic event before spending time");
                 var pending = Cold().ReadPendingChoice() ??
                     throw new InvalidOperationException("auto offered ticket not cold-restored");
