@@ -40,7 +40,8 @@ namespace StartupLife.Integration
         // gateway callers still retain strict original-command idempotency.
         private CommandEnvelope ResumeInterruptedBatch(CommandEnvelope request, string mode)
         {
-            if (request == null || request.Command == null ||
+            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request.Command == null ||
                 request.Command.Kind != CommandKind.AdvanceBoundary)
                 return request;
             var current = Verified();
