@@ -179,3 +179,14 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Save impact:** New **prospective schema-4-only** `AdvanceBatches` journal records, with all inner V2/V3 frozen bytes, original economic receipt evaluator and external V4 envelope schema number unchanged. Existing *experimental* schema-4 checkpoints without new members are **not** claimed compatible; formal migration/format-version policy required before general production save activation.
 - **Visual/runtime evidence:** None; this is a source-only infrastructure and deterministic gameplay regression increment. Deferred Unity runtime/device QA still NOT PASS.
 - **Remaining M15-T01:** V4 has not been installed into `StartupLifeBootstrapper`/unified `IGameCommands` presentation flow; pending choice view and touch interaction still require runtime plumbing; V3 financial/career/skill event effects need spendable single-authority replay (tag effects only have exactly-once proof). **PARTIAL; PR #52 remains Draft; not merged or CLOSED.**
+
+
+## Increment 11 — Presentation command-port bridge (source-only)
+
+**Implementation SHA:** `7b98ef873e7e142ec9cb04c0d40758654761eb59`. **Owner:** GPT-6 Technical Director.
+
+- Added `Integration/EventV4GameCommands.cs` plus Unity `.meta`. It implements the existing `IGameCommands` contract by delegating `Execute`, `AdvanceDay`, `AdvanceMonth` to `EventV4CommitGateway`, and projecting only a validated V4 read into the existing `GameSnapshot` and `FirstPlayableFlow`. No forked flow, economy runner, CAS writer or separate session.
+- Added a real-file EconomicChecks regression in the existing M15 batch fixture: migrated V4 snapshot starts with the expected run/revision and the same adapter sees the committed character name and global revision after V3-driven `CreateCharacter`.
+- **Exact code CI:** [Engine-free #38148437187](https://github.com/vitoo16/Startup/actions/runs/38148437187) SUCCESS. CodeQL on documentation HEAD remains to be checked separately. No Unity runtime or device run claimed.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; repo workflow and skills manifest. **Tests:** engine-free CI above. **Visual evidence:** none (no Unity UI/scene changes). **Save impact:** none (no new wire field/schema version). **Files changed:** `Integration/EventV4GameCommands.cs`, `.meta`, `tools/EconomicChecks/Program.cs`, this journal.
+- **Known limitations:** The adapter is intentionally NOT registered in `StartupLifeBootstrapper`: currently there is no event pending-choice screen or approved automatic V3→V4 production migration. The V3 bootstrap remains the only live production writer to prevent an invisible blocking choice. Event money/XP still lacks spendable joint economic replay. M15-T01 PARTIAL; PR #52 Draft, not merged.
