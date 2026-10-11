@@ -1098,6 +1098,165 @@ internal static class Program
             wire.PayloadBase64 = "!invalid!";
             Equal(LoadStatus.FutureVersion, stage.DeserializeVerified(JsonSaveSerializer.WriteObject(wire)).Status);
         });
+
+        Check("M15 V4 existing atomic store commits pending and resolve, with cold idempotent retry", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var archived = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay();
+            var v3 = new V3SaveCompatibilitySerializer(content, GameSession.CreateRestoreValidator(),
+                new V2ToV3Migration(archived, replay),
+                new StagedV3SaveSerializer(archived, replay));
+            var eventDefinition = new GameEventDefinition("career-intro", "career", 2026, 1,
+                1, 0, 5, 4, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("continue", "event.continue", "outcome.continue") });
+            var defs = new[] { eventDefinition };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 7, 3) };
+            var active = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, defs, policies));
+            var initial = GameSession.NewState(content, "m15-cas", 47478UL,
+                new SimDate(2026, 10, 1));
+            var prior = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(initial), 2, 0);
+            var root = Path.Combine(Path.GetTempPath(), "m15-cas-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+            var file = Path.Combine(root, "career.save");
+            try
+            {
+                File.WriteAllBytes(file, prior);
+                var store = new AtomicFileSaveStore(file, active);
+                var gateway = new EventV4CommitGateway(active, store, defs, policies);
+                Assert(gateway.Read().Status == LoadStatus.Valid &&
+                    gateway.Read().SourceSchemaVersion == 2 && gateway.Read().State!.SaveVersion == 4,
+                    "v2 read must migrate only in memory");
+                Assert(File.ReadAllBytes(file).SequenceEqual(prior),
+                    "V2 original must remain byte-identical before first command");
+                var context = new GameEventContext(initial.Date, initial.Date, 1,
+                    new[] { "employed" }, Array.Empty<EventOccurrence>());
+                Assert(gateway.Offer("m15-cas", "offer-a", 0, new GameEventContext(
+                    initial.Date, initial.Date.AddDays(1), 1, Array.Empty<string>(),
+                    Array.Empty<EventOccurrence>())).ReasonKey == "event.date_mismatch",
+                    "event must not offer into a different V3 calendar day");
+                var offered = gateway.Offer("m15-cas", "offer-a", 0, context);
+                Assert(offered.Status == EventCommitStatus.Committed && offered.Revision == 1,
+                    "first offer must commit through physical CAS");
+                var persisted = File.ReadAllBytes(file);
+                Assert(JsonSaveSerializer.ReadObject<SaveEnvelope>(persisted).SchemaVersion == 4,
+                    "authorized offer must activate schema4");
+                var loaded = gateway.Read();
+                Assert(loaded.Status == LoadStatus.Valid &&
+                    loaded.State!.PendingChoiceId == offered.TicketId &&
+                    loaded.State.EventRng != initial.EventRng,
+                    "cold read must expose pending ticket and advanced event RNG");
+                var payload = loaded.State.EventV4!;
+                Assert(Convert.FromBase64String(payload.EmbeddedV3EnvelopeBase64).Length > 0 &&
+                    loaded.State.SchedulerRng == initial.SchedulerRng,
+                    "V3 economic checkpoint and career RNG must remain sealed");
+                var coldGateway = new EventV4CommitGateway(active,
+                    new AtomicFileSaveStore(file, active), defs, policies);
+                Assert(coldGateway.Offer("m15-cas", "offer-a", 0, context).Status ==
+                    EventCommitStatus.AlreadyCommitted, "cold offer retry must not apply twice");
+                Assert(File.ReadAllBytes(file).SequenceEqual(persisted),
+                    "cold retry must preserve every byte");
+                var invalid = coldGateway.Resolve("m15-cas", "resolve-bad", 1, offered.TicketId, "not-a-choice");
+                Assert(invalid.Status == EventCommitStatus.Rejected &&
+                    File.ReadAllBytes(file).SequenceEqual(persisted),
+                    "invalid choice cannot commit or change disk");
+                var resolved = coldGateway.Resolve("m15-cas", "resolve-a", 1, offered.TicketId, "continue");
+                Assert(resolved.Status == EventCommitStatus.Committed && resolved.Revision == 2 &&
+                    resolved.OutcomeId == "outcome.continue", "resolve must persist once");
+                var resolvedBytes = File.ReadAllBytes(file);
+                Assert(coldGateway.Resolve("m15-cas", "resolve-a", 1, offered.TicketId, "continue").Status ==
+                    EventCommitStatus.AlreadyCommitted, "resolved retry must remain idempotent");
+                Assert(File.ReadAllBytes(file).SequenceEqual(resolvedBytes) &&
+                    coldGateway.Read().State!.PendingChoiceId == "",
+                    "resolved retry cannot change bytes or reopen a ticket");
+                var forged = JsonSaveSerializer.ReadObject<GameState>(
+                    JsonSaveSerializer.WriteObject(coldGateway.Read().State!));
+                forged.SaveVersion = 4;
+                forged.EventV4 = coldGateway.Read().State!.EventV4;
+                forged.Cash++;
+                Throws<ArgumentException>(() => active.Serialize(forged));
+                Assert(File.ReadAllBytes(file).SequenceEqual(resolvedBytes),
+                    "serializer must reject mutated cash even when journal is valid");
+                var corrupt = JsonSaveSerializer.ReadObject<SaveEnvelope>(resolvedBytes);
+                corrupt.Checksum = "not-authentic";
+                File.WriteAllBytes(file, JsonSaveSerializer.WriteObject(corrupt));
+                var recovered = coldGateway.Read();
+                Assert(recovered.Status == LoadStatus.RecoveredBackup &&
+                    recovered.State!.Revision == 1,
+                    "corrupt primary should fall back to validated predecessor");
+                Assert(File.ReadAllBytes(file).SequenceEqual(JsonSaveSerializer.WriteObject(corrupt)),
+                    "cold recovery read must never rewrite corrupt primary");
+            }
+            finally
+            {
+                try { Directory.Delete(root, true); }
+                catch (System.IO.IOException) { }
+            }
+        });
+        Check("M15 V4 CAS failed-write, ambiguous promotion and concurrent stale writer", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var archived = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay();
+            var v3 = new V3SaveCompatibilitySerializer(content, GameSession.CreateRestoreValidator(),
+                new V2ToV3Migration(archived, replay),
+                new StagedV3SaveSerializer(archived, replay));
+            var defs = new[] { new GameEventDefinition("career-intro", "career", 2026, 1,
+                1, 0, 5, 4, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("continue", "event.continue", "outcome.continue") }) };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 7, 3) };
+            var serializer = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, defs, policies));
+            var original = GameSession.NewState(content, "m15-fault", 3177UL,
+                new SimDate(2026, 10, 1));
+            var v2Bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(original), 2, 0);
+            var root = Path.Combine(Path.GetTempPath(), "m15-fault-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+            var file = Path.Combine(root, "event.save");
+            try
+            {
+                File.WriteAllBytes(file, v2Bytes);
+                var context = new GameEventContext(original.Date, original.Date, 1,
+                    Array.Empty<string>(), Array.Empty<EventOccurrence>());
+                var failed = new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(file, serializer,
+                        point => point == "during-temp-write"), defs, policies);
+                Assert(failed.Offer("m15-fault", "offer-1", 0, context).Status ==
+                    EventCommitStatus.PersistenceFailed &&
+                    File.ReadAllBytes(file).SequenceEqual(v2Bytes),
+                    "pre-promotion crash must not mutate committed V2 bytes");
+                var ambiguous = new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(file, serializer,
+                        point => point == "after-replace"), defs, policies);
+                Assert(ambiguous.Offer("m15-fault", "offer-1", 0, context).Status ==
+                    EventCommitStatus.RecoveryRequired,
+                    "post-promotion failure requires recovery, not retrying the write");
+                var healthy = new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(file, serializer), defs, policies);
+                Assert(healthy.Read().State!.Revision == 1 &&
+                    healthy.Offer("m15-fault", "offer-1", 0, context).Status ==
+                        EventCommitStatus.AlreadyCommitted,
+                    "post-promotion cold retry must detect committed offer");
+                var committedBytes = File.ReadAllBytes(file);
+                Assert(healthy.Offer("m15-fault", "offer-2", 0, context).Status ==
+                    EventCommitStatus.Rejected &&
+                    File.ReadAllBytes(file).SequenceEqual(committedBytes),
+                    "stale writer must not replace committed choice");
+                var resolver = new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(file, serializer), defs, policies);
+                var ticket = healthy.Read().State!.PendingChoiceId;
+                Assert(resolver.Resolve("m15-fault", "resolve-1", 1, ticket, "continue").Status ==
+                    EventCommitStatus.Committed, "follow-up writer must resolve after recovery");
+                Assert(healthy.Resolve("m15-fault", "resolve-2", 1, ticket, "continue").Status ==
+                    EventCommitStatus.Rejected, "second writer may not replay paid choice");
+            }
+            finally
+            {
+                try { Directory.Delete(root, true); }
+                catch (System.IO.IOException) { }
+            }
+        });
         Check("staged schema3 envelope validates checksum generation and future schema precedence", () =>
         {
             var legacy=GameSession.NewState(FirstPlayableContentTemplate.BuildCatalog(),
