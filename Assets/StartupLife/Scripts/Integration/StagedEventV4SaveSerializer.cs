@@ -188,8 +188,34 @@ namespace StartupLife.Integration
             if (byFrontier.ContainsKey(-1) || byFrontier.Keys.Any(x => x < 0))
                 throw new ArgumentException("Event tickets need authoritative V3 receipt frontiers.");
             var visited = new HashSet<long>();
+            var anchoredBatches = new HashSet<string>(StringComparer.Ordinal);
+            var batchesByStart = journal.AdvanceBatches.GroupBy(x => x.CoreRevisionAtStart)
+                .ToDictionary(x => x.Key, x => x.ToArray());
+            var batchPrefixes = journal.AdvanceBatches.ToDictionary(
+                x => EventAdvanceBatchHistory.ChildPrefix(journal.RunId, x.RootCommandId),
+                x => x, StringComparer.Ordinal);
             var core = v3.DeserializeAndValidateWithFrontiers(v3Bytes, frontier =>
             {
+                if (batchesByStart.TryGetValue(frontier.Revision, out var batchStarts))
+                    foreach (var batch in batchStarts)
+                    {
+                        if (batch.OpenedDateIso != frontier.DateIso)
+                            throw new ArgumentException("Batch start date is not a verified V3 receipt prefix.");
+                        anchoredBatches.Add(batch.RootCommandId);
+                    }
+                if (frontier.Receipts.Count > 0)
+                {
+                    var last = frontier.Receipts[frontier.Receipts.Count - 1];
+                    if (last.CommandId.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
+                        StringComparison.Ordinal))
+                    {
+                        var slash = last.CommandId.LastIndexOf('/');
+                        if (slash < 0 || !batchPrefixes.TryGetValue(
+                                last.CommandId.Substring(0, slash + 1), out var owner) ||
+                            string.CompareOrdinal(frontier.DateIso, owner.TargetDateIso) > 0)
+                            throw new ArgumentException("Batch child receipt exceeded committed target.");
+                    }
+                }
                 if (!byFrontier.TryGetValue(frontier.Revision, out var tickets))
                     return;
                 // Prior resolved outcome receipts may add event-scoped eligibility
@@ -218,7 +244,8 @@ namespace StartupLife.Integration
                 string.CompareOrdinal(origin, state.DateIso) > 0 ||
                 journal.Tickets.Any(t => t.CoreRevisionAtOffer < legacyCount ||
                     t.CoreRevisionAtOffer > state.Revision) ||
-                visited.Count != byFrontier.Count)
+                visited.Count != byFrontier.Count ||
+                anchoredBatches.Count != journal.AdvanceBatches.Count)
                 throw new ArgumentException("Event history is not anchored to verified V3 receipt frontiers.");
             if (state.RunId != payload.Journal.RunId ||
                 state.EventRng != payload.Journal.InitialEventRng ||
@@ -226,6 +253,7 @@ namespace StartupLife.Integration
                 (payload.Journal.PendingTicketId.Length > 0 &&
                     payload.Journal.Tickets.Last().OpenedDateIso != state.DateIso))
                 throw new ArgumentException("Event journal and V3 time/run/RNG anchor disagree.");
+            EventAdvanceBatchHistory.Validate(journal, state);
             EventJournalReplay.Validate(payload.Journal, definitions, policies);
             return state;
         }

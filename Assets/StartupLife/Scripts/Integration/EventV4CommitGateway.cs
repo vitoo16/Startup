@@ -170,13 +170,111 @@ namespace StartupLife.Integration
             return Commit(current, result);
         }
 
+        public AdvanceResult AdvanceDay(CommandEnvelope request) => AdvanceBatch(request, "day");
+
+        public AdvanceResult AdvanceMonth(CommandEnvelope request) => AdvanceBatch(request, "month");
+
+        // A batch root is committed once as a V4 event-journal intent. Each child
+        // remains exactly one real V3 GameSession AdvanceBoundary receipt under
+        // the original V4 physical CAS. Cold retries derive the next child index
+        // from authenticated V3 receipts rather than volatile counters.
+        private AdvanceResult AdvanceBatch(CommandEnvelope request, string mode)
+        {
+            var results = new List<CommandResult>();
+            LoadResult read = Read();
+            if (!Valid(read)) return BatchStop(results, read.State, "RecoveryRequired");
+            var state = read.State!;
+            if (request == null || request.Command == null ||
+                request.Command.Kind != CommandKind.AdvanceBoundary ||
+                !ValidIdentity(request.RunId, request.CommandId, state) ||
+                request.CommandId.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
+                    StringComparison.Ordinal))
+                return BatchStop(results, state, "InvalidRequest");
+            var journal = state.EventV4!.Journal!;
+            if (state.Receipts.Any(x => x.CommandId == request.CommandId) ||
+                journal.Tickets.Any(x => x.OfferCommandId == request.CommandId ||
+                    x.ResolutionCommandId == request.CommandId))
+                return BatchStop(results, state, "InvalidRequest");
+            var batch = journal.AdvanceBatches.FirstOrDefault(
+                x => x.RootCommandId == request.CommandId);
+            if (batch == null)
+            {
+                if (request.ExpectedRevision != state.Revision ||
+                    journal.PendingTicketId.Length > 0 ||
+                    journal.AdvanceBatches.Any(x => string.CompareOrdinal(
+                        state.DateIso, x.TargetDateIso) < 0))
+                    return BatchStop(results, state, journal.PendingTicketId.Length > 0
+                        ? "PlayerChoice" : "InvalidRequest");
+                var next = JsonSaveSerializer.ReadObject<EventV4Payload>(
+                    JsonSaveSerializer.WriteObject(state.EventV4));
+                next.Journal!.AdvanceBatches.Add(new EventAdvanceBatchRecord
+                {
+                    RootCommandId = request.CommandId,
+                    Mode = mode,
+                    OpenedDateIso = state.DateIso,
+                    TargetDateIso = EventAdvanceBatchHistory.Target(state.DateIso, mode),
+                    CoreRevisionAtStart = checked(state.Revision - journal.Revision)
+                });
+                next.Journal.Revision = checked(next.Journal.Revision + 1);
+                var registered = CommitCandidate(state,
+                    EventV4CompatibilitySerializer.RestoreCoreProjection(state), next);
+                if (registered.Status != EventCommitStatus.Committed)
+                    return BatchStop(results, state, registered.Status ==
+                        EventCommitStatus.RecoveryRequired ? "RecoveryRequired" :
+                        registered.Status == EventCommitStatus.PersistenceFailed
+                            ? "PersistenceOrRuleFailure" : "InvalidState");
+                read = Read();
+                if (!Valid(read)) return BatchStop(results, state, "RecoveryRequired");
+                state = read.State!;
+                journal = state.EventV4!.Journal!;
+                batch = journal.AdvanceBatches.Last();
+            }
+            else if (batch.Mode != mode)
+                return BatchStop(results, state, "InvalidRequest");
+
+            for (var guard = 0; string.CompareOrdinal(state.DateIso, batch.TargetDateIso) < 0; guard++)
+            {
+                if (guard > 10000) return BatchStop(results, state, "InvalidState");
+                if (journal.PendingTicketId.Length > 0)
+                    return BatchStop(results, state, "PlayerChoice");
+                var counts = EventAdvanceBatchHistory.CountSteps(journal, state.Receipts);
+                var childId = EventAdvanceBatchHistory.ChildId(
+                    state.RunId, batch.RootCommandId, counts[batch.RootCommandId]);
+                var step = ExecuteCoreInternal(new CommandEnvelope(state.RunId, childId,
+                    state.Revision, new GameCommand(CommandKind.AdvanceBoundary)), true);
+                if (step.Status != EventCommitStatus.Committed)
+                    return BatchStop(results, state, step.Status ==
+                        EventCommitStatus.RecoveryRequired ? "RecoveryRequired" :
+                        step.Status == EventCommitStatus.PersistenceFailed
+                            ? "PersistenceOrRuleFailure" :
+                            step.ReasonKey == "event.choice_required"
+                                ? "PlayerChoice" : "PersistenceOrRuleFailure");
+                results.Add(ToGameplayResult(step));
+                read = Read();
+                if (!Valid(read)) return BatchStop(results, state, "RecoveryRequired");
+                state = read.State!;
+                journal = state.EventV4!.Journal!;
+            }
+            return BatchStop(results, state, "TargetReached");
+        }
+
+        private static AdvanceResult BatchStop(List<CommandResult> results,
+            GameState? state, string reason)
+        {
+            var instant = state == null ? new SimInstant(new SimDate(2026, 9, 1), 0) :
+                new SimInstant(state.Date, state.Minute);
+            return new AdvanceResult(results.AsReadOnly(), instant, reason);
+        }
+
         // Presentation-compatible single-command API: global revision belongs
         // to V4; operation, duration and outcome are the verified V3 evaluator's.
         // Multi-boundary day/month batches require their own durable intent and
         // are deliberately NOT synthesized here.
-        public CommandResult ExecuteGameplay(CommandEnvelope command)
+        public CommandResult ExecuteGameplay(CommandEnvelope command) =>
+            ToGameplayResult(ExecuteCore(command));
+
+        private static CommandResult ToGameplayResult(EventCommitResult result)
         {
-            var result = ExecuteCore(command);
             var status = result.Status switch
             {
                 EventCommitStatus.Committed => CommandStatus.Committed,
@@ -193,7 +291,10 @@ namespace StartupLife.Integration
 
         // The same V4 CAS frontier now covers all ordinary V3 GameSession receipts
         // and event decisions. V2/V3 replay stays authoritative for the inner state.
-        public EventCommitResult ExecuteCore(CommandEnvelope command)
+        public EventCommitResult ExecuteCore(CommandEnvelope command) =>
+            ExecuteCoreInternal(command, false);
+
+        private EventCommitResult ExecuteCoreInternal(CommandEnvelope command, bool batchChild)
         {
             var read = Read();
             if (!Valid(read)) return LoadFailure(read);
@@ -202,6 +303,26 @@ namespace StartupLife.Integration
                 !ValidIdentity(command.RunId, command.CommandId, current))
                 return Reject(current, "command.invalid_id");
             var journal = current.EventV4!.Journal!;
+            if (batchChild)
+            {
+                var active = journal.AdvanceBatches.LastOrDefault();
+                if (active == null ||
+                    string.CompareOrdinal(current.DateIso, active.TargetDateIso) >= 0 ||
+                    command.Command.Kind != CommandKind.AdvanceBoundary ||
+                    command.CommandId != EventAdvanceBatchHistory.ChildId(current.RunId,
+                        active.RootCommandId, EventAdvanceBatchHistory.CountSteps(
+                            journal, current.Receipts)[active.RootCommandId]))
+                    return Reject(current, "batch.invalid_child");
+            }
+            else if (command.CommandId.StartsWith(
+                EventAdvanceBatchHistory.ReservedChildPrefix, StringComparison.Ordinal))
+                return Reject(current, "command.reserved_id");
+            if (!batchChild && journal.AdvanceBatches.Any(x =>
+                string.CompareOrdinal(current.DateIso, x.TargetDateIso) < 0) &&
+                command.Command.Kind != CommandKind.AcknowledgePlayback)
+                return Reject(current, "batch.in_progress");
+            if (journal.AdvanceBatches.Any(x => x.RootCommandId == command.CommandId))
+                return Reject(current, "command.id_conflict");
             if (journal.Tickets.Any(x => x.OfferCommandId == command.CommandId ||
                 x.ResolutionCommandId == command.CommandId))
                 return Reject(current, "command.id_conflict");

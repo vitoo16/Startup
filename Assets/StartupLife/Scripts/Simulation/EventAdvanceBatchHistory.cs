@@ -46,6 +46,33 @@ namespace StartupLife.Simulation
                 index.ToString(CultureInfo.InvariantCulture);
         }
 
+        // The gateway calls this on already cold-validated core receipts.
+        // The strict full source verification below additionally checks dates,
+        // cutoff revisions, payloads and orphaned internal identities.
+        public static IReadOnlyDictionary<string, int> CountSteps(EventJournalState journal,
+            IEnumerable<CommandReceipt> receipts)
+        {
+            var result = journal.AdvanceBatches.ToDictionary(x => x.RootCommandId,
+                x => 0, StringComparer.Ordinal);
+            var prefixes = journal.AdvanceBatches.ToDictionary(
+                x => ChildPrefix(journal.RunId, x.RootCommandId), x => x.RootCommandId,
+                StringComparer.Ordinal);
+            foreach (var receipt in receipts)
+            {
+                if (!receipt.CommandId.StartsWith(ReservedChildPrefix, StringComparison.Ordinal))
+                    continue;
+                var slash = receipt.CommandId.LastIndexOf('/');
+                if (slash <= 0 || !prefixes.TryGetValue(
+                        receipt.CommandId.Substring(0, slash + 1), out var root))
+                    throw new ArgumentException("Unknown internal batch child receipt.");
+                var count = result[root];
+                if (receipt.CommandId != ChildId(journal.RunId, root, count))
+                    throw new ArgumentException("Out-of-order internal batch child receipt.");
+                result[root] = checked(count + 1);
+            }
+            return result;
+        }
+
         // Builds the authoritative count from the independently verified V3
         // command roster, never from untrusted persisted "next index" counters.
         public static IReadOnlyDictionary<string, int> Validate(EventJournalState journal,
