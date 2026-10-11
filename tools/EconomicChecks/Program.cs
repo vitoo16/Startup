@@ -1191,7 +1191,7 @@ internal static class Program
                 var count = EventAdvanceBatchHistory.CountSteps(
                     reached.EventV4!.Journal!, reached.Receipts)["batch-day-root"];
                 Assert(count > 1 && reached.DateIso == "2026-10-31" &&
-                    reached.EventV4.Journal.AdvanceBatches.Count == 1,
+                    reached.EventV4!.Journal!.AdvanceBatches.Count == 1,
                     "every resumed step uses authenticated V3 child receipts");
                 var beforeRetry = File.ReadAllBytes(filename);
                 Assert(Cold().AdvanceDay(dayRoot).StopReason == "TargetReached" &&
