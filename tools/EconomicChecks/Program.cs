@@ -1149,7 +1149,7 @@ internal static class Program
                     "cold read must expose pending ticket and advanced event RNG");
                 var payload = loaded.State.EventV4!;
                 Assert(Convert.FromBase64String(payload.EmbeddedV3EnvelopeBase64).Length > 0 &&
-                    loaded.State.SchedulerRng == initial.SchedulerRng,
+                    loaded.State!.SchedulerRng == initial.SchedulerRng,
                     "V3 economic checkpoint and career RNG must remain sealed");
                 var coldGateway = new EventV4CommitGateway(active,
                     new AtomicFileSaveStore(file, active), defs, policies);
