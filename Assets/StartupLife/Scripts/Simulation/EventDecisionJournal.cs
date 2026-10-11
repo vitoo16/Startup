@@ -23,7 +23,7 @@ namespace StartupLife.Simulation
         public static EventJournalResult Offer(EventJournalState source,
             IReadOnlyList<GameEventDefinition> definitions, IReadOnlyList<EventCategoryPolicy> policies,
             GameEventContext context, long expectedRevision, string offerCommandId = "",
-            long coreRevisionAtOffer = -1)
+            long coreRevisionAtOffer = -1) =>
             OfferInternal(source, definitions, policies, context, expectedRevision,
                 offerCommandId, coreRevisionAtOffer, false);
 
