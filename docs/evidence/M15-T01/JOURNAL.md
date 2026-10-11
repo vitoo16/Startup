@@ -481,3 +481,15 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - The opt-in direct-work eligible/ineligible regression suites and preexisting batch tests cover both callers; source-only refactor with no save or art change.
 - **Skills:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler. **Tests:** CI exact SHA pending. **Visual:** NOT RUN. **Save:** none. **Known limits:** event money/XP composite receipt and Unity PlayMode remain incomplete.
 - **Files:** EventV4CommitGateway.cs, JOURNAL.md.
+
+
+## Increment 37 — Proof-bound event reward settlement planning (no wallet mutation)
+
+**Owner:** GPT-6 Technical Director. **M15-T01 PARTIAL; PR #52 Draft/unmerged.**
+
+- Added immutable `EventRewardSettlementPlan` derived through the *existing* `EventDecisionJournal.PlanReward` validator. It binds one exact pending V4 ticket, authored choice/outcome, external resolution command ID, next V3 core receipt frontier and the **single** next global V4 generation. No arithmetic values originate from UI or caller-owned commands.
+- The planner rejects forged/unowned/reserved/duplicate command identities, mismatched pending ticket/date, stale combined revision, unaffordable negative cash, arithmetic overflow, and Career XP when there is no active employment. Cash/XP amounts are read from the catalog; the candidate GameState is never mutated.
+- Added engine-free SimulationChecks for valid cross-domain binding and all the rejection conditions. `Resolve` intentionally still fails closed with `event.reward_processor_unavailable`; this increment is the trusted pure settlement covenant for later composite receipt implementation, NOT a claim that money/XP is now spendable.
+- **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Tests:** exact-HEAD engine-free CI pending. **Visual:** NOT RUN. **Save impact:** none (no persisted field, no V3 wire change). **Known limits:** V3 payout receipt and V4 cross-replay proof, Unity runtime/device QA are unfinished.
+- **Files:** Core/EventDefinitions.cs; Simulation/EventDecisionJournal.cs; tools/SimulationChecks/Program.cs; this journal.

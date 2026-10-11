@@ -87,6 +87,80 @@ internal static class Program
                 EventDecisionJournal.Resolve(offered.Next, defs, policies,
                     offered.Next.Revision, "resolve-tag", offered.TicketId, "decline").Status);
         });
+        Check("M15 payout plan binds exact pending V4 ticket, authored choice, and V3 frontier", () =>
+        {
+            var bonus = new EventChoiceDefinition("take-bonus", "event.take",
+                "outcome.take", reward: new EventChoiceReward(120000, 50));
+            var cost = new EventChoiceDefinition("pay-cost", "event.pay",
+                "outcome.pay", reward: new EventChoiceReward(-150000, 0));
+            var fallback = new EventChoiceDefinition("skip", "event.skip",
+                "outcome.skip");
+            var defs = new[] { new GameEventDefinition("cash-offer", "life", 2026,
+                0, 1, 0, 1, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { bonus, cost, fallback }) };
+            var policies = new[] { new EventCategoryPolicy("life", 0, 7, 1) };
+            var origin = new SimDate(2026, 10, 1);
+            var offered = EventDecisionJournal.Offer(
+                EventDecisionJournal.New("reward-plan-run", 94731), defs, policies,
+                new GameEventContext(origin, origin, 0, Array.Empty<string>(),
+                    Array.Empty<EventOccurrence>()), 0, "offer-once", 0);
+            Equal(EventJournalStatus.Offered, offered.Status);
+            var content = Catalog();
+            var state = GameSession.NewState(content, "reward-plan-run", 94731UL,
+                origin);
+            state.SaveVersion = 4;
+            state.Name = "Plan Test";
+            state.Cash = 200000;
+            state.Revision = offered.Next.Revision;
+            state.EventV4 = new EventV4Payload { Journal = offered.Next };
+            state.Employment = new EmploymentState { CareerId = "office-worker",
+                Xp = 100 };
+            var cashBefore = state.Cash;
+            var xpBefore = state.Employment.Xp;
+            var plan = EventDecisionJournal.PlanReward(state, defs, policies,
+                "apply-reward-once", offered.TicketId, "take-bonus");
+            Equal(offered.TicketId, plan.TicketId);
+            Equal("cash-offer", plan.EventId);
+            Equal("take-bonus", plan.ChoiceId);
+            Equal("outcome.take", plan.OutcomeId);
+            Equal("apply-reward-once", plan.ResolutionCommandId);
+            Equal(1L, plan.CoreRevision);
+            Equal(2L, plan.GlobalRevision);
+            Equal(120000L, plan.CashDeltaVnd);
+            Equal(50L, plan.CareerXpDelta);
+            Equal(cashBefore, state.Cash);
+            Equal(xpBefore, state.Employment.Xp);
+            Equal(offered.TicketId, state.EventV4.Journal.PendingTicketId);
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "offer-once", offered.TicketId, "take-bonus"));
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "v4batch/forged", offered.TicketId, "take-bonus"));
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "v4day/2026-10-01", offered.TicketId, "take-bonus"));
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", "wrong-ticket", "take-bonus"));
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "skip"));
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "pay-cost"));
+            state.Employment = null;
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "take-bonus"));
+            state.Employment = new EmploymentState { Xp = long.MaxValue };
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "take-bonus"));
+            state.Employment.Xp = 100;
+            state.Cash = long.MaxValue;
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "take-bonus"));
+            state.Cash = 200000;
+            state.Revision++;
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "take-bonus"));
+            Equal(EventJournalStatus.Rejected, EventDecisionJournal.Resolve(
+                offered.Next, defs, policies, offered.Next.Revision, "still-disabled",
+                offered.TicketId, "take-bonus").Status);
+        });
         Check("M15 ineligible events never consume RNG, with window, tags, stage and max-use gates", () =>
         {
             var eventDef = Event("offer", 2, 2, 5, 4, 1, new[] { "employed" }, new[] { "blocked" });

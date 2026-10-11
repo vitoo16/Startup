@@ -185,6 +185,56 @@ namespace StartupLife.Simulation
                 ticketId, selectedChoice.OutcomeId);
         }
 
+        // Prepare the only admissible payout provenance before touching V3.
+        // This function has no side effects: it cannot credit cash/XP and is
+        // deliberately not a substitute for the future composite V3 receipt.
+        // Always feed it a freshly verified V4 projection, never client state.
+        public static EventRewardSettlementPlan PlanReward(GameState current,
+            IReadOnlyList<GameEventDefinition> definitions,
+            IReadOnlyList<EventCategoryPolicy> policies, string commandId,
+            string ticketId, string choiceId)
+        {
+            if (current?.SaveVersion != 4 || current.EventV4?.Journal == null ||
+                current.Receipts == null || definitions == null || policies == null)
+                throw new ArgumentException("Verified V4 reward projection required.");
+            var journal = current.EventV4.Journal;
+            Validate(journal, definitions, policies);
+            if (journal.RunId != current.RunId ||
+                current.Revision != checked(current.Receipts.Count + journal.Revision) ||
+                journal.PendingTicketId != ticketId || journal.Tickets.Count == 0 ||
+                current.Name.Length == 0 || current.DateIso.Length == 0)
+                throw new ArgumentException("Reward requires a current pending event.");
+            var ticket = journal.Tickets[journal.Tickets.Count - 1];
+            if (ticket.Id != ticketId || ticket.OpenedDateIso != current.DateIso ||
+                ticket.CoreRevisionAtOffer < 0 ||
+                ticket.CoreRevisionAtOffer > current.Receipts.Count)
+                throw new ArgumentException("Event offer frontier is not authoritative.");
+            if (string.IsNullOrWhiteSpace(commandId) || commandId.Length > 256 ||
+                commandId.StartsWith(DailyCheckPrefix, StringComparison.Ordinal) ||
+                ConflictsWithBatchIdentity(journal, commandId) ||
+                journal.Tickets.Any(x => x.OfferCommandId == commandId ||
+                    x.ResolutionCommandId == commandId) ||
+                journal.NoEligibleDays.Any(x => x.CommandId == commandId) ||
+                current.Receipts.Any(x => x.CommandId == commandId))
+                throw new ArgumentException("Reward command identity is already owned.");
+            var definition = definitions.Single(x => x.Id == ticket.EventId);
+            var choice = definition.Choices.SingleOrDefault(x => x.Id == choiceId);
+            if (choice?.Reward == null)
+                throw new ArgumentException("No financial effect on this authored choice.");
+            var reward = choice.Reward;
+            var afterCash = checked(current.Cash + reward.CashDeltaVnd);
+            if (afterCash < 0)
+                throw new ArgumentException("Event cost exceeds available cash.");
+            if (reward.CareerXpDelta > 0)
+            {
+                if (current.Employment == null || current.Employment.EndedIso.Length > 0)
+                    throw new ArgumentException("Career XP requires active employment.");
+                _ = checked(current.Employment.Xp + reward.CareerXpDelta);
+            }
+            return new EventRewardSettlementPlan(ticket, choice, commandId,
+                checked(current.Receipts.Count + 1L), checked(current.Revision + 1));
+        }
+
         // Structural and content validation for prospective cold restoration.
         // Not a substitute for main-save receipt replay once M15 is integrated.
         public static IReadOnlyDictionary<string, EventCategoryPolicy> Validate(EventJournalState state,
