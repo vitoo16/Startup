@@ -1245,10 +1245,18 @@ internal static class Program
             var v3 = new V3SaveCompatibilitySerializer(content, GameSession.CreateRestoreValidator(),
                 new V2ToV3Migration(archives, replay),
                 new StagedV3SaveSerializer(archives, replay));
-            var definitions = new[] { new GameEventDefinition("career-moment", "career",
-                2026, 0, 1, 0, 4, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
-                new[] { new EventChoiceDefinition("continue", "event.continue",
-                    "outcome.continue", new[] { "event/networked" }) }) };
+            var definitions = new[]
+            {
+                new GameEventDefinition("career-moment", "career",
+                    2026, 0, 1, 0, 1, 2, 0, Array.Empty<string>(), Array.Empty<string>(),
+                    new[] { new EventChoiceDefinition("continue", "event.continue",
+                        "outcome.continue", new[] { "event/networked" }) }),
+                new GameEventDefinition("network-followup", "career",
+                    2026, 1, 1, 0, 1, 2, 1, new[] { "event/networked" },
+                    Array.Empty<string>(),
+                    new[] { new EventChoiceDefinition("reply", "event.reply",
+                        "outcome.reply") })
+            };
             var policies = new[] { new EventCategoryPolicy("career", 0, 7, 4) };
             var serializer = new EventV4CompatibilitySerializer(
                 new StagedEventV4SaveSerializer(v3, definitions, policies));
@@ -1336,10 +1344,18 @@ internal static class Program
                 Assert(gateway.ExecuteCore(new CommandEnvelope(origin.RunId, "event-offer-v4", 2,
                     new GameCommand(CommandKind.Resign))).ReasonKey == "command.id_conflict",
                     "event command IDs and V3 receipt IDs share a collision domain");
+                var uncertainEventWriter = new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(filename, serializer,
+                        point => point == "after-replace"), definitions, policies, runtime);
+                var uncertainResolution = uncertainEventWriter.Resolve(
+                    origin.RunId, "event-resolve-v4", 2, offered.TicketId, "continue");
+                Assert(uncertainResolution.Status == EventCommitStatus.RecoveryRequired,
+                    "post-replace event effect commit must report ambiguous promotion");
                 var resolved = gateway.Resolve(origin.RunId, "event-resolve-v4", 2,
                     offered.TicketId, "continue");
-                Assert(resolved.Status == EventCommitStatus.Committed && resolved.Revision == 3,
-                    "event resolve commits at global revision three");
+                Assert(resolved.Status == EventCommitStatus.AlreadyCommitted &&
+                    resolved.Revision == 3 && resolved.OutcomeId == "outcome.continue",
+                    "cold retry discovers the once-only outcome receipt at revision three");
                 var effectWire = gateway.Read().State!.EventV4!;
                 Assert(effectWire.Journal!.OutcomeReceipts.Count == 1 &&
                     effectWire.Journal.OutcomeReceipts[0].GrantedTags.SequenceEqual(
@@ -1427,6 +1443,51 @@ internal static class Program
                     "authoritative save remains single nested V3 within V4, not independent files");
                 Assert(File.ReadAllBytes(filename).Length != originalV2.Length,
                     "legacy V2 was promoted only after authorized command");
+
+                // Execute real receipt-backed game time, not a fabricated date
+                // supplied by the event test. The persisted outcome's tag must
+                // remain effective across an authenticated V3 midnight boundary.
+                var boundaries = 0;
+                while (cold.Read().State!.DateIso == origin.DateIso && boundaries < 16)
+                {
+                    var beforeBoundary = cold.Read().State!;
+                    var transition = cold.ExecuteCore(new CommandEnvelope(origin.RunId,
+                        "network-boundary-" + boundaries, beforeBoundary.Revision,
+                        new GameCommand(CommandKind.AdvanceBoundary)));
+                    Assert(transition.Status == EventCommitStatus.Committed,
+                        "real V3 boundary must progress the event-enabled game: " +
+                        transition.ReasonKey);
+                    boundaries++;
+                }
+                var dayTwo = cold.Read().State!;
+                Assert(dayTwo.DateIso == origin.Date.AddDays(1).ToString(),
+                    "V3 receipt-backed time advance must reach the next day");
+                var nextOffer = cold.Offer(origin.RunId, "network-followup-offer",
+                    dayTwo.Revision);
+                Assert(nextOffer.Status == EventCommitStatus.Committed,
+                    "earned event/networked tag should authorize the next day's event: " +
+                    nextOffer.ReasonKey);
+                var nextCold = new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(filename, serializer),
+                    definitions, policies, runtime);
+                var following = nextCold.Read();
+                var followupJournal = following.State?.EventV4?.Journal ??
+                    throw new InvalidOperationException("Follow-up event cold read has no journal.");
+                Assert(following.Status == LoadStatus.Valid &&
+                    followupJournal.Tickets.Count == 2 &&
+                    followupJournal.Tickets[1].EventId == "network-followup" &&
+                    followupJournal.Tickets[1].Tags.Contains("event/networked") &&
+                    followupJournal.OutcomeReceipts.Count == 1 &&
+                    following.State!.PendingChoiceId == nextOffer.TicketId,
+                    "cold replay proves granted tag unlocks the next event exactly once");
+                var beforeTamper = File.ReadAllBytes(filename);
+                var forgedPriorEffect = JsonSaveSerializer.ReadObject<EventV4Payload>(
+                    JsonSaveSerializer.WriteObject(following.State.EventV4!));
+                forgedPriorEffect.Journal!.OutcomeReceipts[0].GrantedTags.Clear();
+                Throws<ArgumentException>(() => strictV4.SerializeVerified(forgedPriorEffect));
+                Assert(File.ReadAllBytes(filename).SequenceEqual(beforeTamper),
+                    "forged old event effect may not change the saved follow-up");
+
             }
             finally
             {
