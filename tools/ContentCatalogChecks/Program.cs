@@ -18,6 +18,7 @@ internal static class Program
         Check("first playable template builds expected immutable catalog", FirstPlayableBuilds);
         Check("M15 narrative events have unique immutable content and valid policies", EventCatalogValid);
         Check("M15 story eligibility uses authoritative tag/stage combinations", EventStoryEligibility);
+        Check("M15 authored event chains replay exactly and require accepted choices", EventStoryChainReplay);
         Check("duplicate content ids reject at conversion boundary", DuplicateIdsReject);
         Check("missing career skill reference rejects", MissingCareerSkillRejects);
         Check("missing course skill reference rejects", MissingCourseSkillRejects);
@@ -54,12 +55,27 @@ internal static class Program
     {
         var definitions = FirstPlayableEventContent.Definitions;
         var policies = FirstPlayableEventContent.Policies;
-        Equal(12, definitions.Count);
+        Equal(20, definitions.Count);
         Equal(4, policies.Count);
         Equal(definitions.Count, definitions.Select(x => x.Id)
             .Distinct(StringComparer.Ordinal).Count());
         EventDecisionJournal.Validate(EventDecisionJournal.New("catalog-test", 3),
             definitions, policies);
+        var providers = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (var i = 0; i < definitions.Count; i++)
+        {
+            var story = definitions[i];
+            foreach (var tag in story.RequiredTags.Where(x =>
+                x.StartsWith("event/", StringComparison.Ordinal)))
+                if (!providers.TryGetValue(tag, out var provider) || provider >= i)
+                    throw new Exception("Event chain has missing or forward-only unlock: " + story.Id + " / " + tag);
+            foreach (var tag in story.Choices.SelectMany(x => x.GrantedTags))
+            {
+                if (providers.ContainsKey(tag))
+                    throw new Exception("Event tag must have a single authored source: " + tag);
+                providers.Add(tag, i);
+            }
+        }
         foreach (var story in definitions)
         {
             Equal(1, story.MaxOccurrences);
@@ -72,6 +88,53 @@ internal static class Program
         try { ((IList<GameEventDefinition>)definitions).Clear(); }
         catch (NotSupportedException) { return; }
         throw new Exception("Authored event catalog must be immutable.");
+    }
+
+    private static void EventStoryChainReplay()
+    {
+        var full = FirstPlayableEventContent.Definitions;
+        var pair = new[]
+        {
+            full.Single(x => x.Id == "welcome-neighbor"),
+            full.Single(x => x.Id == "coffee-connection")
+        };
+        var categories = new[]
+        {
+            FirstPlayableEventContent.Policies.Single(x => x.Id == "life")
+        };
+        var start = new SimDate(2026, 10, 12);
+        var later = new SimDate(2026, 10, 15);
+        var baseTags = new[] { "character-created", "unemployed" };
+        GameEventContext Context(SimDate date, params string[] tags) =>
+            new GameEventContext(start, date, 1, tags, Array.Empty<EventOccurrence>());
+        var initial = EventDecisionJournal.New("m15-story-chain", 101U);
+        var first = EventDecisionJournal.Offer(initial, pair, categories,
+            Context(start, baseTags), initial.Revision, "chain-offer-1");
+        Equal(EventJournalStatus.Offered, first.Status);
+        Equal("welcome-neighbor", first.Next.Tickets[0].EventId);
+        var granted = EventDecisionJournal.Resolve(first.Next, pair, categories,
+            first.Next.Revision, "chain-resolve-1", first.TicketId, "join");
+        Equal(EventJournalStatus.Resolved, granted.Status);
+        Equal("event/contact", granted.Next.OutcomeReceipts.Single().GrantedTags.Single());
+
+        var second = EventDecisionJournal.Offer(granted.Next, pair, categories,
+            Context(later, "character-created", "unemployed", "event/contact"),
+            granted.Next.Revision, "chain-offer-2");
+        Equal(EventJournalStatus.Offered, second.Status);
+        Equal("coffee-connection", second.Next.Tickets[1].EventId);
+        EventJournalReplay.Validate(second.Next, pair, categories);
+        var tampered = second.Next.Copy();
+        tampered.Tickets[1].Tags.Remove("event/contact");
+        Throws(() => EventJournalReplay.Validate(tampered, pair, categories));
+
+        var declined = EventDecisionJournal.Resolve(first.Next, pair, categories,
+            first.Next.Revision, "chain-resolve-decline", first.TicketId, "decline");
+        Equal(EventJournalStatus.Resolved, declined.Status);
+        Equal(0, declined.Next.OutcomeReceipts[0].GrantedTags.Count);
+        var notUnlocked = EventDecisionJournal.Offer(declined.Next, pair, categories,
+            Context(later, baseTags), declined.Next.Revision, "chain-offer-2-declined");
+        Equal(EventJournalStatus.NoEligibleEvent, notUnlocked.Status);
+        Equal(declined.Next.EventRng, notUnlocked.Next.EventRng);
     }
 
     private static void EventStoryEligibility()
