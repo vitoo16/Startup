@@ -33,6 +33,80 @@ internal static class Program
             for (var i = 0; i < 100; i++) { var rng = b.EventRng; DeterministicRng.Next(ref rng); b.EventRng = rng; }
             for (var i = 0; i < 100; i++) Equal(QuotaScheduler.Consume(a, catalog.Careers["developer"]), QuotaScheduler.Consume(b, catalog.Careers["developer"]));
         });
+
+        Check("M15 event definitions enforce unique choices, disjoint tags and valid windows", () =>
+        {
+            var option = new EventChoiceDefinition("accept", "event.accept", "outcome.accept");
+            Throws(() => new EventChoiceDefinition("INVALID", "event.invalid", "outcome.accept"));
+            Throws(() => new GameEventDefinition("offer", "career", 2026, 0, 1, 0, 1, 7, 7,
+                Array.Empty<string>(), Array.Empty<string>(), new[] { option }));
+            Throws(() => new GameEventDefinition("offer", "career", 2026, 0, 1, 0, 1, 7, 0,
+                new[] { "employed" }, new[] { "employed" }, new[] { option }));
+            Throws(() => new GameEventDefinition("offer", "career", 2026, 0, 1, 0, 1, 7, 0,
+                Array.Empty<string>(), Array.Empty<string>(), new[] { option, option }));
+        });
+        Check("M15 ineligible events never consume RNG, with window, tags, stage and max-use gates", () =>
+        {
+            var eventDef = Event("offer", 2, 2, 5, 4, 1, new[] { "employed" }, new[] { "blocked" });
+            var origin = new SimDate(2026, 10, 1);
+            var eligible = new GameEventContext(origin, origin.AddDays(1), 2, new[] { "employed" }, Array.Empty<EventOccurrence>());
+            True(GameEventSelector.IsEligible(eventDef, eligible));
+            var noWindow = new GameEventContext(origin, origin.AddDays(2), 2, new[] { "employed" }, Array.Empty<EventOccurrence>());
+            var wrongTags = new GameEventContext(origin, origin.AddDays(1), 2, new[] { "blocked" }, Array.Empty<EventOccurrence>());
+            var insufficientStage = new GameEventContext(origin, origin.AddDays(1), 1, new[] { "employed" }, Array.Empty<EventOccurrence>());
+            var capped = new GameEventContext(origin, origin.AddDays(1), 2, new[] { "employed" },
+                new[] { new EventOccurrence("offer", 2, origin) });
+            foreach (var context in new[] { noWindow, wrongTags, insufficientStage, capped })
+            {
+                uint rng = 1234;
+                True(GameEventSelector.Select(new[] { eventDef }, context, ref rng) == null);
+                Equal(1234u, rng);
+            }
+        });
+        Check("M15 event cooldown is inclusive at the eligible boundary", () =>
+        {
+            var def = Event("supplier-offer", 1, 1, 3, 1, 0, Array.Empty<string>(), Array.Empty<string>());
+            var origin = new SimDate(2026, 10, 1);
+            var occurrence = new EventOccurrence("supplier-offer", 1, origin);
+            True(!GameEventSelector.IsEligible(def, new GameEventContext(origin, origin.AddDays(2), 1,
+                Array.Empty<string>(), new[] { occurrence })));
+            True(GameEventSelector.IsEligible(def, new GameEventContext(origin, origin.AddDays(3), 1,
+                Array.Empty<string>(), new[] { occurrence })));
+            Throws(() => new GameEventContext(origin, origin.AddDays(1), 1, Array.Empty<string>(),
+                new[] { new EventOccurrence("supplier-offer", 1, origin.AddDays(2)) }));
+        });
+        Check("M15 weighted selection ignores author ordering and cannot change scheduler RNG", () =>
+        {
+            var a = Event("career-offer", 1, 1, 0, 100, 0, Array.Empty<string>(), Array.Empty<string>());
+            var b = Event("supplier-offer", 1, 1, 0, 1, 0, Array.Empty<string>(), Array.Empty<string>());
+            var context = new GameEventContext(new SimDate(2026, 10, 1), new SimDate(2026, 10, 1), 1,
+                Array.Empty<string>(), Array.Empty<EventOccurrence>());
+            uint first = 939, second = 939;
+            var selected = new List<string>();
+            for (var i = 0; i < 120; i++)
+            {
+                var left = GameEventSelector.Select(new[] { a, b }, context, ref first);
+                var right = GameEventSelector.Select(new[] { b, a }, context, ref second);
+                Equal(left!.Id, right!.Id);
+                selected.Add(left.Id);
+            }
+            Equal(first, second);
+            True(selected.All(x => x == a.Id || x == b.Id));
+            var catalog = Catalog();
+            var stateA = GameSession.NewState(catalog, "event-test-a", 42, new SimDate(2026, 10, 1));
+            var stateB = GameSession.NewState(catalog, "event-test-b", 42, new SimDate(2026, 10, 1));
+            stateA.Employment = stateB.Employment = new EmploymentState();
+            for (var i = 0; i < 80; i++)
+                { var rng = stateB.EventRng; GameEventSelector.Select(new[] { a, b }, context, ref rng); stateB.EventRng = rng; }
+            for (var i = 0; i < 40; i++)
+                Equal(QuotaScheduler.Consume(stateA, catalog.Careers["developer"]),
+                    QuotaScheduler.Consume(stateB, catalog.Careers["developer"]));
+            Throws(() =>
+            {
+                uint invalid = 1;
+                GameEventSelector.Select(new[] { a, a }, context, ref invalid);
+            });
+        });
         Check("Developer 20-slot quota exact across cycles", () =>
         {
             var scenes = Catalog().Careers["developer"].Scenes; var expected = new[] { 8, 4, 3, 2, 2, 1 }; uint rng = 987;
@@ -752,6 +826,11 @@ internal static class Program
         new("developer", "v1", "career.developer", 540, 1020, 4, 20,
             days ?? new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday }, scenes,
             new[] { new CareerRankDefinition("junior", 0, 0, 10000000, "problem-solving", 0), new CareerRankDefinition("mid", promotionXp, promotionDays, 15000000, "problem-solving", 2) });
+    private static GameEventDefinition Event(string id, int maxOccurrences, int stage, int cooldownDays,
+        int weight, int offset, string[] required, string[] forbidden) =>
+        new GameEventDefinition(id, "career", 2026, stage, weight, cooldownDays, maxOccurrences, 4, offset,
+            required, forbidden, new[] { new EventChoiceDefinition("continue", "event.continue", "outcome.continue") });
+
     private static ContentCatalog Catalog(long cash = 3000000, int speed = 10000, long promotionXp = 1000, int promotionDays = 30, int payday = 1, long cost = 1000000, long sceneXp = 10) =>
         new("fixture.v1", skillIds.Select(Skill),
             new[] { Career(new[] { Scene("coding", 40, sceneXp), Scene("meeting", 20, sceneXp), Scene("bug-fixing", 15, sceneXp), Scene("client-discussion", 10, sceneXp), Scene("demo", 10, sceneXp), Scene("documentation", 5, sceneXp) }, promotionXp, promotionDays) },
