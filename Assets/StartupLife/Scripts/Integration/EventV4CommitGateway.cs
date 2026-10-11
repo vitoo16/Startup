@@ -261,7 +261,9 @@ namespace StartupLife.Integration
         private static AdvanceResult BatchStop(List<CommandResult> results,
             GameState? state, string reason)
         {
-            var instant = state == null ? new SimInstant(new SimDate(2026, 9, 1), 0) :
+            // A failed cold read has no authoritative date. Return the
+            // default/unavailable instant, never a fabricated run date.
+            var instant = state == null ? default(SimInstant) :
                 new SimInstant(state.Date, state.Minute);
             return new AdvanceResult(results.AsReadOnly(), instant, reason);
         }
