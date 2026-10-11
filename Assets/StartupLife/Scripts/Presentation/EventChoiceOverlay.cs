@@ -19,6 +19,7 @@ namespace StartupLife.Presentation
         private TMP_FontAsset font = null!;
         private GameObject panel = null!;
         private RectTransform choiceContent = null!;
+        private ScrollRect choiceScroll = null!;
         private LocalizedKeyLabel status = null!;
         private LocalizedKeyLabel heading = null!;
         private LocalizedKeyLabel storyBody = null!;
@@ -90,6 +91,10 @@ namespace StartupLife.Presentation
                     displayedTicket = current.TicketId;
                     uncertainCommand = "";
                     BindChoices(current);
+                    // A newly offered story must begin at its heading, not at the
+                    // previous ticket's scroll offset.
+                    choiceScroll.StopMovement();
+                    choiceScroll.verticalNormalizedPosition = 1f;
                 }
                 status.SetKey(uncertainCommand.Length > 0 &&
                     uncertainTicket == current.TicketId
@@ -237,16 +242,20 @@ namespace StartupLife.Presentation
             stack.childForceExpandHeight = false;
             content.GetComponent<ContentSizeFitter>().verticalFit =
                 ContentSizeFitter.FitMode.PreferredSize;
-            storyBody = LocalizedKeyLabel.EnsureFor(
-                TextNode("EventStory", content.transform, 29, 190));
+            var storyText = TextNode("EventStory", content.transform, 29, 190);
+            // The scroll content must grow to the full localized story height.
+            // A fixed preferred height with Ellipsis silently hides long events.
+            storyText.overflowMode = TextOverflowModes.Overflow;
+            storyText.GetComponent<LayoutElement>().preferredHeight = -1;
+            storyBody = LocalizedKeyLabel.EnsureFor(storyText);
 
-            var scroll = scrollObject.GetComponent<ScrollRect>();
-            scroll.viewport = viewportRect;
-            scroll.content = choiceContent;
-            scroll.horizontal = false;
-            scroll.vertical = true;
-            scroll.movementType = ScrollRect.MovementType.Clamped;
-            scroll.scrollSensitivity = 35;
+            choiceScroll = scrollObject.GetComponent<ScrollRect>();
+            choiceScroll.viewport = viewportRect;
+            choiceScroll.content = choiceContent;
+            choiceScroll.horizontal = false;
+            choiceScroll.vertical = true;
+            choiceScroll.movementType = ScrollRect.MovementType.Clamped;
+            choiceScroll.scrollSensitivity = 35;
             panel.SetActive(false);
         }
 
