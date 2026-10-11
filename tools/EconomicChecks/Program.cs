@@ -1886,6 +1886,94 @@ internal static class Program
                 catch (IOException) { }
             }
         });
+        Check("M15 opt-in daily event trigger stops batch and resumes after cold choice", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var economics = M9T02FunctionalEconomy.Create();
+            var historical = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economics, content);
+            var v3 = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(historical, replay),
+                new StagedV3SaveSerializer(historical, replay));
+            var definitions = new[] { new GameEventDefinition(
+                "one-time-day", "life", 2026, 1, 1, 0, 1, 1, 0,
+                new[] { "character-created" }, Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("ack", "event.ack", "outcome.ack") }) };
+            var policies = new[] { new EventCategoryPolicy("life", 0, 30, 4) };
+            var serializer = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, definitions, policies));
+            var runner = new EventV4CoreCommandRunner(content, v3, economics, historical);
+            var source = GameSession.NewState(content, "run-v4-auto", 59137UL,
+                new SimDate(2026, 10, 30));
+            var folder = Path.Combine(Path.GetTempPath(),
+                "m15-auto-day-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            var file = Path.Combine(folder, "game.save");
+            try
+            {
+                File.WriteAllBytes(file, JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(source), 2, 0));
+                EventV4CommitGateway Cold() => new EventV4CommitGateway(
+                    serializer, new AtomicFileSaveStore(file, serializer),
+                    definitions, policies, runner, automaticDailyChecks: true);
+                var created = Cold().ExecuteCore(new CommandEnvelope(source.RunId,
+                    "auto-create", 0, new GameCommand(CommandKind.CreateCharacter,
+                        "fresh", 25, "Auto Test", "base.female")));
+                Assert(created.Status == EventCommitStatus.Committed && created.Revision == 1,
+                    "auto event test creates a real V3 character receipt");
+                var root = new CommandEnvelope(source.RunId, "auto-day-root",
+                    created.Revision, new GameCommand(CommandKind.AdvanceBoundary));
+                var blocked = Cold().AdvanceDay(root);
+                Assert(blocked.StopReason == "PlayerChoice" && blocked.Commands.Count == 0,
+                    "day batch must open the deterministic event before spending time");
+                var pending = Cold().ReadPendingChoice() ??
+                    throw new InvalidOperationException("auto offered ticket not cold-restored");
+                var offered = Cold().Read().State!;
+                Assert(pending.EventId == "one-time-day" &&
+                    offered.EventV4!.Journal!.AdvanceBatches.Count == 1 &&
+                    offered.EventV4.Journal.Tickets.Count == 1 &&
+                    offered.DateIso == "2026-10-30" &&
+                    offered.EventV4.Journal.NoEligibleDays.Count == 0,
+                    "event offer and durable root survive independent cold validation");
+                var bytesBeforeChoice = File.ReadAllBytes(file);
+                Assert(Cold().AdvanceDay(root).StopReason == "PlayerChoice" &&
+                    File.ReadAllBytes(file).SequenceEqual(bytesBeforeChoice) &&
+                    Cold().ExecuteCore(new CommandEnvelope(source.RunId, "auto-bypass",
+                        offered.Revision,
+                        new GameCommand(CommandKind.AdvanceBoundary))).Status ==
+                        EventCommitStatus.Rejected,
+                    "pending choice and direct boundary bypass cannot double-advance");
+                Assert(Cold().Resolve(source.RunId, "auto-resolve", pending.Revision,
+                    pending.TicketId, "ack").Status == EventCommitStatus.Committed,
+                    "pending event must resolve with its authenticated outcome");
+                var reached = Cold().AdvanceDay(root);
+                Assert(reached.StopReason == "TargetReached" &&
+                    reached.ReachedInstant.Date.ToString() == "2026-10-31",
+                    "original stale day root resumes exactly to its target");
+                var onNewDate = Cold().Read().State!;
+                Assert(onNewDate.EventV4!.Journal!.Tickets.Count == 1 &&
+                    onNewDate.EventV4.Journal.OutcomeReceipts.Count == 1,
+                    "completed event remains exactly once across batch child receipts");
+                var secondRoot = new CommandEnvelope(source.RunId, "auto-second-root",
+                    onNewDate.Revision, new GameCommand(CommandKind.AdvanceBoundary));
+                Assert(Cold().AdvanceDay(secondRoot).StopReason == "TargetReached",
+                    "subsequent day advances after an ineligible automatic window");
+                var next = Cold().Read().State!;
+                var savedBytes = File.ReadAllBytes(file);
+                Assert(next.EventV4!.Journal!.NoEligibleDays.Count == 1 &&
+                    next.EventV4.Journal.NoEligibleDays[0].DateIso == "2026-10-31" &&
+                    next.EventV4.Journal.Tickets.Count == 1 &&
+                    next.EventRng == onNewDate.EventRng &&
+                    Cold().AdvanceDay(secondRoot).StopReason == "TargetReached" &&
+                    File.ReadAllBytes(file).SequenceEqual(savedBytes),
+                    "automatic empty day is cold replayable and original batch retries read-only");
+            }
+            finally
+            {
+                try { Directory.Delete(folder, true); }
+                catch (IOException) { }
+            }
+        });
         Check("M15 V4 existing atomic store commits pending and resolve, with cold idempotent retry", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();

@@ -302,3 +302,14 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Skills:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler.
 - **Verification:** engine-free CI pending exact SHA. **Visual:** NOT RUN (source only). **Save:** prospective V4 journal adds NoEligibleDays, with mandatory full cold replay; V2/V3 bytes and immutable fixtures untouched. Historical experimental V4 checkpoints without this field need a future explicit format policy, not silent activation.
 - **Remaining:** V3 historical frontier binding and opt-in gateway/day-batch scheduling to be completed before auto-event claims; production bootstrap unchanged. **Files:** Core/EventJournalContracts.cs, Simulation/EventDecisionJournal.cs, Simulation/EventJournalReplay.cs, this journal.
+
+
+## Increment 21 — Opt-in automatic event windows within durable Advance Day/Month
+
+**Owner:** GPT-6 Technical Director. **M15-T01 remains PARTIAL**; PR #52 Draft/unmerged.
+- `EventV4CommitGateway` supports explicit `automaticDailyChecks: true` (default **false**, preserving every existing V4 batch fixture and production V3 bootstrap). Before each verified V3 `AdvanceBoundary` child in `AdvanceDay/Month`, it checks whether the **current** simulation day already has a ticket or a persisted empty-day check. Otherwise it invokes the existing `CheckCurrentDay` transaction and performs a fresh cold read before moving time.
+- A newly offered pending choice immediately returns `PlayerChoice` without advancing simulation time; the already durable batch root can resume after resolution. A no-eligible day is committed and cannot be redrawn after a crash. Direct public boundary commands are rejected in this opt-in mode so callers cannot bypass automatic windows; only registered batch children can advance.
+- File-backed regression tests automatic offer/stop, byte-identical pending retry, V3 time and event resolution, original batch-root resume, next-day no-eligible check, independent RNG and cold idempotent completion.
+- **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler.
+- **Tests:** exact-head CI pending. **Visual:** NOT RUN. **Save impact:** only staged V4 journal NoEligibleDays, no schema3 or immutable fixture changes. **Known limitations:** live production V4 bootstrap cutover, event cash/XP and Unity runtime proof remain pending.
+- **Files changed:** Integration/EventV4CommitGateway.cs, tools/EconomicChecks/Program.cs, this journal.

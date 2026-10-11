@@ -64,14 +64,17 @@ namespace StartupLife.Integration
         private readonly IReadOnlyList<GameEventDefinition> definitions;
         private readonly IReadOnlyList<EventCategoryPolicy> policies;
         private readonly EventV4CoreCommandRunner? coreRunner;
+        private readonly bool automaticDailyChecks;
 
         public EventV4CommitGateway(EventV4CompatibilitySerializer serializer, ISaveStore store,
             IEnumerable<GameEventDefinition> definitions, IEnumerable<EventCategoryPolicy> policies,
-            EventV4CoreCommandRunner? coreRunner = null)
+            EventV4CoreCommandRunner? coreRunner = null,
+            bool automaticDailyChecks = false)
         {
             this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             this.store = store ?? throw new ArgumentNullException(nameof(store));
             this.coreRunner = coreRunner;
+            this.automaticDailyChecks = automaticDailyChecks;
             if (definitions == null || policies == null)
                 throw new ArgumentNullException("event catalog");
             this.definitions = Array.AsReadOnly(definitions.ToArray());
@@ -281,6 +284,28 @@ namespace StartupLife.Integration
                 if (guard > 10000) return BatchStop(results, state, "InvalidState");
                 if (journal.PendingTicketId.Length > 0)
                     return BatchStop(results, state, "PlayerChoice");
+                if (automaticDailyChecks &&
+                    !journal.Tickets.Any(x => x.OpenedDateIso == state.DateIso) &&
+                    !journal.NoEligibleDays.Any(x => x.DateIso == state.DateIso))
+                {
+                    // Every date, even an empty one, is a real V4 CAS frontier.
+                    // Re-read after promotion before taking a V3 time step.
+                    var checkedDay = CheckCurrentDay(state.RunId, state.Revision);
+                    if (checkedDay.Status != EventCommitStatus.Committed &&
+                        checkedDay.Status != EventCommitStatus.NoEligibleEvent &&
+                        checkedDay.Status != EventCommitStatus.AlreadyCommitted)
+                        return BatchStop(results, state,
+                            checkedDay.Status == EventCommitStatus.RecoveryRequired
+                                ? "RecoveryRequired"
+                                : checkedDay.Status == EventCommitStatus.PersistenceFailed
+                                    ? "PersistenceOrRuleFailure" : "InvalidState");
+                    read = Read();
+                    if (!Valid(read)) return BatchStop(results, state, "RecoveryRequired");
+                    state = read.State!;
+                    journal = state.EventV4!.Journal!;
+                    if (journal.PendingTicketId.Length > 0)
+                        return BatchStop(results, state, "PlayerChoice");
+                }
                 var counts = EventAdvanceBatchHistory.CountSteps(journal, state.Receipts);
                 var childId = EventAdvanceBatchHistory.ChildId(
                     state.RunId, batch.RootCommandId, counts[batch.RootCommandId]);
@@ -381,6 +406,9 @@ namespace StartupLife.Integration
                     : Reject(current, "command.id_conflict");
             if (current.Revision != command.ExpectedRevision)
                 return Reject(current, "command.stale_state");
+            if (automaticDailyChecks && !batchChild &&
+                command.Command.Kind == CommandKind.AdvanceBoundary)
+                return Reject(current, "event.advance_batch_required");
             // A required choice pauses gameplay, not only the clock. Otherwise
             // a course purchase, resignation or business change could mutate
             // the authenticated V3 world while the player sees a blocking event.
