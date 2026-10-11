@@ -137,7 +137,7 @@ namespace StartupLife.Simulation
             if (state == null || definitions == null || policies == null ||
                 string.IsNullOrWhiteSpace(state.RunId) || state.EventRng == 0 || state.InitialEventRng == 0 ||
                 state.Tickets == null || state.PendingTicketId == null ||
-                state.OutcomeReceipts == null ||
+                state.OutcomeReceipts == null || state.AdvanceBatches == null ||
                 state.NextTicketSequence != state.Tickets.Count + 1L ||
                 (state.OriginDateIso.Length > 0 &&
                     EventSelectionHistory.Parse(state.OriginDateIso).ToString() != state.OriginDateIso) ||
@@ -208,8 +208,20 @@ namespace StartupLife.Simulation
                     state.PendingTicketId != ticket.Id)
                     throw new ArgumentException("Only the last event may have an unresolved choice.");
             }
+            foreach (var batch in state.AdvanceBatches)
+            {
+                if (batch == null || string.IsNullOrWhiteSpace(batch.RootCommandId) ||
+                    batch.RootCommandId.Length > 256 ||
+                    batch.RootCommandId.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
+                        StringComparison.Ordinal) ||
+                    !usedCommands.Add(batch.RootCommandId) ||
+                    batch.Mode != "day" && batch.Mode != "month")
+                    throw new ArgumentException("Invalid or conflicting event advance batch identity.");
+                // Date, V3 receipt and target proofs run against verified V3 in
+                // EventAdvanceBatchHistory.Validate, not against UI-provided dates.
+            }
             if (state.OutcomeReceipts.Count != completed ||
-                state.Revision != state.Tickets.Count + completed ||
+                state.Revision != state.Tickets.Count + completed + state.AdvanceBatches.Count ||
                 (state.Tickets.Count == 0 || state.Tickets[state.Tickets.Count - 1].ResolutionCommandId.Length > 0) &&
                     state.PendingTicketId.Length != 0)
                 throw new ArgumentException("Event choice commands or revision are inconsistent.");

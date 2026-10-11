@@ -52,6 +52,25 @@ namespace StartupLife.Core
         };
     }
 
+    // Durable batch request. Step receipts stay in the authoritative inner V3
+    // receipt stream: no second time engine, no extra copy of each child receipt.
+    [DataContract]
+    public sealed class EventAdvanceBatchRecord
+    {
+        [DataMember(Order = 0)] public string RootCommandId { get; set; } = "";
+        [DataMember(Order = 1)] public string Mode { get; set; } = "";
+        [DataMember(Order = 2)] public string OpenedDateIso { get; set; } = "";
+        [DataMember(Order = 3)] public string TargetDateIso { get; set; } = "";
+        [DataMember(Order = 4)] public long CoreRevisionAtStart { get; set; } = -1;
+
+        public EventAdvanceBatchRecord Copy() => new EventAdvanceBatchRecord
+        {
+            RootCommandId = RootCommandId, Mode = Mode,
+            OpenedDateIso = OpenedDateIso, TargetDateIso = TargetDateIso,
+            CoreRevisionAtStart = CoreRevisionAtStart
+        };
+    }
+
     [DataContract]
     public sealed class EventJournalState
     {
@@ -66,6 +85,8 @@ namespace StartupLife.Core
         [DataMember(Order = 7)] public string OriginDateIso { get; set; } = "";
         [DataMember(Order = 8)] public List<EventOutcomeReceipt> OutcomeReceipts { get; set; } =
             new List<EventOutcomeReceipt>();
+        [DataMember(Order = 9)] public List<EventAdvanceBatchRecord> AdvanceBatches { get; set; } =
+            new List<EventAdvanceBatchRecord>();
 
         public EventJournalState Copy() => new EventJournalState
         {
@@ -73,7 +94,8 @@ namespace StartupLife.Core
             EventRng = EventRng, InitialEventRng = InitialEventRng, PendingTicketId = PendingTicketId,
             OriginDateIso = OriginDateIso,
             Tickets = Tickets.ConvertAll(ticket => ticket.Copy()),
-            OutcomeReceipts = OutcomeReceipts.ConvertAll(receipt => receipt.Copy())
+            OutcomeReceipts = OutcomeReceipts.ConvertAll(receipt => receipt.Copy()),
+            AdvanceBatches = AdvanceBatches.ConvertAll(batch => batch.Copy())
         };
     }
 
