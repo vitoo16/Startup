@@ -26,5 +26,6 @@
     <Compile Include="../../Assets/StartupLife/Scripts/Content/ContentCatalogSource.cs" Link="ContentCatalogSource.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Content/FirstPlayableContentTemplate.cs" Link="FirstPlayableContentTemplate.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Content/BundledHistoricalV2ContentResolver.cs" Link="BundledHistoricalV2ContentResolver.cs" />
+    <Compile Include="../../Assets/StartupLife/Scripts/Content/FirstPlayableEventContent.cs" Link="FirstPlayableEventContent.cs" />
   </ItemGroup>
 </Project>
