@@ -116,6 +116,14 @@ namespace StartupLife.Simulation
             pending.OutcomeId = selectedChoice.OutcomeId;
             pending.ResolutionCommandId = commandId;
             candidate.PendingTicketId = "";
+            candidate.OutcomeReceipts.Add(new EventOutcomeReceipt
+            {
+                Id = ticket.Id + "/effect",
+                TicketId = ticket.Id,
+                ResolutionCommandId = commandId,
+                OutcomeId = selectedChoice.OutcomeId,
+                GrantedTags = selectedChoice.GrantedTags.ToList()
+            });
             candidate.Revision = checked(candidate.Revision + 1);
             return new EventJournalResult(EventJournalStatus.Resolved, "", candidate,
                 ticketId, selectedChoice.OutcomeId);
@@ -129,6 +137,7 @@ namespace StartupLife.Simulation
             if (state == null || definitions == null || policies == null ||
                 string.IsNullOrWhiteSpace(state.RunId) || state.EventRng == 0 || state.InitialEventRng == 0 ||
                 state.Tickets == null || state.PendingTicketId == null ||
+                state.OutcomeReceipts == null ||
                 state.NextTicketSequence != state.Tickets.Count + 1L ||
                 (state.OriginDateIso.Length > 0 &&
                     EventSelectionHistory.Parse(state.OriginDateIso).ToString() != state.OriginDateIso) ||
@@ -179,17 +188,28 @@ namespace StartupLife.Simulation
                 var resolved = ticket.ResolutionCommandId.Length > 0;
                 if (resolved)
                 {
-                    completed++;
+                    var choice = definition.Choices.FirstOrDefault(x =>
+                        x.Id == ticket.ChoiceId && x.OutcomeId == ticket.OutcomeId);
                     if (string.IsNullOrWhiteSpace(ticket.ChoiceId) ||
-                        !usedCommands.Add(ticket.ResolutionCommandId) ||
-                        !definition.Choices.Any(x => x.Id == ticket.ChoiceId && x.OutcomeId == ticket.OutcomeId))
+                        !usedCommands.Add(ticket.ResolutionCommandId) || choice == null ||
+                        completed >= state.OutcomeReceipts.Count)
                         throw new ArgumentException("Resolved event choice/outcome does not match content.");
+                    var effect = state.OutcomeReceipts[completed];
+                    if (effect == null || effect.Id != ticket.Id + "/effect" ||
+                        effect.TicketId != ticket.Id ||
+                        effect.ResolutionCommandId != ticket.ResolutionCommandId ||
+                        effect.OutcomeId != ticket.OutcomeId ||
+                        effect.GrantedTags == null ||
+                        !effect.GrantedTags.SequenceEqual(choice.GrantedTags))
+                        throw new ArgumentException("Event choice effect receipt differs from authored outcome.");
+                    completed++;
                 }
                 else if (i != state.Tickets.Count - 1 || ticket.ChoiceId.Length > 0 || ticket.OutcomeId.Length > 0 ||
                     state.PendingTicketId != ticket.Id)
                     throw new ArgumentException("Only the last event may have an unresolved choice.");
             }
-            if (state.Revision != state.Tickets.Count + completed ||
+            if (state.OutcomeReceipts.Count != completed ||
+                state.Revision != state.Tickets.Count + completed ||
                 (state.Tickets.Count == 0 || state.Tickets[state.Tickets.Count - 1].ResolutionCommandId.Length > 0) &&
                     state.PendingTicketId.Length != 0)
                 throw new ArgumentException("Event choice commands or revision are inconsistent.");

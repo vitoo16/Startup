@@ -12,16 +12,26 @@ namespace StartupLife.Core
         public string Id { get; }
         public string LabelKey { get; }
         public string OutcomeId { get; }
+        // Only event-scoped gameplay tags. Never impersonate payroll, business
+        // ownership, courses or any other verified V3 core fact.
+        public IReadOnlyList<string> GrantedTags { get; }
 
-        public EventChoiceDefinition(string id, string labelKey, string outcomeId)
+        public EventChoiceDefinition(string id, string labelKey, string outcomeId,
+            IEnumerable<string>? grantedTags = null)
         {
             _ = new ContentId(id);
             _ = new ContentId(outcomeId);
             if (string.IsNullOrWhiteSpace(labelKey))
                 throw new ArgumentException("Event choice requires a localization key.");
+            var tags = (grantedTags ?? Array.Empty<string>()).ToArray();
+            if (tags.Any(x => !ContentId.IsValid(x) ||
+                !x.StartsWith("event/", StringComparison.Ordinal)) ||
+                tags.Distinct(StringComparer.Ordinal).Count() != tags.Length)
+                throw new ArgumentException("An event choice may grant only unique event-scoped tags.");
             Id = id;
             LabelKey = labelKey;
             OutcomeId = outcomeId;
+            GrantedTags = Array.AsReadOnly(tags.OrderBy(x => x, StringComparer.Ordinal).ToArray());
         }
     }
 

@@ -192,15 +192,21 @@ namespace StartupLife.Integration
             {
                 if (!byFrontier.TryGetValue(frontier.Revision, out var tickets))
                     return;
-                var expected = AuthoritativeEventContext.FromCore(frontier, journal);
+                // Prior resolved outcome receipts may add event-scoped eligibility
+                // tags. Never credit a ticket with effects from itself or later.
                 foreach (var ticket in tickets)
+                {
+                    var expected = AuthoritativeEventContext.FromCore(frontier, journal,
+                        ticket.Id);
                     if (ticket.OpenedDateIso != frontier.DateIso ||
                         ticket.Stage != expected.Stage ||
                         !ticket.Tags.SequenceEqual(expected.Tags))
                         throw new ArgumentException(
                             "Historical event context differs from its verified V3 receipt prefix.");
+                }
                 visited.Add(frontier.Revision);
             });
+
             if (core.Status == LoadStatus.UnsupportedContent)
                 throw new ContentCompatibilityException(core.Reason, "Embedded V3 content is unavailable.");
             if (core.Status != LoadStatus.Valid || core.State == null)

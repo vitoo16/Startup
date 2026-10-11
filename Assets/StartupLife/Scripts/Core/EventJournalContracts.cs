@@ -18,6 +18,8 @@ namespace StartupLife.Core
         [DataMember(Order = 6)] public string OutcomeId { get; set; } = "";
         // Exact immutable offer context: needed to reproduce weighted selection on cold read.
         [DataMember(Order = 7)] public string OriginDateIso { get; set; } = "";
+        [DataMember(Order = 8)] public List<EventOutcomeReceipt> OutcomeReceipts { get; set; } =
+            new List<EventOutcomeReceipt>();
         [DataMember(Order = 8)] public int Stage { get; set; }
         [DataMember(Order = 9)] public List<string> Tags { get; set; } = new List<string>();
         [DataMember(Order = 10)] public string OfferCommandId { get; set; } = "";
@@ -30,6 +32,25 @@ namespace StartupLife.Core
             ChoiceId = ChoiceId, ResolutionCommandId = ResolutionCommandId, OutcomeId = OutcomeId,
             OriginDateIso = OriginDateIso, Stage = Stage, Tags = new List<string>(Tags),
             OfferCommandId = OfferCommandId, CoreRevisionAtOffer = CoreRevisionAtOffer
+        };
+    }
+
+    // One effect receipt for exactly one resolved event ticket. Event-scoped tags
+    // affect later eligibility, not the V3 wallet/career/skill ledgers.
+    [DataContract]
+    public sealed class EventOutcomeReceipt
+    {
+        [DataMember(Order = 0)] public string Id { get; set; } = "";
+        [DataMember(Order = 1)] public string TicketId { get; set; } = "";
+        [DataMember(Order = 2)] public string ResolutionCommandId { get; set; } = "";
+        [DataMember(Order = 3)] public string OutcomeId { get; set; } = "";
+        [DataMember(Order = 4)] public List<string> GrantedTags { get; set; } = new List<string>();
+
+        public EventOutcomeReceipt Copy() => new EventOutcomeReceipt
+        {
+            Id = Id, TicketId = TicketId,
+            ResolutionCommandId = ResolutionCommandId, OutcomeId = OutcomeId,
+            GrantedTags = new List<string>(GrantedTags)
         };
     }
 
@@ -51,7 +72,8 @@ namespace StartupLife.Core
             RunId = RunId, Revision = Revision, NextTicketSequence = NextTicketSequence,
             EventRng = EventRng, InitialEventRng = InitialEventRng, PendingTicketId = PendingTicketId,
             OriginDateIso = OriginDateIso,
-            Tickets = Tickets.ConvertAll(ticket => ticket.Copy())
+            Tickets = Tickets.ConvertAll(ticket => ticket.Copy()),
+            OutcomeReceipts = OutcomeReceipts.ConvertAll(receipt => receipt.Copy())
         };
     }
 

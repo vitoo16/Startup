@@ -12,7 +12,8 @@ namespace StartupLife.Simulation
     // This is event-eligibility maturity, NOT the final financial 6-stage business model.
     public static class AuthoritativeEventContext
     {
-        public static GameEventContext FromCore(GameState core, EventJournalState journal)
+        public static GameEventContext FromCore(GameState core, EventJournalState journal,
+            string? beforeTicketId = null)
         {
             if (core == null || journal == null || journal.OriginDateIso.Length == 0 ||
                 core.RunId != journal.RunId)
@@ -48,6 +49,25 @@ namespace StartupLife.Simulation
                         tags.Add("business/" + business.DefinitionId);
                 }
             }
+            // Apply only effects committed BEFORE this offered ticket. The
+            // cold receipt-prefix validator supplies beforeTicketId so an
+            // event cannot retroactively authorize itself with its own choice.
+            var ended = beforeTicketId == null;
+            var effects = journal.OutcomeReceipts.ToDictionary(x => x.TicketId,
+                StringComparer.Ordinal);
+            foreach (var ticket in journal.Tickets)
+            {
+                if (ticket.Id == beforeTicketId)
+                {
+                    ended = true;
+                    break;
+                }
+                if (ticket.ResolutionCommandId.Length > 0 &&
+                    effects.TryGetValue(ticket.Id, out var effect))
+                    tags.UnionWith(effect.GrantedTags);
+            }
+            if (!ended)
+                throw new ArgumentException("Offer ticket not found in authenticated journal.");
             return new GameEventContext(first, core.Date, stage, tags,
                 Array.Empty<EventOccurrence>());
         }
