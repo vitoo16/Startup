@@ -30,15 +30,11 @@ namespace StartupLife.Simulation
                 string.CompareOrdinal(context.Date.ToString(), source.Tickets[source.Tickets.Count - 1].OpenedDateIso) <= 0)
                 return Reject(source, "event.window_already_processed");
 
-            var occurrences = source.Tickets.GroupBy(x => x.EventId, StringComparer.Ordinal)
-                .Select(g => new EventOccurrence(g.Key, g.Count(), Parse(g.Last().OpenedDateIso)));
-            // Build from committed journal, never trust client-supplied occurrence counts.
-            var verifiedContext = new GameEventContext(context.OriginDate, context.Date,
-                context.Stage, context.Tags, occurrences);
-            var candidates = definitions.Where(x => CategoryEligible(x.CategoryId,
-                policyIndex[x.CategoryId], source.Tickets, context.Date)).ToArray();
+            // Build once from committed journal. The same selector powers cold replay.
+            // No caller-supplied occurrence or category counters are ever trusted.
+            var history = EventSelectionHistory.FromCommitted(source.Tickets);
             var nextRng = source.EventRng;
-            var selected = GameEventSelector.Select(candidates, verifiedContext, ref nextRng);
+            var selected = history.Select(definitions, policyIndex, context, ref nextRng);
             if (selected == null)
                 return new EventJournalResult(EventJournalStatus.NoEligibleEvent, "event.none", source.Copy());
 
@@ -158,24 +154,6 @@ namespace StartupLife.Simulation
                     state.PendingTicketId.Length != 0)
                 throw new ArgumentException("Event choice commands or revision are inconsistent.");
             return categories;
-        }
-
-        private static bool CategoryEligible(string categoryId, EventCategoryPolicy policy,
-            IReadOnlyList<EventTicketRecord> history, SimDate date)
-        {
-            var windowCount = 0;
-            for (var i = history.Count - 1; i >= 0; i--)
-            {
-                var ticket = history[i];
-                var elapsed = (new DateTime(date.Year, date.Month, date.Day) -
-                    new DateTime(Parse(ticket.OpenedDateIso).Year,
-                        Parse(ticket.OpenedDateIso).Month, Parse(ticket.OpenedDateIso).Day)).Days;
-                if (elapsed < 0) throw new ArgumentException("Event journal contains a future event.");
-                if (ticket.CategoryId != categoryId) continue;
-                if (elapsed < policy.CooldownDays) return false;
-                if (elapsed < policy.WindowDays) windowCount++;
-            }
-            return windowCount < policy.MaxEventsPerWindow;
         }
 
         private static SimDate Parse(string date)

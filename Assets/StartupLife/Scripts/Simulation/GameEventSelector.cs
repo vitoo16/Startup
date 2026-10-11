@@ -21,7 +21,8 @@ namespace StartupLife.Simulation
                 throw new ArgumentException("Event catalog contains null or duplicate IDs.");
 
             // Canonical ID order makes selection stable across content authoring/reordering.
-            var eligible = definitions.Where(x => IsEligible(x, context))
+            var tags = new HashSet<string>(context.Tags, StringComparer.Ordinal);
+            var eligible = definitions.Where(x => IsEligible(x, context, tags))
                 .OrderBy(x => x.Id, StringComparer.Ordinal).ToArray();
             if (eligible.Length == 0) return null; // no RNG consumed for an empty window
 
@@ -44,12 +45,17 @@ namespace StartupLife.Simulation
         {
             if (definition == null) throw new ArgumentNullException(nameof(definition));
             if (context == null) throw new ArgumentNullException(nameof(context));
+            return IsEligible(definition, context, new HashSet<string>(context.Tags, StringComparer.Ordinal));
+        }
+
+        private static bool IsEligible(GameEventDefinition definition, GameEventContext context,
+            ISet<string> tags)
+        {
             if (context.Date.Year < definition.MinimumYear || context.Stage < definition.MinimumStage ||
                 context.ElapsedDays < definition.WindowOffsetDays ||
                 (context.ElapsedDays - definition.WindowOffsetDays) % definition.WindowPeriodDays != 0)
                 return false;
 
-            var tags = new HashSet<string>(context.Tags, StringComparer.Ordinal);
             if (definition.RequiredTags.Any(x => !tags.Contains(x)) ||
                 definition.ForbiddenTags.Any(tags.Contains))
                 return false;
