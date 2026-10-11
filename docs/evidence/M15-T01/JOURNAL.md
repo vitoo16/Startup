@@ -417,3 +417,15 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - The file-backed M15 automatic-day regression explicitly invokes a presentation adapter against a missing save and verifies `RecoveryRequired`; existing durable batch-root resume and exactly-once date tests remain unchanged.
 - **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-head CI pending; **Visual evidence:** NOT RUN (Unity deferred); **Save impact:** none; **Known limitations:** opt-in V4 bootstrap requires existing save; V3-native event payout not implemented. **Files changed:** EventV4GameCommands.cs, tools/EconomicChecks/Program.cs, JOURNAL.md.
+
+
+## Increment 31 — Atomic fresh-run V4 genesis (no separate seed writer)
+
+**Owner model:** GPT-6 Technical Director. **Milestone:** M15-T01 PARTIAL; PR #52 Draft/unmerged.
+
+- Opt-in Unity V4 now accepts **missing** save paths: create one random V2 initial state, migrate it in memory with frozen V2→V3→V4 serializers, and inject a strictly validated **zero-revision, uncreated** genesis checkpoint into the existing gateway. This is shared with V3 via one `CreateInitialState` helper. **No seed file** is written on bootstrap, refresh, pause, or before creating the character.
+- The gateway's `Read` uses the verified in-memory genesis **only** when the atomic store reports truly `Missing`; corrupt, unsupported, unreadable and backup states remain authoritative store results. The first real V3 `CreateCharacter` command produces a canonical V3 receipt + revision one, wrapped as the first V4 envelope and published through the existing `AtomicFileSaveStore.Commit(..., expectedRevision: 0)`. Subsequent reads never return genesis once the file is present.
+- File-backed regression covers no-file UI snapshot, failed first temp write, ambiguous after-promote recovery, cold reopen without genesis, byte-identical retry, and refusal to overwrite corrupt save bytes. Same file store, no new ledger, no duplicate time engine.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Tests:** exact-head CI required. **Visual evidence:** Unity runtime/device NOT RUN. **Save impact:** no schema changes and frozen V2/V3 fixtures untouched; first V4 on-disk artifact is already a verified command receipt, not an untracked seed. **Known limitations:** spendable monetary/XP event payouts still blocked pending V3/V4 receipt coupling.
+- **Files changed:** EventV4CommitGateway.cs, StartupLifeBootstrapper.cs, tools/EconomicChecks/Program.cs, JOURNAL.md.

@@ -65,11 +65,13 @@ namespace StartupLife.Integration
         private readonly IReadOnlyList<EventCategoryPolicy> policies;
         private readonly EventV4CoreCommandRunner? coreRunner;
         private readonly bool automaticDailyChecks;
+        // Validated in-memory genesis; never persisted or trusted after a file exists.
+        private readonly byte[]? initialCheckpoint;
 
         public EventV4CommitGateway(EventV4CompatibilitySerializer serializer, ISaveStore store,
             IEnumerable<GameEventDefinition> definitions, IEnumerable<EventCategoryPolicy> policies,
             EventV4CoreCommandRunner? coreRunner = null,
-            bool automaticDailyChecks = false)
+            bool automaticDailyChecks = false, GameState? initialState = null)
         {
             this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             this.store = store ?? throw new ArgumentNullException(nameof(store));
@@ -81,9 +83,36 @@ namespace StartupLife.Integration
             this.policies = Array.AsReadOnly(policies.ToArray());
             EventDecisionJournal.Validate(EventDecisionJournal.New("catalog-admission", 1),
                 this.definitions, this.policies);
+            if (initialState != null)
+            {
+                var journal = initialState.EventV4?.Journal;
+                if (initialState.SaveVersion != 4 || initialState.Revision != 0 ||
+                    initialState.Receipts.Count != 0 ||
+                    !string.IsNullOrEmpty(initialState.Name) ||
+                    journal == null || journal.Revision != 0 ||
+                    journal.Tickets.Count != 0 || journal.AdvanceBatches.Count != 0 ||
+                    journal.OutcomeReceipts.Count != 0 || journal.NoEligibleDays.Count != 0)
+                    throw new ArgumentException(
+                        "Fresh V4 genesis must be an empty verified zero-revision run.");
+                // Validate via the same cold path used by all later CAS reads,
+                // not by trusting the caller-supplied mutable GameState.
+                var bytes = serializer.Serialize(initialState);
+                var validated = serializer.DeserializeAndValidate(bytes);
+                if (!Valid(validated) || validated.State!.Revision != 0)
+                    throw new ArgumentException("Invalid V4 genesis checkpoint.");
+                initialCheckpoint = bytes;
+            }
         }
 
-        public LoadResult Read() => store.Read();
+        public LoadResult Read()
+        {
+            var persisted = store.Read();
+            if (persisted.Status != LoadStatus.Missing || initialCheckpoint == null)
+                return persisted;
+            // A verified projected state exists only in memory until the first
+            // real V3 CreateCharacter receipt atomically promotes schema4.
+            return serializer.DeserializeAndValidate(initialCheckpoint);
+        }
 
         // A UI can render and resolve the pending choice using this exact global
         // CAS revision; it must never fabricate stage/tags or bypass the journal.

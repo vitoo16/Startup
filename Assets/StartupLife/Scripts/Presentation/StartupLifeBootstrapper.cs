@@ -74,17 +74,29 @@ namespace StartupLife.Presentation
                             FirstPlayableEventContent.Policies));
                     var eventStore = new AtomicFileSaveStore(path, eventSerializer);
                     var loaded = eventStore.Read();
-                    if (loaded.Status != LoadStatus.Valid &&
+                    GameState initialV4 = null;
+                    if (loaded.Status == LoadStatus.Missing)
+                    {
+                        // Migration of a freshly generated V2 run is read-only.
+                        // The first V3 CreateCharacter receipt will be the sole
+                        // persisted schema4 genesis, through the regular CAS.
+                        var stagedV4 = eventSerializer.DeserializeAndValidate(
+                            JsonSaveSerializer.Wrap(
+                                JsonSaveSerializer.WriteObject(CreateInitialState()),
+                                SaveSchema.HistoricalV2, 0));
+                        if (stagedV4.Status != LoadStatus.Valid ||
+                            stagedV4.State?.Revision != 0)
+                        {
+                            Fail("fatal.save_unavailable");
+                            return;
+                        }
+                        initialV4 = stagedV4.State;
+                    }
+                    else if (loaded.Status != LoadStatus.Valid &&
                         loaded.Status != LoadStatus.RecoveredBackup)
                     {
-                        // No speculative default seed write outside the real CAS
-                        // authority. Fresh-run V4 genesis remains a separate gate.
-                        Debug.LogWarning("Verified V4 opt-in requires an existing authenticated save: " +
-                            loaded.Status + "; " + loaded.Reason);
-                        Fail(loaded.Status == LoadStatus.Missing
-                            ? "fatal.save_unavailable"
-                            : string.IsNullOrEmpty(loaded.Reason)
-                                ? "fatal.save_unavailable" : "reason." + loaded.Reason);
+                        Fail(string.IsNullOrEmpty(loaded.Reason)
+                            ? "fatal.save_unavailable" : "reason." + loaded.Reason);
                         return;
                     }
                     var runner = new EventV4CoreCommandRunner(content, serializer,
@@ -92,7 +104,7 @@ namespace StartupLife.Presentation
                     eventGateway = new EventV4CommitGateway(eventSerializer,
                         eventStore, FirstPlayableEventContent.Definitions,
                         FirstPlayableEventContent.Policies, runner,
-                        automaticDailyChecks: true);
+                        automaticDailyChecks: true, initialState: initialV4);
                     eventCommands = new EventV4GameCommands(eventGateway, content, economics);
                     flow = new FirstPlayableFlow(eventCommands, commandIds);
                 }
@@ -110,14 +122,7 @@ namespace StartupLife.Presentation
                             return;
                         }
 
-                        var guid = Guid.NewGuid();
-                        var bytes = guid.ToByteArray();
-                        var seed = BitConverter.ToUInt64(bytes, 0);
-                        if (seed == 0) seed = 1;
-                        var runId = "run-" + guid.ToString("N");
-                        var initial = GameSession.NewState(
-                            content, runId, seed,
-                            new SimDate(initialYear, initialMonth, initialDay));
+                        var initial = CreateInitialState();
                         // New runs still originate from immutable V2; the migration
                         // is zero-economic-effect and writes no checkpoint.
                         var promoted = EconomicV3PayloadCodec.ReadChecked(
@@ -161,6 +166,16 @@ namespace StartupLife.Presentation
                 Debug.LogException(error);
                 Fail("fatal.bootstrap_failed");
             }
+        }
+
+        // Shared run creation across V3 and V4. No file is written here.
+        private GameState CreateInitialState()
+        {
+            var guid = Guid.NewGuid();
+            var seed = BitConverter.ToUInt64(guid.ToByteArray(), 0);
+            if (seed == 0) seed = 1;
+            return GameSession.NewState(content, "run-" + guid.ToString("N"),
+                seed, new SimDate(initialYear, initialMonth, initialDay));
         }
 
         private void OnApplicationPause(bool pauseStatus)

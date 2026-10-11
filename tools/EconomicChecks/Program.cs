@@ -1986,6 +1986,78 @@ internal static class Program
                 catch (IOException) { }
             }
         });
+        Check("M15 fresh V4 run persists its first character receipt atomically", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var economic = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economic, content);
+            var v3 = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(),
+                new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var defs = FirstPlayableEventContent.Definitions;
+            var policies = FirstPlayableEventContent.Policies;
+            var serializer = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, defs, policies));
+            var runner = new EventV4CoreCommandRunner(content, v3, economic, archives);
+            var seed = GameSession.NewState(content, "v4-fresh-once", 51243UL,
+                new SimDate(2026, 10, 1));
+            var seeded = serializer.DeserializeAndValidate(JsonSaveSerializer.Wrap(
+                JsonSaveSerializer.WriteObject(seed), 2, 0));
+            Assert(seeded.Status == LoadStatus.Valid &&
+                seeded.State?.Revision == 0 &&
+                seeded.State.SaveVersion == 4, "V2 seed must migrate without disk writes");
+            var dir = Path.Combine(Path.GetTempPath(),
+                "v4-genesis-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            var path = Path.Combine(dir, "game.save");
+            try
+            {
+                EventV4CommitGateway Cold(Func<string, bool>? fault = null,
+                    bool withGenesis = true) => new EventV4CommitGateway(
+                        serializer, new AtomicFileSaveStore(path, serializer, fault),
+                        defs, policies, runner, automaticDailyChecks: true,
+                        initialState: withGenesis ? seeded.State : null);
+                var initial = Cold().Read().State!;
+                var screen = new EventV4GameCommands(Cold(), content, economic);
+                Assert(initial.Revision == 0 && initial.Name.Length == 0 &&
+                    screen.Snapshot().State.Revision == 0 &&
+                    !File.Exists(path), "reading first-run V4 cannot persist a seed");
+                var create = new CommandEnvelope(seed.RunId, "fresh-v4-create", 0,
+                    new GameCommand(CommandKind.CreateCharacter, "fresh", 25,
+                        "V4 Founder", "base.female"));
+                Assert(Cold(point => point == "during-temp-write").ExecuteCore(create).Status ==
+                        EventCommitStatus.PersistenceFailed &&
+                    !File.Exists(path) && Cold().Read().State!.Revision == 0,
+                    "failure before first promotion preserves missing save and genesis");
+                Assert(Cold(point => point == "after-replace").ExecuteCore(create).Status ==
+                        EventCommitStatus.RecoveryRequired && File.Exists(path),
+                    "ambiguous first promotion cannot claim an unverified receipt");
+                var checkpoint = File.ReadAllBytes(path);
+                var persisted = Cold(withGenesis: false).Read().State!;
+                Assert(persisted.Name == "V4 Founder" &&
+                    persisted.Revision == 1 && persisted.Receipts.Count == 1 &&
+                    persisted.SaveVersion == 4 &&
+                    persisted.EventV4!.Journal!.Revision == 0 &&
+                    persisted.EventV4.Journal.Tickets.Count == 0 &&
+                    Cold().ExecuteCore(create).Status == EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(path).SequenceEqual(checkpoint),
+                    "cold retry must recover exactly one first V3 receipt in schema4");
+                // Corrupt/unreadable source is never interpreted as an empty run.
+                File.WriteAllBytes(path, new byte[] { 1, 2, 3 });
+                Assert(Cold().Read().Status != LoadStatus.Valid &&
+                    Cold().ExecuteCore(new CommandEnvelope(seed.RunId, "attempt-over-corrupt",
+                        0, new GameCommand(CommandKind.CreateCharacter, "fresh", 25,
+                            "Wrong", "base.female"))).Status != EventCommitStatus.Committed,
+                    "genesis fallback must never erase a corrupt existing checkpoint");
+            }
+            finally
+            {
+                try { Directory.Delete(dir, true); }
+                catch (IOException) { }
+            }
+        });
         Check("M15 opt-in daily event trigger stops batch and resumes after cold choice", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();
