@@ -1326,6 +1326,27 @@ internal static class Program
                 duplicatedBatch.Journal!.AdvanceBatches.Add(
                     duplicatedBatch.Journal.AdvanceBatches[0].Copy());
                 Throws<ArgumentException>(() => strict.SerializeVerified(duplicatedBatch));
+                // The reserved child namespace must also be rejected by the
+                // planner and on a forged cold checkpoint, not just the gateway.
+                var authoritative = finalState.EventV4!.Journal!;
+                var atFrontier = AuthoritativeEventContext.FromCore(finalState, authoritative);
+                Assert(EventDecisionJournal.Offer(authoritative, definitions, policies,
+                        atFrontier, authoritative.Revision, "v4batch/planner-offer",
+                        finalState.Receipts.Count).ReasonKey == "event.command_id_conflict" &&
+                    EventDecisionJournal.Resolve(authoritative, definitions, policies,
+                        authoritative.Revision, "v4batch/planner-resolve",
+                        authoritative.Tickets[0].Id, "ack").ReasonKey ==
+                    "event.command_id_conflict",
+                    "standalone event planner must refuse reserved internal batch identities");
+                var forgedOfferId = Copy();
+                forgedOfferId.Journal!.Tickets[0].OfferCommandId = "v4batch/forged-offer";
+                Throws<ArgumentException>(() => strict.SerializeVerified(forgedOfferId));
+                var forgedResolveId = Copy();
+                forgedResolveId.Journal!.Tickets[0].ResolutionCommandId =
+                    "v4batch/forged-resolution";
+                forgedResolveId.Journal.OutcomeReceipts[0].ResolutionCommandId =
+                    "v4batch/forged-resolution";
+                Throws<ArgumentException>(() => strict.SerializeVerified(forgedResolveId));
                 Assert(File.ReadAllBytes(filename).SequenceEqual(beforeForged),
                     "forged/missing duplicate batch histories cannot modify saved bytes");
             }

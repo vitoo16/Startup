@@ -249,3 +249,17 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Save impact:** None. V2/V3 frozen serializers, archived fixtures, V4 wire model, reward model and receipts are unchanged. Only command admission and regression coverage changed.
 - **Known limitations:** Event cash/XP effects remain tag-only, production V4 bootstrap and automatic event offer flow not wired, catalog-version replay policy unresolved. This increment alone does not close M15-T01.
 - **Files changed:** `Assets/StartupLife/Scripts/Integration/EventV4CommitGateway.cs`, `tools/EconomicChecks/Program.cs`, this journal.
+
+
+## Increment 16 — Reserved batch namespace verified by planner and V4 cold journal replay
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL, PR #52 Draft, NOT MERGED.
+
+- `EventDecisionJournal` now applies one shared `ConflictsWithBatchIdentity` check during prospective offers, resolutions, and structural journal validation. Neither a batch root nor the reserved `v4batch/` internal child prefix can be admitted as an event command identity. Null batch records remain a closed-validation error rather than a null-reference bypass.
+- EconomicChecks extends the existing real-file V4 resumed batch fixture: direct planners reject reserved command IDs; forged pending-ticket offer IDs and forged resolved-ticket IDs (including a matching forged outcome receipt) fail verified V4 serialization without mutating persisted bytes.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler; unity-cli.
+- **Tests:** Engine-free CI for this source commit pending exact-head verification. No local Unity Editor, .NET runtime or on-device QA in this session. Do not claim engine-free SUCCESS until the workflow reports it.
+- **Visual evidence:** NOT RUN; nonvisual journal admission change.
+- **Save impact:** None. No schema changes, no historical fixture mutations and no new reward ledger. Previously unapproved/invalid internal-namespace journal identities now fail closed.
+- **Known limitations:** Production bootstrap remains V3; events still grant authenticated `event/` tags only, not spendable cash/XP. Runtime and catalog-version acceptance remain deferred.
+- **Files changed:** Simulation/EventDecisionJournal.cs; tools/EconomicChecks/Program.cs; this journal.

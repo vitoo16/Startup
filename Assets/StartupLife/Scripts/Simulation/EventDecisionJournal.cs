@@ -35,6 +35,8 @@ namespace StartupLife.Simulation
             {
                 if (string.IsNullOrWhiteSpace(offerCommandId))
                     return Reject(source, "event.invalid_command");
+                if (ConflictsWithBatchIdentity(source, offerCommandId))
+                    return Reject(source, "event.command_id_conflict");
                 var prior = source.Tickets.FirstOrDefault(x =>
                     x.OfferCommandId == offerCommandId);
                 if (prior != null)
@@ -93,6 +95,8 @@ namespace StartupLife.Simulation
             if (string.IsNullOrWhiteSpace(commandId) || string.IsNullOrWhiteSpace(ticketId) ||
                 string.IsNullOrWhiteSpace(choiceId))
                 return Reject(source, "event.invalid_command");
+            if (ConflictsWithBatchIdentity(source, commandId))
+                return Reject(source, "event.command_id_conflict");
             var previous = source.Tickets.FirstOrDefault(x =>
                 string.Equals(x.ResolutionCommandId, commandId, StringComparison.Ordinal));
             if (previous != null)
@@ -166,6 +170,7 @@ namespace StartupLife.Simulation
                     !events.TryGetValue(ticket.EventId, out var definition) ||
                     definition.CategoryId != ticket.CategoryId ||
                     string.IsNullOrWhiteSpace(ticket.OfferCommandId) ||
+                    ConflictsWithBatchIdentity(state, ticket.OfferCommandId) ||
                     !usedCommands.Add(ticket.OfferCommandId) ||
                     ticket.CoreRevisionAtOffer < -1 ||
                     string.IsNullOrWhiteSpace(ticket.OpenedDateIso) ||
@@ -192,6 +197,7 @@ namespace StartupLife.Simulation
                     var choice = definition.Choices.FirstOrDefault(x =>
                         x.Id == ticket.ChoiceId && x.OutcomeId == ticket.OutcomeId);
                     if (string.IsNullOrWhiteSpace(ticket.ChoiceId) ||
+                        ConflictsWithBatchIdentity(state, ticket.ResolutionCommandId) ||
                         !usedCommands.Add(ticket.ResolutionCommandId) || choice == null ||
                         completed >= state.OutcomeReceipts.Count)
                         throw new ArgumentException("Resolved event choice/outcome does not match content.");
@@ -228,6 +234,13 @@ namespace StartupLife.Simulation
                 throw new ArgumentException("Event choice commands or revision are inconsistent.");
             return categories;
         }
+
+        // The same namespace rule protects standalone planners and cold journal
+        // validation, not merely commands entering through the V4 save gateway.
+        private static bool ConflictsWithBatchIdentity(EventJournalState state, string id) =>
+            id.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
+                StringComparison.Ordinal) ||
+            state.AdvanceBatches.Any(x => x != null && x.RootCommandId == id);
 
         private static SimDate Parse(string date)
         {
