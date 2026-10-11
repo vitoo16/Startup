@@ -16,6 +16,8 @@ internal static class Program
     private static int Main(string[] args)
     {
         Check("first playable template builds expected immutable catalog", FirstPlayableBuilds);
+        Check("M15 narrative events have unique immutable content and valid policies", EventCatalogValid);
+        Check("M15 story eligibility uses authoritative tag/stage combinations", EventStoryEligibility);
         Check("duplicate content ids reject at conversion boundary", DuplicateIdsReject);
         Check("missing career skill reference rejects", MissingCareerSkillRejects);
         Check("missing course skill reference rejects", MissingCourseSkillRejects);
@@ -46,6 +48,60 @@ internal static class Program
 
         Console.WriteLine($"{passed}/{Results.Count} passed. Report: {reportPath}");
         return passed == Results.Count ? 0 : 1;
+    }
+
+    private static void EventCatalogValid()
+    {
+        var definitions = FirstPlayableEventContent.Definitions;
+        var policies = FirstPlayableEventContent.Policies;
+        Equal(12, definitions.Count);
+        Equal(4, policies.Count);
+        Equal(definitions.Count, definitions.Select(x => x.Id)
+            .Distinct(StringComparer.Ordinal).Count());
+        EventDecisionJournal.Validate(EventDecisionJournal.New("catalog-test", 3),
+            definitions, policies);
+        foreach (var story in definitions)
+        {
+            Equal(1, story.MaxOccurrences);
+            if (story.TitleKey.Length == 0 || story.BodyKey.Length == 0 ||
+                story.Choices.Count < 2 ||
+                story.Choices.Any(x => x.GrantedTags.Any(t =>
+                    !t.StartsWith("event/", StringComparison.Ordinal))))
+                throw new Exception("Incomplete narrative or unauthorized effect: " + story.Id);
+        }
+        try { ((IList<GameEventDefinition>)definitions).Clear(); }
+        catch (NotSupportedException) { return; }
+        throw new Exception("Authored event catalog must be immutable.");
+    }
+
+    private static void EventStoryEligibility()
+    {
+        var stories = FirstPlayableEventContent.Definitions;
+        var day = new SimDate(2026, 10, 13);
+        var start = new SimDate(2026, 10, 12);
+        GameEventContext Context(int stage, params string[] tags) =>
+            new GameEventContext(start, day, stage, tags, Array.Empty<EventOccurrence>());
+        GameEventDefinition Story(string id) => stories.Single(x => x.Id == id);
+        var newPlayer = Context(1, "character-created", "unemployed");
+        if (!GameEventSelector.IsEligible(Story("welcome-neighbor"), newPlayer) ||
+            GameEventSelector.IsEligible(Story("coffee-connection"), newPlayer) ||
+            GameEventSelector.IsEligible(Story("first-market-day"), newPlayer))
+            throw new Exception("Events cannot unlock without the authenticated tags/stage.");
+        var contact = Context(1, "character-created", "unemployed", "event/contact");
+        if (!GameEventSelector.IsEligible(Story("coffee-connection"), contact))
+            throw new Exception("First social event must unlock networking follow-up.");
+        var founder = Context(2, "character-created", "business-active");
+        if (!GameEventSelector.IsEligible(Story("first-market-day"), founder) ||
+            GameEventSelector.IsEligible(Story("supplier-chat"), founder))
+            throw new Exception("Business chain must wait for customer relationship.");
+        var course = Context(1, "character-created", "course-active");
+        if (!GameEventSelector.IsEligible(Story("weekend-study"), course) ||
+            GameEventSelector.IsEligible(Story("study-friend"), course))
+            throw new Exception("Study chain must wait for event receipt.");
+        Throws(() => new GameEventDefinition("unpaired-title", "life", 2026, 1,
+            1, 0, 1, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
+            new[] { new EventChoiceDefinition("ok", "choice.ok", "result-ok") },
+            "event.unpaired.title"));
     }
 
     private static void FirstPlayableBuilds()
