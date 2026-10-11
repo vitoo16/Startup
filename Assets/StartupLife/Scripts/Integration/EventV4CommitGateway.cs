@@ -318,9 +318,7 @@ namespace StartupLife.Integration
                 if (guard > 10000) return BatchStop(results, state, "InvalidState");
                 if (journal.PendingTicketId.Length > 0)
                     return BatchStop(results, state, "PlayerChoice");
-                if (automaticDailyChecks &&
-                    !journal.Tickets.Any(x => x.OpenedDateIso == state.DateIso) &&
-                    !journal.NoEligibleDays.Any(x => x.DateIso == state.DateIso))
+                if (automaticDailyChecks && !HasCheckedDay(journal, state.DateIso))
                 {
                     // Every date, even an empty one, is a real V4 CAS frontier.
                     // Re-read after promotion before taking a V3 time step.
@@ -456,8 +454,7 @@ namespace StartupLife.Integration
                 return Reject(current, "save.v4_core_evaluator_unavailable");
             if (automaticDailyChecks && !batchChild &&
                 command.Command.Kind == CommandKind.AdvanceBoundary &&
-                !journal.Tickets.Any(t => t.OpenedDateIso == current.DateIso) &&
-                !journal.NoEligibleDays.Any(d => d.DateIso == current.DateIso))
+                !HasCheckedDay(journal, current.DateIso))
             {
                 // WorkShiftPlaybackController legitimately drives one boundary
                 // at a time, unlike the durable Day/Month batch. It must use
@@ -560,6 +557,10 @@ namespace StartupLife.Integration
         // Event IDs share a command namespace with both V3 receipts and durable
         // V4 day/month roots. Reject collisions before planning or consuming RNG;
         // the V4 cold validator enforces the same rule on persisted checkpoints.
+        private static bool HasCheckedDay(EventJournalState journal, string dateIso) =>
+            journal.Tickets.Any(ticket => ticket.OpenedDateIso == dateIso) ||
+            journal.NoEligibleDays.Any(day => day.DateIso == dateIso);
+
         private static bool ConflictsWithCoreOrBatch(GameState state, string commandId) =>
             commandId.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
                 StringComparison.Ordinal) ||

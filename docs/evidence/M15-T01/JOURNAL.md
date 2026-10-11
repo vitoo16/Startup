@@ -472,3 +472,12 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-head CI pending. **Visual evidence:** NOT RUN (source/backend only). **Save:** no wire changes and frozen fixtures untouched. **Outstanding:** spendable V3-native event payout and Unity runtime QA.
 - **Files changed:** EventV4CommitGateway.cs; tools/EconomicChecks/Program.cs; JOURNAL.md.
+
+
+## Increment 36 — Single daily-window eligibility helper across work and batches
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL, PR #52 Draft/unmerged.
+- Consolidated duplicate "has day already been checked?" predicates from the new single-work-boundary path and the preexisting durable Day/Month batch path into one `HasCheckedDay(EventJournalState, dateIso)`. The two command types now share identical semantics for event-ticket and negative-day checkpoints. No new scheduler or duplicate predicate is retained.
+- The opt-in direct-work eligible/ineligible regression suites and preexisting batch tests cover both callers; source-only refactor with no save or art change.
+- **Skills:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler. **Tests:** CI exact SHA pending. **Visual:** NOT RUN. **Save:** none. **Known limits:** event money/XP composite receipt and Unity PlayMode remain incomplete.
+- **Files:** EventV4CommitGateway.cs, JOURNAL.md.
