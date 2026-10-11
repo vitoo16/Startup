@@ -340,3 +340,16 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Tests:** exact-head engine-free CI pending. **Visual evidence:** Unity runtime/device NOT RUN; no view asset changes. **Save impact:** none (nonserialized read-model attachment only), V2/V3 frozen fixtures unchanged.
 - **Known limitations:** V4 is still a staged source path, not production bootstrap; the new shared finance read models do not create spendable event money or XP. Event rewards require V3 receipt + V4 cause coupling.
 - **Files changed:** Integration/EventV4CompatibilitySerializer.cs; Application/BusinessFinanceProjection.cs; Application/LifeDashboardProjection.cs; Integration/EventV4GameCommands.cs; tools/EconomicChecks/Program.cs; this journal.
+
+
+## Increment 24 — Fix V4 event-only commit economic attachment after CI regression
+
+**Owner:** GPT-6 Technical Director. **M15-T01 PARTIAL**, PR #52 Draft.
+
+- **Detected by exact-head CI:** commit `4aad58b` compiled and CodeQL passed but M15 event-only CAS tests failed. Cause: `EventV4CompatibilitySerializer.RestoreCoreProjection` clones the V4 GameState through a serializer which ignores `EconomicV3`. The new economic read-attachment invariant therefore rejected the resulting unbound core when `Offer/Resolve` tried to commit. This was not an event-selector error.
+- Extracted one shared `AttachEconomic(target, source)` helper and used it in both `Project` and `RestoreCoreProjection`. It creates a new wrapper and preserves the same already-verified economic records without changing the source `Current` reference, avoiding duplicated V3 provenance code and transaction side effects.
+- The existing real-file M15 migration, Offer/Resolve, CAS failed write/retry, Day/Month batch, and opt-in daily event tests exercise this repaired path; the new V4 presentation readout assertions remain in place.
+- **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler.
+- **Tests:** new exact-head CI required. **Visual:** NOT RUN. **Save:** no wire or schema changes, frozen historical sources untouched.
+- **Known limitations:** production bootstrap and monetary/XP event payout still pending.
+- **Files changed:** Integration/EventV4CompatibilitySerializer.cs, this journal.

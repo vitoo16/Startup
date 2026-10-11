@@ -65,29 +65,23 @@ namespace StartupLife.Integration
             core.Revision = checked(current.Revision - current.EventV4.Journal.Revision);
             core.EventRng = current.EventV4.Journal.InitialEventRng;
             core.PendingChoiceId = "";
+            // A V4-only offer/resolve does not change the inner V3 economic
+            // checkpoint. Preserve the verified *non-wire* attachment so the
+            // next projection can still serve finance and policy readouts.
+            core.EconomicV3 = AttachEconomic(core, current);
             return core;
         }
 
-        internal static GameState Project(GameState v3Core, EventV4Payload payload)
+        // Detached, nonserialized read-side association. Never mutate the
+        // source checkpoint's EconomicV3.Current: that would corrupt the
+        // independently verified V3 candidate and cross-write CAS validation.
+        private static EconomicV3Payload AttachEconomic(GameState target, GameState source)
         {
-            if (payload.Journal == null) throw new ArgumentException("Missing event journal.");
-            var projected = JsonSaveSerializer.ReadObject<GameState>(
-                JsonSaveSerializer.WriteObject(v3Core));
-            projected.SaveVersion = 4;
-            projected.Revision = checked(v3Core.Revision + payload.Journal.Revision);
-            projected.EventRng = payload.Journal.EventRng;
-            projected.PendingChoiceId = payload.Journal.PendingTicketId;
-            projected.EventV4 = payload;
-            // GameState.EconomicV3 is [IgnoreDataMember]: the ordinary V3
-            // projection clone loses its *validated* business ledger view.
-            // Attach a fresh non-wire wrapper over the already receipt-verified
-            // records, with Current pointing to this exact projected state.
-            // No economic values are recomputed, credited, or serialized by V4.
-            var economic = v3Core.EconomicV3;
-            if (economic?.Current != v3Core || economic.Activation == null ||
+            var economic = source.EconomicV3;
+            if (economic?.Current != source || economic.Activation == null ||
                 economic.EconomicRecords == null)
                 throw new ArgumentException("Verified V3 economic projection required.");
-            projected.EconomicV3 = new EconomicV3Payload
+            return new EconomicV3Payload
             {
                 WireSchema = economic.WireSchema,
                 Current = projected,
@@ -101,6 +95,19 @@ namespace StartupLife.Integration
                 OriginalSourcePayloadBase64 = economic.OriginalSourcePayloadBase64,
                 OriginalSourcePayloadSha256 = economic.OriginalSourcePayloadSha256
             };
+        }
+
+        internal static GameState Project(GameState v3Core, EventV4Payload payload)
+        {
+            if (payload.Journal == null) throw new ArgumentException("Missing event journal.");
+            var projected = JsonSaveSerializer.ReadObject<GameState>(
+                JsonSaveSerializer.WriteObject(v3Core));
+            projected.SaveVersion = 4;
+            projected.Revision = checked(v3Core.Revision + payload.Journal.Revision);
+            projected.EventRng = payload.Journal.EventRng;
+            projected.PendingChoiceId = payload.Journal.PendingTicketId;
+            projected.EventV4 = payload;
+            projected.EconomicV3 = AttachEconomic(projected, v3Core);
             return projected;
         }
     }
