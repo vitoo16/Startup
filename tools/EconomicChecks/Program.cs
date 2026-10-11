@@ -1101,6 +1101,70 @@ internal static class Program
         });
 
 
+        Check("M15 authored Vietnamese event stories survive verified V4 CAS and cold replay", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var econ = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(econ, content);
+            var v3 = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var definitions = FirstPlayableEventContent.Definitions;
+            var policies = FirstPlayableEventContent.Policies;
+            var serializer = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, definitions, policies));
+            var runner = new EventV4CoreCommandRunner(content, v3, econ, archives);
+            var original = GameSession.NewState(content, "run-v4-authored", 1977UL,
+                new SimDate(2026, 10, 12));
+            var folder = Path.Combine(Path.GetTempPath(),
+                "m15-authored-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            var filename = Path.Combine(folder, "game.save");
+            try
+            {
+                File.WriteAllBytes(filename, JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(original), 2, 0));
+                EventV4CommitGateway Cold() => new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(filename, serializer),
+                    definitions, policies, runner);
+                var gateway = Cold();
+                var created = gateway.ExecuteGameplay(new CommandEnvelope(
+                    original.RunId, "authored-create", 0,
+                    new GameCommand(CommandKind.CreateCharacter, "fresh", 22,
+                        "Người chơi", "base.female")));
+                Assert(created.Status == CommandStatus.Committed,
+                    "actual V3 character receipt must commit in V4");
+                var offer = gateway.Offer(original.RunId, "authored-offer", created.Revision);
+                Assert(offer.Status == EventCommitStatus.Committed,
+                    "authored event catalog should offer a deterministic eligible story");
+                var pending = Cold().ReadPendingChoice();
+                Assert(pending != null && pending.TitleKey.StartsWith("event.story.",
+                    StringComparison.Ordinal) && pending.BodyKey.StartsWith("event.story.",
+                    StringComparison.Ordinal) && pending.Choices.Count >= 2,
+                    "cold UI read must expose actual authored title, body and choices");
+                var translated = new HashSet<string>(
+                    FirstPlayableEventContent.VietnameseEntries.Select(x => x.Key),
+                    StringComparer.Ordinal);
+                Assert(translated.Contains(pending!.TitleKey) &&
+                    translated.Contains(pending.BodyKey) &&
+                    pending.Choices.All(x => translated.Contains(x.LabelKey)),
+                    "authored pending event requires every localized key");
+                var chosen = pending.Choices[0];
+                var resolved = Cold().Resolve(original.RunId, "authored-resolve",
+                    pending.Revision, pending.TicketId, chosen.Id);
+                Assert(resolved.Status == EventCommitStatus.Committed &&
+                    Cold().ReadPendingChoice() == null,
+                    "authored decision must commit once and clear pending state");
+                var repeat = Cold().Resolve(original.RunId, "authored-resolve",
+                    pending.Revision, pending.TicketId, chosen.Id);
+                Assert(repeat.Status == EventCommitStatus.AlreadyCommitted &&
+                    Cold().Read().Status == LoadStatus.Valid,
+                    "cold replay and duplicate request must remain exactly-once");
+            }
+            finally { Directory.Delete(folder, true); }
+        });
+
         Check("M15 V4 durable day/month batches resume across ambiguous CAS and event choices", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();
