@@ -1140,12 +1140,19 @@ internal static class Program
                     "InvalidRequest" &&
                     File.ReadAllBytes(filename).SequenceEqual(beforeCreation),
                     "pre-character advance cannot create an unfinishable durable batch");
+                var uiCommands = new EventV4GameCommands(gateway, content);
+                Assert(uiCommands.Snapshot().RunId == original.RunId &&
+                    uiCommands.Snapshot().Revision == 0,
+                    "presentation adapter projects validated migrated V4 state");
                 var created = gateway.ExecuteGameplay(new CommandEnvelope(
                     original.RunId, "batch-create-character", 0,
                     new GameCommand(CommandKind.CreateCharacter, "fresh", 22,
                         "Batch Tester", "base.female")));
                 Assert(created.Status == CommandStatus.Committed && created.Revision == 1,
                     "V4 batch fixture uses an actual V3 character receipt");
+                Assert(uiCommands.Snapshot().Name == "Batch Tester" &&
+                    uiCommands.Snapshot().Revision == created.Revision,
+                    "UI IGameCommands adapter reads the same committed global revision");
                 var dayRoot = new CommandEnvelope(original.RunId, "batch-day-root", 1,
                     new GameCommand(CommandKind.AdvanceBoundary));
                 var replaces = 0;
