@@ -20,6 +20,8 @@ namespace StartupLife.Presentation
         private GameObject panel = null!;
         private RectTransform choiceContent = null!;
         private LocalizedKeyLabel status = null!;
+        private LocalizedKeyLabel heading = null!;
+        private LocalizedKeyLabel storyBody = null!;
         private EventPendingChoiceSnapshot? pending;
         private string displayedTicket = "";
         private string uncertainCommand = "";
@@ -77,6 +79,10 @@ namespace StartupLife.Presentation
                 }
 
                 pending = current;
+                heading.SetKey(current.TitleKey.Length > 0
+                    ? current.TitleKey : "event.choice.title");
+                storyBody.SetKey(current.BodyKey.Length > 0
+                    ? current.BodyKey : "event.choice.prompt");
                 panel.SetActive(true);
                 panel.transform.SetAsLastSibling();
                 if (displayedTicket != current.TicketId)
@@ -191,8 +197,8 @@ namespace StartupLife.Presentation
             column.childForceExpandWidth = true;
             column.childForceExpandHeight = false;
 
-            LocalizedKeyLabel.EnsureFor(TextNode("Title", panel.transform, 40, 76))
-                .SetKey("event.choice.title");
+            heading = LocalizedKeyLabel.EnsureFor(
+                TextNode("Title", panel.transform, 40, 76));
             status = LocalizedKeyLabel.EnsureFor(
                 TextNode("ChoiceStatus", panel.transform, 28, 110));
 
@@ -231,6 +237,8 @@ namespace StartupLife.Presentation
             stack.childForceExpandHeight = false;
             content.GetComponent<ContentSizeFitter>().verticalFit =
                 ContentSizeFitter.FitMode.PreferredSize;
+            storyBody = LocalizedKeyLabel.EnsureFor(
+                TextNode("EventStory", content.transform, 29, 190));
 
             var scroll = scrollObject.GetComponent<ScrollRect>();
             scroll.viewport = viewportRect;
