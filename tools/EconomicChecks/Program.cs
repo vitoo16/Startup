@@ -1101,6 +1101,140 @@ internal static class Program
         });
 
 
+        Check("M15 V4 durable day/month batches resume across ambiguous CAS and event choices", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var econ = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(econ, content);
+            var v3 = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var definitions = new[] { new GameEventDefinition(
+                "batch-interruption", "life", 2026, 1, 1, 0, 1, 1, 0,
+                Array.Empty<string>(), Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("ack", "event.ack", "outcome.ack") }) };
+            var policies = new[] { new EventCategoryPolicy("life", 0, 30, 1) };
+            var strict = new StagedEventV4SaveSerializer(v3, definitions, policies);
+            var serializer = new EventV4CompatibilitySerializer(strict);
+            var runner = new EventV4CoreCommandRunner(content, v3, econ, archives);
+            var original = GameSession.NewState(content, "run-v4-batch", 7219UL,
+                new SimDate(2026, 10, 30));
+            var folder = Path.Combine(Path.GetTempPath(),
+                "m15-v4-batch-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            var filename = Path.Combine(folder, "game.save");
+            try
+            {
+                File.WriteAllBytes(filename, JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(original), 2, 0));
+                EventV4CommitGateway Gateway(AtomicFileSaveStore store) =>
+                    new EventV4CommitGateway(serializer, store, definitions, policies, runner);
+                EventV4CommitGateway Cold() =>
+                    Gateway(new AtomicFileSaveStore(filename, serializer));
+                var gateway = Cold();
+                var created = gateway.ExecuteGameplay(new CommandEnvelope(
+                    original.RunId, "batch-create-character", 0,
+                    new GameCommand(CommandKind.CreateCharacter, "fresh", 22,
+                        "Batch Tester", "base.female")));
+                Assert(created.Status == CommandStatus.Committed && created.Revision == 1,
+                    "V4 batch fixture uses an actual V3 character receipt");
+                var dayRoot = new CommandEnvelope(original.RunId, "batch-day-root", 1,
+                    new GameCommand(CommandKind.AdvanceBoundary));
+                var replaces = 0;
+                var faulted = Gateway(new AtomicFileSaveStore(filename, serializer,
+                    point => point == "after-replace" && ++replaces == 2));
+                var interrupted = faulted.AdvanceDay(dayRoot);
+                Assert(interrupted.StopReason == "RecoveryRequired",
+                    "one ambiguous child replacement must interrupt the advance transaction");
+                var afterFault = Cold();
+                var partial = afterFault.Read();
+                var state = partial.State ??
+                    throw new InvalidOperationException("Ambiguous batch has no persisted state.");
+                var journal = state.EventV4!.Journal!;
+                Assert(partial.Status == LoadStatus.Valid &&
+                    journal.AdvanceBatches.Count == 1 &&
+                    journal.AdvanceBatches[0].RootCommandId == "batch-day-root" &&
+                    journal.AdvanceBatches[0].OpenedDateIso == "2026-10-30" &&
+                    journal.AdvanceBatches[0].TargetDateIso == "2026-10-31" &&
+                    EventAdvanceBatchHistory.CountSteps(journal, state.Receipts)["batch-day-root"] == 1,
+                    "cold V4+V3 checkpoint restores original target and the one applied child");
+                var unchanged = File.ReadAllBytes(filename);
+                Assert(afterFault.AdvanceMonth(dayRoot).StopReason == "InvalidRequest" &&
+                    File.ReadAllBytes(filename).SequenceEqual(unchanged),
+                    "same root ID cannot switch from day to month on retry");
+                Assert(afterFault.ExecuteCore(new CommandEnvelope(original.RunId,
+                    "bypass-batch", state.Revision,
+                    new GameCommand(CommandKind.AdvanceBoundary))).ReasonKey ==
+                    "batch.in_progress",
+                    "external boundary command cannot bypass unfinished batch owner");
+                var offer = afterFault.Offer(original.RunId, "batch-event-offer",
+                    state.Revision);
+                Assert(offer.Status == EventCommitStatus.Committed,
+                    "event offer may interrupt unfinished batch at the same V3 frontier");
+                var blocked = Cold();
+                Assert(blocked.AdvanceDay(dayRoot).StopReason == "PlayerChoice",
+                    "cold batch retry must stop at pending event choice");
+                var pending = blocked.ReadPendingChoice();
+                Assert(pending != null && pending.TicketId == offer.TicketId,
+                    "interruption choice is backed by same validated journal");
+                var resolved = blocked.Resolve(original.RunId, "batch-choice-resolve",
+                    pending!.Revision, pending.TicketId, "ack");
+                Assert(resolved.Status == EventCommitStatus.Committed,
+                    "event choice resolves while batch intent survives");
+                var resumed = Cold();
+                var finished = resumed.AdvanceDay(dayRoot);
+                Assert(finished.StopReason == "TargetReached" &&
+                    finished.ReachedInstant.Date.ToString() == "2026-10-31",
+                    "same stale root command resumes and reaches its original day target");
+                var reached = Cold().Read().State!;
+                var count = EventAdvanceBatchHistory.CountSteps(
+                    reached.EventV4!.Journal!, reached.Receipts)["batch-day-root"];
+                Assert(count > 1 && reached.DateIso == "2026-10-31" &&
+                    reached.EventV4.Journal.AdvanceBatches.Count == 1,
+                    "every resumed step uses authenticated V3 child receipts");
+                var beforeRetry = File.ReadAllBytes(filename);
+                Assert(Cold().AdvanceDay(dayRoot).StopReason == "TargetReached" &&
+                    File.ReadAllBytes(filename).SequenceEqual(beforeRetry),
+                    "completed batch root retry is read-only, no extra time or cash settlement");
+                var next = new CommandEnvelope(original.RunId, "batch-month-root",
+                    reached.Revision, new GameCommand(CommandKind.AdvanceBoundary));
+                var month = Cold().AdvanceMonth(next);
+                Assert(month.StopReason == "TargetReached" &&
+                    month.ReachedInstant.Date.ToString() == "2026-11-01",
+                    "month batch retains next calendar-month target through normal V3 gameplay");
+                var finalState = Cold().Read().State!;
+                Assert(finalState.EventV4!.Journal!.AdvanceBatches.Count == 2 &&
+                    finalState.EventV4.Journal.Tickets.Count == 1 &&
+                    finalState.EventV4.Journal.OutcomeReceipts.Count == 1 &&
+                    finalState.DateIso == "2026-11-01",
+                    "two roots, one interrupting event and one effect survive cold replay");
+                var beforeForged = File.ReadAllBytes(filename);
+                EventV4Payload Copy() => JsonSaveSerializer.ReadObject<EventV4Payload>(
+                    JsonSaveSerializer.WriteObject(finalState.EventV4!));
+                var fakeTarget = Copy();
+                fakeTarget.Journal!.AdvanceBatches[0].TargetDateIso = "2026-11-02";
+                Throws<ArgumentException>(() => strict.SerializeVerified(fakeTarget));
+                var movedFrontier = Copy();
+                movedFrontier.Journal!.AdvanceBatches[0].CoreRevisionAtStart++;
+                Throws<ArgumentException>(() => strict.SerializeVerified(movedFrontier));
+                var missingBatch = Copy();
+                missingBatch.Journal!.AdvanceBatches.RemoveAt(0);
+                Throws<ArgumentException>(() => strict.SerializeVerified(missingBatch));
+                var duplicatedBatch = Copy();
+                duplicatedBatch.Journal!.AdvanceBatches.Add(
+                    duplicatedBatch.Journal.AdvanceBatches[0].Copy());
+                Throws<ArgumentException>(() => strict.SerializeVerified(duplicatedBatch));
+                Assert(File.ReadAllBytes(filename).SequenceEqual(beforeForged),
+                    "forged/missing duplicate batch histories cannot modify saved bytes");
+            }
+            finally
+            {
+                try { Directory.Delete(folder, true); }
+                catch (IOException) { }
+            }
+        });
+
         Check("M15 outcome effect receipts unlock later events exactly once and reject forged replay", () =>
         {
             Throws<ArgumentException>(() => new EventChoiceDefinition(
