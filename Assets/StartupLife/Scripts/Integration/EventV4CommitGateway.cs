@@ -32,6 +32,24 @@ namespace StartupLife.Integration
         }
     }
 
+    // Read-only V4 choice presentation. Every item is derived from the same
+    // verified journal and immutable authored catalog used for command admission.
+    public sealed class EventPendingChoiceSnapshot
+    {
+        public string RunId { get; }
+        public long Revision { get; }
+        public string TicketId { get; }
+        public string EventId { get; }
+        public IReadOnlyList<EventChoiceDefinition> Choices { get; }
+
+        public EventPendingChoiceSnapshot(string runId, long revision, string ticketId,
+            string eventId, IEnumerable<EventChoiceDefinition> choices)
+        {
+            RunId = runId; Revision = revision; TicketId = ticketId; EventId = eventId;
+            Choices = Array.AsReadOnly(choices.ToArray());
+        }
+    }
+
     // Stateless staged transaction entrypoint; NOT an independent gameplay engine.
     // Uses the same event journal planner and the existing ISaveStore CAS authority.
     // Gameplay commands and applied reward receipts still require GameSession routing.
@@ -59,6 +77,22 @@ namespace StartupLife.Integration
         }
 
         public LoadResult Read() => store.Read();
+
+        // A UI can render and resolve the pending choice using this exact global
+        // CAS revision; it must never fabricate stage/tags or bypass the journal.
+        public EventPendingChoiceSnapshot? ReadPendingChoice()
+        {
+            var read = Read();
+            if (!Valid(read))
+                throw new InvalidOperationException("Verified V4 state required for event choices.");
+            var state = read.State!;
+            var journal = state.EventV4!.Journal!;
+            if (journal.PendingTicketId.Length == 0) return null;
+            var ticket = journal.Tickets.Single(x => x.Id == journal.PendingTicketId);
+            var definition = definitions.Single(x => x.Id == ticket.EventId);
+            return new EventPendingChoiceSnapshot(state.RunId, state.Revision,
+                ticket.Id, definition.Id, definition.Choices);
+        }
 
         // Production API: the client sends only command identity and global CAS
         // revision. All event eligibility inputs come from the verified V3 save.
