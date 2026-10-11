@@ -109,6 +109,104 @@ internal static class Program
                 GameEventSelector.Select(new[] { a, a }, context, ref invalid);
             });
         });
+
+        Check("M15 journal pending choice survives serialized cold read and resolves exactly once", () =>
+        {
+            var definitions = new[] { Event("career-interview", 3, 1, 0, 1, 0,
+                Array.Empty<string>(), Array.Empty<string>()) };
+            var policies = new[] { new EventCategoryPolicy("career", 2, 7, 2) };
+            var origin = new SimDate(2026, 10, 1);
+            var context = new GameEventContext(origin, origin, 1, Array.Empty<string>(), Array.Empty<EventOccurrence>());
+            var start = EventDecisionJournal.New("run-journal", 777);
+            var offer = EventDecisionJournal.Offer(start, definitions, policies, context, 0);
+            Equal(EventJournalStatus.Offered, offer.Status);
+            Equal(0L, start.Revision); Equal(777u, start.EventRng);
+            True(start.Tickets.Count == 0);
+            var saved = JsonSaveSerializer.WriteObject(offer.Next);
+            var restored = JsonSaveSerializer.ReadObject<EventJournalState>(saved);
+            EventDecisionJournal.Validate(restored, definitions, policies);
+            Equal(offer.TicketId, restored.PendingTicketId);
+            var denied = EventDecisionJournal.Resolve(restored, definitions, policies,
+                restored.Revision, "event-choice-command", offer.TicketId, "wrong-choice");
+            Equal(EventJournalStatus.Rejected, denied.Status);
+            Bytes(saved, JsonSaveSerializer.WriteObject(restored));
+            var done = EventDecisionJournal.Resolve(restored, definitions, policies,
+                restored.Revision, "event-choice-command", offer.TicketId, "continue");
+            Equal(EventJournalStatus.Resolved, done.Status);
+            Equal("outcome.continue", done.OutcomeId);
+            Equal("", done.Next.PendingTicketId);
+            var checkpoint = JsonSaveSerializer.WriteObject(done.Next);
+            var cold = JsonSaveSerializer.ReadObject<EventJournalState>(checkpoint);
+            var retry = EventDecisionJournal.Resolve(cold, definitions, policies,
+                0, "event-choice-command", offer.TicketId, "continue");
+            Equal(EventJournalStatus.AlreadyCommitted, retry.Status);
+            Equal(done.OutcomeId, retry.OutcomeId);
+            Bytes(checkpoint, JsonSaveSerializer.WriteObject(cold));
+            var conflict = EventDecisionJournal.Resolve(cold, definitions, policies,
+                cold.Revision, "event-choice-command", offer.TicketId, "other");
+            Equal("event.command_id_conflict", conflict.ReasonKey);
+            Bytes(checkpoint, JsonSaveSerializer.WriteObject(cold));
+        });
+        Check("M15 journal uses committed history for category cooldown and frequency", () =>
+        {
+            var definitions = new[]
+            {
+                Event("career-one", 5, 1, 0, 1, 0, Array.Empty<string>(), Array.Empty<string>()),
+                Event("career-two", 5, 1, 0, 1, 0, Array.Empty<string>(), Array.Empty<string>())
+            };
+            var policies = new[] { new EventCategoryPolicy("career", 2, 10, 2) };
+            var origin = new SimDate(2026, 10, 1);
+            EventJournalState state = EventDecisionJournal.New("run-frequency", 123);
+            GameEventContext Context(int days) => new GameEventContext(origin, origin.AddDays(days), 1,
+                Array.Empty<string>(), Array.Empty<EventOccurrence>());
+            EventJournalResult Offer(int days) => EventDecisionJournal.Offer(state, definitions, policies,
+                Context(days), state.Revision);
+            var first = Offer(0);
+            Equal(EventJournalStatus.Offered, first.Status);
+            state = EventDecisionJournal.Resolve(first.Next, definitions, policies,
+                first.Next.Revision, "choice-one", first.TicketId, "continue").Next;
+            var before = JsonSaveSerializer.WriteObject(state);
+            var early = Offer(1);
+            Equal(EventJournalStatus.NoEligibleEvent, early.Status);
+            Bytes(before, JsonSaveSerializer.WriteObject(state));
+            var second = Offer(2);
+            Equal(EventJournalStatus.Offered, second.Status);
+            state = EventDecisionJournal.Resolve(second.Next, definitions, policies,
+                second.Next.Revision, "choice-two", second.TicketId, "continue").Next;
+            Equal(EventJournalStatus.NoEligibleEvent, Offer(4).Status);
+            var third = Offer(10); // day zero expired from ten-day rolling frequency window
+            Equal(EventJournalStatus.Offered, third.Status);
+            Equal(2, state.Tickets.Count);
+            True(third.Next.EventRng != state.EventRng);
+            var after = JsonSaveSerializer.WriteObject(third.Next);
+            var cold = JsonSaveSerializer.ReadObject<EventJournalState>(after);
+            EventDecisionJournal.Validate(cold, definitions, policies);
+        });
+        Check("M15 journal rejects replay drift, stale revisions and duplicated choices without mutation", () =>
+        {
+            var def = Event("career-one", 5, 1, 0, 1, 0, Array.Empty<string>(), Array.Empty<string>());
+            var definitions = new[] { def };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 7, 5) };
+            var origin = new SimDate(2026, 10, 1);
+            var context = new GameEventContext(origin, origin, 1, Array.Empty<string>(), Array.Empty<EventOccurrence>());
+            var state = EventDecisionJournal.New("run-guard", 321);
+            var pending = EventDecisionJournal.Offer(state, definitions, policies, context, 0).Next;
+            var before = JsonSaveSerializer.WriteObject(pending);
+            Equal("event.stale_revision", EventDecisionJournal.Resolve(pending, definitions, policies,
+                0, "cmd-one", pending.PendingTicketId, "continue").ReasonKey);
+            Equal("event.choice_required", EventDecisionJournal.Offer(pending, definitions, policies,
+                context, pending.Revision).ReasonKey);
+            Bytes(before, JsonSaveSerializer.WriteObject(pending));
+            var poisoned = JsonSaveSerializer.ReadObject<EventJournalState>(before);
+            poisoned.Tickets[0].CategoryId = "business";
+            Throws(() => EventDecisionJournal.Validate(poisoned, definitions, policies));
+            var badRng = JsonSaveSerializer.ReadObject<EventJournalState>(before);
+            badRng.EventRng = 0;
+            Throws(() => EventDecisionJournal.Validate(badRng, definitions, policies));
+            var wrongRevision = JsonSaveSerializer.ReadObject<EventJournalState>(before);
+            wrongRevision.Revision++;
+            Throws(() => EventDecisionJournal.Validate(wrongRevision, definitions, policies));
+        });
         Check("Developer 20-slot quota exact across cycles", () =>
         {
             var scenes = Catalog().Careers["developer"].Scenes; var expected = new[] { 8, 4, 3, 2, 2, 1 }; uint rng = 987;
