@@ -1133,12 +1133,15 @@ internal static class Program
                     origin.RunId, "create-v4", 0, created));
                 Assert(initialResult.Status == EventCommitStatus.Committed &&
                     initialResult.Revision == 1, "V3 GameSession creates character inside V4 CAS");
-                var first = gateway.Read().State!;
+                var first = gateway.Read().State ??
+                    throw new InvalidOperationException("V4 first commit missing core projection.");
+                var firstJournal = first.EventV4?.Journal ??
+                    throw new InvalidOperationException("V4 first commit missing event journal.");
                 Assert(first.Name == "V4 Tester" && first.Cash == 3000000 &&
-                    first.Receipts.Count == 1 && first.EventV4!.Journal!.Revision == 0,
+                    first.Receipts.Count == 1 && firstJournal.Revision == 0,
                     "V4 projection includes authoritative V3 receipt and starting cash: name=" +
                     first.Name + "; cash=" + first.Cash + "; receipts=" + first.Receipts.Count +
-                    "; journal=" + first.EventV4.Journal.Revision);
+                    "; journal=" + firstJournal.Revision);
                 var afterCreate = File.ReadAllBytes(filename);
                 Assert(gateway.ExecuteCore(new CommandEnvelope(
                     origin.RunId, "create-v4", 0, created)).Status ==
