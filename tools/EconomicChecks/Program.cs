@@ -1146,7 +1146,8 @@ internal static class Program
                     point => point == "after-replace" && ++replaces == 2));
                 var interrupted = faulted.AdvanceDay(dayRoot);
                 Assert(interrupted.StopReason == "RecoveryRequired",
-                    "one ambiguous child replacement must interrupt the advance transaction");
+                    "one ambiguous child replacement must interrupt the advance transaction: " +
+                    interrupted.StopReason + "; after-replace calls=" + replaces);
                 var afterFault = Cold();
                 var partial = afterFault.Read();
                 var state = partial.State ??

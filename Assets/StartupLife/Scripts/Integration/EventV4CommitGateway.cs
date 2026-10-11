@@ -200,6 +200,7 @@ namespace StartupLife.Integration
             if (batch == null)
             {
                 if (request.ExpectedRevision != state.Revision ||
+                    string.IsNullOrEmpty(state.Name) ||
                     journal.PendingTicketId.Length > 0 ||
                     journal.AdvanceBatches.Any(x => string.CompareOrdinal(
                         state.DateIso, x.TargetDateIso) < 0))

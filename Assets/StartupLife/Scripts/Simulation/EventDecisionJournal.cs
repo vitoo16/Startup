@@ -141,7 +141,8 @@ namespace StartupLife.Simulation
                 state.NextTicketSequence != state.Tickets.Count + 1L ||
                 (state.OriginDateIso.Length > 0 &&
                     EventSelectionHistory.Parse(state.OriginDateIso).ToString() != state.OriginDateIso) ||
-                state.Revision < 0 || state.Revision > 2L * state.Tickets.Count ||
+                state.Revision < 0 ||
+                state.Revision > 2L * state.Tickets.Count + state.AdvanceBatches.Count ||
                 (state.Tickets.Count == 0 && state.EventRng != state.InitialEventRng))
                 throw new ArgumentException("Invalid event journal or catalog.");
             if (definitions.Any(x => x == null) ||
