@@ -18,8 +18,6 @@ namespace StartupLife.Core
         [DataMember(Order = 6)] public string OutcomeId { get; set; } = "";
         // Exact immutable offer context: needed to reproduce weighted selection on cold read.
         [DataMember(Order = 7)] public string OriginDateIso { get; set; } = "";
-        [DataMember(Order = 8)] public List<EventOutcomeReceipt> OutcomeReceipts { get; set; } =
-            new List<EventOutcomeReceipt>();
         [DataMember(Order = 8)] public int Stage { get; set; }
         [DataMember(Order = 9)] public List<string> Tags { get; set; } = new List<string>();
         [DataMember(Order = 10)] public string OfferCommandId { get; set; } = "";
@@ -66,6 +64,8 @@ namespace StartupLife.Core
         [DataMember(Order = 6)] public uint InitialEventRng { get; set; }
         // Run-specific V4 activation date from verified V3 migration anchor.
         [DataMember(Order = 7)] public string OriginDateIso { get; set; } = "";
+        [DataMember(Order = 8)] public List<EventOutcomeReceipt> OutcomeReceipts { get; set; } =
+            new List<EventOutcomeReceipt>();
 
         public EventJournalState Copy() => new EventJournalState
         {
