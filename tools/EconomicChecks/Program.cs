@@ -1047,8 +1047,9 @@ internal static class Program
             var v3 = new V3SaveCompatibilitySerializer(content, GameSession.CreateRestoreValidator(),
                 new V2ToV3Migration(resolver, replay),
                 new StagedV3SaveSerializer(resolver, replay));
-            var definitions = new[] { Event("career-intro", 5, 1, 0, 1, 0,
-                Array.Empty<string>(), Array.Empty<string>()) };
+            var definitions = new[] { new GameEventDefinition("career-intro", "career", 2026, 1, 1, 0, 5, 4, 0,
+                Array.Empty<string>(), Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("continue", "event.continue", "outcome.continue") }) };
             var policies = new[] { new EventCategoryPolicy("career", 0, 7, 2) };
             var stage = new StagedEventV4SaveSerializer(v3, definitions, policies);
             var original = GameSession.NewState(content, "run-v4-migration", 17483UL,
