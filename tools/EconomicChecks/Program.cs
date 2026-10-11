@@ -1690,6 +1690,14 @@ internal static class Program
                 EventV4Payload AlteredOffer() =>
                     JsonSaveSerializer.ReadObject<EventV4Payload>(
                         JsonSaveSerializer.WriteObject(sourceWire));
+                var collidingOfferId = AlteredOffer();
+                collidingOfferId.Journal!.Tickets[0].OfferCommandId = "create-v4";
+                Throws<ArgumentException>(() => strictV4.SerializeVerified(collidingOfferId));
+                var collisionWire = JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(collidingOfferId), 4, offered.Revision);
+                Assert(serializer.DeserializeAndValidate(collisionWire).Status ==
+                        LoadStatus.Corrupt,
+                    "cold replay rejects recomputed-checksum V4 offer claiming a V3 command ID");
                 var forgedSelectedEvent = AlteredOffer();
                 forgedSelectedEvent.Journal!.Tickets[0].EventId = "network-followup";
                 Throws<ArgumentException>(() => strictV4.SerializeVerified(forgedSelectedEvent));
@@ -1750,6 +1758,20 @@ internal static class Program
                     JsonSaveSerializer.WriteObject(effectWire));
                 forgedEffect.Journal!.OutcomeReceipts[0].GrantedTags.Clear();
                 Throws<ArgumentException>(() => strictV4.SerializeVerified(forgedEffect));
+                var collidingResolutionId = JsonSaveSerializer.ReadObject<EventV4Payload>(
+                    JsonSaveSerializer.WriteObject(effectWire));
+                collidingResolutionId.Journal!.Tickets[0].ResolutionCommandId = "create-v4";
+                collidingResolutionId.Journal.OutcomeReceipts[0].ResolutionCommandId =
+                    "create-v4";
+                Throws<ArgumentException>(() =>
+                    strictV4.SerializeVerified(collidingResolutionId));
+                var collisionResolvedWire = JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(collidingResolutionId), 4, resolved.Revision);
+                var unchangedAfterResolution = File.ReadAllBytes(filename);
+                Assert(serializer.DeserializeAndValidate(collisionResolvedWire).Status ==
+                        LoadStatus.Corrupt &&
+                    File.ReadAllBytes(filename).SequenceEqual(unchangedAfterResolution),
+                    "recomputed-checksum V4 resolved outcome may not claim V3 receipt identity");
                 var moneyCommand = new GameCommand(CommandKind.PurchaseCourse, "communication-basics");
                 var uncertainWriter = new EventV4CommitGateway(serializer,
                     new AtomicFileSaveStore(filename, serializer,

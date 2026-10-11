@@ -256,6 +256,20 @@ namespace StartupLife.Integration
             if (core.Status != LoadStatus.Valid || core.State == null)
                 throw new ArgumentException("Embedded V3 checkpoint failed authoritative replay.");
             var state = core.State;
+            // All externally committed command IDs share one namespace. The
+            // gateway checks fresh commands; cold replay must independently
+            // reject a forged V4 journal that reuses ANY verified V3 receipt ID.
+            // A single hash set keeps admission linear in receipt + journal size.
+            var coreCommandIds = new HashSet<string>(
+                state.Receipts.Select(r => r.CommandId), StringComparer.Ordinal);
+            if (journal.Tickets.Any(t =>
+                    coreCommandIds.Contains(t.OfferCommandId) ||
+                    (t.ResolutionCommandId.Length > 0 &&
+                     coreCommandIds.Contains(t.ResolutionCommandId))) ||
+                journal.NoEligibleDays.Any(d => coreCommandIds.Contains(d.CommandId)) ||
+                journal.AdvanceBatches.Any(b => coreCommandIds.Contains(b.RootCommandId)))
+                throw new ArgumentException(
+                    "V4 event identity collides with a verified V3 core receipt.");
             var origin = state.EconomicV3?.Activation?.MigratedAtDateIso;
             var legacyCount = state.EconomicV3?.Activation?.LegacyReceiptCount ?? -1;
             if (string.IsNullOrWhiteSpace(origin) || origin != journal.OriginDateIso ||
@@ -264,8 +278,7 @@ namespace StartupLife.Integration
                     t.CoreRevisionAtOffer > state.Revision) ||
                 journal.NoEligibleDays.Any(d => d.CoreRevisionAtCheck < legacyCount ||
                     d.CoreRevisionAtCheck > state.Revision ||
-                    string.CompareOrdinal(d.DateIso, state.DateIso) > 0 ||
-                    state.Receipts.Any(r => r.CommandId == d.CommandId)) ||
+                    string.CompareOrdinal(d.DateIso, state.DateIso) > 0) ||
                 checkedEmptyDates.Count != journal.NoEligibleDays.Count ||
                 visited.Count != byFrontier.Count ||
                 anchoredBatches.Count != journal.AdvanceBatches.Count)

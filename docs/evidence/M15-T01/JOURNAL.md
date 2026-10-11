@@ -438,3 +438,15 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - Added a guard specific to transient new-run V4 revision zero: manual event `Offer` and any core command other than `CreateCharacter` return `event.character_required` with no disk write. Prevents an uncreated character's seed from being persisted by an event-only transaction or playback acknowledgement.
 - Extended the same file-backed genesis test with negative admission assertions. Historical V2→V4 tests that intentionally offer during replay experiments remain unchanged because they do not use transient genesis.
 - **Skills:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler. **Tests:** exact-head CI pending. **Visual:** NOT RUN. **Save:** no schema changes. **Remaining:** spendable V3-native cash/XP event payouts, Unity runtime/device QA. **Files:** EventV4CommitGateway.cs, EconomicChecks/Program.cs, JOURNAL.md.
+
+
+## Increment 33 — Close V3/V4 command-identity collision during cold replay
+
+**Owner:** GPT-6 Technical Director. **Milestone:** M15-T01 PARTIAL; PR #52 Draft/unmerged.
+
+- The V4 command gateway already refused new event command IDs taken by a committed V3 receipt, but cold validation only rejected V3 receipt collisions for no-eligible-day records. A forged historical offer or resolution ID could reuse a real V3 receipt identity after recomputing the outer JSON envelope checksum. This violates the shared exactly-once command namespace.
+- Added one linear-time set of **independently replay-verified** V3 receipt IDs to `StagedEventV4SaveSerializer.ValidatePayload`. It rejects collisions from any V4 offer ID, resolution ID, no-eligible-day ID, or durable Day/Month batch root. Removed the older quadratic special case for empty days; the check remains at the same or stronger gate.
+- Expanded the existing file-backed V3→V4 event/finance integration test to forge a pending offer ID and later a resolved ticket ID *plus matching effect receipt*, with recomputed valid SHA envelope checksums. Both fail full cold deserialize as Corrupt, and no mutated save is committed.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Acceptance:** cold V4 cannot duplicate any V3 core receipt identity; real event/gameplay CAS flow and migrated saves still pass. **Tests:** exact-head engine-free CI pending. **Visual:** NOT RUN, no view changes. **Save impact:** no wire/schema or frozen fixture changes. **Limitations:** spendable V3-native event cash/XP requires single-revision V3/V4 composite receipt coupling; not enabled here.
+- **Files:** Integration/StagedEventV4SaveSerializer.cs; tools/EconomicChecks/Program.cs; this journal.
