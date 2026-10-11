@@ -452,6 +452,8 @@ namespace StartupLife.Integration
             if (journal.PendingTicketId.Length > 0 &&
                 command.Command.Kind != CommandKind.AcknowledgePlayback)
                 return Reject(current, "event.choice_required");
+            if (coreRunner == null)
+                return Reject(current, "save.v4_core_evaluator_unavailable");
             if (automaticDailyChecks && !batchChild &&
                 command.Command.Kind == CommandKind.AdvanceBoundary &&
                 !journal.Tickets.Any(t => t.OpenedDateIso == current.DateIso) &&
@@ -480,8 +482,6 @@ namespace StartupLife.Integration
                 return ExecuteCoreInternal(new CommandEnvelope(command.RunId,
                     command.CommandId, observed.State.Revision, command.Command), false);
             }
-            if (coreRunner == null)
-                return Reject(current, "save.v4_core_evaluator_unavailable");
             try
             {
                 var oldV3 = Convert.FromBase64String(current.EventV4.EmbeddedV3EnvelopeBase64);

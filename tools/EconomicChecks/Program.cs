@@ -2088,6 +2088,86 @@ internal static class Program
                 catch (IOException) { }
             }
         });
+        Check("M15 direct V4 work on an ineligible day commits one negative check", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var economics = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economics, content);
+            var v3 = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var definitions = new[] { new GameEventDefinition(
+                "employment-only", "career", 2026, 0, 1, 0, 1, 1, 0,
+                new[] { "employed" }, Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("continue", "event.continue",
+                    "outcome.continue") }) };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 7, 1) };
+            var serializer = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, definitions, policies));
+            var runner = new EventV4CoreCommandRunner(content, v3, economics, archives);
+            var initial = GameSession.NewState(content, "m15-no-event-work", 37721UL,
+                new SimDate(2026, 10, 1));
+            var folder = Path.Combine(Path.GetTempPath(),
+                "m15-work-no-event-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            var file = Path.Combine(folder, "game.save");
+            try
+            {
+                File.WriteAllBytes(file, JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(initial), 2, 0));
+                EventV4CommitGateway Cold(Func<string, bool>? fault = null,
+                    bool withRunner = true) => new EventV4CommitGateway(
+                        serializer, new AtomicFileSaveStore(file, serializer, fault),
+                        definitions, policies, withRunner ? runner : null,
+                        automaticDailyChecks: true);
+                var create = Cold().ExecuteCore(new CommandEnvelope(initial.RunId,
+                    "create-no-event-work", 0, new GameCommand(CommandKind.CreateCharacter,
+                        "fresh", 25, "No Event Tester", "base.female")));
+                Assert(create.Status == EventCommitStatus.Committed,
+                    "real V3 character receipt precedes workday");
+                var first = Cold().Read().State!;
+                var boundary = new CommandEnvelope(initial.RunId, "direct-work-no-event",
+                    first.Revision, new GameCommand(CommandKind.AdvanceBoundary));
+                var initialBytes = File.ReadAllBytes(file);
+                Assert(Cold(withRunner: false).ExecuteCore(boundary).ReasonKey ==
+                        "save.v4_core_evaluator_unavailable" &&
+                    File.ReadAllBytes(file).SequenceEqual(initialBytes),
+                    "unavailable V3 evaluator may not commit even a negative daily check");
+                Assert(Cold(x => x == "during-temp-write").ExecuteCore(boundary).Status ==
+                        EventCommitStatus.PersistenceFailed &&
+                    File.ReadAllBytes(file).SequenceEqual(initialBytes),
+                    "failed first daily check cannot move clock or rewrite save");
+                var advanced = Cold().ExecuteCore(boundary);
+                var after = Cold().Read().State!;
+                Assert(advanced.Status == EventCommitStatus.Committed &&
+                    after.EventV4!.Journal!.NoEligibleDays.Count == 1 &&
+                    after.EventV4.Journal.NoEligibleDays[0].DateIso == first.DateIso &&
+                    after.EventV4.Journal.Tickets.Count == 0 &&
+                    after.Receipts.Count == first.Receipts.Count + 1 &&
+                    after.Minute > first.Minute && after.DateIso == first.DateIso &&
+                    after.Revision == first.Revision + 2,
+                    "one negative V4 day scan and one real V3 boundary are committed");
+                var committed = File.ReadAllBytes(file);
+                Assert(Cold().ExecuteCore(boundary).Status ==
+                        EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(file).SequenceEqual(committed),
+                    "cold retry of direct work boundary never consumes additional minutes");
+                var later = Cold().ExecuteCore(new CommandEnvelope(initial.RunId,
+                    "same-day-next-boundary", after.Revision,
+                    new GameCommand(CommandKind.AdvanceBoundary)));
+                var next = Cold().Read().State!;
+                Assert(later.Status == EventCommitStatus.Committed &&
+                    next.EventV4!.Journal!.NoEligibleDays.Count == 1 &&
+                    next.Receipts.Count == first.Receipts.Count + 2,
+                    "next working step on the same checked date never rechecks the window");
+            }
+            finally
+            {
+                try { Directory.Delete(folder, true); }
+                catch (IOException) { }
+            }
+        });
         Check("M15 work-shift boundary checks daily event and resumes after cold choice", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();

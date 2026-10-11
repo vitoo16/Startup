@@ -461,3 +461,14 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-head CI pending. **Visual evidence:** Unity runtime/PlayMode not run. **Save impact:** no schema or historical fixture changes. **Known limitations:** spendable financial event rewards still fail closed pending composite V3/V4 receipt proof; no Unity runtime acceptance yet.
 - **Files changed:** EventV4CommitGateway.cs, tools/EconomicChecks/Program.cs, JOURNAL.md.
+
+
+## Increment 35 — No-event workday and missing core runner admission
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL; PR #52 Draft/unmerged.
+
+- Consolidated the existing V3 core-runner admission to run **before** any opt-in workday scan. An unconfigured evaluator must not commit a daily journal revision without being able to advance the V3 clock.
+- Added independent file-backed workday fixture where an authored event is ineligible (requires employment): checks first daily temp write fails without byte mutation, next retry commits exactly one negative-day V4 checkpoint plus one actual V3 boundary, cold duplicate ID reads without advancing time, and second same-day work step cannot draw/check events again. Also tests missing evaluator rejects before any scan.
+- **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Tests:** exact-head CI pending. **Visual evidence:** NOT RUN (source/backend only). **Save:** no wire changes and frozen fixtures untouched. **Outstanding:** spendable V3-native event payout and Unity runtime QA.
+- **Files changed:** EventV4CommitGateway.cs; tools/EconomicChecks/Program.cs; JOURNAL.md.
