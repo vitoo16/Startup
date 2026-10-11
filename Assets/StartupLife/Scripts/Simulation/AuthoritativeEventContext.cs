@@ -13,7 +13,7 @@ namespace StartupLife.Simulation
     public static class AuthoritativeEventContext
     {
         public static GameEventContext FromCore(GameState core, EventJournalState journal,
-            string? beforeTicketId = null)
+            string? beforeTicketId = null, string? beforeDateIso = null)
         {
             if (core == null || journal == null || journal.OriginDateIso.Length == 0 ||
                 core.RunId != journal.RunId)
@@ -57,6 +57,10 @@ namespace StartupLife.Simulation
                 StringComparer.Ordinal);
             foreach (var ticket in journal.Tickets)
             {
+                // A negative window includes only effects from earlier dates.
+                if (beforeDateIso != null &&
+                    string.CompareOrdinal(ticket.OpenedDateIso, beforeDateIso) >= 0)
+                    break;
                 if (ticket.Id == beforeTicketId)
                 {
                     ended = true;

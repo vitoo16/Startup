@@ -188,6 +188,11 @@ namespace StartupLife.Integration
             if (byFrontier.ContainsKey(-1) || byFrontier.Keys.Any(x => x < 0))
                 throw new ArgumentException("Event tickets need authoritative V3 receipt frontiers.");
             var visited = new HashSet<long>();
+            var checkedEmptyDates = new HashSet<string>(StringComparer.Ordinal);
+            var emptyByFrontier = journal.NoEligibleDays.GroupBy(x => x.CoreRevisionAtCheck)
+                .ToDictionary(g => g.Key, g => g.ToArray());
+            if (emptyByFrontier.Keys.Any(x => x < 0))
+                throw new ArgumentException("Empty event windows require V3 receipt frontiers.");
             var anchoredBatches = new HashSet<string>(StringComparer.Ordinal);
             var batchesByStart = journal.AdvanceBatches.GroupBy(x => x.CoreRevisionAtStart)
                 .ToDictionary(x => x.Key, x => x.ToArray());
@@ -216,6 +221,19 @@ namespace StartupLife.Integration
                             throw new ArgumentException("Batch child receipt exceeded committed target.");
                     }
                 }
+                if (emptyByFrontier.TryGetValue(frontier.Revision, out var emptyDays))
+                    foreach (var day in emptyDays)
+                    {
+                        var derived = AuthoritativeEventContext.FromCore(frontier, journal,
+                            beforeDateIso: day.DateIso);
+                        if (day.DateIso != frontier.DateIso ||
+                            day.OriginDateIso != derived.OriginDate.ToString() ||
+                            day.Stage != derived.Stage ||
+                            !day.Tags.SequenceEqual(derived.Tags))
+                            throw new ArgumentException(
+                                "Empty event window has a forged V3 receipt-frontier context.");
+                        checkedEmptyDates.Add(day.DateIso);
+                    }
                 if (!byFrontier.TryGetValue(frontier.Revision, out var tickets))
                     return;
                 // Prior resolved outcome receipts may add event-scoped eligibility
@@ -244,6 +262,11 @@ namespace StartupLife.Integration
                 string.CompareOrdinal(origin, state.DateIso) > 0 ||
                 journal.Tickets.Any(t => t.CoreRevisionAtOffer < legacyCount ||
                     t.CoreRevisionAtOffer > state.Revision) ||
+                journal.NoEligibleDays.Any(d => d.CoreRevisionAtCheck < legacyCount ||
+                    d.CoreRevisionAtCheck > state.Revision ||
+                    string.CompareOrdinal(d.DateIso, state.DateIso) > 0 ||
+                    state.Receipts.Any(r => r.CommandId == d.CommandId)) ||
+                checkedEmptyDates.Count != journal.NoEligibleDays.Count ||
                 visited.Count != byFrontier.Count ||
                 anchoredBatches.Count != journal.AdvanceBatches.Count)
                 throw new ArgumentException("Event history is not anchored to verified V3 receipt frontiers.");

@@ -11,6 +11,8 @@ namespace StartupLife.Simulation
     // with the normal GameSession receipt/CAS + versioned migration/replay proof.
     public static class EventDecisionJournal
     {
+        public const string DailyCheckPrefix = "v4day/";
+        public static string DailyCommandId(string dateIso) => DailyCheckPrefix + dateIso;
         public static EventJournalState New(string runId, uint eventRng)
         {
             if (string.IsNullOrWhiteSpace(runId) || eventRng == 0)
@@ -43,7 +45,7 @@ namespace StartupLife.Simulation
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (offerCommandId == null || coreRevisionAtOffer < -1 ||
                 (persistEmpty && (coreRevisionAtOffer < 0 ||
-                    string.IsNullOrWhiteSpace(offerCommandId))))
+                    offerCommandId != DailyCommandId(context.Date.ToString()))))
                 return Reject(source, "event.invalid_command");
             if (source.OriginDateIso.Length > 0 && source.OriginDateIso != context.OriginDate.ToString())
                 return Reject(source, "event.origin_mismatch");
@@ -218,6 +220,8 @@ namespace StartupLife.Simulation
                     !events.TryGetValue(ticket.EventId, out var definition) ||
                     definition.CategoryId != ticket.CategoryId ||
                     string.IsNullOrWhiteSpace(ticket.OfferCommandId) ||
+                    (ticket.OfferCommandId.StartsWith(DailyCheckPrefix, StringComparison.Ordinal) &&
+                     ticket.OfferCommandId != DailyCommandId(ticket.OpenedDateIso)) ||
                     ConflictsWithBatchIdentity(state, ticket.OfferCommandId) ||
                     !usedCommands.Add(ticket.OfferCommandId) ||
                     ticket.CoreRevisionAtOffer < -1 ||
@@ -268,7 +272,7 @@ namespace StartupLife.Simulation
             var lastChecked = "";
             foreach (var day in state.NoEligibleDays)
             {
-                if (day == null || string.IsNullOrWhiteSpace(day.CommandId) ||
+                if (day == null || day.CommandId != DailyCommandId(day.DateIso) ||
                     day.CommandId.Length > 256 ||
                     ConflictsWithBatchIdentity(state, day.CommandId) ||
                     !usedCommands.Add(day.CommandId) ||
@@ -294,6 +298,8 @@ namespace StartupLife.Simulation
                 if (batch == null || string.IsNullOrWhiteSpace(batch.RootCommandId) ||
                     batch.RootCommandId.Length > 256 ||
                     batch.RootCommandId.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
+                        StringComparison.Ordinal) ||
+                    batch.RootCommandId.StartsWith(DailyCheckPrefix,
                         StringComparison.Ordinal) ||
                     !usedCommands.Add(batch.RootCommandId) ||
                     batch.Mode != "day" && batch.Mode != "month")
