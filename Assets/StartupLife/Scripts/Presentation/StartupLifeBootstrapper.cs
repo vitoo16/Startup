@@ -66,7 +66,6 @@ namespace StartupLife.Presentation
                     content, GameSession.CreateRestoreValidator(), migration, staged);
                 var path = Path.Combine(UnityEngine.Application.persistentDataPath, saveFileName);
                 var commandIds = new GuidCommandIdSource();
-                IGameCommands gameCommands;
                 if (enableVerifiedEventV4)
                 {
                     var eventSerializer = new EventV4CompatibilitySerializer(
@@ -95,7 +94,7 @@ namespace StartupLife.Presentation
                         FirstPlayableEventContent.Policies, runner,
                         automaticDailyChecks: true);
                     eventCommands = new EventV4GameCommands(eventGateway, content, economics);
-                    gameCommands = eventCommands;
+                    flow = new FirstPlayableFlow(eventCommands, commandIds);
                 }
                 else
                 {
@@ -127,10 +126,10 @@ namespace StartupLife.Presentation
                         session = new GameSession(promoted.Current, content, serializer, store,
                             economicRules: economics, archivedRules: historical);
                     }
-                    gameCommands = session;
+                    // Frozen M7 production contract stays unchanged.
+                    flow = new FirstPlayableFlow(session, new GuidCommandIdSource());
                 }
 
-                flow = new FirstPlayableFlow(gameCommands, commandIds);
                 characterCreation.Bind(flow, RefreshMode);
                 lifeScreen.Bind(flow, content, workPlayback, daySummary);
                 if (eventCommands != null)
