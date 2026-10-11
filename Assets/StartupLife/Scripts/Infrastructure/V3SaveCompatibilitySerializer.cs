@@ -38,6 +38,25 @@ namespace StartupLife.Infrastructure
             return staged.SerializeVerified(state.EconomicV3);
         }
 
+        // V4-only extension: expose verified source receipt frontiers in one replay.
+        // The active V2/V3 read path still uses the original overload unchanged.
+        public LoadResult DeserializeAndValidateWithFrontiers(byte[] bytes,
+            Action<GameState> observeFrontier)
+        {
+            if (observeFrontier == null) throw new ArgumentNullException(nameof(observeFrontier));
+            SaveEnvelope envelope;
+            try { envelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(bytes); }
+            catch (Exception) { return new LoadResult(LoadStatus.Corrupt, reason:"save.invalid"); }
+            if (envelope.SchemaVersion != 3)
+                return new LoadResult(LoadStatus.Corrupt, reason:"save.schema_mismatch");
+            var loaded = staged.DeserializeVerified(bytes, observeFrontier);
+            if (loaded.Status != LoadStatus.Valid)
+                return new LoadResult(loaded.Status, reason:loaded.ReasonKey, sourceSchemaVersion:3);
+            var state = loaded.Payload!.Current!;
+            state.EconomicV3 = loaded.Payload;
+            return new LoadResult(LoadStatus.Valid, state, sourceSchemaVersion:3);
+        }
+
         public LoadResult DeserializeAndValidate(byte[] bytes)
         {
             if (bytes == null) return new LoadResult(LoadStatus.Corrupt,reason:"save.invalid");

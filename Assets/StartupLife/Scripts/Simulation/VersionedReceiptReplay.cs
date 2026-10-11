@@ -9,7 +9,7 @@ namespace StartupLife.Simulation
     // Central versioned replay authority. At the migration-only gate this proves the
     // entire v2 prefix against *frozen* source and rejects unaudited v3 suffixes.
     // Must be extended with a tested V3 evaluator BEFORE schema3 becomes live.
-    public sealed class VersionedReceiptReplay : IVersionedReceiptReplay, IVersionedV3ReceiptReplay
+    public sealed class VersionedReceiptReplay : IVersionedReceiptReplay, IVersionedV3FrontierReplay
     {
         private readonly BusinessEconomicCatalog? economicRules;
         private readonly ContentCatalog? v3Content;
@@ -80,7 +80,18 @@ namespace StartupLife.Simulation
 
 
         // One reproducible v3 suffix dispatcher, following exact frozen-v2 replay admission.
-        public void ValidateV3(EconomicV3Payload target, IHistoricalEconomicRulesResolver archives)
+        public void ValidateV3(EconomicV3Payload target, IHistoricalEconomicRulesResolver archives) =>
+            ValidateV3Core(target, archives, null);
+
+        public void ValidateV3(EconomicV3Payload target, IHistoricalEconomicRulesResolver archives,
+            Action<GameState> observeFrontier)
+        {
+            if (observeFrontier == null) throw new ArgumentNullException(nameof(observeFrontier));
+            ValidateV3Core(target, archives, observeFrontier);
+        }
+
+        private void ValidateV3Core(EconomicV3Payload target, IHistoricalEconomicRulesResolver archives,
+            Action<GameState>? observeFrontier)
         {
             if (economicRules == null) throw new NotSupportedException("V3 evaluator not registered.");
             if (target == null || target.Current == null || target.Activation == null ||
@@ -101,6 +112,9 @@ namespace StartupLife.Simulation
                 Current = state, Activation = target.Activation, EconomicRecords = financial
             };
             var evaluator = new V3EconomicReceiptProcessor(v3Content ?? content, economicRules, anchor);
+            // The archived V2 checkpoint is the first valid V3 receipt frontier.
+            // Emit only verified deterministic state, not target-provided tags.
+            observeFrontier?.Invoke(state);
             if (anchor.LegacyReceiptCount < 0 || anchor.LegacyReceiptCount > target.Current.Receipts.Count)
                 throw new ArgumentException("Invalid historical receipt frontier.");
             for (var index = checked((int)anchor.LegacyReceiptCount);
@@ -132,6 +146,7 @@ namespace StartupLife.Simulation
                 };
                 state.Receipts.Add(replayedReceipt);
                 evaluator.FinalizeReceipt(candidate, replayedReceipt);
+                observeFrontier?.Invoke(state);
             }
             financial.Validate();
             if (!Write(state).SequenceEqual(Write(target.Current)) ||

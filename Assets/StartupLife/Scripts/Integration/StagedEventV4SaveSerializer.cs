@@ -179,26 +179,41 @@ namespace StartupLife.Integration
                 throw new ArgumentException("Embedded source must be a validated schema3 checkpoint.");
             if (Digest(v3Bytes) != payload.EmbeddedV3EnvelopeSha256)
                 throw new ArgumentException("Embedded V3 checkpoint digest mismatch.");
-            var core = v3.DeserializeAndValidate(v3Bytes);
+            // Before reading user-provided receipts, validate journal identities,
+            // content eligibility and RNG using the existing deterministic selector.
+            EventJournalReplay.Validate(payload.Journal, definitions, policies);
+            var journal = payload.Journal;
+            var byFrontier = journal.Tickets.GroupBy(t => t.CoreRevisionAtOffer)
+                .ToDictionary(g => g.Key, g => g.ToArray());
+            if (byFrontier.ContainsKey(-1) || byFrontier.Keys.Any(x => x < 0))
+                throw new ArgumentException("Event tickets need authoritative V3 receipt frontiers.");
+            var visited = new HashSet<long>();
+            var core = v3.DeserializeAndValidateWithFrontiers(v3Bytes, frontier =>
+            {
+                if (!byFrontier.TryGetValue(frontier.Revision, out var tickets))
+                    return;
+                var expected = AuthoritativeEventContext.FromCore(frontier, journal);
+                foreach (var ticket in tickets)
+                    if (ticket.OpenedDateIso != frontier.DateIso ||
+                        ticket.Stage != expected.Stage ||
+                        !ticket.Tags.SequenceEqual(expected.Tags))
+                        throw new ArgumentException(
+                            "Historical event context differs from its verified V3 receipt prefix.");
+                visited.Add(frontier.Revision);
+            });
             if (core.Status == LoadStatus.UnsupportedContent)
                 throw new ContentCompatibilityException(core.Reason, "Embedded V3 content is unavailable.");
             if (core.Status != LoadStatus.Valid || core.State == null)
                 throw new ArgumentException("Embedded V3 checkpoint failed authoritative replay.");
             var state = core.State;
             var origin = state.EconomicV3?.Activation?.MigratedAtDateIso;
-            if (string.IsNullOrWhiteSpace(origin) || origin != payload.Journal.OriginDateIso ||
+            var legacyCount = state.EconomicV3?.Activation?.LegacyReceiptCount ?? -1;
+            if (string.IsNullOrWhiteSpace(origin) || origin != journal.OriginDateIso ||
                 string.CompareOrdinal(origin, state.DateIso) > 0 ||
-                payload.Journal.Tickets.Any(t => t.CoreRevisionAtOffer < 0 ||
-                    t.CoreRevisionAtOffer > state.Revision))
-                throw new ArgumentException("Event history is not anchored to a real V3 receipt frontier.");
-            // For the most recent V3 frontier, the full state is still available.
-            // Historical offers need a receipt-prefix proof in the next integration gate.
-            foreach (var ticket in payload.Journal.Tickets.Where(t => t.CoreRevisionAtOffer == state.Revision))
-            {
-                var expected = AuthoritativeEventContext.FromCore(state, payload.Journal);
-                if (ticket.Stage != expected.Stage || !ticket.Tags.SequenceEqual(expected.Tags))
-                    throw new ArgumentException("Event offer context differs from the verified V3 state.");
-            }
+                journal.Tickets.Any(t => t.CoreRevisionAtOffer < legacyCount ||
+                    t.CoreRevisionAtOffer > state.Revision) ||
+                visited.Count != byFrontier.Count)
+                throw new ArgumentException("Event history is not anchored to verified V3 receipt frontiers.");
             if (state.RunId != payload.Journal.RunId ||
                 state.EventRng != payload.Journal.InitialEventRng ||
                 payload.Journal.Tickets.Any(t => string.CompareOrdinal(t.OpenedDateIso, state.DateIso) > 0) ||
