@@ -163,6 +163,11 @@ namespace StartupLife.Integration
             var current = read.State!;
             if (!ValidIdentity(runId, commandId, current))
                 return Reject(current, "event.invalid_command");
+            // Transient genesis cannot be made durable by an event offer before
+            // the player's first authenticated CreateCharacter receipt.
+            if (initialCheckpoint != null && current.Revision == 0 &&
+                string.IsNullOrEmpty(current.Name))
+                return Reject(current, "event.character_required");
             if (commandId.StartsWith(EventDecisionJournal.DailyCheckPrefix,
                     StringComparison.Ordinal) &&
                 (!persistEmpty || commandId !=
@@ -435,6 +440,10 @@ namespace StartupLife.Integration
                     : Reject(current, "command.id_conflict");
             if (current.Revision != command.ExpectedRevision)
                 return Reject(current, "command.stale_state");
+            if (initialCheckpoint != null && current.Revision == 0 &&
+                string.IsNullOrEmpty(current.Name) &&
+                command.Command.Kind != CommandKind.CreateCharacter)
+                return Reject(current, "event.character_required");
             if (automaticDailyChecks && !batchChild &&
                 command.Command.Kind == CommandKind.AdvanceBoundary)
                 return Reject(current, "event.advance_batch_required");

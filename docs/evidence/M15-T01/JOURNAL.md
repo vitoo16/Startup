@@ -429,3 +429,12 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-head CI required. **Visual evidence:** Unity runtime/device NOT RUN. **Save impact:** no schema changes and frozen V2/V3 fixtures untouched; first V4 on-disk artifact is already a verified command receipt, not an untracked seed. **Known limitations:** spendable monetary/XP event payouts still blocked pending V3/V4 receipt coupling.
 - **Files changed:** EventV4CommitGateway.cs, StartupLifeBootstrapper.cs, tools/EconomicChecks/Program.cs, JOURNAL.md.
+
+
+## Increment 32 — Fresh V4 genesis admission guard
+
+**Owner model:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL; PR #52 Draft/unmerged.
+
+- Added a guard specific to transient new-run V4 revision zero: manual event `Offer` and any core command other than `CreateCharacter` return `event.character_required` with no disk write. Prevents an uncreated character's seed from being persisted by an event-only transaction or playback acknowledgement.
+- Extended the same file-backed genesis test with negative admission assertions. Historical V2→V4 tests that intentionally offer during replay experiments remain unchanged because they do not use transient genesis.
+- **Skills:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler. **Tests:** exact-head CI pending. **Visual:** NOT RUN. **Save:** no schema changes. **Remaining:** spendable V3-native cash/XP event payouts, Unity runtime/device QA. **Files:** EventV4CommitGateway.cs, EconomicChecks/Program.cs, JOURNAL.md.

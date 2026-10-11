@@ -2024,6 +2024,14 @@ internal static class Program
                 Assert(initial.Revision == 0 && initial.Name.Length == 0 &&
                     screen.Snapshot().Revision == 0 &&
                     !File.Exists(path), "reading first-run V4 cannot persist a seed");
+                Assert(Cold().Offer(seed.RunId, "premature-genesis-offer", 0).ReasonKey ==
+                        "event.character_required" &&
+                    Cold().ExecuteCore(new CommandEnvelope(seed.RunId,
+                        "premature-playback", 0,
+                        new GameCommand(CommandKind.AcknowledgePlayback))).ReasonKey ==
+                        "event.character_required" &&
+                    !File.Exists(path),
+                    "only a real character receipt may persist the fresh V4 seed");
                 var create = new CommandEnvelope(seed.RunId, "fresh-v4-create", 0,
                     new GameCommand(CommandKind.CreateCharacter, "fresh", 25,
                         "V4 Founder", "base.female"));
