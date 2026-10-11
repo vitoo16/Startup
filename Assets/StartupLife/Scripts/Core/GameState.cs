@@ -14,6 +14,9 @@ namespace StartupLife.Core
         // serialization, which must preserve the byte-exact historical v2 DTO.
         [System.Runtime.Serialization.IgnoreDataMember]
         public EconomicV3Payload? EconomicV3 { get; set; }
+        // Runtime-only v4 backing association. Never touches frozen GameState wire bytes.
+        [System.Runtime.Serialization.IgnoreDataMember]
+        public EventV4Payload? EventV4 { get; set; }
         public string ContentVersion { get; set; } = "";
         public string RunId { get; set; } = "";
         public ulong Seed { get; set; }
