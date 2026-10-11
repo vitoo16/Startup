@@ -1,0 +1,177 @@
+{
+  "schema": "startup-life.composition.v1",
+  "style_id": "vietnam_cozy_chibi_cutout_v1",
+  "status": "unverified_until_unity_beautycell",
+  "camera": {
+    "projection": "orthographic",
+    "ortho_size": 5,
+    "reference_resolution": [
+      1080,
+      1920
+    ],
+    "target_aspect": "9:16",
+    "pixels_per_unit": 100
+  },
+  "layers": [
+    "background",
+    "far",
+    "midground",
+    "gameplay",
+    "foreground",
+    "ui"
+  ],
+  "framing": {
+    "focal_path": [
+      "avatar_and_active_action",
+      "next_progress_or_decision",
+      "ambient_world_flavor"
+    ],
+    "character_vertical_screen_share_pct": [
+      20,
+      33
+    ],
+    "negative_space_for_ui_pct_min": 22,
+    "foreground_occlusion_of_actor_pct_max": 8
+  },
+  "shape_rhythm": {
+    "big": 2,
+    "medium": 5,
+    "small_max": 11,
+    "rule": "readable at 360x640; decorative elements subordinate to avatar"
+  },
+  "color_zones": {
+    "gameplay_highest_contrast": true,
+    "background_low_saturation": true,
+    "ui_panel": "#FFFBF2",
+    "ui_ink": "#2D3D39",
+    "ui_accent": "#3A6C58"
+  },
+  "shadow_and_contact": {
+    "key_light_direction": "upper_left_soft",
+    "contact_shadows": "soft subtle under furniture and feet",
+    "no_hard_pasted_sprites": true
+  },
+  "scenes": [
+    {
+      "id": "golden-character",
+      "role": "avatar",
+      "camera_profile": "ortho_portrait",
+      "locality": {
+        "purpose": "personal avatar across work and founder scenes",
+        "socioeconomic_context": "urban young adult",
+        "environment_type": "neutral transparent turnaround",
+        "local_anchors": [
+          "contemporary Vietnamese casual-smart layering",
+          "plausible Vietnamese hairstyle and everyday accessories"
+        ],
+        "prohibited_stereotypes": [
+          "fixed ethnic costume",
+          "unrealistic symbolic props"
+        ],
+        "text_strategy": "no baked text"
+      },
+      "visual_density": "low"
+    },
+    {
+      "id": "golden-home",
+      "role": "night-home-desk",
+      "camera_profile": "ortho_portrait",
+      "locality": {
+        "purpose": "evening study/startup routine",
+        "socioeconomic_context": "modest urban rental or family room",
+        "environment_type": "contemporary Vietnamese bedroom/desk",
+        "local_anchors": [
+          "small practical wall fan or air conditioner",
+          "compact desk and warm task lamp",
+          "motorbike helmet on wall hook"
+        ],
+        "prohibited_stereotypes": [
+          "lantern-theme collage",
+          "old-town tourism interior"
+        ],
+        "text_strategy": "no baked signage, TMP for any interface text"
+      },
+      "visual_density": "medium"
+    },
+    {
+      "id": "golden-office",
+      "role": "developer-career",
+      "camera_profile": "ortho_portrait",
+      "locality": {
+        "purpose": "work shifts and profession scenes",
+        "socioeconomic_context": "modern urban office",
+        "environment_type": "Vietnam software office",
+        "local_anchors": [
+          "workstation with shared meeting area",
+          "water jug and simple office supplies",
+          "helmet rack by entry"
+        ],
+        "prohibited_stereotypes": [
+          "futuristic cyberpunk office",
+          "random cultural ornaments"
+        ],
+        "text_strategy": "no baked posters with readable text"
+      },
+      "visual_density": "medium"
+    },
+    {
+      "id": "golden-business",
+      "role": "coffee-kiosk",
+      "camera_profile": "ortho_portrait",
+      "locality": {
+        "purpose": "daytime founder-operated kiosk with one fixed helper",
+        "socioeconomic_context": "small urban sidewalk service stall",
+        "environment_type": "Vietnam coffee kiosk",
+        "local_anchors": [
+          "small stainless prep counter and takeaway cup stack",
+          "merchant QR stand with blank face",
+          "parking helmet near compact stall"
+        ],
+        "prohibited_stereotypes": [
+          "famous logo recreation",
+          "generic Japanese coffeehouse",
+          "stereotypical festival decor"
+        ],
+        "text_strategy": "signboard left blank; overlay localized text in TMP"
+      },
+      "visual_density": "medium"
+    },
+    {
+      "id": "golden-life-ui",
+      "role": "gameplay-overlay",
+      "camera_profile": "ortho_portrait",
+      "locality": {
+        "purpose": "five-tab profile, skills, finances, business and career decisions",
+        "socioeconomic_context": "Vietnam local currency and daily life",
+        "environment_type": "uGUI safe area overlay",
+        "local_anchors": [
+          "VND amounts with diacritics",
+          "locally natural button wording"
+        ],
+        "prohibited_stereotypes": [
+          "decorative national flags",
+          "fake Vietnamese text in images"
+        ],
+        "text_strategy": "NotoSansVietnamese TMP and FirstPlayableUI String Table; no baked glyphs"
+      },
+      "visual_density": "low"
+    }
+  ],
+  "qa_screens": [
+    360,
+    390,
+    430
+  ],
+  "qa_screen_heights": [
+    640,
+    844,
+    932
+  ],
+  "acceptance": {
+    "must_test_notched_safe_area": true,
+    "must_test_360x640": true,
+    "must_capture_golden_beautycell": true,
+    "character_rig_proof_required": true,
+    "unverified": true
+  }
+}
