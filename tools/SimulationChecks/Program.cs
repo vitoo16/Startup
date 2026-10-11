@@ -65,7 +65,9 @@ internal static class Program
         });
         Check("M15 event cooldown is inclusive at the eligible boundary", () =>
         {
-            var def = Event("supplier-offer", 1, 1, 3, 1, 0, Array.Empty<string>(), Array.Empty<string>());
+            var def = new GameEventDefinition("supplier-offer", "supplier", 2026, 1, 1, 3, 1, 1, 0,
+                Array.Empty<string>(), Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("continue", "event.continue", "outcome.continue") });
             var origin = new SimDate(2026, 10, 1);
             var occurrence = new EventOccurrence("supplier-offer", 1, origin);
             True(!GameEventSelector.IsEligible(def, new GameEventContext(origin, origin.AddDays(2), 1,
