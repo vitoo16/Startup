@@ -1145,9 +1145,9 @@ internal static class Program
                 var loaded = gateway.Read();
                 Assert(loaded.Status == LoadStatus.Valid &&
                     loaded.State!.PendingChoiceId == offered.TicketId &&
-                    loaded.State.EventRng != initial.EventRng,
+                    loaded.State!.EventRng != initial.EventRng,
                     "cold read must expose pending ticket and advanced event RNG");
-                var payload = loaded.State.EventV4!;
+                var payload = loaded.State!.EventV4!;
                 Assert(Convert.FromBase64String(payload.EmbeddedV3EnvelopeBase64).Length > 0 &&
                     loaded.State!.SchedulerRng == initial.SchedulerRng,
                     "V3 economic checkpoint and career RNG must remain sealed");
