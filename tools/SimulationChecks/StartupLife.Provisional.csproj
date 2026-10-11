@@ -12,5 +12,6 @@
     <ProjectReference Include="StartupLife.Simulation.csproj" />
     <ProjectReference Include="StartupLife.Application.csproj" />
     <ProjectReference Include="StartupLife.Infrastructure.csproj" />
+    <ProjectReference Include="StartupLife.Integration.csproj" />
   </ItemGroup>
 </Project>

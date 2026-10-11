@@ -1,0 +1,12 @@
+{
+  "name": "StartupLife.Integration",
+  "rootNamespace": "StartupLife.Integration",
+  "references": [
+    "StartupLife.Core",
+    "StartupLife.Simulation",
+    "StartupLife.Application",
+    "StartupLife.Infrastructure"
+  ],
+  "autoReferenced": true,
+  "noEngineReferences": true
+}

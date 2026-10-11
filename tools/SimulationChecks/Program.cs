@@ -11,6 +11,7 @@ using StartupLife.Simulation;
 using StartupLife.Infrastructure;
 using StartupLife.Application;
 using StartupLife.Content;
+using StartupLife.Integration;
 
 internal static class Program
 {

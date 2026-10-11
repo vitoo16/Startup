@@ -7,7 +7,7 @@ using StartupLife.Core;
 using StartupLife.Infrastructure;
 using StartupLife.Simulation;
 
-namespace StartupLife.Application
+namespace StartupLife.Integration
 {
     public sealed class StagedEventV4LoadResult
     {
