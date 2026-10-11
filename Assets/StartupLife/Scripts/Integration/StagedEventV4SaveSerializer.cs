@@ -112,11 +112,16 @@ namespace StartupLife.Integration
                 incoming.State.Revision != core.Revision ||
                 incoming.State.EventRng != core.EventRng)
                 throw new ArgumentException("Mismatched V3 migration source.");
+            var activation = incoming.State.EconomicV3?.Activation;
+            if (activation == null || string.IsNullOrWhiteSpace(activation.MigratedAtDateIso))
+                throw new ArgumentException("A verified V3 migration origin is required.");
+            var journal = EventDecisionJournal.New(core.RunId, core.EventRng);
+            journal.OriginDateIso = activation.MigratedAtDateIso;
             return new EventV4Payload
             {
                 EmbeddedV3EnvelopeBase64 = Convert.ToBase64String(verifiedV3Envelope),
                 EmbeddedV3EnvelopeSha256 = Digest(verifiedV3Envelope),
-                Journal = EventDecisionJournal.New(core.RunId, core.EventRng)
+                Journal = journal
             };
         }
 
@@ -180,6 +185,20 @@ namespace StartupLife.Integration
             if (core.Status != LoadStatus.Valid || core.State == null)
                 throw new ArgumentException("Embedded V3 checkpoint failed authoritative replay.");
             var state = core.State;
+            var origin = state.EconomicV3?.Activation?.MigratedAtDateIso;
+            if (string.IsNullOrWhiteSpace(origin) || origin != payload.Journal.OriginDateIso ||
+                string.CompareOrdinal(origin, state.DateIso) > 0 ||
+                payload.Journal.Tickets.Any(t => t.CoreRevisionAtOffer < 0 ||
+                    t.CoreRevisionAtOffer > state.Revision))
+                throw new ArgumentException("Event history is not anchored to a real V3 receipt frontier.");
+            // For the most recent V3 frontier, the full state is still available.
+            // Historical offers need a receipt-prefix proof in the next integration gate.
+            foreach (var ticket in payload.Journal.Tickets.Where(t => t.CoreRevisionAtOffer == state.Revision))
+            {
+                var expected = AuthoritativeEventContext.FromCore(state, payload.Journal);
+                if (ticket.Stage != expected.Stage || !ticket.Tags.SequenceEqual(expected.Tags))
+                    throw new ArgumentException("Event offer context differs from the verified V3 state.");
+            }
             if (state.RunId != payload.Journal.RunId ||
                 state.EventRng != payload.Journal.InitialEventRng ||
                 payload.Journal.Tickets.Any(t => string.CompareOrdinal(t.OpenedDateIso, state.DateIso) > 0) ||

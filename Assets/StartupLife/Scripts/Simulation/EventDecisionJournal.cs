@@ -20,11 +20,15 @@ namespace StartupLife.Simulation
 
         public static EventJournalResult Offer(EventJournalState source,
             IReadOnlyList<GameEventDefinition> definitions, IReadOnlyList<EventCategoryPolicy> policies,
-            GameEventContext context, long expectedRevision, string offerCommandId = "")
+            GameEventContext context, long expectedRevision, string offerCommandId = "",
+            long coreRevisionAtOffer = -1)
         {
             var policyIndex = Validate(source, definitions, policies);
             if (context == null) throw new ArgumentNullException(nameof(context));
-            if (offerCommandId == null) return Reject(source, "event.invalid_command");
+            if (offerCommandId == null || coreRevisionAtOffer < -1)
+                return Reject(source, "event.invalid_command");
+            if (source.OriginDateIso.Length > 0 && source.OriginDateIso != context.OriginDate.ToString())
+                return Reject(source, "event.origin_mismatch");
             // Explicit operation identities are replayable even after a successful
             // resolve or a stale retry. Unnamed legacy planner calls remain non-idempotent.
             if (offerCommandId.Length > 0)
@@ -72,6 +76,7 @@ namespace StartupLife.Simulation
                 OriginDateIso = context.OriginDate.ToString(),
                 Stage = context.Stage,
                 Tags = context.Tags.ToList(),
+                CoreRevisionAtOffer = coreRevisionAtOffer,
                 OfferCommandId = offerCommandId.Length > 0
                     ? offerCommandId : source.RunId + "/event-offer/" + context.Date.ToString()
             });
@@ -125,6 +130,8 @@ namespace StartupLife.Simulation
                 string.IsNullOrWhiteSpace(state.RunId) || state.EventRng == 0 || state.InitialEventRng == 0 ||
                 state.Tickets == null || state.PendingTicketId == null ||
                 state.NextTicketSequence != state.Tickets.Count + 1L ||
+                (state.OriginDateIso.Length > 0 &&
+                    EventSelectionHistory.Parse(state.OriginDateIso).ToString() != state.OriginDateIso) ||
                 state.Revision < 0 || state.Revision > 2L * state.Tickets.Count ||
                 (state.Tickets.Count == 0 && state.EventRng != state.InitialEventRng))
                 throw new ArgumentException("Invalid event journal or catalog.");
@@ -150,6 +157,7 @@ namespace StartupLife.Simulation
                     definition.CategoryId != ticket.CategoryId ||
                     string.IsNullOrWhiteSpace(ticket.OfferCommandId) ||
                     !usedCommands.Add(ticket.OfferCommandId) ||
+                    ticket.CoreRevisionAtOffer < -1 ||
                     string.IsNullOrWhiteSpace(ticket.OpenedDateIso) ||
                     (lastDay.Length > 0 && string.CompareOrdinal(lastDay, ticket.OpenedDateIso) >= 0))
                     throw new ArgumentException("Invalid event ticket identity, content or chronology.");
@@ -159,6 +167,7 @@ namespace StartupLife.Simulation
                     Parse(ticket.OriginDateIso).ToString() != ticket.OriginDateIso ||
                     ticket.OriginDateIso.CompareTo(ticket.OpenedDateIso) > 0 ||
                     (originDay.Length > 0 && originDay != ticket.OriginDateIso) ||
+                    (state.OriginDateIso.Length > 0 && state.OriginDateIso != ticket.OriginDateIso) ||
                     ticket.Stage < 0 || ticket.Tags == null ||
                     ticket.Tags.Any(x => !ContentId.IsValid(x)) ||
                     !ticket.Tags.SequenceEqual(ticket.Tags.Distinct(StringComparer.Ordinal)

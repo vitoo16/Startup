@@ -57,28 +57,55 @@ namespace StartupLife.Integration
 
         public LoadResult Read() => store.Read();
 
+        // Production API: the client sends only command identity and global CAS
+        // revision. All event eligibility inputs come from the verified V3 save.
+        public EventCommitResult Offer(string runId, string commandId, long expectedRevision) =>
+            OfferInternal(runId, commandId, expectedRevision, null);
+
+        // Compatibility API for source-only planner callers: supplied context is
+        // ASSERTED against authoritative state; it is never trusted as input.
         public EventCommitResult Offer(string runId, string commandId, long expectedRevision,
-            GameEventContext context)
+            GameEventContext context) =>
+            OfferInternal(runId, commandId, expectedRevision, context);
+
+        private EventCommitResult OfferInternal(string runId, string commandId,
+            long expectedRevision, GameEventContext? supplied)
         {
             var read = Read();
             if (!Valid(read)) return LoadFailure(read);
             var current = read.State!;
             if (!ValidIdentity(runId, commandId, current))
                 return Reject(current, "event.invalid_command");
-            if (context == null || current.Date != context.Date)
-                return Reject(current, "event.date_mismatch");
             if (current.Receipts.Any(x => x.CommandId == commandId))
                 return Reject(current, "event.command_id_conflict");
 
-            var payload = current.EventV4!;
-            // Always perform journal command ID lookup before checking stale client
-            // revision, so a successful-but-unacknowledged write is a safe retry.
-            var result = EventDecisionJournal.Offer(payload.Journal!, definitions, policies,
-                context, payload.Journal!.Revision, commandId);
-            if (result.Status == EventJournalStatus.AlreadyCommitted)
-                return FromPlanner(result, current.Revision);
+            var journal = current.EventV4!.Journal!;
+            var prior = journal.Tickets.FirstOrDefault(t => t.OfferCommandId == commandId);
+            if (prior != null)
+            {
+                if (supplied != null && (prior.OpenedDateIso != supplied.Date.ToString() ||
+                    prior.OriginDateIso != supplied.OriginDate.ToString() ||
+                    prior.Stage != supplied.Stage || !prior.Tags.SequenceEqual(supplied.Tags)))
+                    return Reject(current, "event.command_id_conflict");
+                return new EventCommitResult(EventCommitStatus.AlreadyCommitted, "",
+                    current.Revision, prior.Id);
+            }
+            // Reject before evaluating any author-controlled tag, stage or origin.
+            var context = AuthoritativeEventContext.FromCore(current, journal);
+            if (supplied != null)
+            {
+                if (supplied.Date != current.Date)
+                    return Reject(current, "event.date_mismatch");
+                if (context.OriginDate != supplied.OriginDate ||
+                    context.Stage != supplied.Stage ||
+                    !context.Tags.SequenceEqual(supplied.Tags))
+                    return Reject(current, "event.context_not_authoritative");
+            }
             if (current.Revision != expectedRevision)
                 return Reject(current, "event.stale_revision");
+            var innerRevision = checked(current.Revision - journal.Revision);
+            var result = EventDecisionJournal.Offer(journal, definitions, policies,
+                context, journal.Revision, commandId, innerRevision);
             if (result.Status != EventJournalStatus.Offered)
                 return FromPlanner(result, current.Revision);
             return Commit(current, result);

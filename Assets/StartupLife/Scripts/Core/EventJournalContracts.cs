@@ -21,13 +21,15 @@ namespace StartupLife.Core
         [DataMember(Order = 8)] public int Stage { get; set; }
         [DataMember(Order = 9)] public List<string> Tags { get; set; } = new List<string>();
         [DataMember(Order = 10)] public string OfferCommandId { get; set; } = "";
+        // Inner V3 receipt frontier when the authoritative game state opened this event.
+        [DataMember(Order = 11)] public long CoreRevisionAtOffer { get; set; } = -1;
 
         public EventTicketRecord Copy() => new EventTicketRecord
         {
             Id = Id, EventId = EventId, CategoryId = CategoryId, OpenedDateIso = OpenedDateIso,
             ChoiceId = ChoiceId, ResolutionCommandId = ResolutionCommandId, OutcomeId = OutcomeId,
             OriginDateIso = OriginDateIso, Stage = Stage, Tags = new List<string>(Tags),
-            OfferCommandId = OfferCommandId
+            OfferCommandId = OfferCommandId, CoreRevisionAtOffer = CoreRevisionAtOffer
         };
     }
 
@@ -41,11 +43,14 @@ namespace StartupLife.Core
         [DataMember(Order = 4)] public string PendingTicketId { get; set; } = "";
         [DataMember(Order = 5)] public List<EventTicketRecord> Tickets { get; set; } = new List<EventTicketRecord>();
         [DataMember(Order = 6)] public uint InitialEventRng { get; set; }
+        // Run-specific V4 activation date from verified V3 migration anchor.
+        [DataMember(Order = 7)] public string OriginDateIso { get; set; } = "";
 
         public EventJournalState Copy() => new EventJournalState
         {
             RunId = RunId, Revision = Revision, NextTicketSequence = NextTicketSequence,
             EventRng = EventRng, InitialEventRng = InitialEventRng, PendingTicketId = PendingTicketId,
+            OriginDateIso = OriginDateIso,
             Tickets = Tickets.ConvertAll(ticket => ticket.Copy())
         };
     }
