@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using StartupLife.Core;
 using StartupLife.Application;
+using StartupLife.Integration;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -40,6 +41,16 @@ namespace StartupLife.Presentation
         private BusinessManagementOverlay businessOverlay;
         private Func<LifeDashboardSnapshot> lifeDashboardReader;
         private LifeDashboardOverlay lifeDashboard;
+        private EventChoiceOverlay eventChoiceOverlay;
+
+        // Deliberately opt-in: V3 production runs have no pending-choice journal.
+        // The same V4 gateway must also back the active IGameCommands flow.
+        public void BindEventChoices(EventV4CommitGateway gateway, ICommandIdSource commandIds)
+        {
+            var font = cashValue != null ? cashValue : GetComponentInChildren<TMP_Text>(true);
+            eventChoiceOverlay = EventChoiceOverlay.Install(this, gateway, commandIds, font);
+            Refresh();
+        }
 
         public void AttachBusinessReadouts(TMP_Text financeText, TMP_Text portfolioText)
         {
@@ -199,6 +210,7 @@ namespace StartupLife.Presentation
             if (resignButton) resignButton.interactable = employed;
             businessOverlay?.Refresh();
             lifeDashboard?.Refresh();
+            eventChoiceOverlay?.Refresh();
         }
 
         public void AcceptDeveloper()
