@@ -161,6 +161,10 @@ namespace StartupLife.Simulation
             var definition = definitions.Single(x => x.Id == ticket.EventId);
             var selectedChoice = definition.Choices.FirstOrDefault(x => x.Id == choiceId);
             if (selectedChoice == null) return Reject(source, "event.choice_invalid");
+            // The planner must not produce a resolved journal which the cold
+            // validator rejects: no V3-native reward receipt is available yet.
+            if (selectedChoice.Reward != null)
+                return Reject(source, "event.reward_processor_unavailable");
 
             var candidate = source.Copy();
             var pending = candidate.Tickets[candidate.Tickets.Count - 1];

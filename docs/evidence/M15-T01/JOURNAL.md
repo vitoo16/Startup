@@ -367,3 +367,14 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Save impact:** None to frozen V2/V3 and current V4 wire; authored reward data is not persisted/applied. Historical paid-event catalog migration and V3-native reward command still NOT IMPLEMENTED.
 - **Known limitations:** Real spendable cash/XP outcomes remain blocked until both GameSession receipt replay and V4 cause binding verify exactly once. Production V4 bootstrap/Unity runtime QA remain deferred.
 - **Files changed:** EventDefinitions.cs, EventDecisionJournal.cs, EventV4CommitGateway.cs, tools/SimulationChecks/Program.cs, tools/EconomicChecks/Program.cs, this journal.
+
+
+## Increment 26 — One reward admission policy in the event planner
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL; PR #52 Draft/unmerged.
+
+- Moved unauthenticated monetary/XP choice rejection from the V4 gateway down to `EventDecisionJournal.Resolve`, the single planner already responsible for every event outcome transition. The adapter now only maps planner statuses and commits valid transitions; no duplicate reward gates. The unchanged journal validator still fails closed if a previously tag-only committed choice acquires a reward through a catalog edit.
+- Expanded engine-free SimulationChecks to prove direct planner rejection keeps revision and pending identity stable while a tag-only fallback continues to resolve.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Tests:** exact-head CI pending. **Visual:** NOT RUN. **Save impact:** none, V2/V3 and V4 wire untouched. **Known limitations:** economic reward receipt and gameplay bootstrap remain future increments.
+- **Files changed:** Simulation/EventDecisionJournal.cs; Integration/EventV4CommitGateway.cs; tools/SimulationChecks/Program.cs; JOURNAL.md.

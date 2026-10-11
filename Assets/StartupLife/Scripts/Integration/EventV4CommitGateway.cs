@@ -211,14 +211,6 @@ namespace StartupLife.Integration
                 return Reject(current, "event.stale_revision");
             if (result.Status != EventJournalStatus.Resolved)
                 return FromPlanner(result, current.Revision);
-            // An authored reward is NOT an economic transaction. Do not
-            // persist a "resolved" ticket while silently omitting V3 money/XP,
-            // and never mutate cash outside the V3 receipt evaluator.
-            var resolved = result.Next.Tickets.Single(x => x.Id == ticketId);
-            var authored = definitions.Single(x => x.Id == resolved.EventId)
-                .Choices.Single(x => x.Id == choiceId);
-            if (authored.Reward != null)
-                return Reject(current, "event.reward_processor_unavailable");
             return Commit(current, result);
         }
 

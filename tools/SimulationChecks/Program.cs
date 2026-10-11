@@ -61,6 +61,25 @@ internal static class Program
             var unchanged = new EventChoiceDefinition("decline", "event.decline",
                 "outcome.decline");
             True(unchanged.Reward == null && unchanged.GrantedTags.Count == 0);
+            var defs = new[] { new GameEventDefinition("bonus-day", "career", 2026,
+                0, 1, 0, 1, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { rewarded, unchanged }) };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 5, 1) };
+            var origin = new SimDate(2026, 10, 1);
+            var offered = EventDecisionJournal.Offer(
+                EventDecisionJournal.New("intent-only", 1), defs, policies,
+                new GameEventContext(origin, origin, 0, Array.Empty<string>(),
+                    Array.Empty<EventOccurrence>()), 0, "offer-reward", 0);
+            Equal(EventJournalStatus.Offered, offered.Status);
+            var rejected = EventDecisionJournal.Resolve(offered.Next, defs, policies,
+                offered.Next.Revision, "resolve-reward", offered.TicketId, "accept");
+            Equal(EventJournalStatus.Rejected, rejected.Status);
+            Equal("event.reward_processor_unavailable", rejected.ReasonKey);
+            Equal(offered.Next.Revision, rejected.Next.Revision);
+            Equal(offered.TicketId, rejected.Next.PendingTicketId);
+            Equal(EventJournalStatus.Resolved,
+                EventDecisionJournal.Resolve(offered.Next, defs, policies,
+                    offered.Next.Revision, "resolve-tag", offered.TicketId, "decline").Status);
         });
         Check("M15 ineligible events never consume RNG, with window, tags, stage and max-use gates", () =>
         {
