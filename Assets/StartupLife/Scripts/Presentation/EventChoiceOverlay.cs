@@ -31,6 +31,7 @@ namespace StartupLife.Presentation
         {
             internal readonly Button Button;
             internal readonly LocalizedKeyLabel Label;
+            internal string ChoiceId = "";
 
             internal ChoiceButton(Button button, LocalizedKeyLabel label)
             {
@@ -84,7 +85,9 @@ namespace StartupLife.Presentation
                     uncertainCommand = "";
                     BindChoices(current);
                 }
-                status.SetKey("event.choice.prompt");
+                status.SetKey(uncertainCommand.Length > 0 &&
+                    uncertainTicket == current.TicketId
+                        ? "event.choice.retry" : "event.choice.prompt");
                 SetButtonsEnabled(true);
             }
             catch (Exception error)
@@ -151,6 +154,7 @@ namespace StartupLife.Presentation
                 if (i == buttons.Count) buttons.Add(CreateChoiceButton());
                 var slot = buttons[i];
                 var id = choice.Choices[i].Id;
+                slot.ChoiceId = id;
                 slot.Button.gameObject.SetActive(true);
                 slot.Button.onClick.RemoveAllListeners();
                 slot.Button.onClick.AddListener(() => Resolve(id));
@@ -164,7 +168,8 @@ namespace StartupLife.Presentation
         {
             foreach (var button in buttons)
                 if (button.Button.gameObject.activeSelf)
-                    button.Button.interactable = enabled;
+                    button.Button.interactable = enabled &&
+                        (uncertainCommand.Length == 0 || button.ChoiceId == uncertainChoice);
         }
 
         private void Build()
