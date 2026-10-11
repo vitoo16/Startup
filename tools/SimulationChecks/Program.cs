@@ -92,7 +92,7 @@ internal static class Program
             var bonus = new EventChoiceDefinition("take-bonus", "event.take",
                 "outcome.take", reward: new EventChoiceReward(120000, 50));
             var cost = new EventChoiceDefinition("pay-cost", "event.pay",
-                "outcome.pay", reward: new EventChoiceReward(-150000, 0));
+                "outcome.pay", reward: new EventChoiceReward(-250000, 0));
             var fallback = new EventChoiceDefinition("skip", "event.skip",
                 "outcome.skip");
             var defs = new[] { new GameEventDefinition("cash-offer", "life", 2026,
