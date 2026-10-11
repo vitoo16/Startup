@@ -278,3 +278,16 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Save impact:** None; no wire/schema change or frozen historical fixture edit.
 - **Known limitations:** Staged V4 only, no production bootstrap cutover, automatic event-day trigger, spendable event cash/XP or production Unity proof.
 - **Files changed:** Integration/EventV4CommitGateway.cs, tools/EconomicChecks/Program.cs, docs/evidence/M15-T01/JOURNAL.md.
+
+
+## Increment 18 — Remove duplicate V4 event replay during validation
+
+**Owner:** GPT-6 Technical Director. **Milestone:** M15-T01 PARTIAL, PR #52 Draft/unmerged.
+
+- `StagedEventV4SaveSerializer.ValidatePayload` previously called the full deterministic `EventJournalReplay.Validate` twice per V4 save validation: once before V3 cold receipt/frontier admission and again after it. Removed only the second, provably redundant invocation. The intervening frontier observer, `EventAdvanceBatchHistory.Validate`, and the sealed source validation are read-only; the journal is not modified between the checks. This avoids recomputing weighted event selection and occurrence/category indexes twice on every read/write.
+- Added an EconomicChecks adversarial fixture mutation changing a persisted offered `EventId` to a different authored event that was not selected; the single surviving event replay must still reject the corrupted V4 payload. Earlier context/tag/receipt/RNG corruption and real-file save tests remain intact, with **no lowered validator thresholds**.
+- **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler; repository workflow reviewed.
+- **Tests:** Exact-head engine-free CI pending. No timed device performance claim; removed duplicate full replay by inspection and regression only.
+- **Visual evidence:** NOT RUN, no visible UI or asset changes. **Save impact:** None: V2/V3 frozen fixtures, V4 wire model and serializer output bytes remain unchanged.
+- **Known limitations:** No automatic event scheduling from day boundary, spendable financial XP event rewards, live V4 bootstrap cutover, or Unity runtime/device QA; remain explicitly NOT IMPLEMENTED/NOT RUN.
+- **Files changed:** Integration/StagedEventV4SaveSerializer.cs, tools/EconomicChecks/Program.cs, docs/evidence/M15-T01/JOURNAL.md.

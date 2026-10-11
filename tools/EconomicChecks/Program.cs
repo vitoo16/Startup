@@ -1590,6 +1590,9 @@ internal static class Program
                 EventV4Payload AlteredOffer() =>
                     JsonSaveSerializer.ReadObject<EventV4Payload>(
                         JsonSaveSerializer.WriteObject(sourceWire));
+                var forgedSelectedEvent = AlteredOffer();
+                forgedSelectedEvent.Journal!.Tickets[0].EventId = "network-followup";
+                Throws<ArgumentException>(() => strictV4.SerializeVerified(forgedSelectedEvent));
                 var forgedStage = AlteredOffer();
                 forgedStage.Journal!.Tickets[0].Stage = 2;
                 Throws<ArgumentException>(() => strictV4.SerializeVerified(forgedStage));

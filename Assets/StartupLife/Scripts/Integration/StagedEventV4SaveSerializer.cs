@@ -254,7 +254,10 @@ namespace StartupLife.Integration
                     payload.Journal.Tickets.Last().OpenedDateIso != state.DateIso))
                 throw new ArgumentException("Event journal and V3 time/run/RNG anchor disagree.");
             EventAdvanceBatchHistory.Validate(journal, state);
-            EventJournalReplay.Validate(payload.Journal, definitions, policies);
+            // EventJournalReplay.Validate ran before V3 admission and already
+            // established the deterministic selection/RNG trace. The V3
+            // frontier observer and batch validator only read this journal;
+            // replaying the identical trace again here is redundant.
             return state;
         }
 
