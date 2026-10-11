@@ -1283,7 +1283,12 @@ internal static class Program
                 var initialResult = gateway.ExecuteCore(new CommandEnvelope(
                     origin.RunId, "create-v4", 0, created));
                 Assert(initialResult.Status == EventCommitStatus.Committed &&
-                    initialResult.Revision == 1, "V3 GameSession creates character inside V4 CAS");
+                    initialResult.Revision == 1 &&
+                    initialResult.CoreCommand?.Status == CommandStatus.Committed &&
+                    initialResult.CoreCommand.Revision == 1 &&
+                    initialResult.CoreCommand.Outcome != null &&
+                    initialResult.CoreCommand.Outcome.CashDelta == expectedAfterCreate,
+                    "V4 commit preserves the genuine V3 outcome, cue and first-day cash delta");
                 var first = gateway.Read().State ??
                     throw new InvalidOperationException("V4 first commit missing core projection.");
                 var firstJournal = first.EventV4?.Journal ??
@@ -1316,6 +1321,13 @@ internal static class Program
                 Assert(offered.Status == EventCommitStatus.Committed && offered.Revision == 2 &&
                     gateway.Read().State!.PendingChoiceId == offered.TicketId,
                     "V4 persisted event blocks pending transition");
+                var pending = gateway.ReadPendingChoice() ??
+                    throw new InvalidOperationException("Persisted choice has no read model.");
+                Assert(pending.RunId == origin.RunId && pending.Revision == 2 &&
+                    pending.TicketId == offered.TicketId && pending.EventId == "career-moment" &&
+                    pending.Choices.Count == 1 && pending.Choices[0].Id == "continue" &&
+                    pending.Choices[0].LabelKey == "event.continue",
+                    "UI reads the real authored pending choice and CAS revision, not synthetic input");
                 var afterOffer = File.ReadAllBytes(filename);
                 var sourceWire = gateway.Read().State!.EventV4!;
                 var strictV4 = new StagedEventV4SaveSerializer(v3, definitions, policies);
@@ -1354,8 +1366,9 @@ internal static class Program
                 var resolved = gateway.Resolve(origin.RunId, "event-resolve-v4", 2,
                     offered.TicketId, "continue");
                 Assert(resolved.Status == EventCommitStatus.AlreadyCommitted &&
-                    resolved.Revision == 3 && resolved.OutcomeId == "outcome.continue",
-                    "cold retry discovers the once-only outcome receipt at revision three");
+                    resolved.Revision == 3 && resolved.OutcomeId == "outcome.continue" &&
+                    gateway.ReadPendingChoice() == null,
+                    "cold retry discovers the once-only receipt and clears the pending UI choice");
                 var effectWire = gateway.Read().State!.EventV4!;
                 Assert(effectWire.Journal!.OutcomeReceipts.Count == 1 &&
                     effectWire.Journal.OutcomeReceipts[0].GrantedTags.SequenceEqual(
@@ -1402,8 +1415,11 @@ internal static class Program
                     "stale global revision must be rejected even when inner V3 revision differs");
                 var tick = cold.ExecuteCore(new CommandEnvelope(origin.RunId, "clock-v4", 4,
                     new GameCommand(CommandKind.AdvanceBoundary)));
-                Assert(tick.Status == EventCommitStatus.Committed && tick.Revision == 5,
-                    "normal time progression continues after resolved event");
+                Assert(tick.Status == EventCommitStatus.Committed && tick.Revision == 5 &&
+                    tick.CoreCommand?.Status == CommandStatus.Committed &&
+                    tick.CoreCommand.Outcome != null &&
+                    tick.CoreCommand.Outcome.Cue == cold.Read().State!.CurrentCue,
+                    "single boundary command preserves actual V3 scene cue for UI playback");
                 var restarted = cold.Read();
                 var restoredState = restarted.State ??
                     throw new InvalidOperationException("V4 cold read has no validated projection.");
