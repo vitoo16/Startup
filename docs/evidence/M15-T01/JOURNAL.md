@@ -502,3 +502,13 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - Strengthened plan admission to require projected event RNG and pending choice identity to equal the checked journal. Added adversarial tests for diverging RNG, pending choice and a reused V3 receipt ID in addition to the existing overflow/affordability tests.
 - **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler. **Tests:** exact-head CI pending. **Visual:** NOT RUN. **Save:** none; schema/fixtures unchanged. **Limitations:** no spendable reward receipt yet.
 - **Files:** Core/EventDefinitions.cs, Simulation/EventDecisionJournal.cs, tools/SimulationChecks/Program.cs, JOURNAL.md.
+
+
+## Increment 39 — Cold-verified settlement plan bridge regression
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL, PR #52 Draft/unmerged.
+
+- Added a real-file V2→V3→V4 CAS test exercising the existing `EventDecisionJournal.PlanReward` against a **cold-verified pending event** with a genuine V3 character receipt, not a hand-constructed state. It proves the plan binds the next V3 receipt frontier, one next global V4 revision, canonical authored amount, pending ticket and external resolution command ID.
+- The same test verifies planning is read-only, the current gateway still rejects premature cash payouts without spending the pending choice or modifying disk bytes, and a forged state revision cannot obtain a plan.
+- **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler. **Tests:** exact-head CI required. **Save impact:** none. **Visual QA:** NOT RUN. **Remaining:** composite V3-native reward receipt and atomic V4 outcome coupling not yet implemented.
+- **Files changed:** tools/EconomicChecks/Program.cs, this journal.

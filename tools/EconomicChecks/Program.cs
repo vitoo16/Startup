@@ -2386,6 +2386,82 @@ internal static class Program
                 catch (IOException) { }
             }
         });
+        Check("M15 reward settlement plan derives from cold-verified V3/V4 CAS state", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var economics = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economics, content);
+            var v3 = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var defs = new[] { new GameEventDefinition("verified-reward", "life",
+                2026, 0, 1, 0, 1, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[]
+                {
+                    new EventChoiceDefinition("receive", "event.receive", "outcome.receive",
+                        reward: new EventChoiceReward(125000, 0)),
+                    new EventChoiceDefinition("skip", "event.skip", "outcome.skip")
+                }) };
+            var policies = new[] { new EventCategoryPolicy("life", 0, 7, 1) };
+            var serializer = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, defs, policies));
+            var runner = new EventV4CoreCommandRunner(content, v3, economics, archives);
+            var seed = GameSession.NewState(content, "reward-real-frontier", 81097UL,
+                new SimDate(2026, 10, 1));
+            var folder = Path.Combine(Path.GetTempPath(),
+                "m15-reward-frontier-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            var path = Path.Combine(folder, "game.save");
+            try
+            {
+                File.WriteAllBytes(path, JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(seed), 2, 0));
+                EventV4CommitGateway Cold() => new EventV4CommitGateway(
+                    serializer, new AtomicFileSaveStore(path, serializer),
+                    defs, policies, runner);
+                var created = Cold().ExecuteCore(new CommandEnvelope(seed.RunId,
+                    "reward-character", 0, new GameCommand(CommandKind.CreateCharacter,
+                        "fresh", 25, "Reward Proof", "base.female")));
+                Assert(created.Status == EventCommitStatus.Committed,
+                    "real V3 receipt must precede reward planning");
+                var offered = Cold().Offer(seed.RunId, "offer-reward-proof",
+                    created.Revision);
+                Assert(offered.Status == EventCommitStatus.Committed,
+                    "pending reward ticket is persisted by V4 CAS");
+                var read = Cold().Read();
+                Assert(read.Status == LoadStatus.Valid && read.State != null,
+                    "reward plan requires independently cold-validated state");
+                var current = read.State!;
+                var before = File.ReadAllBytes(path);
+                var plan = EventDecisionJournal.PlanReward(current, defs, policies,
+                    "settle-reward-proof", offered.TicketId, "receive");
+                Assert(plan.CoreRevision == current.Receipts.Count + 1L &&
+                    plan.GlobalRevision == current.Revision + 1 &&
+                    plan.ResolutionCommandId == "settle-reward-proof" &&
+                    plan.CashDeltaVnd == 125000 && plan.CareerXpDelta == 0 &&
+                    plan.TicketId == offered.TicketId &&
+                    current.EventV4!.Journal!.PendingTicketId == offered.TicketId &&
+                    File.ReadAllBytes(path).SequenceEqual(before),
+                    "authenticated settlement planning is read-only and binds both frontiers");
+                Assert(Cold().Resolve(seed.RunId, "settle-reward-proof",
+                        current.Revision, offered.TicketId, "receive").ReasonKey ==
+                        "event.reward_processor_unavailable" &&
+                    File.ReadAllBytes(path).SequenceEqual(before),
+                    "planning alone cannot credit cash or consume the pending choice");
+                var modified = serializer.DeserializeAndValidate(before).State!;
+                modified.Revision++;
+                Throws<ArgumentException>(() => EventDecisionJournal.PlanReward(
+                    modified, defs, policies, "fake-settle", offered.TicketId, "receive"));
+                Assert(File.ReadAllBytes(path).SequenceEqual(before),
+                    "forged revision never mutates stored V3 or V4 receipts");
+            }
+            finally
+            {
+                try { Directory.Delete(folder, true); }
+                catch (IOException) { }
+            }
+        });
         Check("M15 financial reward choices reject without a V3 receipt and preserve pending save", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();
