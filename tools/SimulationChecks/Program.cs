@@ -240,6 +240,58 @@ internal static class Program
             Throws(() => EventJournalReplay.Validate(tampered, definitions, policies));
             Bytes(saved, JsonSaveSerializer.WriteObject(closed));
         });
+
+        Check("M15 large journal cold replay shares one selection history without RNG drift", () =>
+        {
+            const int eventCount = 240;
+            var definitions = new[] { Event("long-career", eventCount + 1, 1, 0, 3, 0,
+                Array.Empty<string>(), Array.Empty<string>()) };
+            var policies = new[] { new EventCategoryPolicy("career", 0, int.MaxValue, eventCount + 1) };
+            var origin = new SimDate(2026, 10, 1);
+            var state = EventDecisionJournal.New("run-long-history", 68149);
+            for (var i = 0; i < eventCount; i++)
+            {
+                var now = origin.AddDays(4 * i);
+                var context = new GameEventContext(origin, now, 1, Array.Empty<string>(),
+                    Array.Empty<EventOccurrence>());
+                var offer = EventDecisionJournal.Offer(state, definitions, policies,
+                    context, state.Revision);
+                Equal(EventJournalStatus.Offered, offer.Status);
+                var resolved = EventDecisionJournal.Resolve(offer.Next, definitions, policies,
+                    offer.Next.Revision, "long-choice-" + i, offer.TicketId, "continue");
+                Equal(EventJournalStatus.Resolved, resolved.Status);
+                state = resolved.Next;
+            }
+            Equal(eventCount, state.Tickets.Count);
+            EventJournalReplay.Validate(state, definitions, policies);
+            var bytes = JsonSaveSerializer.WriteObject(state);
+            var cold = JsonSaveSerializer.ReadObject<EventJournalState>(bytes);
+            EventJournalReplay.Validate(cold, definitions, policies);
+            Equal(state.EventRng, cold.EventRng);
+            Bytes(bytes, JsonSaveSerializer.WriteObject(cold));
+            var tampered = JsonSaveSerializer.ReadObject<EventJournalState>(bytes);
+            tampered.Tickets[eventCount / 2].OpenedDateIso = origin.AddDays(4 * (eventCount / 2) + 1).ToString();
+            Throws(() => EventJournalReplay.Validate(tampered, definitions, policies));
+        });
+        Check("M15 category window handles maximum configured duration without overflow", () =>
+        {
+            var def = Event("long-window", 8, 1, 0, 1, 0, Array.Empty<string>(),
+                Array.Empty<string>());
+            var policies = new[] { new EventCategoryPolicy("career", 0, int.MaxValue, 1) };
+            var origin = new SimDate(2026, 10, 1);
+            var context = new GameEventContext(origin, origin, 1,
+                Array.Empty<string>(), Array.Empty<EventOccurrence>());
+            var start = EventDecisionJournal.New("run-wide-window", 19);
+            var first = EventDecisionJournal.Offer(start, new[] { def }, policies, context, 0);
+            Equal(EventJournalStatus.Offered, first.Status);
+            var state = EventDecisionJournal.Resolve(first.Next, new[] { def }, policies,
+                first.Next.Revision, "wide-window-choice", first.TicketId, "continue").Next;
+            var later = new GameEventContext(origin, origin.AddDays(4), 1,
+                Array.Empty<string>(), Array.Empty<EventOccurrence>());
+            Equal(EventJournalStatus.NoEligibleEvent,
+                EventDecisionJournal.Offer(state, new[] { def }, policies, later, state.Revision).Status);
+            EventJournalReplay.Validate(state, new[] { def }, policies);
+        });
         Check("Developer 20-slot quota exact across cycles", () =>
         {
             var scenes = Catalog().Careers["developer"].Scenes; var expected = new[] { 8, 4, 3, 2, 2, 1 }; uint rng = 987;
