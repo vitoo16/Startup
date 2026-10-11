@@ -1413,13 +1413,19 @@ internal static class Program
                 Assert(cold.ExecuteCore(new CommandEnvelope(origin.RunId, "clock-v4", 3,
                     new GameCommand(CommandKind.AdvanceBoundary))).ReasonKey == "command.stale_state",
                     "stale global revision must be rejected even when inner V3 revision differs");
-                var tick = cold.ExecuteCore(new CommandEnvelope(origin.RunId, "clock-v4", 4,
+                var tick = cold.ExecuteGameplay(new CommandEnvelope(origin.RunId, "clock-v4", 4,
                     new GameCommand(CommandKind.AdvanceBoundary)));
-                Assert(tick.Status == EventCommitStatus.Committed && tick.Revision == 5 &&
-                    tick.CoreCommand?.Status == CommandStatus.Committed &&
-                    tick.CoreCommand.Outcome != null &&
-                    tick.CoreCommand.Outcome.Cue == cold.Read().State!.CurrentCue,
-                    "single boundary command preserves actual V3 scene cue for UI playback");
+                Assert(tick.Status == CommandStatus.Committed && tick.Revision == 5 &&
+                    tick.Outcome != null && tick.Outcome.Cue == cold.Read().State!.CurrentCue &&
+                    tick.OperationId.Length > 0 &&
+                    tick.MinutesConsumed == tick.Outcome.MinutesConsumed &&
+                    tick.Outcome.Revision == 3,
+                    "UI adapter reports global V4 revision while retaining exact V3 operation/cue");
+                var retryTick = cold.ExecuteGameplay(new CommandEnvelope(origin.RunId,
+                    "clock-v4", 4, new GameCommand(CommandKind.AdvanceBoundary)));
+                Assert(retryTick.Status == CommandStatus.AlreadyCommitted &&
+                    retryTick.Revision == 5 && retryTick.Outcome == null,
+                    "unacknowledged gameplay retry resolves globally without inventing an outcome");
                 var restarted = cold.Read();
                 var restoredState = restarted.State ??
                     throw new InvalidOperationException("V4 cold read has no validated projection.");
