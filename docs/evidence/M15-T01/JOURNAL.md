@@ -388,3 +388,12 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - SimulationChecks verifies that reward-only catalogs reject at admission, not only at resolve time.
 - **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler. **Tests:** exact-head engine-free CI pending. **Visual:** NOT RUN. **Save:** no wire/schema change. **Limitations:** no spendable event cash/XP yet; bootstrap & Unity QA deferred.
 - **Files changed:** EventDecisionJournal.cs, SimulationChecks/Program.cs, JOURNAL.md.
+
+
+## Increment 28 — Resume durable V4 time batches from the existing presentation port
+
+**Owner model:** GPT-6 Technical Director. **Milestone:** M15-T01 PARTIAL; PR #52 Draft/unmerged.
+- `EventV4GameCommands` now reattaches a newly generated presentation `AdvanceDay/AdvanceMonth` request to the one incomplete matching batch **using only a freshly verified V4 journal**. The underlying gateway retains strict original-root, child identity and CAS validation; no additional scheduler/save source or runtime-only batch cursor.
+- The real-file opt-in daily event regression uses a **different UI command ID after cold pending-choice resolution** and asserts only one durable batch record exists, original root still replays idempotently, and the target date is reached once.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Tests:** exact-head engine-free CI pending; **Visual:** NOT RUN; **Save impact:** none; **Known limitations:** no V3 monetary/XP event payout, production opt-in bootstrap/runtime smoke still pending. **Files changed:** Integration/EventV4GameCommands.cs; tools/EconomicChecks/Program.cs; this journal.

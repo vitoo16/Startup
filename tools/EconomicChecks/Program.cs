@@ -2046,10 +2046,17 @@ internal static class Program
                 Assert(Cold().Resolve(source.RunId, "auto-resolve", pending.Revision,
                     pending.TicketId, "ack").Status == EventCommitStatus.Committed,
                     "pending event must resolve with its authenticated outcome");
-                var reached = Cold().AdvanceDay(root);
+                var presentation = new EventV4GameCommands(Cold(), content, economics);
+                var newUiRequest = new CommandEnvelope(source.RunId,
+                    "new-ui-id-after-cold-restart", Cold().Read().State!.Revision,
+                    new GameCommand(CommandKind.AdvanceBoundary));
+                var reached = presentation.AdvanceDay(newUiRequest);
                 Assert(reached.StopReason == "TargetReached" &&
-                    reached.ReachedInstant.Date.ToString() == "2026-10-31",
-                    "original stale day root resumes exactly to its target");
+                    reached.ReachedInstant.Date.ToString() == "2026-10-31" &&
+                    Cold().Read().State!.EventV4!.Journal!.AdvanceBatches.Count == 1,
+                    "new UI command ID must resume cold-stored batch root exactly once");
+                Assert(Cold().AdvanceDay(root).StopReason == "TargetReached",
+                    "original root remains idempotent after UI-driven recovery");
                 var onNewDate = Cold().Read().State!;
                 Assert(onNewDate.EventV4!.Journal!.Tickets.Count == 1 &&
                     onNewDate.EventV4.Journal.OutcomeReceipts.Count == 1,

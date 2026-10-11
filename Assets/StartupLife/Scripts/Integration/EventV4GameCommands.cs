@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using StartupLife.Application;
 using StartupLife.Core;
 
@@ -28,10 +29,28 @@ namespace StartupLife.Integration
             gateway.ExecuteGameplay(command);
 
         public AdvanceResult AdvanceDay(CommandEnvelope request) =>
-            gateway.AdvanceDay(request);
+            gateway.AdvanceDay(ResumeInterruptedBatch(request, "day"));
 
         public AdvanceResult AdvanceMonth(CommandEnvelope request) =>
-            gateway.AdvanceMonth(request);
+            gateway.AdvanceMonth(ResumeInterruptedBatch(request, "month"));
+
+        // Presentation produces a new command ID for each tap. If a prior V4
+        // batch stopped for a player choice or an app restart, reattach to its
+        // durable root instead of registering a second AdvanceDay/Month. Direct
+        // gateway callers still retain strict original-command idempotency.
+        private CommandEnvelope ResumeInterruptedBatch(CommandEnvelope request, string mode)
+        {
+            if (request == null || request.Command == null ||
+                request.Command.Kind != CommandKind.AdvanceBoundary)
+                return request;
+            var current = Verified();
+            var active = current.EventV4!.Journal!.AdvanceBatches.FirstOrDefault(x =>
+                string.CompareOrdinal(current.DateIso, x.TargetDateIso) < 0);
+            if (active == null || active.Mode != mode || current.RunId != request.RunId)
+                return request;
+            return new CommandEnvelope(current.RunId, active.RootCommandId,
+                current.Revision, request.Command);
+        }
 
         public GameSnapshot Snapshot() => new GameSnapshot(Verified(), content);
 
