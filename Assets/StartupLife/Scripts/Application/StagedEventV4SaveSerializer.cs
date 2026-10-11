@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using StartupLife.Core;
+using StartupLife.Infrastructure;
 using StartupLife.Simulation;
 
-namespace StartupLife.Infrastructure
+namespace StartupLife.Application
 {
     public sealed class StagedEventV4LoadResult
     {
@@ -136,6 +137,10 @@ namespace StartupLife.Infrastructure
                 payload.Journal == null)
                 throw new ArgumentException("Incomplete event v4 wire payload.");
             var v3Bytes = Convert.FromBase64String(payload.EmbeddedV3EnvelopeBase64);
+            // Nested checkpoint must really be schema3, not silently promoted legacy bytes.
+            var inner = JsonSaveSerializer.ReadObject<SaveEnvelope>(v3Bytes);
+            if (inner.SchemaVersion != 3)
+                throw new ArgumentException("Embedded source must be a validated schema3 checkpoint.");
             if (Digest(v3Bytes) != payload.EmbeddedV3EnvelopeSha256)
                 throw new ArgumentException("Embedded V3 checkpoint digest mismatch.");
             var core = v3.DeserializeAndValidate(v3Bytes);
