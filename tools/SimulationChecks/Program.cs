@@ -169,12 +169,12 @@ internal static class Program
             var early = Offer(1);
             Equal(EventJournalStatus.NoEligibleEvent, early.Status);
             Bytes(before, JsonSaveSerializer.WriteObject(state));
-            var second = Offer(2);
+            var second = Offer(4); // authored four-day event window
             Equal(EventJournalStatus.Offered, second.Status);
             state = EventDecisionJournal.Resolve(second.Next, definitions, policies,
                 second.Next.Revision, "choice-two", second.TicketId, "continue").Next;
-            Equal(EventJournalStatus.NoEligibleEvent, Offer(4).Status);
-            var third = Offer(10); // day zero expired from ten-day rolling frequency window
+            Equal(EventJournalStatus.NoEligibleEvent, Offer(8).Status);
+            var third = Offer(12); // day zero expired from ten-day rolling frequency window
             Equal(EventJournalStatus.Offered, third.Status);
             Equal(2, state.Tickets.Count);
             True(third.Next.EventRng != state.EventRng);
