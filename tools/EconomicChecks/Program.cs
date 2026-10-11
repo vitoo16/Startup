@@ -1173,10 +1173,19 @@ internal static class Program
                     offered.TicketId, "continue");
                 Assert(resolved.Status == EventCommitStatus.Committed && resolved.Revision == 3,
                     "event resolve commits at global revision three");
-                var paid = gateway.ExecuteCore(new CommandEnvelope(origin.RunId, "course-v4", 3,
-                    new GameCommand(CommandKind.PurchaseCourse, "communication-basics")));
-                Assert(paid.Status == EventCommitStatus.Committed &&
-                    paid.Revision == 4, "purchase must use existing V3 economic evaluator");
+                var moneyCommand = new GameCommand(CommandKind.PurchaseCourse, "communication-basics");
+                var uncertainWriter = new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(filename, serializer,
+                        point => point == "after-replace"), definitions, policies, runtime);
+                var uncertain = uncertainWriter.ExecuteCore(new CommandEnvelope(
+                    origin.RunId, "course-v4", 3, moneyCommand));
+                Assert(uncertain.Status == EventCommitStatus.RecoveryRequired,
+                    "post-replace economic command must report ambiguous promotion");
+                var paid = gateway.ExecuteCore(new CommandEnvelope(
+                    origin.RunId, "course-v4", 3, moneyCommand));
+                Assert(paid.Status == EventCommitStatus.AlreadyCommitted &&
+                    paid.Revision == 4,
+                    "cold retry must discover the one V3 course receipt instead of paying twice");
                 var saved = gateway.Read().State!;
                 Assert(saved.Cash == expectedAfterCourse && saved.Receipts.Count == 2 &&
                     saved.EventV4!.Journal!.Revision == 2 &&

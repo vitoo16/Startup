@@ -139,8 +139,9 @@ namespace StartupLife.Integration
                 if (outcome.Status != CommandStatus.Committed || nextV3 == null)
                     return new EventCommitResult(MapCoreStatus(outcome.Status),
                         outcome.ReasonKey, current.Revision);
-                var updated = serializer.ReplaceCore(current.EventV4, nextV3);
-                var inner = serializer.ReadV3Core(nextV3);
+                // One verified V3 replay yields BOTH the payload and its core state.
+                // Avoid replaying the same entire receipt suffix a second time.
+                var updated = serializer.ReplaceCore(current.EventV4, nextV3, out var inner);
                 return CommitCandidate(current, inner, updated);
             }
             catch (Exception error) when (error is ArgumentException ||

@@ -77,10 +77,11 @@ namespace StartupLife.Integration
 
         // The V3 checkpoint advances ONLY through the existing GameSession receipt
         // evaluator. Keep the same event journal in the single outer V4 transaction.
-        internal EventV4Payload ReplaceCore(EventV4Payload source, byte[] newV3Envelope)
+        internal EventV4Payload ReplaceCore(EventV4Payload source, byte[] newV3Envelope,
+            out GameState core)
         {
             if (source?.Journal == null) throw new ArgumentException("Missing V4 journal.");
-            var core = ReadV3Core(newV3Envelope);
+            core = ReadV3Core(newV3Envelope);
             if (core.RunId != source.Journal.RunId ||
                 core.EventRng != source.Journal.InitialEventRng)
                 throw new ArgumentException("V3 core and event RNG/run identity must be stable.");

@@ -52,10 +52,8 @@ namespace StartupLife.Integration
             return validatedWire;
         }
 
-        internal EventV4Payload ReplaceCore(EventV4Payload source, byte[] newV3Envelope) =>
-            staged.ReplaceCore(source, newV3Envelope);
-
-        internal GameState ReadV3Core(byte[] v3Envelope) => staged.ReadV3Core(v3Envelope);
+        internal EventV4Payload ReplaceCore(EventV4Payload source, byte[] newV3Envelope,
+            out GameState core) => staged.ReplaceCore(source, newV3Envelope, out core);
 
         internal static GameState RestoreCoreProjection(GameState current)
         {
