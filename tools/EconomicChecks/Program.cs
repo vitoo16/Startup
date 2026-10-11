@@ -1296,6 +1296,29 @@ internal static class Program
                     restoredState.Cash == expectedAfterCourse &&
                     restoredState.PendingChoiceId.Length == 0,
                     "cold replay validates interleaved V3 receipts and event history");
+                // The offer was made at V3 receipt revision 1. V3 has advanced
+                // through course purchase and a day boundary by this point:
+                // validation must reconstruct the *old* tags, not trust the ticket.
+                EventV4Payload HistoricalCopy() =>
+                    JsonSaveSerializer.ReadObject<EventV4Payload>(
+                        JsonSaveSerializer.WriteObject(restoredState.EventV4!));
+                var changedOldTags = HistoricalCopy();
+                changedOldTags.Journal!.Tickets[0].Tags =
+                    new List<string> { "character-created", "employed" };
+                Throws<ArgumentException>(() => strictV4.SerializeVerified(changedOldTags));
+                var changedOldStage = HistoricalCopy();
+                changedOldStage.Journal!.Tickets[0].Stage = 2;
+                Throws<ArgumentException>(() => strictV4.SerializeVerified(changedOldStage));
+                var movedToStudyFrontier = HistoricalCopy();
+                movedToStudyFrontier.Journal!.Tickets[0].CoreRevisionAtOffer++;
+                Throws<ArgumentException>(() => strictV4.SerializeVerified(movedToStudyFrontier));
+                var movedToLegacyFrontier = HistoricalCopy();
+                movedToLegacyFrontier.Journal!.Tickets[0].CoreRevisionAtOffer = -1;
+                Throws<ArgumentException>(() => strictV4.SerializeVerified(movedToLegacyFrontier));
+                var identicalBytes = File.ReadAllBytes(filename);
+                Assert(cold.Read().Status == LoadStatus.Valid &&
+                    File.ReadAllBytes(filename).SequenceEqual(identicalBytes),
+                    "historical prefix inspection must be read-only and preserve the checkpoint");
                 Assert(Convert.FromBase64String(restoredState.EventV4!.EmbeddedV3EnvelopeBase64)
                     .Length > 0 && JsonSaveSerializer.ReadObject<SaveEnvelope>(
                         File.ReadAllBytes(filename)).SchemaVersion == 4,
