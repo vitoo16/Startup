@@ -1790,6 +1790,102 @@ internal static class Program
             }
         });
 
+        Check("M15 empty event days persist once across ambiguous real-file V4 CAS", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var economics = M9T02FunctionalEconomy.Create();
+            var historical = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economics, content);
+            var v3 = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(historical, replay),
+                new StagedV3SaveSerializer(historical, replay));
+            var definitions = new[] { new GameEventDefinition(
+                "only-employed", "career", 2026, 1, 1, 0, 1, 1, 0,
+                new[] { "employed" }, Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("ack", "event.ack", "outcome.ack") }) };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 30, 2) };
+            var strict = new StagedEventV4SaveSerializer(v3, definitions, policies);
+            var serializer = new EventV4CompatibilitySerializer(strict);
+            var runner = new EventV4CoreCommandRunner(content, v3, economics, historical);
+            var first = GameSession.NewState(content, "run-v4-empty", 59137UL,
+                new SimDate(2026, 10, 1));
+            var folder = Path.Combine(Path.GetTempPath(),
+                "m15-empty-day-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            var filename = Path.Combine(folder, "game.save");
+            try
+            {
+                File.WriteAllBytes(filename, JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(first), 2, 0));
+                EventV4CommitGateway Cold(Func<string, bool>? fault = null) =>
+                    new EventV4CommitGateway(serializer,
+                        new AtomicFileSaveStore(filename, serializer, fault),
+                        definitions, policies, runner);
+                Assert(Cold().CheckCurrentDay(first.RunId, 0).Status ==
+                    EventCommitStatus.Rejected, "a character is required before daily checks");
+                var create = Cold().ExecuteCore(new CommandEnvelope(first.RunId,
+                    "empty-character", 0, new GameCommand(CommandKind.CreateCharacter,
+                        "fresh", 25, "Empty Test", "base.female")));
+                Assert(create.Status == EventCommitStatus.Committed && create.Revision == 1,
+                    "daily check starts after real V3 GameSession receipt");
+                var initial = Cold().Read().State!;
+                var originalBytes = File.ReadAllBytes(filename);
+                Assert(Cold(point => point == "during-temp-write").CheckCurrentDay(
+                        first.RunId, initial.Revision).Status ==
+                        EventCommitStatus.PersistenceFailed &&
+                    File.ReadAllBytes(filename).SequenceEqual(originalBytes),
+                    "failed empty-day write must preserve the committed checkpoint");
+                Assert(Cold(point => point == "after-replace").CheckCurrentDay(
+                        first.RunId, initial.Revision).Status ==
+                        EventCommitStatus.RecoveryRequired,
+                    "ambiguous empty-day promotion must not claim an unverified result");
+                var cold = Cold();
+                var after = cold.Read().State!;
+                var committedBytes = File.ReadAllBytes(filename);
+                Assert(cold.CheckCurrentDay(first.RunId, initial.Revision).Status ==
+                        EventCommitStatus.AlreadyCommitted &&
+                    after.EventV4!.Journal!.NoEligibleDays.Count == 1 &&
+                    after.EventV4.Journal.NoEligibleDays[0].CommandId ==
+                        EventDecisionJournal.DailyCommandId(after.DateIso) &&
+                    after.EventV4.Journal.NoEligibleDays[0].CoreRevisionAtCheck ==
+                        initial.Receipts.Count &&
+                    after.Revision == initial.Revision + 1 &&
+                    after.EventRng == initial.EventRng &&
+                    after.SchedulerRng == initial.SchedulerRng &&
+                    after.Cash == initial.Cash &&
+                    after.Receipts.Count == initial.Receipts.Count &&
+                    File.ReadAllBytes(filename).SequenceEqual(committedBytes),
+                    "cold retry must not spend cash, advance RNG or duplicate negative day");
+                Assert(cold.Offer(first.RunId, "another-offer", after.Revision).ReasonKey ==
+                        "event.window_already_processed" &&
+                    cold.Offer(first.RunId,
+                        EventDecisionJournal.DailyCommandId(after.DateIso),
+                        after.Revision).ReasonKey == "event.command_id_conflict" &&
+                    File.ReadAllBytes(filename).SequenceEqual(committedBytes),
+                    "daily window and its reserved command ID cannot be reused");
+                EventV4Payload Copy() => JsonSaveSerializer.ReadObject<EventV4Payload>(
+                    JsonSaveSerializer.WriteObject(after.EventV4!));
+                var forgedTags = Copy();
+                forgedTags.Journal!.NoEligibleDays[0].Tags.Add("employed");
+                Throws<ArgumentException>(() => strict.SerializeVerified(forgedTags));
+                var forgedDate = Copy();
+                forgedDate.Journal!.NoEligibleDays[0].DateIso = "2026-10-02";
+                Throws<ArgumentException>(() => strict.SerializeVerified(forgedDate));
+                var forgedFrontier = Copy();
+                forgedFrontier.Journal!.NoEligibleDays[0].CoreRevisionAtCheck++;
+                Throws<ArgumentException>(() => strict.SerializeVerified(forgedFrontier));
+                var forgedCommand = Copy();
+                forgedCommand.Journal!.NoEligibleDays[0].CommandId = "forged-id";
+                Throws<ArgumentException>(() => strict.SerializeVerified(forgedCommand));
+                Assert(File.ReadAllBytes(filename).SequenceEqual(committedBytes),
+                    "tampered negative-day evidence may not rewrite verified save bytes");
+            }
+            finally
+            {
+                try { Directory.Delete(folder, true); }
+                catch (IOException) { }
+            }
+        });
         Check("M15 V4 existing atomic store commits pending and resolve, with cold idempotent retry", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();
