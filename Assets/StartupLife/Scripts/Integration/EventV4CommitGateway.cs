@@ -20,12 +20,15 @@ namespace StartupLife.Integration
         public long Revision { get; }
         public string TicketId { get; }
         public string OutcomeId { get; }
+        // Only populated for an acknowledged V3 gameplay command. Event choices
+        // still use TicketId/OutcomeId and have their own effect receipts.
+        public CommandResult? CoreCommand { get; }
 
         public EventCommitResult(EventCommitStatus status, string reasonKey, long revision,
-            string ticketId = "", string outcomeId = "")
+            string ticketId = "", string outcomeId = "", CommandResult? coreCommand = null)
         {
             Status = status; ReasonKey = reasonKey; Revision = revision;
-            TicketId = ticketId; OutcomeId = outcomeId;
+            TicketId = ticketId; OutcomeId = outcomeId; CoreCommand = coreCommand;
         }
     }
 
@@ -165,11 +168,12 @@ namespace StartupLife.Integration
                 var outcome = coreRunner.Evaluate(oldV3, command, out var nextV3);
                 if (outcome.Status != CommandStatus.Committed || nextV3 == null)
                     return new EventCommitResult(MapCoreStatus(outcome.Status),
-                        outcome.ReasonKey, current.Revision);
+                        outcome.ReasonKey, current.Revision,
+                        coreCommand: outcome.Status == CommandStatus.Rejected ? null : outcome);
                 // One verified V3 replay yields BOTH the payload and its core state.
                 // Avoid replaying the same entire receipt suffix a second time.
                 var updated = serializer.ReplaceCore(current.EventV4, nextV3, out var inner);
-                return CommitCandidate(current, inner, updated);
+                return CommitCandidate(current, inner, updated, coreCommand: outcome);
             }
             catch (Exception error) when (error is ArgumentException ||
                 error is InvalidOperationException || error is OverflowException)
@@ -186,7 +190,8 @@ namespace StartupLife.Integration
         }
 
         private EventCommitResult CommitCandidate(GameState current, GameState nextCore,
-            EventV4Payload payload, string ticketId = "", string outcomeId = "")
+            EventV4Payload payload, string ticketId = "", string outcomeId = "",
+            CommandResult? coreCommand = null)
         {
             byte[] candidateBytes;
             try
@@ -214,7 +219,7 @@ namespace StartupLife.Integration
                 return new EventCommitResult(EventCommitStatus.RecoveryRequired,
                     "save.recovery_required", current.Revision);
             return new EventCommitResult(EventCommitStatus.Committed, "",
-                verified.State.Revision, ticketId, outcomeId);
+                verified.State.Revision, ticketId, outcomeId, coreCommand);
         }
 
         private static EventCommitStatus MapCoreStatus(CommandStatus status)
