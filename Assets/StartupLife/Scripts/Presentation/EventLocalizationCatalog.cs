@@ -1,6 +1,8 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using StartupLife.Content;
 
 namespace StartupLife.Presentation
 {
@@ -16,6 +18,6 @@ namespace StartupLife.Presentation
                 new KeyValuePair<string, string>("event.choice.retry", "Lưu chưa chắc chắn. Nhấn lại cùng phương án để thử lại."),
                 new KeyValuePair<string, string>("event.choice.changed", "Trạng thái đã thay đổi. Hãy kiểm tra và chọn lại."),
                 new KeyValuePair<string, string>("event.choice.unavailable", "Chưa thể kiểm tra dữ liệu sự kiện. Vui lòng thử lại sau.")
-            });
+            }.Concat(FirstPlayableEventContent.VietnameseEntries).ToArray());
     }
 }
