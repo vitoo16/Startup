@@ -43,6 +43,7 @@ namespace StartupLife.Editor
                 LocalizationEditorSettings.CreateStringTableCollection(LocalizedKeyLabel.Table, Root + "/Localization");
             var table = (StringTable)collection.GetTable(locale.Identifier);
             AddStrings(table);
+            DashboardLocalizationEditorSync.Apply(table);
             EditorUtility.SetDirty(table);
             EditorUtility.SetDirty(collection.SharedData);
             EditorUtility.SetDirty(collection);
@@ -228,6 +229,7 @@ namespace StartupLife.Editor
             var collection = LocalizationEditorSettings.GetStringTableCollections().Single(value => value.TableCollectionName == LocalizedKeyLabel.Table);
             var table = (StringTable)collection.GetTable(locale.Identifier);
             AddStrings(table);
+            DashboardLocalizationEditorSync.Apply(table);
             EditorUtility.SetDirty(table);
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             AssetDatabase.SaveAssets();
@@ -244,6 +246,7 @@ namespace StartupLife.Editor
             var collection = LocalizationEditorSettings.GetStringTableCollections().Single(value => value.TableCollectionName == LocalizedKeyLabel.Table);
             var table = (StringTable)collection.GetTable(locale.Identifier);
             AddStrings(table);
+            DashboardLocalizationEditorSync.Apply(table);
             EditorUtility.SetDirty(table);
             EditorUtility.SetDirty(table.SharedData);
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());

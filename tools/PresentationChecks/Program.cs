@@ -16,6 +16,8 @@ internal static class Program
 
     private static int Main(string[] args)
     {
+        Check("M12 Vietnamese dashboard localization has stable keys and complete onboarding",
+            DashboardTranslations);
         Check("initial snapshot selects character creation and copies read model", InitialProjection);
         Check("create character dispatches current run revision and injected command id", CreateDispatch);
         Check("life actions dispatch frozen commands from latest snapshot revision", ActionDispatch);
@@ -40,6 +42,30 @@ internal static class Program
         foreach (var failure in failures) Console.Error.WriteLine(failure);
         Console.WriteLine($"{passed}/{passed + failures.Count} passed." + (args.Length > 0 ? " Report: " + Path.GetFullPath(args[0]) : ""));
         return failures.Count == 0 ? 0 : 1;
+    }
+
+    private static void DashboardTranslations()
+    {
+        var entries = DashboardLocalizationCatalog.Entries;
+        True(entries.Count >= 45);
+        Equal(entries.Count, entries.Select(x => x.Key)
+            .Distinct(StringComparer.Ordinal).Count());
+        True(entries.All(x => x.Key.StartsWith("dashboard.", StringComparison.Ordinal)
+            && !string.IsNullOrWhiteSpace(x.Value)));
+        foreach (var text in new[] { "Nghề nghiệp", "Kỹ năng", "Tài chính", "Kinh doanh",
+            "Hồ sơ", "Chữ nhỏ hơn", "Chữ lớn hơn", "Đã hiểu", "Xem lại hướng dẫn" })
+        {
+            True(DashboardLocalizationCatalog.TryFindKey(text, out var key));
+            True(entries.Any(x => x.Key == key && x.Value == text));
+        }
+        foreach (var topic in new[] { "skills", "study", "compatibility", "time", "resign" })
+        {
+            True(entries.Any(x => x.Key == "dashboard.guide." + topic + ".title"));
+            True(entries.Any(x => x.Key == "dashboard.guide." + topic + ".body"));
+        }
+        True(!DashboardLocalizationCatalog.TryFindKey("never-localized", out _));
+        ThrowsNotSupported(() =>
+            ((IList<KeyValuePair<string,string>>)entries).Clear());
     }
 
     private static void BusinessManagementDispatch()
