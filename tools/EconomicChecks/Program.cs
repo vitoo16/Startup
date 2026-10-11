@@ -1099,6 +1099,120 @@ internal static class Program
             Equal(LoadStatus.FutureVersion, stage.DeserializeVerified(JsonSaveSerializer.WriteObject(wire)).Status);
         });
 
+
+        Check("M15 V4 core GameSession receipts interleave with events and restore exactly once", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var econ = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(econ, content);
+            var v3 = new V3SaveCompatibilitySerializer(content, GameSession.CreateRestoreValidator(),
+                new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var definitions = new[] { new GameEventDefinition("career-moment", "career",
+                2026, 0, 1, 0, 4, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("continue", "event.continue", "outcome.continue") }) };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 7, 4) };
+            var serializer = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, definitions, policies));
+            var runtime = new EventV4CoreCommandRunner(content, v3, econ, archives);
+            var origin = GameSession.NewState(content, "run-v4-core", 317749UL,
+                new SimDate(2026, 10, 1));
+            var originalV2 = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(origin), 2, 0);
+            var folder = Path.Combine(Path.GetTempPath(), "m15-interleaved-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            var filename = Path.Combine(folder, "game.save");
+            try
+            {
+                File.WriteAllBytes(filename, originalV2);
+                var disk = new AtomicFileSaveStore(filename, serializer);
+                var gateway = new EventV4CommitGateway(serializer, disk, definitions, policies, runtime);
+                var created = new GameCommand(CommandKind.CreateCharacter, "fresh", 23,
+                    "V4 Tester", "base.female");
+                var initialResult = gateway.ExecuteCore(new CommandEnvelope(
+                    origin.RunId, "create-v4", 0, created));
+                Assert(initialResult.Status == EventCommitStatus.Committed &&
+                    initialResult.Revision == 1, "V3 GameSession creates character inside V4 CAS");
+                var first = gateway.Read().State!;
+                Assert(first.Name == "V4 Tester" && first.Cash == 3000000 &&
+                    first.Receipts.Count == 1 && first.EventV4!.Journal!.Revision == 0,
+                    "V4 projection includes authoritative V3 receipt and starting cash");
+                var afterCreate = File.ReadAllBytes(filename);
+                Assert(gateway.ExecuteCore(new CommandEnvelope(
+                    origin.RunId, "create-v4", 0, created)).Status ==
+                    EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(filename).SequenceEqual(afterCreate),
+                    "cold retry of a V3 game command may not duplicate receipt or bytes");
+                var context = new GameEventContext(origin.Date, origin.Date, 0,
+                    Array.Empty<string>(), Array.Empty<EventOccurrence>());
+                var offered = gateway.Offer(origin.RunId, "event-offer-v4", 1, context);
+                Assert(offered.Status == EventCommitStatus.Committed && offered.Revision == 2 &&
+                    gateway.Read().State!.PendingChoiceId == offered.TicketId,
+                    "V4 persisted event blocks pending transition");
+                var afterOffer = File.ReadAllBytes(filename);
+                Assert(gateway.ExecuteCore(new CommandEnvelope(origin.RunId, "clock-v4", 2,
+                    new GameCommand(CommandKind.AdvanceBoundary))).ReasonKey ==
+                    "event.choice_required" &&
+                    File.ReadAllBytes(filename).SequenceEqual(afterOffer),
+                    "inner V3 cannot bypass pending event choice with direct advance");
+                Assert(gateway.ExecuteCore(new CommandEnvelope(origin.RunId, "event-offer-v4", 2,
+                    new GameCommand(CommandKind.Resign))).ReasonKey == "command.id_conflict",
+                    "event command IDs and V3 receipt IDs share a collision domain");
+                var resolved = gateway.Resolve(origin.RunId, "event-resolve-v4", 2,
+                    offered.TicketId, "continue");
+                Assert(resolved.Status == EventCommitStatus.Committed && resolved.Revision == 3,
+                    "event resolve commits at global revision three");
+                var paid = gateway.ExecuteCore(new CommandEnvelope(origin.RunId, "course-v4", 3,
+                    new GameCommand(CommandKind.PurchaseCourse, "communication-basics")));
+                Assert(paid.Status == EventCommitStatus.Committed &&
+                    paid.Revision == 4, "purchase must use existing V3 economic evaluator");
+                var saved = gateway.Read().State!;
+                Assert(saved.Cash == 2800000 && saved.Receipts.Count == 2 &&
+                    saved.EventV4!.Journal!.Revision == 2 &&
+                    saved.Revision == 4 && saved.EventRng != origin.EventRng &&
+                    saved.SchedulerRng == origin.SchedulerRng,
+                    "200,000 VND course debit is receipt-backed; journal and RNG remain isolated");
+                var courseBytes = File.ReadAllBytes(filename);
+                var cold = new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(filename, serializer), definitions, policies, runtime);
+                Assert(cold.ExecuteCore(new CommandEnvelope(origin.RunId, "course-v4", 3,
+                    new GameCommand(CommandKind.PurchaseCourse, "communication-basics"))).Status ==
+                    EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(filename).SequenceEqual(courseBytes),
+                    "cold economic retry must not debit cash twice");
+                Assert(cold.Offer(origin.RunId, "course-v4", 4, context).ReasonKey ==
+                    "event.command_id_conflict", "economic command ID cannot open an event");
+                Assert(cold.ExecuteCore(new CommandEnvelope(origin.RunId, "course-v4", 4,
+                    new GameCommand(CommandKind.Resign))).ReasonKey == "command.id_conflict",
+                    "same receipt ID with different payload rejected");
+                Assert(cold.ExecuteCore(new CommandEnvelope(origin.RunId, "clock-v4", 3,
+                    new GameCommand(CommandKind.AdvanceBoundary))).ReasonKey == "command.stale_state",
+                    "stale global revision must be rejected even when inner V3 revision differs");
+                var tick = cold.ExecuteCore(new CommandEnvelope(origin.RunId, "clock-v4", 4,
+                    new GameCommand(CommandKind.AdvanceBoundary)));
+                Assert(tick.Status == EventCommitStatus.Committed && tick.Revision == 5,
+                    "normal time progression continues after resolved event");
+                var restarted = cold.Read();
+                Assert(restarted.Status == LoadStatus.Valid &&
+                    restarted.State!.Receipts.Count == 3 &&
+                    restarted.State.EventV4!.Journal!.Tickets.Count == 1 &&
+                    restarted.State.Cash == 2800000 &&
+                    restarted.State.PendingChoiceId.Length == 0,
+                    "cold replay validates interleaved V3 receipts and event history");
+                Assert(Convert.FromBase64String(restarted.State.EventV4.EmbeddedV3EnvelopeBase64)
+                    .Length > 0 && JsonSaveSerializer.ReadObject<SaveEnvelope>(
+                        File.ReadAllBytes(filename)).SchemaVersion == 4,
+                    "authoritative save remains single nested V3 within V4, not independent files");
+                Assert(File.ReadAllBytes(filename).Length != originalV2.Length,
+                    "legacy V2 was promoted only after authorized command");
+            }
+            finally
+            {
+                try { Directory.Delete(folder, true); }
+                catch (IOException) { }
+            }
+        });
+
         Check("M15 V4 existing atomic store commits pending and resolve, with cold idempotent retry", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();
