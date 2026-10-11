@@ -1247,6 +1247,15 @@ internal static class Program
                     new GameCommand(CommandKind.AdvanceBoundary))).ReasonKey ==
                     "batch.in_progress",
                     "external boundary command cannot bypass unfinished batch owner");
+                // The batch root and its internal child namespace are reserved
+                // globally, including while the batch is still resumable.
+                var beforeCollisions = File.ReadAllBytes(filename);
+                Assert(afterFault.Offer(original.RunId, dayRoot.CommandId,
+                    state.Revision).ReasonKey == "event.command_id_conflict" &&
+                    afterFault.Offer(original.RunId, "v4batch/forged-offer",
+                        state.Revision).ReasonKey == "event.command_id_conflict" &&
+                    File.ReadAllBytes(filename).SequenceEqual(beforeCollisions),
+                    "batch command identities cannot be recycled as event offers");
                 var offer = afterFault.Offer(original.RunId, "batch-event-offer",
                     state.Revision);
                 Assert(offer.Status == EventCommitStatus.Committed,
@@ -1257,8 +1266,17 @@ internal static class Program
                 var pending = blocked.ReadPendingChoice();
                 Assert(pending != null && pending.TicketId == offer.TicketId,
                     "interruption choice is backed by same validated journal");
+                var beforeResolveCollision = File.ReadAllBytes(filename);
+                Assert(blocked.Resolve(original.RunId, dayRoot.CommandId,
+                    pending!.Revision, pending.TicketId, "ack").ReasonKey ==
+                    "event.command_id_conflict" &&
+                    blocked.Resolve(original.RunId, "v4batch/forged-resolve",
+                        pending.Revision, pending.TicketId, "ack").ReasonKey ==
+                    "event.command_id_conflict" &&
+                    File.ReadAllBytes(filename).SequenceEqual(beforeResolveCollision),
+                    "batch identities cannot resolve a pending event or mutate disk");
                 var resolved = blocked.Resolve(original.RunId, "batch-choice-resolve",
-                    pending!.Revision, pending.TicketId, "ack");
+                    pending.Revision, pending.TicketId, "ack");
                 Assert(resolved.Status == EventCommitStatus.Committed,
                     "event choice resolves while batch intent survives");
                 var resumed = Cold();
@@ -1273,6 +1291,10 @@ internal static class Program
                     reached.EventV4!.Journal!.AdvanceBatches.Count == 1,
                     "every resumed step uses authenticated V3 child receipts");
                 var beforeRetry = File.ReadAllBytes(filename);
+                Assert(Cold().Offer(original.RunId, dayRoot.CommandId, reached.Revision)
+                        .ReasonKey == "event.command_id_conflict" &&
+                    File.ReadAllBytes(filename).SequenceEqual(beforeRetry),
+                    "completed batch roots remain reserved for the lifetime of the run");
                 Assert(Cold().AdvanceDay(dayRoot).StopReason == "TargetReached" &&
                     File.ReadAllBytes(filename).SequenceEqual(beforeRetry),
                     "completed batch root retry is read-only, no extra time or cash settlement");

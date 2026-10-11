@@ -234,3 +234,18 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Skills used:** `startup-life-session-orchestrator`, `startup-life-gameplay-guardian`, `vietnam-art-direction`, `localization`; `AGENTS.md`, workflow, GDD, MVP plan and M15 evidence were read. **Acceptance:** complete 20 story content and prove non-forgeable authored unlock chains at engine-free source level. **Visual evidence:** NOT RUN (text authoring only; Unity Editor/device localization/layout checks deferred). **Save impact:** no save schema or receipt format changes; V2/V3 bytes and validators untouched.
 - **Files changed:** `Content/FirstPlayableEventContent.cs`, `tools/ContentCatalogChecks/Program.cs`, this journal.
 - **Known limitations:** M15-T01 **PARTIAL**. V4 production bootstrap, runtime offer trigger/pending choice UI, and unified spendable event cash/XP effects still need implementation and runtime acceptance. Before shipping dynamic catalog updates, a versioned V4 event catalog policy must pin historical replay definitions across content revisions; source CI does not prove such upgrades. PR #52 remains Draft, unmerged.
+
+
+## Increment 15 — Reject V4 batch-root command-ID collisions at event admission
+
+**Owner model:** GPT-6 Technical Director. **Branch:** `feat/m15-event-selection-foundation`. **Status:** M15-T01 PARTIAL, PR #52 remains Draft and unmerged.
+
+- The existing V4 cold validator already prohibited a day/month batch root from sharing an ID with an event offer or resolution, but `EventV4CommitGateway.Offer` and `Resolve` only checked V3 receipts. This allowed an invalid attempt to enter the planner before failing later at candidate validation.
+- Both event entrypoints now use one shared `ConflictsWithCoreOrBatch` predicate. It rejects collisions with authenticated V3 receipt identities and all durable batch roots, and disallows the reserved `v4batch/` child namespace for any external event command. Retry identities belonging to previously committed event offers/resolutions still flow to the existing event journal idempotency logic.
+- Extended the existing real-file V4 day/month batch test to reject root and child-namespace reuse while an interrupted batch is active, while a choice is pending, and after the batch reaches its target. Each rejected attempt must leave saved bytes unchanged.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler; unity-cli (project and published community skills read before editing).
+- **Tests:** Engine-free EconomicChecks CI requested for the new exact commit; no local .NET or Unity runner available. Result must be recorded from the exact-head CI, not inferred from static inspection. Legacy suites and frozen thresholds unchanged.
+- **Visual evidence:** NOT RUN, no visible UI or art changes in this increment. Unity runtime/device acceptance still deferred.
+- **Save impact:** None. V2/V3 frozen serializers, archived fixtures, V4 wire model, reward model and receipts are unchanged. Only command admission and regression coverage changed.
+- **Known limitations:** Event cash/XP effects remain tag-only, production V4 bootstrap and automatic event offer flow not wired, catalog-version replay policy unresolved. This increment alone does not close M15-T01.
+- **Files changed:** `Assets/StartupLife/Scripts/Integration/EventV4CommitGateway.cs`, `tools/EconomicChecks/Program.cs`, this journal.

@@ -118,7 +118,7 @@ namespace StartupLife.Integration
             var current = read.State!;
             if (!ValidIdentity(runId, commandId, current))
                 return Reject(current, "event.invalid_command");
-            if (current.Receipts.Any(x => x.CommandId == commandId))
+            if (ConflictsWithCoreOrBatch(current, commandId))
                 return Reject(current, "event.command_id_conflict");
 
             var journal = current.EventV4!.Journal!;
@@ -161,7 +161,7 @@ namespace StartupLife.Integration
             var current = read.State!;
             if (!ValidIdentity(runId, commandId, current))
                 return Reject(current, "event.invalid_command");
-            if (current.Receipts.Any(x => x.CommandId == commandId))
+            if (ConflictsWithCoreOrBatch(current, commandId))
                 return Reject(current, "event.command_id_conflict");
             var payload = current.EventV4!;
             var result = EventDecisionJournal.Resolve(payload.Journal!, definitions, policies,
@@ -420,6 +420,15 @@ namespace StartupLife.Integration
         private static bool Valid(LoadResult read) =>
             (read.Status == LoadStatus.Valid || read.Status == LoadStatus.RecoveredBackup) &&
             read.State != null && read.State.SaveVersion == 4 && read.State.EventV4?.Journal != null;
+
+        // Event IDs share a command namespace with both V3 receipts and durable
+        // V4 day/month roots. Reject collisions before planning or consuming RNG;
+        // the V4 cold validator enforces the same rule on persisted checkpoints.
+        private static bool ConflictsWithCoreOrBatch(GameState state, string commandId) =>
+            commandId.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
+                StringComparison.Ordinal) ||
+            state.Receipts.Any(x => x.CommandId == commandId) ||
+            state.EventV4!.Journal!.AdvanceBatches.Any(x => x.RootCommandId == commandId);
 
         private static bool ValidIdentity(string runId, string commandId, GameState state) =>
             runId == state.RunId && !string.IsNullOrWhiteSpace(commandId) &&
