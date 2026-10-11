@@ -450,3 +450,14 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Acceptance:** cold V4 cannot duplicate any V3 core receipt identity; real event/gameplay CAS flow and migrated saves still pass. **Tests:** exact-head engine-free CI pending. **Visual:** NOT RUN, no view changes. **Save impact:** no wire/schema or frozen fixture changes. **Limitations:** spendable V3-native event cash/XP requires single-revision V3/V4 composite receipt coupling; not enabled here.
 - **Files:** Integration/StagedEventV4SaveSerializer.cs; tools/EconomicChecks/Program.cs; this journal.
+
+
+## Increment 34 — Restore WorkShift one-boundary command under V4 auto-event policy
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL, PR #52 Draft.
+- Found a production integration bug: `WorkShiftPlaybackController` uses the single `FirstPlayableFlow.AdvanceBoundary` command to animate scheduled career scenes, while the opt-in V4 gateway previously rejected all direct boundaries (only Day/Month batches worked). This made the work action nonfunctional in V4 mode.
+- Changed only `EventV4CommitGateway.ExecuteCoreInternal`: after normal command/expected-revision/ID/pending validation, a single direct boundary on an unprocessed day invokes the existing deterministic `CheckCurrentDay` CAS. An offered event stops the work step and persists pending choice without V3 clock receipt. An ineligible day persists its negative checkpoint, cold-reads verified state, then executes the SAME original boundary ID against the new global revision. Previously evaluated dates continue directly; pending decisions always block time.
+- Added real-file EconomicChecks with V3 character, work boundary triggers event, event blocks work with byte-exact retries, cold resolution allows one V3 boundary, no second event draw, and duplicate work receipt retry is byte-identical.
+- **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Tests:** exact-head CI pending. **Visual evidence:** Unity runtime/PlayMode not run. **Save impact:** no schema or historical fixture changes. **Known limitations:** spendable financial event rewards still fail closed pending composite V3/V4 receipt proof; no Unity runtime acceptance yet.
+- **Files changed:** EventV4CommitGateway.cs, tools/EconomicChecks/Program.cs, JOURNAL.md.

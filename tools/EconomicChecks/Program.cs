@@ -2088,6 +2088,91 @@ internal static class Program
                 catch (IOException) { }
             }
         });
+        Check("M15 work-shift boundary checks daily event and resumes after cold choice", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var economics = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economics, content);
+            var v3 = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var definitions = new[] { new GameEventDefinition(
+                "workday-prompt", "life", 2026, 0, 1, 0, 1, 1, 0,
+                Array.Empty<string>(), Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("continue", "event.continue",
+                    "outcome.continue") }) };
+            var policies = new[] { new EventCategoryPolicy("life", 0, 10, 2) };
+            var serializer = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, definitions, policies));
+            var runner = new EventV4CoreCommandRunner(content, v3, economics, archives);
+            var initial = GameSession.NewState(content, "m15-workshift", 74011UL,
+                new SimDate(2026, 10, 1));
+            var folder = Path.Combine(Path.GetTempPath(),
+                "m15-workshift-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            var file = Path.Combine(folder, "game.save");
+            try
+            {
+                File.WriteAllBytes(file, JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(initial), 2, 0));
+                EventV4CommitGateway Cold() => new EventV4CommitGateway(
+                    serializer, new AtomicFileSaveStore(file, serializer),
+                    definitions, policies, runner, automaticDailyChecks: true);
+                var create = Cold().ExecuteCore(new CommandEnvelope(initial.RunId,
+                    "create-workshift", 0, new GameCommand(CommandKind.CreateCharacter,
+                        "fresh", 25, "Work Tester", "base.female")));
+                Assert(create.Status == EventCommitStatus.Committed,
+                    "real character is created by V3 receipt before working");
+                var initialCore = Cold().Read().State!;
+                var boundary = new CommandEnvelope(initial.RunId, "work-boundary",
+                    initialCore.Revision, new GameCommand(CommandKind.AdvanceBoundary));
+                var blocked = Cold().ExecuteCore(boundary);
+                var pending = Cold().ReadPendingChoice() ??
+                    throw new InvalidOperationException("work-triggered choice not persisted");
+                var afterOffer = Cold().Read().State!;
+                Assert(blocked.Status == EventCommitStatus.Rejected &&
+                    blocked.ReasonKey == "event.choice_required" &&
+                    pending.EventId == "workday-prompt" &&
+                    afterOffer.Receipts.Count == initialCore.Receipts.Count &&
+                    afterOffer.DateIso == initialCore.DateIso &&
+                    afterOffer.Minute == initialCore.Minute,
+                    "work action must open a durable event before consuming time");
+                var offeredBytes = File.ReadAllBytes(file);
+                Assert(Cold().ExecuteCore(new CommandEnvelope(initial.RunId,
+                    "work-boundary-after-offer", afterOffer.Revision,
+                    new GameCommand(CommandKind.AdvanceBoundary))).ReasonKey ==
+                    "event.choice_required" &&
+                    File.ReadAllBytes(file).SequenceEqual(offeredBytes),
+                    "work cannot skip pending decision with a different command ID");
+                Assert(Cold().Resolve(initial.RunId, "resolve-work-prompt",
+                    afterOffer.Revision, pending.TicketId, "continue").Status ==
+                    EventCommitStatus.Committed,
+                    "event outcome is committed exactly once before work resumes");
+                var resolved = Cold().Read().State!;
+                var resume = new CommandEnvelope(initial.RunId, "work-after-choice",
+                    resolved.Revision, new GameCommand(CommandKind.AdvanceBoundary));
+                var advanced = Cold().ExecuteCore(resume);
+                var completed = Cold().Read().State!;
+                Assert(advanced.Status == EventCommitStatus.Committed &&
+                    completed.Receipts.Count == initialCore.Receipts.Count + 1 &&
+                    completed.Minute > initialCore.Minute &&
+                    completed.EventV4!.Journal!.Tickets.Count == 1 &&
+                    completed.EventV4.Journal.OutcomeReceipts.Count == 1 &&
+                    completed.EventV4.Journal.NoEligibleDays.Count == 0,
+                    "work resumes V3 clock on already-checked day with no new ticket");
+                var bytes = File.ReadAllBytes(file);
+                Assert(Cold().ExecuteCore(resume).Status ==
+                        EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(file).SequenceEqual(bytes),
+                    "cold work boundary retry must not spend time or duplicate receipts");
+            }
+            finally
+            {
+                try { Directory.Delete(folder, true); }
+                catch (IOException) { }
+            }
+        });
         Check("M15 opt-in daily event trigger stops batch and resumes after cold choice", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();

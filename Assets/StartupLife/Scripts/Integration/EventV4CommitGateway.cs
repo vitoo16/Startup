@@ -444,9 +444,6 @@ namespace StartupLife.Integration
                 string.IsNullOrEmpty(current.Name) &&
                 command.Command.Kind != CommandKind.CreateCharacter)
                 return Reject(current, "event.character_required");
-            if (automaticDailyChecks && !batchChild &&
-                command.Command.Kind == CommandKind.AdvanceBoundary)
-                return Reject(current, "event.advance_batch_required");
             // A required choice pauses gameplay, not only the clock. Otherwise
             // a course purchase, resignation or business change could mutate
             // the authenticated V3 world while the player sees a blocking event.
@@ -455,6 +452,34 @@ namespace StartupLife.Integration
             if (journal.PendingTicketId.Length > 0 &&
                 command.Command.Kind != CommandKind.AcknowledgePlayback)
                 return Reject(current, "event.choice_required");
+            if (automaticDailyChecks && !batchChild &&
+                command.Command.Kind == CommandKind.AdvanceBoundary &&
+                !journal.Tickets.Any(t => t.OpenedDateIso == current.DateIso) &&
+                !journal.NoEligibleDays.Any(d => d.DateIso == current.DateIso))
+            {
+                // WorkShiftPlaybackController legitimately drives one boundary
+                // at a time, unlike the durable Day/Month batch. It must use
+                // the same daily V4 ticket/negative-check gate before touching
+                // the V3 clock. Stale callers have already been rejected.
+                var check = CheckCurrentDay(current.RunId, current.Revision);
+                if (check.Status == EventCommitStatus.Committed)
+                    return new EventCommitResult(EventCommitStatus.Rejected,
+                        "event.choice_required", check.Revision);
+                if (check.Status != EventCommitStatus.NoEligibleEvent &&
+                    check.Status != EventCommitStatus.AlreadyCommitted)
+                    return check;
+                var observed = Read();
+                if (!Valid(observed) || observed.State!.Revision != check.Revision)
+                    return LoadFailure(new LoadResult(LoadStatus.RecoveryRequired,
+                        reason: "save.recovery_required"));
+                if (observed.State.EventV4!.Journal!.PendingTicketId.Length > 0)
+                    return Reject(observed.State, "event.choice_required");
+                // The internal, authenticated daily check used one CAS
+                // revision. Retry the *same* player command against that
+                // newly verified frontier, not a second caller-supplied ID.
+                return ExecuteCoreInternal(new CommandEnvelope(command.RunId,
+                    command.CommandId, observed.State.Revision, command.Command), false);
+            }
             if (coreRunner == null)
                 return Reject(current, "save.v4_core_evaluator_unavailable");
             try
