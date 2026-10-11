@@ -20,12 +20,14 @@ namespace StartupLife.Core
         [DataMember(Order = 7)] public string OriginDateIso { get; set; } = "";
         [DataMember(Order = 8)] public int Stage { get; set; }
         [DataMember(Order = 9)] public List<string> Tags { get; set; } = new List<string>();
+        [DataMember(Order = 10)] public string OfferCommandId { get; set; } = "";
 
         public EventTicketRecord Copy() => new EventTicketRecord
         {
             Id = Id, EventId = EventId, CategoryId = CategoryId, OpenedDateIso = OpenedDateIso,
             ChoiceId = ChoiceId, ResolutionCommandId = ResolutionCommandId, OutcomeId = OutcomeId,
-            OriginDateIso = OriginDateIso, Stage = Stage, Tags = new List<string>(Tags)
+            OriginDateIso = OriginDateIso, Stage = Stage, Tags = new List<string>(Tags),
+            OfferCommandId = OfferCommandId
         };
     }
 

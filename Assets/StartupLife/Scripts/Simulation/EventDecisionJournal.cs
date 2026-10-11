@@ -20,12 +20,34 @@ namespace StartupLife.Simulation
 
         public static EventJournalResult Offer(EventJournalState source,
             IReadOnlyList<GameEventDefinition> definitions, IReadOnlyList<EventCategoryPolicy> policies,
-            GameEventContext context, long expectedRevision)
+            GameEventContext context, long expectedRevision, string offerCommandId = "")
         {
             var policyIndex = Validate(source, definitions, policies);
             if (context == null) throw new ArgumentNullException(nameof(context));
+            if (offerCommandId == null) return Reject(source, "event.invalid_command");
+            // Explicit operation identities are replayable even after a successful
+            // resolve or a stale retry. Unnamed legacy planner calls remain non-idempotent.
+            if (offerCommandId.Length > 0)
+            {
+                if (string.IsNullOrWhiteSpace(offerCommandId))
+                    return Reject(source, "event.invalid_command");
+                var prior = source.Tickets.FirstOrDefault(x =>
+                    x.OfferCommandId == offerCommandId);
+                if (prior != null)
+                    return prior.OpenedDateIso == context.Date.ToString() &&
+                           prior.OriginDateIso == context.OriginDate.ToString() &&
+                           prior.Stage == context.Stage &&
+                           prior.Tags.SequenceEqual(context.Tags)
+                        ? new EventJournalResult(EventJournalStatus.AlreadyCommitted, "", source.Copy(), prior.Id)
+                        : Reject(source, "event.command_id_conflict");
+                if (source.Tickets.Any(x => x.ResolutionCommandId == offerCommandId))
+                    return Reject(source, "event.command_id_conflict");
+            }
             if (expectedRevision != source.Revision) return Reject(source, "event.stale_revision");
             if (source.PendingTicketId.Length > 0) return Reject(source, "event.choice_required");
+            if (source.Tickets.Count > 0 &&
+                source.Tickets[0].OriginDateIso != context.OriginDate.ToString())
+                return Reject(source, "event.origin_mismatch");
             if (source.Tickets.Count > 0 &&
                 string.CompareOrdinal(context.Date.ToString(), source.Tickets[source.Tickets.Count - 1].OpenedDateIso) <= 0)
                 return Reject(source, "event.window_already_processed");
@@ -49,7 +71,9 @@ namespace StartupLife.Simulation
                 OpenedDateIso = context.Date.ToString(),
                 OriginDateIso = context.OriginDate.ToString(),
                 Stage = context.Stage,
-                Tags = context.Tags.ToList()
+                Tags = context.Tags.ToList(),
+                OfferCommandId = offerCommandId.Length > 0
+                    ? offerCommandId : source.RunId + "/event-offer/" + context.Date.ToString()
             });
             candidate.PendingTicketId = ticketId;
             candidate.Revision = checked(candidate.Revision + 1);
@@ -71,6 +95,8 @@ namespace StartupLife.Simulation
                     ? new EventJournalResult(EventJournalStatus.AlreadyCommitted, "", source.Copy(),
                         previous.Id, previous.OutcomeId)
                     : Reject(source, "event.command_id_conflict");
+            if (source.Tickets.Any(x => x.OfferCommandId == commandId))
+                return Reject(source, "event.command_id_conflict");
             if (source.Revision != expectedRevision) return Reject(source, "event.stale_revision");
             if (source.PendingTicketId != ticketId)
                 return Reject(source, "event.choice_not_pending");
@@ -112,7 +138,9 @@ namespace StartupLife.Simulation
             if (definitions.Any(x => !categories.ContainsKey(x.CategoryId)))
                 throw new ArgumentException("An event has no category policy.");
             var completed = 0;
+            var usedCommands = new HashSet<string>(StringComparer.Ordinal);
             string lastDay = "";
+            string originDay = "";
             for (var i = 0; i < state.Tickets.Count; i++)
             {
                 var ticket = state.Tickets[i];
@@ -120,6 +148,8 @@ namespace StartupLife.Simulation
                         (i + 1).ToString(CultureInfo.InvariantCulture) ||
                     !events.TryGetValue(ticket.EventId, out var definition) ||
                     definition.CategoryId != ticket.CategoryId ||
+                    string.IsNullOrWhiteSpace(ticket.OfferCommandId) ||
+                    !usedCommands.Add(ticket.OfferCommandId) ||
                     string.IsNullOrWhiteSpace(ticket.OpenedDateIso) ||
                     (lastDay.Length > 0 && string.CompareOrdinal(lastDay, ticket.OpenedDateIso) >= 0))
                     throw new ArgumentException("Invalid event ticket identity, content or chronology.");
@@ -128,18 +158,21 @@ namespace StartupLife.Simulation
                     string.IsNullOrWhiteSpace(ticket.OriginDateIso) ||
                     Parse(ticket.OriginDateIso).ToString() != ticket.OriginDateIso ||
                     ticket.OriginDateIso.CompareTo(ticket.OpenedDateIso) > 0 ||
+                    (originDay.Length > 0 && originDay != ticket.OriginDateIso) ||
                     ticket.Stage < 0 || ticket.Tags == null ||
                     ticket.Tags.Any(x => !ContentId.IsValid(x)) ||
                     !ticket.Tags.SequenceEqual(ticket.Tags.Distinct(StringComparer.Ordinal)
                         .OrderBy(x => x, StringComparer.Ordinal)))
                     throw new ArgumentException("Noncanonical event offer context.");
                 lastDay = ticket.OpenedDateIso;
+                originDay = ticket.OriginDateIso;
 
                 var resolved = ticket.ResolutionCommandId.Length > 0;
                 if (resolved)
                 {
                     completed++;
                     if (string.IsNullOrWhiteSpace(ticket.ChoiceId) ||
+                        !usedCommands.Add(ticket.ResolutionCommandId) ||
                         !definition.Choices.Any(x => x.Id == ticket.ChoiceId && x.OutcomeId == ticket.OutcomeId))
                         throw new ArgumentException("Resolved event choice/outcome does not match content.");
                 }
@@ -147,9 +180,7 @@ namespace StartupLife.Simulation
                     state.PendingTicketId != ticket.Id)
                     throw new ArgumentException("Only the last event may have an unresolved choice.");
             }
-            if (state.Tickets.Select(x => x.ResolutionCommandId)
-                    .Where(x => x.Length > 0).Distinct(StringComparer.Ordinal).Count() != completed ||
-                state.Revision != state.Tickets.Count + completed ||
+            if (state.Revision != state.Tickets.Count + completed ||
                 (state.Tickets.Count == 0 || state.Tickets[state.Tickets.Count - 1].ResolutionCommandId.Length > 0) &&
                     state.PendingTicketId.Length != 0)
                 throw new ArgumentException("Event choice commands or revision are inconsistent.");
