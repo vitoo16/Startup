@@ -1101,6 +1101,97 @@ internal static class Program
         });
 
 
+        Check("M15 outcome effect receipts unlock later events exactly once and reject forged replay", () =>
+        {
+            Throws<ArgumentException>(() => new EventChoiceDefinition(
+                "fake-job", "event.fake", "outcome.fake", new[] { "employed" }));
+            Throws<ArgumentException>(() => new EventChoiceDefinition(
+                "duplicate", "event.duplicate", "outcome.duplicate",
+                new[] { "event/contact", "event/contact" }));
+            var definitions = new[]
+            {
+                new GameEventDefinition("meet-contact", "network", 2026, 1,
+                    1, 0, 1, 2, 0, Array.Empty<string>(), Array.Empty<string>(),
+                    new[] { new EventChoiceDefinition("exchange", "event.exchange",
+                        "outcome.contact", new[] { "event/contact" }) }),
+                new GameEventDefinition("contact-followup", "network", 2026, 1,
+                    1, 0, 1, 2, 1, new[] { "event/contact" }, Array.Empty<string>(),
+                    new[] { new EventChoiceDefinition("accept", "event.accept",
+                        "outcome.followup") })
+            };
+            var policies = new[] { new EventCategoryPolicy("network", 0, 30, 5) };
+            var baseDate = new SimDate(2026, 10, 1);
+            var state = new GameState
+            {
+                RunId = "effect-run", Name = "Tester", DateIso = baseDate.ToString()
+            };
+            var journal = EventDecisionJournal.New(state.RunId, 42117);
+            journal.OriginDateIso = state.DateIso;
+            var firstContext = AuthoritativeEventContext.FromCore(state, journal);
+            Assert(firstContext.Stage == 1 && !firstContext.Tags.Contains("event/contact"),
+                "unearned effect tag cannot be present before choice");
+            var offered = EventDecisionJournal.Offer(journal, definitions, policies,
+                firstContext, journal.Revision, "offer-first", 0);
+            Assert(offered.Status == EventJournalStatus.Offered &&
+                offered.Next.Tickets.Single().EventId == "meet-contact",
+                "first-day offer must select authoring window before effect exists");
+            var resolved = EventDecisionJournal.Resolve(offered.Next, definitions, policies,
+                offered.Next.Revision, "choose-contact", offered.TicketId, "exchange");
+            Assert(resolved.Status == EventJournalStatus.Resolved &&
+                resolved.Next.OutcomeReceipts.Count == 1 &&
+                resolved.Next.OutcomeReceipts[0].Id == offered.TicketId + "/effect" &&
+                resolved.Next.OutcomeReceipts[0].OutcomeId == "outcome.contact" &&
+                resolved.Next.OutcomeReceipts[0].ResolutionCommandId == "choose-contact" &&
+                resolved.Next.OutcomeReceipts[0].GrantedTags.SequenceEqual(
+                    new[] { "event/contact" }),
+                "choice yields one deterministic persisted receipt with the authored tag");
+            var duplicated = EventDecisionJournal.Resolve(resolved.Next, definitions, policies,
+                0, "choose-contact", offered.TicketId, "exchange");
+            Assert(duplicated.Status == EventJournalStatus.AlreadyCommitted &&
+                duplicated.Next.OutcomeReceipts.Count == 1 &&
+                duplicated.Next.Revision == resolved.Next.Revision,
+                "stale command retry never applies an effect twice");
+            var currentTags = AuthoritativeEventContext.FromCore(state, resolved.Next);
+            var atFirstOffer = AuthoritativeEventContext.FromCore(state, resolved.Next,
+                offered.TicketId);
+            Assert(currentTags.Tags.Contains("event/contact") &&
+                !atFirstOffer.Tags.Contains("event/contact"),
+                "later eligibility uses the receipt while past context excludes self-reward");
+            state.DateIso = baseDate.AddDays(1).ToString();
+            var secondContext = AuthoritativeEventContext.FromCore(state, resolved.Next);
+            var secondOffer = EventDecisionJournal.Offer(resolved.Next, definitions, policies,
+                secondContext, resolved.Next.Revision, "offer-second", 0);
+            Assert(secondOffer.Status == EventJournalStatus.Offered &&
+                secondOffer.Next.Tickets.Last().EventId == "contact-followup" &&
+                secondOffer.Next.Tickets.Last().Tags.Contains("event/contact") &&
+                secondOffer.Next.OutcomeReceipts.Count == 1,
+                "earned contact unlocks the next-day event without duplicating receipt");
+            EventJournalReplay.Validate(secondOffer.Next, definitions, policies);
+
+            EventJournalState Clone() => JsonSaveSerializer.ReadObject<EventJournalState>(
+                JsonSaveSerializer.WriteObject(secondOffer.Next));
+            var forgedTags = Clone();
+            forgedTags.OutcomeReceipts[0].GrantedTags.Clear();
+            Throws<ArgumentException>(() =>
+                EventJournalReplay.Validate(forgedTags, definitions, policies));
+            var repeated = Clone();
+            repeated.OutcomeReceipts.Add(repeated.OutcomeReceipts[0].Copy());
+            Throws<ArgumentException>(() =>
+                EventJournalReplay.Validate(repeated, definitions, policies));
+            var forgedOutcome = Clone();
+            forgedOutcome.OutcomeReceipts[0].OutcomeId = "outcome.fake";
+            Throws<ArgumentException>(() =>
+                EventJournalReplay.Validate(forgedOutcome, definitions, policies));
+            var removed = Clone();
+            removed.OutcomeReceipts.Clear();
+            Throws<ArgumentException>(() =>
+                EventJournalReplay.Validate(removed, definitions, policies));
+            var forgedOffer = Clone();
+            forgedOffer.Tickets[1].Tags.Clear();
+            Throws<ArgumentException>(() =>
+                EventJournalReplay.Validate(forgedOffer, definitions, policies));
+        });
+
         Check("M15 authoritative event maturity and tags derive only from committed core fields", () =>
         {
             var source = new GameState
@@ -1156,7 +1247,8 @@ internal static class Program
                 new StagedV3SaveSerializer(archives, replay));
             var definitions = new[] { new GameEventDefinition("career-moment", "career",
                 2026, 0, 1, 0, 4, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
-                new[] { new EventChoiceDefinition("continue", "event.continue", "outcome.continue") }) };
+                new[] { new EventChoiceDefinition("continue", "event.continue",
+                    "outcome.continue", new[] { "event/networked" }) }) };
             var policies = new[] { new EventCategoryPolicy("career", 0, 7, 4) };
             var serializer = new EventV4CompatibilitySerializer(
                 new StagedEventV4SaveSerializer(v3, definitions, policies));
@@ -1248,6 +1340,15 @@ internal static class Program
                     offered.TicketId, "continue");
                 Assert(resolved.Status == EventCommitStatus.Committed && resolved.Revision == 3,
                     "event resolve commits at global revision three");
+                var effectWire = gateway.Read().State!.EventV4!;
+                Assert(effectWire.Journal!.OutcomeReceipts.Count == 1 &&
+                    effectWire.Journal.OutcomeReceipts[0].GrantedTags.SequenceEqual(
+                        new[] { "event/networked" }),
+                    "a single authored gameplay effect is committed beside resolution");
+                var forgedEffect = JsonSaveSerializer.ReadObject<EventV4Payload>(
+                    JsonSaveSerializer.WriteObject(effectWire));
+                forgedEffect.Journal!.OutcomeReceipts[0].GrantedTags.Clear();
+                Throws<ArgumentException>(() => strictV4.SerializeVerified(forgedEffect));
                 var moneyCommand = new GameCommand(CommandKind.PurchaseCourse, "communication-basics");
                 var uncertainWriter = new EventV4CommitGateway(serializer,
                     new AtomicFileSaveStore(filename, serializer,
@@ -1293,6 +1394,7 @@ internal static class Program
                 Assert(restarted.Status == LoadStatus.Valid &&
                     restoredState.Receipts.Count == 3 &&
                     restoredState.EventV4!.Journal!.Tickets.Count == 1 &&
+                    restoredState.EventV4.Journal.OutcomeReceipts.Count == 1 &&
                     restoredState.Cash == expectedAfterCourse &&
                     restoredState.PendingChoiceId.Length == 0,
                     "cold replay validates interleaved V3 receipts and event history");
