@@ -241,6 +241,52 @@ internal static class Program
             Bytes(saved, JsonSaveSerializer.WriteObject(closed));
         });
 
+
+        Check("M15 explicit event offer receipt ID makes retries idempotent across cold restores", () =>
+        {
+            var definition = Event("career-idempotent", 3, 1, 0, 1, 0,
+                Array.Empty<string>(), Array.Empty<string>());
+            var definitions = new[] { definition };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 30, 3) };
+            var origin = new SimDate(2026, 10, 1);
+            var context = new GameEventContext(origin, origin, 1,
+                new[] { "employed" }, Array.Empty<EventOccurrence>());
+            var source = EventDecisionJournal.New("offer-retries", 138);
+            var offered = EventDecisionJournal.Offer(source, definitions, policies, context, 0, "offer-command-1");
+            Equal(EventJournalStatus.Offered, offered.Status);
+            var offerBytes = JsonSaveSerializer.WriteObject(offered.Next);
+            var pending = JsonSaveSerializer.ReadObject<EventJournalState>(offerBytes);
+            var retry = EventDecisionJournal.Offer(pending, definitions, policies, context, 0, "offer-command-1");
+            Equal(EventJournalStatus.AlreadyCommitted, retry.Status);
+            Equal(offered.TicketId, retry.TicketId);
+            Bytes(offerBytes, JsonSaveSerializer.WriteObject(pending));
+            var changedContext = new GameEventContext(origin, origin, 1,
+                new[] { "not-employed" }, Array.Empty<EventOccurrence>());
+            Equal("event.command_id_conflict", EventDecisionJournal.Offer(pending, definitions, policies,
+                changedContext, pending.Revision, "offer-command-1").ReasonKey);
+            Equal("event.command_id_conflict", EventDecisionJournal.Resolve(pending, definitions, policies,
+                pending.Revision, "offer-command-1", offered.TicketId, "continue").ReasonKey);
+            var resolved = EventDecisionJournal.Resolve(pending, definitions, policies,
+                pending.Revision, "resolve-command-1", offered.TicketId, "continue");
+            Equal(EventJournalStatus.Resolved, resolved.Status);
+            var afterResolve = JsonSaveSerializer.ReadObject<EventJournalState>(
+                JsonSaveSerializer.WriteObject(resolved.Next));
+            retry = EventDecisionJournal.Offer(afterResolve, definitions, policies,
+                context, 0, "offer-command-1");
+            Equal(EventJournalStatus.AlreadyCommitted, retry.Status);
+            EventJournalReplay.Validate(afterResolve, definitions, policies);
+            var nextContext = new GameEventContext(origin, origin.AddDays(4), 1,
+                new[] { "employed" }, Array.Empty<EventOccurrence>());
+            Equal("event.command_id_conflict", EventDecisionJournal.Offer(afterResolve, definitions,
+                policies, nextContext, afterResolve.Revision, "resolve-command-1").ReasonKey);
+            var next = EventDecisionJournal.Offer(afterResolve, definitions, policies,
+                nextContext, afterResolve.Revision, "offer-command-2");
+            Equal(EventJournalStatus.Offered, next.Status);
+            var altered = JsonSaveSerializer.ReadObject<EventJournalState>(
+                JsonSaveSerializer.WriteObject(next.Next));
+            altered.Tickets[1].OfferCommandId = "offer-command-1";
+            Throws(() => EventJournalReplay.Validate(altered, definitions, policies));
+        });
         Check("M15 large journal cold replay shares one selection history without RNG drift", () =>
         {
             const int eventCount = 240;
