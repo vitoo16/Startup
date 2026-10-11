@@ -2022,7 +2022,7 @@ internal static class Program
                 var initial = Cold().Read().State!;
                 var screen = new EventV4GameCommands(Cold(), content, economic);
                 Assert(initial.Revision == 0 && initial.Name.Length == 0 &&
-                    screen.Snapshot().State.Revision == 0 &&
+                    screen.Snapshot().Revision == 0 &&
                     !File.Exists(path), "reading first-run V4 cannot persist a seed");
                 var create = new CommandEnvelope(seed.RunId, "fresh-v4-create", 0,
                     new GameCommand(CommandKind.CreateCharacter, "fresh", 25,
