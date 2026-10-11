@@ -1101,6 +1101,50 @@ internal static class Program
         });
 
 
+        Check("M15 authoritative event maturity and tags derive only from committed core fields", () =>
+        {
+            var source = new GameState
+            {
+                RunId = "event-tags",
+                DateIso = "2026-10-11",
+                Name = "Player",
+                Employment = new EmploymentState { CareerId = "developer" }
+            };
+            var journal = EventDecisionJournal.New("event-tags", 1234);
+            journal.OriginDateIso = "2026-10-01";
+            var employed = AuthoritativeEventContext.FromCore(source, journal);
+            Assert(employed.Stage == 1 && employed.OriginDate.ToString() == "2026-10-01" &&
+                employed.Date.ToString() == source.DateIso &&
+                employed.Tags.Contains("character-created") &&
+                employed.Tags.Contains("employed") && employed.Tags.Contains("career/developer") &&
+                !employed.Tags.Contains("business-active"),
+                "employed-only tags are derived from actual current employment");
+            source.Employment = null;
+            source.Course = new CourseState { DefinitionId = "communication-basics" };
+            var studying = AuthoritativeEventContext.FromCore(source, journal);
+            Assert(studying.Stage == 1 && studying.Tags.Contains("unemployed") &&
+                studying.Tags.Contains("course-active") &&
+                studying.Tags.Contains("course/communication-basics") &&
+                !studying.Tags.Contains("employed"),
+                "resignation and an active course deterministically change event eligibility");
+            source.Businesses.Add(new BusinessState
+            {
+                DefinitionId = "online-store", OpenedIso = source.DateIso
+            });
+            var founder = AuthoritativeEventContext.FromCore(source, journal);
+            Assert(founder.Stage == 2 && founder.Tags.Contains("business-active") &&
+                founder.Tags.Contains("business/online-store"),
+                "only a real active business enables the side-project event tier");
+            source.Businesses[0].ClosedIso = source.DateIso;
+            source.Businesses[0].ClosedMinute = 800;
+            var closed = AuthoritativeEventContext.FromCore(source, journal);
+            Assert(closed.Stage == 1 && !closed.Tags.Contains("business/online-store") &&
+                !closed.Tags.Contains("business-active"),
+                "closed business must not retain the eligibility tag");
+            var wrongRun = EventDecisionJournal.New("different-run", 4321);
+            wrongRun.OriginDateIso = source.DateIso;
+            Throws<ArgumentException>(() => AuthoritativeEventContext.FromCore(source, wrongRun));
+        });
         Check("M15 V4 core GameSession receipts interleave with events and restore exactly once", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();
