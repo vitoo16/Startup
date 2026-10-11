@@ -313,3 +313,16 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler.
 - **Tests:** exact-head CI pending. **Visual:** NOT RUN. **Save impact:** only staged V4 journal NoEligibleDays, no schema3 or immutable fixture changes. **Known limitations:** live production V4 bootstrap cutover, event cash/XP and Unity runtime proof remain pending.
 - **Files changed:** Integration/EventV4CommitGateway.cs, tools/EconomicChecks/Program.cs, this journal.
+
+
+## Increment 22 — Backward-compatible V4 daily-check field admission
+
+**Owner:** GPT-6 Technical Director. **Task:** M15-T01 staged save compatibility. **Status:** PARTIAL, PR #52 remains Draft; no merge.
+
+- Prior experimental V4 checkpoints were serialized before `EventJournalState.NoEligibleDays` was introduced. `DataContractJsonSerializer` does not execute ordinary property/field initializers on deserialization. Without an explicit migration default, such authentic older checkpoints deserialize `NoEligibleDays == null` and fail strict replay despite otherwise valid state. Added a single `[OnDeserializing]` initializer for this **additive field only**. An explicitly serialized `null` still fails closed through the existing journal validator.
+- Added an engine-free regression that constructs a real V4 pending-choice envelope, removes only the new optional JSON member, **recomputes** its checksum, restores it from the actual atomic file store without rewriting bytes on read, resolves the persisted choice using existing V4 CAS, reopens the upgraded checkpoint, verifies the member is now serialized, and cold retries the outcome byte-identically. An explicitly null member remains rejected.
+- This does not add or duplicate V3 evaluation logic, loosen event replay, change balance data or mutate historical V2/V3 fixtures. Existing V4 negative-day rows must still pass all authoritative V3 frontier checks.
+- **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler.
+- **Tests:** exact-commit engine-free CI to be recorded; local Unity runtime and device QA NOT RUN. **Visual evidence:** NOT RUN (save-only).
+- **Save impact:** older staged V4 wire shape admitted in memory; write-after-commit upgrades optional field, no bulk migration of bytes. **Known limitations:** spendable cash/XP event effects require a V3-native receipt kind with V4 event proof; no new reward API added in this increment. V4 production bootstrap stays inactive.
+- **Files changed:** `Assets/StartupLife/Scripts/Core/EventJournalContracts.cs`, `tools/EconomicChecks/Program.cs`, this journal.

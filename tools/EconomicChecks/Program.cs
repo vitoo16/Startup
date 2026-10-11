@@ -1073,6 +1073,95 @@ internal static class Program
             Equal(EventJournalStatus.Offered, offer.Status);
             migrated.Payload.Journal = offer.Next;
             var v4Bytes = stage.SerializeVerified(migrated.Payload);
+            // Recreate a byte-authentic early V4 *wire shape* with the new
+            // optional member omitted, without weakening current V4 replay.
+            // Generate fresh envelope checksum instead of faking disk bytes.
+            byte[] LegacyDailyShape(bool explicitNull)
+            {
+                var envelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(v4Bytes);
+                using var doc = JsonDocument.Parse(
+                    Convert.FromBase64String(envelope.PayloadBase64));
+                using var stream = new MemoryStream();
+                var removed = false;
+                using (var writer = new Utf8JsonWriter(stream))
+                {
+                    writer.WriteStartObject();
+                    foreach (var field in doc.RootElement.EnumerateObject())
+                    {
+                        if (field.Name != "Journal")
+                        {
+                            field.WriteTo(writer);
+                            continue;
+                        }
+                        writer.WritePropertyName(field.Name);
+                        writer.WriteStartObject();
+                        foreach (var member in field.Value.EnumerateObject())
+                        {
+                            if (member.Name == "NoEligibleDays")
+                            {
+                                removed = true;
+                                if (explicitNull)
+                                    writer.WriteNull(member.Name);
+                            }
+                            else member.WriteTo(writer);
+                        }
+                        writer.WriteEndObject();
+                    }
+                    writer.WriteEndObject();
+                }
+                True(removed);
+                return JsonSaveSerializer.Wrap(stream.ToArray(), 4, envelope.Generation);
+            }
+            var legacyV4Bytes = LegacyDailyShape(false);
+            var legacyRead = stage.DeserializeVerified(legacyV4Bytes);
+            Equal(LoadStatus.Valid, legacyRead.Status);
+            Equal(0, legacyRead.Payload!.Journal!.NoEligibleDays.Count);
+            Equal(offer.TicketId, legacyRead.Payload.Journal.PendingTicketId);
+            Equal(LoadStatus.Corrupt,
+                stage.DeserializeVerified(LegacyDailyShape(true)).Status);
+            // Cold read of the previous V4 layout must not eagerly rewrite a
+            // valid primary save; the first real CAS commit promotes its shape.
+            var folder = Path.Combine(Path.GetTempPath(),
+                "m15-v4-legacy-daily-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            var filename = Path.Combine(folder, "game.save");
+            try
+            {
+                File.WriteAllBytes(filename, legacyV4Bytes);
+                var activeSerializer = new EventV4CompatibilitySerializer(stage);
+                EventV4CommitGateway Cold() => new EventV4CommitGateway(activeSerializer,
+                    new AtomicFileSaveStore(filename, activeSerializer),
+                    definitions, policies);
+                var beforeRead = File.ReadAllBytes(filename);
+                var pending = Cold().ReadPendingChoice();
+                True(pending != null && pending.TicketId == offer.TicketId &&
+                    pending.Revision == 1);
+                Bytes(beforeRead, File.ReadAllBytes(filename));
+                var accepted = Cold().Resolve(original.RunId, "legacy-daily-resolve",
+                    pending!.Revision, pending.TicketId, "continue");
+                Equal(EventCommitStatus.Committed, accepted.Status);
+                var latest = Cold().Read().State!;
+                Equal(2L, latest.Revision);
+                Equal(1, latest.EventV4!.Journal!.OutcomeReceipts.Count);
+                Equal(0, latest.EventV4.Journal.NoEligibleDays.Count);
+                True(!File.ReadAllBytes(filename).SequenceEqual(beforeRead));
+                var promoted = JsonSaveSerializer.ReadObject<SaveEnvelope>(
+                    File.ReadAllBytes(filename));
+                using var promotedJson = JsonDocument.Parse(
+                    Convert.FromBase64String(promoted.PayloadBase64));
+                True(promotedJson.RootElement.GetProperty("Journal")
+                    .TryGetProperty("NoEligibleDays", out _));
+                var promotedBytes = File.ReadAllBytes(filename);
+                Equal(EventCommitStatus.AlreadyCommitted,
+                    Cold().Resolve(original.RunId, "legacy-daily-resolve",
+                        pending.Revision, pending.TicketId, "continue").Status);
+                Bytes(promotedBytes, File.ReadAllBytes(filename));
+            }
+            finally
+            {
+                try { Directory.Delete(folder, true); }
+                catch (IOException) { }
+            }
             var restored = stage.DeserializeVerified(v4Bytes);
             Equal(LoadStatus.Valid, restored.Status);
             Equal(offer.TicketId, restored.Payload!.Journal!.PendingTicketId);

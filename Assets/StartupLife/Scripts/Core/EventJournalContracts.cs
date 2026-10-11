@@ -110,6 +110,16 @@ namespace StartupLife.Core
         [DataMember(Order = 10)] public List<EventNoEligibleDayRecord> NoEligibleDays { get; set; } =
             new List<EventNoEligibleDayRecord>();
 
+        // Early unshipped V4 checkpoints predate NoEligibleDays. DataContract
+        // deserialization skips field initializers, so explicitly initialize
+        // ONLY this additive field when absent. An explicit JSON null still
+        // overwrites it and fails strict EventDecisionJournal.Validate.
+        [OnDeserializing]
+        private void InitializeLegacyDailyChecks(StreamingContext context)
+        {
+            NoEligibleDays = new List<EventNoEligibleDayRecord>();
+        }
+
         public EventJournalState Copy() => new EventJournalState
         {
             RunId = RunId, Revision = Revision, NextTicketSequence = NextTicketSequence,
