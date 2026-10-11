@@ -24,8 +24,8 @@ def read_json(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 def theme_color(text, name):
-    pat = r"(?m)^\\s*" + re.escape(name) + (
-        r": \\{r: ([0-9.]+), g: ([0-9.]+), b: ([0-9.]+), a: ([0-9.]+)\\}")
+    pat = r"(?m)^\s*" + re.escape(name) + (
+        r": \{r: ([0-9.]+), g: ([0-9.]+), b: ([0-9.]+), a: ([0-9.]+)\}")
     found = re.search(pat, text)
     require(found is not None, "Theme role missing: " + name)
     channels = [int(round(float(s) * 255)) for s in found.groups()[:3]]
