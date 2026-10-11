@@ -234,7 +234,7 @@ internal static class Program
             tampered.Tickets[0].Stage = 0;
             Throws(() => EventJournalReplay.Validate(tampered, definitions, policies));
             tampered = JsonSaveSerializer.ReadObject<EventJournalState>(saved);
-            tampered.Tickets[0].Tags.Add("not-sorted");
+            tampered.Tickets[0].Tags.Insert(0, "zebra");
             Throws(() => EventJournalReplay.Validate(tampered, definitions, policies));
             tampered = JsonSaveSerializer.ReadObject<EventJournalState>(saved);
             tampered.InitialEventRng = 538;
