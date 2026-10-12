@@ -116,44 +116,10 @@ namespace StartupLife.Presentation
                 panel.transform, 26, 128);
             host.AttachBusinessReadouts(finance, portfolio);
 
-            var scrolling = Node("BusinessManagementScroll", panel.transform,
-                typeof(Image), typeof(ScrollRect), typeof(LayoutElement));
-            scrolling.GetComponent<Image>().color = new Color(0.12f, 0.18f, 0.25f, 0.95f);
-            var scrollLayout = scrolling.GetComponent<LayoutElement>();
-            scrollLayout.flexibleHeight = 1;
-            scrollLayout.minHeight = 160;
-            var viewport = Node("Viewport", scrolling.transform, typeof(Image), typeof(Mask));
-            var viewportRect = (RectTransform)viewport.transform;
-            viewportRect.anchorMin = Vector2.zero;
-            viewportRect.anchorMax = Vector2.one;
-            viewportRect.offsetMin = viewportRect.offsetMax = Vector2.zero;
-            viewport.GetComponent<Image>().color = new Color(1, 1, 1, 0.01f);
-            viewport.GetComponent<Mask>().showMaskGraphic = false;
-
-            var content = Node("Content", viewport.transform,
-                typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-            var contentRect = (RectTransform)content.transform;
-            contentRect.anchorMin = new Vector2(0, 1);
-            contentRect.anchorMax = new Vector2(1, 1);
-            contentRect.pivot = new Vector2(0.5f, 1);
-            contentRect.anchoredPosition = Vector2.zero;
-            contentRect.sizeDelta = Vector2.zero;
-            var stack = content.GetComponent<VerticalLayoutGroup>();
-            stack.padding = new RectOffset(12, 12, 14, 14);
-            stack.spacing = 11;
-            stack.childAlignment = TextAnchor.UpperCenter;
-            stack.childControlWidth = stack.childControlHeight = true;
-            stack.childForceExpandWidth = true;
-            stack.childForceExpandHeight = false;
-            content.GetComponent<ContentSizeFitter>().verticalFit =
-                ContentSizeFitter.FitMode.PreferredSize;
-            var scroll = scrolling.GetComponent<ScrollRect>();
-            scroll.content = contentRect;
-            scroll.viewport = viewportRect;
-            scroll.horizontal = false;
-            scroll.vertical = true;
-            scroll.movementType = ScrollRect.MovementType.Clamped;
-            scroll.scrollSensitivity = 35;
+            var businessScroll = MobileScrollViewFactory.Create(panel.transform,
+                "BusinessManagementScroll", new Color(0.12f, 0.18f, 0.25f, 0.95f),
+                new RectOffset(12, 12, 14, 14), 11f, TextAnchor.UpperCenter, 35f);
+            var content = businessScroll.Content;
 
             Label("OpenBusinessHeading", "Mở doanh nghiệp", content.transform, 30, 62);
             founderGuidance = Label("FounderEligibilityGuidance",

@@ -48,3 +48,9 @@ Initial refactor `75c695652483439a296aae5a5a5e0ddd5e6d90df` reached 0 build warn
 - Consolidated the duplicated *receipt-shape* checks from candidate construction, V4 cold replay and CAS transition into `EventRewardSettlementPlan.MatchesCoreReceipt`. Historical/source-authority validation **must remain separate** at each trust boundary.
 - Negative tests exercise internal command namespace, canonical payload, revision, cue, duration, operation ID, parent and advance metadata. Never assume a receipt-shape match alone licenses payout.
 - Milestone remains PARTIAL; exact-head CI results are documented separately in the M15 journal.
+
+## Increment 55 — Three overlay scroll trees consolidated
+
+- One uGUI hierarchy constructor `Presentation/MobileScrollViewFactory` replaces equivalent scroll creation in LifeDashboardOverlay, BusinessManagementOverlay and EventChoiceOverlay; per-screen visual parameters remain explicit and unchanged. No secondary safe-area or navigation authority introduced.
+- Added Unity EditMode tests covering required ScrollRect/Viewport/Content hierarchy, rect anchors, masking, content growth and variant padding/spacing/sensitivity. These require an actual Editor run to count as evidence; engine-free static checks are not visual QA.
+- Unrelated ButtonNode/TextNode helpers are intentionally not merged in this slice. Tests and frozen saves were not loosened.

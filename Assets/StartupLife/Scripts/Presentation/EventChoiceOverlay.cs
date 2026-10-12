@@ -207,41 +207,13 @@ namespace StartupLife.Presentation
             status = LocalizedKeyLabel.EnsureFor(
                 TextNode("ChoiceStatus", panel.transform, 28, 110));
 
-            var scrollObject = Node("EventChoiceScroll", panel.transform,
-                typeof(Image), typeof(ScrollRect), typeof(LayoutElement));
-            scrollObject.GetComponent<Image>().color =
-                new Color(0.12f, 0.18f, 0.25f, 0.95f);
-            var size = scrollObject.GetComponent<LayoutElement>();
-            size.flexibleHeight = 1;
-            size.minHeight = 160;
+            var eventScroll = MobileScrollViewFactory.Create(panel.transform,
+                "EventChoiceScroll", new Color(0.12f, 0.18f, 0.25f, 0.95f),
+                new RectOffset(12, 12, 14, 14), 14f, TextAnchor.UpperCenter, 35f);
+            choiceContent = (RectTransform)eventScroll.Content.transform;
+            choiceScroll = eventScroll.Scroll;
+            var content = eventScroll.Content;
 
-            var viewport = Node("Viewport", scrollObject.transform,
-                typeof(Image), typeof(Mask));
-            var viewportRect = (RectTransform)viewport.transform;
-            viewportRect.anchorMin = Vector2.zero;
-            viewportRect.anchorMax = Vector2.one;
-            viewportRect.offsetMin = viewportRect.offsetMax = Vector2.zero;
-            viewport.GetComponent<Image>().color = new Color(1, 1, 1, 0.01f);
-            viewport.GetComponent<Mask>().showMaskGraphic = false;
-
-            var content = Node("Content", viewport.transform,
-                typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-            choiceContent = (RectTransform)content.transform;
-            choiceContent.anchorMin = new Vector2(0, 1);
-            choiceContent.anchorMax = new Vector2(1, 1);
-            choiceContent.pivot = new Vector2(0.5f, 1);
-            choiceContent.anchoredPosition = Vector2.zero;
-            choiceContent.sizeDelta = Vector2.zero;
-
-            var stack = content.GetComponent<VerticalLayoutGroup>();
-            stack.spacing = 14;
-            stack.padding = new RectOffset(12, 12, 14, 14);
-            stack.childAlignment = TextAnchor.UpperCenter;
-            stack.childControlWidth = stack.childControlHeight = true;
-            stack.childForceExpandWidth = true;
-            stack.childForceExpandHeight = false;
-            content.GetComponent<ContentSizeFitter>().verticalFit =
-                ContentSizeFitter.FitMode.PreferredSize;
             var storyText = TextNode("EventStory", content.transform, 29, 190);
             // The scroll content must grow to the full localized story height.
             // A fixed preferred height with Ellipsis silently hides long events.
@@ -249,13 +221,6 @@ namespace StartupLife.Presentation
             storyText.GetComponent<LayoutElement>().preferredHeight = -1;
             storyBody = LocalizedKeyLabel.EnsureFor(storyText);
 
-            choiceScroll = scrollObject.GetComponent<ScrollRect>();
-            choiceScroll.viewport = viewportRect;
-            choiceScroll.content = choiceContent;
-            choiceScroll.horizontal = false;
-            choiceScroll.vertical = true;
-            choiceScroll.movementType = ScrollRect.MovementType.Clamped;
-            choiceScroll.scrollSensitivity = 35;
             panel.SetActive(false);
         }
 
