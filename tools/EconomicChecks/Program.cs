@@ -2436,6 +2436,52 @@ internal static class Program
                 var before = File.ReadAllBytes(path);
                 var plan = EventDecisionJournal.PlanReward(current, defs, policies,
                     "settle-reward-proof", offered.TicketId, "receive");
+                // Reconstruct BOTH proposed ledgers from the actual cold V4
+                // checkpoint, then reject any independent money/XP/journal edits.
+                var pair = EventRewardCompositeProof.Prepare(before, serializer, runner,
+                    defs, policies, "settle-reward-proof", offered.TicketId, "receive");
+                EventRewardCompositeProof.Validate(before, pair, serializer, runner,
+                    defs, policies);
+                Assert(pair.Plan.CoreReceiptCommandId == plan.CoreReceiptCommandId &&
+                    pair.Plan.GlobalRevision == current.Revision + 2 &&
+                    pair.Core.Revision + pair.Journal.Revision == pair.Plan.GlobalRevision &&
+                    pair.Journal.PendingTicketId.Length == 0 &&
+                    pair.Journal.Tickets.Last().ChoiceId == "receive" &&
+                    pair.Journal.OutcomeReceipts.Last().OutcomeId == "outcome.receive",
+                    "paired reward proposal must bind exactly one V3 receipt and one V4 outcome");
+                var forgedCash = EventRewardCompositeProof.Prepare(before, serializer,
+                    runner, defs, policies, "settle-reward-proof", offered.TicketId, "receive");
+                forgedCash.Core.Cash++;
+                Throws<ArgumentException>(() => EventRewardCompositeProof.Validate(before,
+                    forgedCash, serializer, runner, defs, policies));
+                var forgedReceipt = EventRewardCompositeProof.Prepare(before, serializer,
+                    runner, defs, policies, "settle-reward-proof", offered.TicketId, "receive");
+                forgedReceipt.Core.Receipts.Last().Payload =
+                    new GameCommand(CommandKind.AcknowledgePlayback).CanonicalPayload;
+                Throws<ArgumentException>(() => EventRewardCompositeProof.Validate(before,
+                    forgedReceipt, serializer, runner, defs, policies));
+                var forgedLedger = EventRewardCompositeProof.Prepare(before, serializer,
+                    runner, defs, policies, "settle-reward-proof", offered.TicketId, "receive");
+                forgedLedger.Core.Ledger.Last().CashDelta++;
+                Throws<ArgumentException>(() => EventRewardCompositeProof.Validate(before,
+                    forgedLedger, serializer, runner, defs, policies));
+                var forgedChoice = EventRewardCompositeProof.Prepare(before, serializer,
+                    runner, defs, policies, "settle-reward-proof", offered.TicketId, "receive");
+                forgedChoice.Journal.Tickets.Last().ChoiceId = "skip";
+                Throws<ArgumentException>(() => EventRewardCompositeProof.Validate(before,
+                    forgedChoice, serializer, runner, defs, policies));
+                var forgedOutcome = EventRewardCompositeProof.Prepare(before, serializer,
+                    runner, defs, policies, "settle-reward-proof", offered.TicketId, "receive");
+                forgedOutcome.Journal.OutcomeReceipts.Last().OutcomeId = "outcome.forged";
+                Throws<ArgumentException>(() => EventRewardCompositeProof.Validate(before,
+                    forgedOutcome, serializer, runner, defs, policies));
+                var forgedEconomic = EventRewardCompositeProof.Prepare(before, serializer,
+                    runner, defs, policies, "settle-reward-proof", offered.TicketId, "receive");
+                forgedEconomic.Core.EconomicV3!.EconomicRecords!.V3RecognizedRevenueVnd++;
+                Throws<ArgumentException>(() => EventRewardCompositeProof.Validate(before,
+                    forgedEconomic, serializer, runner, defs, policies));
+                Assert(File.ReadAllBytes(path).SequenceEqual(before),
+                    "all composite proof attempts must remain read-only");
                 var candidateReward = runner.PrepareRewardReceiptCandidate(
                     Convert.FromBase64String(current.EventV4!.EmbeddedV3EnvelopeBase64), plan);
                 var payoutReceipt = candidateReward.Receipts.Last();
