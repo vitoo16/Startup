@@ -2584,17 +2584,61 @@ internal static class Program
                     current.EventV4!.Journal!.PendingTicketId == offered.TicketId &&
                     File.ReadAllBytes(path).SequenceEqual(before),
                     "authenticated settlement planning is read-only and binds both frontiers");
-                Assert(Cold().Resolve(seed.RunId, "settle-reward-proof",
-                        current.Revision, offered.TicketId, "receive").ReasonKey ==
-                        "event.reward_processor_unavailable" &&
-                    File.ReadAllBytes(path).SequenceEqual(before),
-                    "planning alone cannot credit cash or consume the pending choice");
+                Assert(File.ReadAllBytes(path).SequenceEqual(before),
+                    "planning and composite proof alone must not credit cash or consume a choice");
                 var modified = serializer.DeserializeAndValidate(before).State!;
                 modified.Revision++;
                 Throws<ArgumentException>(() => EventDecisionJournal.PlanReward(
                     modified, defs, policies, "fake-settle", offered.TicketId, "receive"));
                 Assert(File.ReadAllBytes(path).SequenceEqual(before),
                     "forged revision never mutates stored V3 or V4 receipts");
+
+                // A failed write must leave both economic and journal records
+                // unchanged, including the pending event and retry identity.
+                var writeFailure = new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(path, serializer,
+                        stage => stage == "during-temp-write"), defs, policies, runner);
+                var rejectedWrite = writeFailure.Resolve(seed.RunId,
+                    "settle-reward-proof", current.Revision, offered.TicketId, "receive");
+                Assert(rejectedWrite.Status == EventCommitStatus.PersistenceFailed &&
+                    File.ReadAllBytes(path).SequenceEqual(before) &&
+                    Cold().ReadPendingChoice()!.TicketId == offered.TicketId,
+                    "a failed composite temp write cannot partially post money or consume a ticket");
+                var settled = Cold().Resolve(seed.RunId, "settle-reward-proof",
+                    current.Revision, offered.TicketId, "receive");
+                Assert(settled.Status == EventCommitStatus.Committed &&
+                    settled.Revision == current.Revision + 2L &&
+                    settled.TicketId == offered.TicketId &&
+                    settled.OutcomeId == "outcome.receive",
+                    "reward and outcome must commit as one verified +2 CAS");
+                var paid = Cold().Read().State!;
+                Assert(paid.Cash == checked(current.Cash + plan.CashDeltaVnd) &&
+                    paid.Revision == settled.Revision &&
+                    paid.EventV4!.Journal!.PendingTicketId.Length == 0 &&
+                    paid.Receipts.Last().CommandId == plan.CoreReceiptCommandId,
+                    "cold restore after CAS must expose exactly one spendable reward");
+                var paidBytes = File.ReadAllBytes(path);
+                Assert(Cold().Resolve(seed.RunId, "settle-reward-proof",
+                        current.Revision, offered.TicketId, "receive").Status ==
+                        EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(path).SequenceEqual(paidBytes),
+                    "cold retry must not pay or resolve again");
+                Assert(Cold().Resolve(seed.RunId, "different-reward-id",
+                        current.Revision, offered.TicketId, "receive").Status ==
+                        EventCommitStatus.Rejected &&
+                    File.ReadAllBytes(path).SequenceEqual(paidBytes),
+                    "a different command ID cannot reuse a settled event");
+                // Gameplay must remain fully functional after a reward receipt:
+                // its V3 suffix is verified only in the enclosing V4 journal scope.
+                var playback = Cold().ExecuteCore(new CommandEnvelope(seed.RunId,
+                    "post-reward-playback", paid.Revision,
+                    new GameCommand(CommandKind.AcknowledgePlayback,
+                        paid.CurrentActivity, 0)));
+                Assert(playback.Status == EventCommitStatus.Committed &&
+                    Cold().Read().State!.Cash == paid.Cash &&
+                    Cold().Read().State!.Revision == paid.Revision + 1 &&
+                    Cold().Read().Status == LoadStatus.Valid,
+                    "ordinary V3 gameplay receipt must cold replay after the V4 reward");
             }
             finally
             {

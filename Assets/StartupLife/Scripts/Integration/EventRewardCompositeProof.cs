@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using StartupLife.Core;
 using StartupLife.Infrastructure;
 using StartupLife.Simulation;
@@ -72,6 +73,27 @@ namespace StartupLife.Integration
                 staged.Next.OutcomeReceipts.Last().OutcomeId != plan.OutcomeId)
                 throw new ArgumentException("The staged V3/V4 reward pair has divergent receipt frontiers.");
             return new EventRewardCompositeCandidate(core, staged.Next, plan);
+        }
+
+        // Only the enclosing V4 wire owns these bytes. V3 standalone replay
+        // never accepts the inner payout checkpoint without its matching journal.
+        internal static EventV4Payload CreatePayload(EventRewardCompositeCandidate candidate,
+            EventV4CoreCommandRunner runner)
+        {
+            if (candidate?.Core?.EconomicV3 == null || candidate.Journal == null ||
+                runner == null)
+                throw new ArgumentException("A complete staged reward pair is required.");
+            var inner = runner.EncodeRewardCandidate(candidate.Core);
+            string checksum;
+            using (var sha = SHA256.Create())
+                checksum = BitConverter.ToString(sha.ComputeHash(inner))
+                    .Replace("-", "").ToLowerInvariant();
+            return new EventV4Payload
+            {
+                EmbeddedV3EnvelopeBase64 = Convert.ToBase64String(inner),
+                EmbeddedV3EnvelopeSha256 = checksum,
+                Journal = candidate.Journal.Copy()
+            };
         }
 
         // This proves candidate integrity without trusting the caller's

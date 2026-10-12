@@ -96,6 +96,9 @@ namespace StartupLife.Integration
             return candidate;
         }
 
+        internal byte[] EncodeRewardCandidate(GameState candidate) =>
+            serializer.PrepareEmbeddedV4Candidate(candidate);
+
         // In-memory candidate buffer only. It reuses the authoritative V3 serializer
         // and never implements a second on-disk CAS, backup or replay engine.
         private sealed class TentativeV3Store : ISaveStore

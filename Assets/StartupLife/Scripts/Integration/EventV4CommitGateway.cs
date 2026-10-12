@@ -244,8 +244,37 @@ namespace StartupLife.Integration
             if (current.Revision != expectedRevision)
                 return Reject(current, "event.stale_revision");
             if (result.Status != EventJournalStatus.Resolved)
+            {
+                if (result.Status == EventJournalStatus.Rejected &&
+                    result.ReasonKey == "event.reward_processor_unavailable" &&
+                    coreRunner != null)
+                    return CommitReward(current, commandId, ticketId, choiceId);
                 return FromPlanner(result, current.Revision);
+            }
             return Commit(current, result);
+        }
+
+        // A reward has two logical receipts but only one physical write.
+        // Neither journal nor wallet may publish before full composite cold
+        // validation and the store's transition verifier succeed together.
+        private EventCommitResult CommitReward(GameState current, string commandId,
+            string ticketId, string choiceId)
+        {
+            try
+            {
+                var sourceBytes = serializer.Serialize(current);
+                var staged = EventRewardCompositeProof.Prepare(sourceBytes, serializer,
+                    coreRunner!, definitions, policies, commandId, ticketId, choiceId);
+                EventRewardCompositeProof.Validate(sourceBytes, staged, serializer,
+                    coreRunner!, definitions, policies);
+                var payload = EventRewardCompositeProof.CreatePayload(staged, coreRunner!);
+                return CommitCandidate(current, staged.Core, payload,
+                    staged.Plan.TicketId, staged.Plan.OutcomeId, revisionDelta: 2);
+            }
+            catch (Exception error) when (error is ArgumentException ||
+                error is InvalidOperationException || error is OverflowException ||
+                error is FormatException)
+            { return Reject(current, "event.reward_invalid_candidate"); }
         }
 
         public AdvanceResult AdvanceDay(CommandEnvelope request) => AdvanceBatch(request, "day");
@@ -516,13 +545,14 @@ namespace StartupLife.Integration
 
         private EventCommitResult CommitCandidate(GameState current, GameState nextCore,
             EventV4Payload payload, string ticketId = "", string outcomeId = "",
-            CommandResult? coreCommand = null)
+            CommandResult? coreCommand = null, int revisionDelta = 1)
         {
             byte[] candidateBytes;
             try
             {
                 var candidate = EventV4CompatibilitySerializer.Project(nextCore, payload);
-                if (candidate.Revision != checked(current.Revision + 1))
+                if ((revisionDelta != 1 && revisionDelta != 2) ||
+                    candidate.Revision != checked(current.Revision + revisionDelta))
                     return Reject(current, "save.v4_revision_gap");
                 candidateBytes = serializer.Serialize(candidate);
             }
@@ -538,7 +568,8 @@ namespace StartupLife.Integration
                 return new EventCommitResult(EventCommitStatus.RecoveryRequired,
                     "save.recovery_required", current.Revision);
             var verified = Read();
-            if (!Valid(verified) || verified.State!.Revision != checked(current.Revision + 1) ||
+            if (!Valid(verified) ||
+                verified.State!.Revision != checked(current.Revision + revisionDelta) ||
                 !JsonSaveSerializer.WriteObject(verified.State.EventV4!)
                     .SequenceEqual(JsonSaveSerializer.WriteObject(payload)))
                 return new EventCommitResult(EventCommitStatus.RecoveryRequired,

@@ -626,3 +626,14 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - `StagedEventV4SaveSerializer.ReplaceCore` performs contextual verified V3 replay for regular gameplay after a reward; `EventRewardCompositeProof.Prepare` passes the verified journal when staging a later financial choice. The gateway binds its ordinary V3 candidate evaluator to the same verified V4 journal.
 - **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-cli; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-head engine-free CI pending. **Visual:** NOT RUN. **Save impact:** no new wire fields or frozen fixture changes. **Known limitations:** reward commit gateway still blocked until CAS path is explicitly wired and real-file progress-after-reward coverage added. **Files:** Infrastructure/V3SaveCompatibilitySerializer.cs; Integration/V4ScopedCoreSerializer.cs + meta; EventV4CoreCommandRunner.cs; StagedEventV4SaveSerializer.cs; EventV4CommitGateway.cs; EventRewardCompositeProof.cs; JOURNAL.md.
+
+
+## Increment 50 — Single-CAS spendable reward settlement and verified next gameplay command
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL; PR #52 Draft/unmerged.
+
+- V4 gateway now accepts a financial choice ONLY by `EventRewardCompositeProof.Prepare + Validate`, encodes its exact V3 economic receipt + V4 journal in one envelope and requests the existing physical AtomicFileSaveStore CAS. The store's serializer-authenticated +2 transition verifier retains the sole write/backup authority.
+- Post-commit `CommitCandidate` validates the exact expected +2 generation; ordinary commands remain strict +1. The same resolution command ID retries read-only with `AlreadyCommitted`; conflicting commands are rejected.
+- Real-file regression exercises failed temp write (no payout/no journal change), healthy CAS, cold restore of spendable wallet amount, idempotent retry, conflicting command rejection and a subsequent ordinary gameplay receipt through the V4-scoped V3 replay path.
+- **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-cli; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Tests:** exact-head engine-free CI pending. **Visual:** Unity Editor/PlayMode/device NOT RUN. **Save impact:** V4 gateway now can publish an existing schema-4 composite with no format migration; historical V2/V3 and frozen fixtures untouched. **Known limitations:** additional adverse CAS ambiguity, XP and multiple-reward edge cases need standalone coverage; production V4 cutover/catalog versioning/Unity runtime remain deferred. **Files:** Integration/EventRewardCompositeProof.cs; Integration/EventV4CoreCommandRunner.cs; Integration/EventV4CommitGateway.cs; tools/EconomicChecks/Program.cs; this journal.
