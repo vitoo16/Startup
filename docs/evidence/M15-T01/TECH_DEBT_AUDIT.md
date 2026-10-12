@@ -33,3 +33,11 @@ Move `ReceiptCandidateFinalizer` (preserving Unity .meta GUID) into the `Simulat
 ## Regression caught during refactor
 
 Initial refactor `75c695652483439a296aae5a5a5e0ddd5e6d90df` reached 0 build warnings/errors but failed 14+ real-file economic tests (CI #38284245191): the replay GameState had no `EconomicV3` attachment, while the authoritative payload was separately constructed. This is a **real boundary difference**, not proof of a valid historical replay state. Corrective approach: explicitly supply that payload to the one finalizer, validate `payload.Current == candidate`, and keep replay tests unchanged. Do not waive thresholds or relabel the initial result. Corrected SHA and CI results belong in the implementation journal.
+
+
+## Increment 53 — P1 coordinator extraction
+
+- Batch orchestration moved to `Integration/EventV4AdvanceCoordinator.cs`; V4 gateway continues to own every CAS and candidate serializer invocation via a four-method internal port.
+- `Integration/EventV4CommandGuard.cs` provides a single namespace/frontier predicate implementation reused by both gateway and batch coordinator. Command-result conversion is reused across regular and batch paths.
+- `EventV4CommitGateway` public methods, payload contracts and event error/status semantics remain unchanged. This is a responsibility separation, **not** a new scheduler or a second transaction engine.
+- Target regression: engine-free economic checks including durable day/month batches, pending event interruptions, ambiguous CAS/cold retry, V2/V3 historical replay; Unity runtime tests remain deferred per AGENTS.md.

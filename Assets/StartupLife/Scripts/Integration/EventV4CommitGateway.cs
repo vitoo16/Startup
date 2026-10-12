@@ -5,6 +5,7 @@ using System.Linq;
 using StartupLife.Core;
 using StartupLife.Infrastructure;
 using StartupLife.Simulation;
+using static StartupLife.Integration.EventV4CommandGuard;
 
 namespace StartupLife.Integration
 {
@@ -57,7 +58,7 @@ namespace StartupLife.Integration
     // Stateless staged transaction entrypoint; NOT an independent gameplay engine.
     // Uses the same event journal planner and the existing ISaveStore CAS authority.
     // Gameplay commands and applied reward receipts still require GameSession routing.
-    public sealed class EventV4CommitGateway
+    public sealed class EventV4CommitGateway : IEventV4AdvancePort
     {
         private readonly EventV4CompatibilitySerializer serializer;
         private readonly ISaveStore store;
@@ -277,149 +278,28 @@ namespace StartupLife.Integration
             { return Reject(current, "event.reward_invalid_candidate"); }
         }
 
-        public AdvanceResult AdvanceDay(CommandEnvelope request) => AdvanceBatch(request, "day");
+        public AdvanceResult AdvanceDay(CommandEnvelope request) =>
+            EventV4AdvanceCoordinator.Execute(this, request, "day", automaticDailyChecks);
 
-        public AdvanceResult AdvanceMonth(CommandEnvelope request) => AdvanceBatch(request, "month");
+        public AdvanceResult AdvanceMonth(CommandEnvelope request) =>
+            EventV4AdvanceCoordinator.Execute(this, request, "month", automaticDailyChecks);
 
-        // A batch root is committed once as a V4 event-journal intent. Each child
-        // remains exactly one real V3 GameSession AdvanceBoundary receipt under
-        // the original V4 physical CAS. Cold retries derive the next child index
-        // from authenticated V3 receipts rather than volatile counters.
-        private AdvanceResult AdvanceBatch(CommandEnvelope request, string mode)
-        {
-            var results = new List<CommandResult>();
-            LoadResult read = Read();
-            if (!Valid(read)) return BatchStop(results, read.State, "RecoveryRequired");
-            var state = read.State!;
-            if (request == null || request.Command == null ||
-                request.Command.Kind != CommandKind.AdvanceBoundary ||
-                !ValidIdentity(request.RunId, request.CommandId, state) ||
-                (request.CommandId.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
-                     StringComparison.Ordinal) ||
-                 request.CommandId.StartsWith(EventDecisionJournal.DailyCheckPrefix,
-                     StringComparison.Ordinal)))
-                return BatchStop(results, state, "InvalidRequest");
-            var journal = state.EventV4!.Journal!;
-            if (state.Receipts.Any(x => x.CommandId == request.CommandId) ||
-                journal.Tickets.Any(x => x.OfferCommandId == request.CommandId ||
-                    x.ResolutionCommandId == request.CommandId))
-                return BatchStop(results, state, "InvalidRequest");
-            var batch = journal.AdvanceBatches.FirstOrDefault(
-                x => x.RootCommandId == request.CommandId);
-            if (batch == null)
-            {
-                if (request.ExpectedRevision != state.Revision ||
-                    string.IsNullOrEmpty(state.Name) ||
-                    journal.PendingTicketId.Length > 0 ||
-                    journal.AdvanceBatches.Any(x => string.CompareOrdinal(
-                        state.DateIso, x.TargetDateIso) < 0))
-                    return BatchStop(results, state, journal.PendingTicketId.Length > 0
-                        ? "PlayerChoice" : "InvalidRequest");
-                var next = JsonSaveSerializer.ReadObject<EventV4Payload>(
-                    JsonSaveSerializer.WriteObject(state.EventV4));
-                next.Journal!.AdvanceBatches.Add(new EventAdvanceBatchRecord
-                {
-                    RootCommandId = request.CommandId,
-                    Mode = mode,
-                    OpenedDateIso = state.DateIso,
-                    TargetDateIso = EventAdvanceBatchHistory.Target(state.DateIso, mode),
-                    CoreRevisionAtStart = checked(state.Revision - journal.Revision)
-                });
-                next.Journal.Revision = checked(next.Journal.Revision + 1);
-                var registered = CommitCandidate(state,
-                    EventV4CompatibilitySerializer.RestoreCoreProjection(state), next);
-                if (registered.Status != EventCommitStatus.Committed)
-                    return BatchStop(results, state, registered.Status ==
-                        EventCommitStatus.RecoveryRequired ? "RecoveryRequired" :
-                        registered.Status == EventCommitStatus.PersistenceFailed
-                            ? "PersistenceOrRuleFailure" : "InvalidState");
-                read = Read();
-                if (!Valid(read)) return BatchStop(results, state, "RecoveryRequired");
-                state = read.State!;
-                journal = state.EventV4!.Journal!;
-                batch = journal.AdvanceBatches.Last();
-            }
-            else if (batch.Mode != mode)
-                return BatchStop(results, state, "InvalidRequest");
+        // The coordinator has no writer, so only this gateway can commit the
+        // verified V4 intent and submit an authenticated V3 boundary receipt.
+        EventCommitResult IEventV4AdvancePort.CommitBatchIntent(
+            GameState current, EventV4Payload payload) =>
+            CommitCandidate(current, EventV4CompatibilitySerializer.RestoreCoreProjection(current),
+                payload);
 
-            for (var guard = 0; string.CompareOrdinal(state.DateIso, batch.TargetDateIso) < 0; guard++)
-            {
-                if (guard > 10000) return BatchStop(results, state, "InvalidState");
-                if (journal.PendingTicketId.Length > 0)
-                    return BatchStop(results, state, "PlayerChoice");
-                if (automaticDailyChecks && !HasCheckedDay(journal, state.DateIso))
-                {
-                    // Every date, even an empty one, is a real V4 CAS frontier.
-                    // Re-read after promotion before taking a V3 time step.
-                    var checkedDay = CheckCurrentDay(state.RunId, state.Revision);
-                    if (checkedDay.Status != EventCommitStatus.Committed &&
-                        checkedDay.Status != EventCommitStatus.NoEligibleEvent &&
-                        checkedDay.Status != EventCommitStatus.AlreadyCommitted)
-                        return BatchStop(results, state,
-                            checkedDay.Status == EventCommitStatus.RecoveryRequired
-                                ? "RecoveryRequired"
-                                : checkedDay.Status == EventCommitStatus.PersistenceFailed
-                                    ? "PersistenceOrRuleFailure" : "InvalidState");
-                    read = Read();
-                    if (!Valid(read)) return BatchStop(results, state, "RecoveryRequired");
-                    state = read.State!;
-                    journal = state.EventV4!.Journal!;
-                    if (journal.PendingTicketId.Length > 0)
-                        return BatchStop(results, state, "PlayerChoice");
-                }
-                var counts = EventAdvanceBatchHistory.CountSteps(journal, state.Receipts);
-                var childId = EventAdvanceBatchHistory.ChildId(
-                    state.RunId, batch.RootCommandId, counts[batch.RootCommandId]);
-                var step = ExecuteCoreInternal(new CommandEnvelope(state.RunId, childId,
-                    state.Revision, new GameCommand(CommandKind.AdvanceBoundary)), true);
-                if (step.Status != EventCommitStatus.Committed)
-                    return BatchStop(results, state, step.Status ==
-                        EventCommitStatus.RecoveryRequired ? "RecoveryRequired" :
-                        step.Status == EventCommitStatus.PersistenceFailed
-                            ? "PersistenceOrRuleFailure" :
-                            step.ReasonKey == "event.choice_required"
-                                ? "PlayerChoice" : "PersistenceOrRuleFailure");
-                results.Add(ToGameplayResult(step));
-                read = Read();
-                if (!Valid(read)) return BatchStop(results, state, "RecoveryRequired");
-                state = read.State!;
-                journal = state.EventV4!.Journal!;
-            }
-            return BatchStop(results, state, "TargetReached");
-        }
-
-        private static AdvanceResult BatchStop(List<CommandResult> results,
-            GameState? state, string reason)
-        {
-            // A failed cold read has no authoritative date. Return the
-            // default/unavailable instant, never a fabricated run date.
-            var instant = state == null ? default(SimInstant) :
-                new SimInstant(state.Date, state.Minute);
-            return new AdvanceResult(results.AsReadOnly(), instant, reason);
-        }
+        EventCommitResult IEventV4AdvancePort.ExecuteBatchChild(CommandEnvelope command) =>
+            ExecuteCoreInternal(command, true);
 
         // Presentation-compatible single-command API: global revision belongs
         // to V4; operation, duration and outcome are the verified V3 evaluator's.
         // Multi-boundary day/month batches require their own durable intent and
         // are deliberately NOT synthesized here.
         public CommandResult ExecuteGameplay(CommandEnvelope command) =>
-            ToGameplayResult(ExecuteCore(command));
-
-        private static CommandResult ToGameplayResult(EventCommitResult result)
-        {
-            var status = result.Status switch
-            {
-                EventCommitStatus.Committed => CommandStatus.Committed,
-                EventCommitStatus.AlreadyCommitted => CommandStatus.AlreadyCommitted,
-                EventCommitStatus.PersistenceFailed => CommandStatus.PersistenceFailed,
-                EventCommitStatus.RecoveryRequired => CommandStatus.RecoveryRequired,
-                _ => CommandStatus.Rejected
-            };
-            var core = result.CoreCommand;
-            return new CommandResult(status, result.ReasonKey, result.Revision,
-                core?.OperationId ?? "", core?.MinutesConsumed ?? 0,
-                status == CommandStatus.Committed ? core?.Outcome : null);
-        }
+            EventV4CommandResultAdapter.ToGameplayResult(ExecuteCore(command));
 
         // The same V4 CAS frontier now covers all ordinary V3 GameSession receipts
         // and event decisions. V2/V3 replay stays authoritative for the inner state.
@@ -588,29 +468,6 @@ namespace StartupLife.Integration
                 default: return EventCommitStatus.Rejected;
             }
         }
-
-        private static bool Valid(LoadResult read) =>
-            (read.Status == LoadStatus.Valid || read.Status == LoadStatus.RecoveredBackup) &&
-            read.State != null && read.State.SaveVersion == 4 && read.State.EventV4?.Journal != null;
-
-        // Event IDs share a command namespace with both V3 receipts and durable
-        // V4 day/month roots. Reject collisions before planning or consuming RNG;
-        // the V4 cold validator enforces the same rule on persisted checkpoints.
-        private static bool HasCheckedDay(EventJournalState journal, string dateIso) =>
-            journal.Tickets.Any(ticket => ticket.OpenedDateIso == dateIso) ||
-            journal.NoEligibleDays.Any(day => day.DateIso == dateIso);
-
-        private static bool ConflictsWithCoreOrBatch(GameState state, string commandId) =>
-            commandId.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
-                StringComparison.Ordinal) ||
-            commandId.StartsWith(EventRewardSettlementPlan.ReservedReceiptPrefix,
-                StringComparison.Ordinal) ||
-            state.Receipts.Any(x => x.CommandId == commandId) ||
-            state.EventV4!.Journal!.AdvanceBatches.Any(x => x.RootCommandId == commandId);
-
-        private static bool ValidIdentity(string runId, string commandId, GameState state) =>
-            runId == state.RunId && !string.IsNullOrWhiteSpace(commandId) &&
-            commandId.Length <= 256;
 
         private static EventCommitResult Reject(GameState state, string reason) =>
             new EventCommitResult(EventCommitStatus.Rejected, reason, state.Revision);
