@@ -165,6 +165,72 @@ namespace StartupLife.Integration
             { return new StagedEventV4LoadResult(LoadStatus.Corrupt, reason: "save.invalid"); }
         }
 
+        // Called by AtomicFileSaveStore only after BOTH states passed full
+        // cold replay under the same serializer. Authorize exactly one new
+        // V3 reward receipt paired with exactly one V4 outcome. No other
+        // two-revision transaction is admissible.
+        internal bool IsAuthenticatedRewardTransition(GameState before, GameState after)
+        {
+            try
+            {
+                var oldJournal = before?.EventV4?.Journal;
+                var newJournal = after?.EventV4?.Journal;
+                var oldEconomic = before?.EconomicV3;
+                var newEconomic = after?.EconomicV3;
+                if (before == null || after == null ||
+                    before.SaveVersion != 4 || after.SaveVersion != 4 ||
+                    before.RunId != after.RunId ||
+                    oldJournal == null || newJournal == null ||
+                    oldEconomic?.Activation == null || newEconomic?.Activation == null ||
+                    before.Revision + 2L != after.Revision ||
+                    oldJournal.Revision + 1L != newJournal.Revision ||
+                    before.Receipts.Count + 1 != after.Receipts.Count ||
+                    oldJournal.PendingTicketId.Length == 0 ||
+                    newJournal.PendingTicketId.Length != 0 ||
+                    newJournal.Tickets.Count != oldJournal.Tickets.Count)
+                    return false;
+
+                var resolved = newJournal.Tickets[newJournal.Tickets.Count - 1];
+                var plan = EventDecisionJournal.PlanReward(before, definitions, policies,
+                    resolved.ResolutionCommandId, resolved.Id, resolved.ChoiceId);
+                var plannedOutcome = EventDecisionJournal.StagePlannedRewardResolution(
+                    oldJournal, definitions, policies, plan);
+                if (plannedOutcome.Status != EventJournalStatus.Resolved ||
+                    plan.GlobalRevision != after.Revision ||
+                    plan.CoreRevision != after.Receipts.Count ||
+                    !JsonSaveSerializer.WriteObject(plannedOutcome.Next)
+                        .SequenceEqual(JsonSaveSerializer.WriteObject(newJournal)))
+                    return false;
+
+                for (var i = 0; i < before.Receipts.Count; i++)
+                    if (!JsonSaveSerializer.WriteObject(before.Receipts[i])
+                        .SequenceEqual(JsonSaveSerializer.WriteObject(after.Receipts[i])))
+                        return false;
+                var financialReceipt = after.Receipts[after.Receipts.Count - 1];
+                if (financialReceipt.CommandId != plan.CoreReceiptCommandId ||
+                    !plan.MatchesCoreCommand(GameCommand.ParseCanonicalPayload(
+                        financialReceipt.Payload)) ||
+                    financialReceipt.Revision != plan.CoreRevision ||
+                    financialReceipt.MinutesConsumed != 0 ||
+                    financialReceipt.AdvanceTargetIso.Length != 0 ||
+                    financialReceipt.ParentPayload.Length != 0)
+                    return false;
+
+                // No change to the frozen V2 provenance or V3 activation anchor.
+                // Full V3 replay already checked the economic graph and wallet.
+                return JsonSaveSerializer.WriteObject(oldEconomic.Activation)
+                        .SequenceEqual(JsonSaveSerializer.WriteObject(newEconomic.Activation)) &&
+                    oldEconomic.OriginalV2PayloadBase64 == newEconomic.OriginalV2PayloadBase64 &&
+                    oldEconomic.OriginalV2PayloadSha256 == newEconomic.OriginalV2PayloadSha256 &&
+                    oldEconomic.OriginalV2ContentVersion == newEconomic.OriginalV2ContentVersion &&
+                    oldEconomic.OriginalV2RulesetId == newEconomic.OriginalV2RulesetId &&
+                    oldEconomic.OriginalSourceSchema == newEconomic.OriginalSourceSchema &&
+                    oldEconomic.OriginalSourcePayloadBase64 == newEconomic.OriginalSourcePayloadBase64 &&
+                    oldEconomic.OriginalSourcePayloadSha256 == newEconomic.OriginalSourcePayloadSha256;
+            }
+            catch (Exception) { return false; }
+        }
+
         private GameState ValidatePayload(EventV4Payload payload)
         {
             if (payload == null || payload.WireSchema != 4 ||

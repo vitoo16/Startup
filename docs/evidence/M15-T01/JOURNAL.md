@@ -605,3 +605,13 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-cli; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-commit engine-free CI pending. **Visual evidence:** NOT RUN. **Save impact:** no frozen fixture, historical schema, or production CAS changes. **Known limitations:** an authentic V4 composite can be cold-replayed but **cannot yet be published** with existing +1 CAS policy; production reward remains disabled.
 - **Files changed:** Simulation/EventDecisionJournal.cs; tools/EconomicChecks/Program.cs; JOURNAL.md.
+
+
+## Increment 48 — Locked-file CAS admits +2 only after serializer-authenticated reward transition
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL, PR #52 Draft/unmerged.
+
+- Added a narrow Core `ICompositeRewardSaveValidator` contract implemented only by the V4 compatibility serializer. Within the existing `AtomicFileSaveStore` file lock, a +2 generation can pass ONLY if **both before/after cold replay valid** and the active serializer proves one exact native V3 reward receipt plus one resolved V4 journal transition. Other schemas and normal V3/V4 commands remain strict +1 CAS. No general callback from command caller is trusted.
+- The transition proof binds original run, pending ticket, next core/global revisions, authored reward plan, derived receipt identity and payload, byte-exact historical receipt prefix, byte-exact full journal transition, and frozen V2 provenance/V3 migration anchor. Any unrelated two-step candidate fails before temp write.
+- Physical transaction keeps existing temp-file fsync, promotion, backup, stale writer, failure-injection and ambiguity handling. **This increment provides CAS admission only; gateway payout activation and real-file retry/failure regressions follow.**
+- **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, unity-cli, unity-game-director, unity-gameplay-systems, unity-game-economy, unity-mcp-bridge, unity-qa-release, unity-debug-profiler. **Tests:** exact-commit engine-free CI pending. **Visual:** NOT RUN. **Save impact:** no frozen fixtures, schema or wire changes. **Known limitations:** gateway not yet using +2 CAS, so no production payout. **Files:** Core/ICompositeRewardSaveValidator.cs (+meta), Integration/StagedEventV4SaveSerializer.cs, Integration/EventV4CompatibilitySerializer.cs, Infrastructure/AtomicFileSaveStore.cs, JOURNAL.md.

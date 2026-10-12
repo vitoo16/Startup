@@ -96,12 +96,26 @@ namespace StartupLife.Infrastructure
                         var candidate = serializer.DeserializeAndValidate(validatedBytes);
                         if (candidate.Status != LoadStatus.Valid ||
                             (expectedCheckpoint == null && candidate.SourceSchemaVersion !=
-                                (serializer is IActiveSaveSchema active ? active.ActiveSchemaVersion : SaveSchema.CurrentVersion)) ||
-                            candidate.State!.Revision !=
-                            (expectedCheckpoint == null ? checked(expectedRevision + 1) : expectedRevision)) return WriteStatus.Failed;
+                                (serializer is IActiveSaveSchema active ? active.ActiveSchemaVersion : SaveSchema.CurrentVersion)))
+                            return WriteStatus.Failed;
+                        var newRevision = candidate.State!.Revision;
+                        var single = expectedCheckpoint == null &&
+                            newRevision == checked(expectedRevision + 1L);
+                        var composite = expectedCheckpoint == null &&
+                            newRevision == checked(expectedRevision + 2L);
+                        if (expectedCheckpoint != null && newRevision != expectedRevision ||
+                            expectedCheckpoint == null && !single && !composite)
+                            return WriteStatus.Failed;
                         var previous = Read();
                         if (previous.Status != LoadStatus.Valid && previous.Status != LoadStatus.RecoveredBackup && !(previous.Status == LoadStatus.Missing && expectedRevision == 0)) return WriteStatus.Failed;
                         if (previous.State != null && previous.State.Revision != expectedRevision) return WriteStatus.Failed;
+                        // +2 is never a general CAS relaxation. The concrete
+                        // serializer must independently prove the exact V3+V4
+                        // reward transition against the current locked source.
+                        if (composite && (previous.State == null ||
+                            serializer is not ICompositeRewardSaveValidator validator ||
+                            !validator.IsAuthenticatedRewardTransition(previous.State, candidate.State)))
+                            return WriteStatus.Failed;
                         if (expectedCheckpoint != null)
                         {
                             var expected = serializer.DeserializeAndValidate(expectedCheckpoint);

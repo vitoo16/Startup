@@ -9,7 +9,8 @@ namespace StartupLife.Integration
     // Version-4 projection onto the existing ISaveSerializer/ISaveStore contract.
     // AtomicFileSaveStore retains exclusive authority for physical CAS and backup.
     // This adapter never edits the archived V2 or nested V3 serialized DTO.
-    public sealed class EventV4CompatibilitySerializer : ISaveSerializer, IActiveSaveSchema
+    public sealed class EventV4CompatibilitySerializer :
+        ISaveSerializer, IActiveSaveSchema, ICompositeRewardSaveValidator
     {
         private readonly StagedEventV4SaveSerializer staged;
 
@@ -51,6 +52,9 @@ namespace StartupLife.Integration
                 throw new ArgumentException("V4 candidate changed fields outside the event journal.");
             return validatedWire;
         }
+
+        public bool IsAuthenticatedRewardTransition(GameState previous, GameState candidate) =>
+            staged.IsAuthenticatedRewardTransition(previous, candidate);
 
         internal EventV4Payload ReplaceCore(EventV4Payload source, byte[] newV3Envelope,
             out GameState core) => staged.ReplaceCore(source, newV3Envelope, out core);
