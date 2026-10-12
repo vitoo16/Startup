@@ -712,3 +712,9 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - Tests cover stable canonical fingerprint, distinct selection weight/reward/policy fingerprints, signature serialization, new V3→V4 activation pin, unsupported rebalanced content, mismatched pinned wire and early V4 wire missing the field. All existing validators/thresholds and frozen fixtures are retained.
 - **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-gameplay-systems; unity-game-economy; unity-qa-release.
 - **Tests:** exact-head engine-free CI pending; Unity runtime NOT RUN. **Visual evidence:** NOT RUN (backend-only). **Save impact:** additive V4 journal field, new migrations pinned, legacy V4 missing field still accepted; no V2/V3 changes. **Known limitations:** immutable archived event catalog lookup/version migration and Unity/device QA outstanding. **Files:** Core/EventJournalContracts.cs, Simulation/EventCatalogFingerprint.cs (+meta), Integration/StagedEventV4SaveSerializer.cs, SimulationChecks, EconomicChecks, JOURNAL.md, TECH_DEBT_AUDIT.md.
+
+
+### Increment 56 CI contract correction — unavailable authored content is not save corruption
+
+- Initial SHA `559f0325f7d0344e3848833f7ca61b8c125db606` **FAILED** Engine-free CI #38323824730 at one legacy economic assertion: a previously resolved tag-only ticket with a reauthored reward catalog now correctly returns `LoadStatus.UnsupportedContent` rather than the old `Corrupt` classification. 78/79 economic checks passed; compilation and the other suites passed. This is a new semantically precise error contract, not a relaxation.
+- Updated that negative regression to require **both** `UnsupportedContent` and exact `save.event_catalog_unavailable` reason, while continuing to require byte-identical persisted save and no retroactive reward. No validator, thresholds or frozen fixture changed. Exact-head CI must run again before PASS.

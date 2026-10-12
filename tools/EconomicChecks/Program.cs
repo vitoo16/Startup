@@ -2772,7 +2772,9 @@ internal static class Program
                 // A catalog update must never retroactively credit a settled
                 // tag-only outcome. The altered catalog is not cold-compatible.
                 var incompatible = new StagedEventV4SaveSerializer(v3, changed, policies);
-                Assert(incompatible.DeserializeVerified(afterBytes).Status == LoadStatus.Corrupt &&
+                var catalogMismatch = incompatible.DeserializeVerified(afterBytes);
+                Assert(catalogMismatch.Status == LoadStatus.UnsupportedContent &&
+                    catalogMismatch.ReasonKey == "save.event_catalog_unavailable" &&
                     File.ReadAllBytes(path).SequenceEqual(afterBytes),
                     "old resolved choices cannot acquire silent cash on catalog change");
             }
