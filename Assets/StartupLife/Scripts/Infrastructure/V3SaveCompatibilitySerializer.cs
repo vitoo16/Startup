@@ -38,6 +38,19 @@ namespace StartupLife.Infrastructure
             return staged.SerializeVerified(state.EconomicV3);
         }
 
+        // Source-only inner V3 candidate bytes for the enclosing V4 serializer.
+        // This method does NOT grant standalone V3 save admission: only the V4
+        // journal-proven replay validates the result before any outer CAS.
+        public byte[] PrepareEmbeddedV4Candidate(GameState state)
+        {
+            if (state?.SaveVersion != 3 || state.EconomicV3 == null ||
+                !ReferenceEquals(state.EconomicV3.Current, state))
+                throw new ArgumentException("A detached V3 receipt candidate is required.");
+            return JsonSaveSerializer.Wrap(
+                EconomicV3PayloadCodec.SerializeChecked(state.EconomicV3), 3,
+                state.Revision);
+        }
+
         // V4-only extension: expose verified source receipt frontiers in one replay.
         // The active V2/V3 read path still uses the original overload unchanged.
         public LoadResult DeserializeAndValidateWithFrontiers(byte[] bytes,

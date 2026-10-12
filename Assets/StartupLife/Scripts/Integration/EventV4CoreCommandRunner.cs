@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using StartupLife.Application;
 using StartupLife.Core;
@@ -29,17 +30,28 @@ namespace StartupLife.Integration
         }
 
         public CommandResult Evaluate(byte[] verifiedV3Envelope, CommandEnvelope request,
-            out byte[]? candidateV3)
+            out byte[]? candidateV3) =>
+            Evaluate(verifiedV3Envelope, request, out candidateV3, null, null);
+
+        // This journal was already authenticated by the outer V4 cold read.
+        // The scoped serializer can replay prior rewarded V3 receipts without
+        // permitting independent schema-3 execution/persistence of payouts.
+        public CommandResult Evaluate(byte[] verifiedV3Envelope, CommandEnvelope request,
+            out byte[]? candidateV3, EventJournalState? verifiedJournal,
+            IReadOnlyList<GameEventDefinition>? definitions)
         {
             candidateV3 = null;
             if (verifiedV3Envelope == null || request == null)
                 throw new ArgumentNullException("V3 core command input");
-            var store = new TentativeV3Store(serializer, verifiedV3Envelope);
+            ISaveSerializer active = verifiedJournal == null ? serializer :
+                new V4ScopedCoreSerializer(serializer, verifiedJournal,
+                    definitions ?? throw new ArgumentNullException(nameof(definitions)));
+            var store = new TentativeV3Store(active, verifiedV3Envelope);
             var read = store.Read();
             if (read.Status != LoadStatus.Valid || read.State == null ||
                 read.State.SaveVersion != 3)
                 throw new ArgumentException("An independently validated V3 source is required.");
-            var session = new GameSession(read.State, content, serializer, store,
+            var session = new GameSession(read.State, content, active, store,
                 economicRules: economics, archivedRules: archives);
             var inner = new CommandEnvelope(request.RunId, request.CommandId,
                 read.State.Revision, request.Command);
@@ -53,11 +65,15 @@ namespace StartupLife.Integration
         // until the V4 journal provides an authoritative cross-ledger proof.
         // No disk writer or CAS is exposed by this method.
         public GameState PrepareRewardReceiptCandidate(byte[] verifiedV3Envelope,
-            EventRewardSettlementPlan plan)
+            EventRewardSettlementPlan plan, EventJournalState? verifiedJournal = null,
+            IReadOnlyList<GameEventDefinition>? definitions = null)
         {
             if (verifiedV3Envelope == null || plan == null)
                 throw new ArgumentNullException("Reward source and proof are required.");
-            var read = serializer.DeserializeAndValidate(verifiedV3Envelope);
+            ISaveSerializer active = verifiedJournal == null ? serializer :
+                new V4ScopedCoreSerializer(serializer, verifiedJournal,
+                    definitions ?? throw new ArgumentNullException(nameof(definitions)));
+            var read = active.DeserializeAndValidate(verifiedV3Envelope);
             var candidate = read.State;
             if (read.Status != LoadStatus.Valid || candidate?.SaveVersion != 3 ||
                 candidate.EconomicV3?.Current != candidate ||

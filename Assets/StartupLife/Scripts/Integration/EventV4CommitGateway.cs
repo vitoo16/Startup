@@ -489,7 +489,8 @@ namespace StartupLife.Integration
             try
             {
                 var oldV3 = Convert.FromBase64String(current.EventV4.EmbeddedV3EnvelopeBase64);
-                var outcome = coreRunner.Evaluate(oldV3, command, out var nextV3);
+                var outcome = coreRunner.Evaluate(oldV3, command, out var nextV3,
+                    current.EventV4.Journal, definitions);
                 if (outcome.Status != CommandStatus.Committed || nextV3 == null)
                     return new EventCommitResult(MapCoreStatus(outcome.Status),
                         outcome.ReasonKey, current.Revision,

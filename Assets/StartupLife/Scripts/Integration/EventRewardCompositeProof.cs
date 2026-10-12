@@ -57,7 +57,8 @@ namespace StartupLife.Integration
             if (staged.Status != EventJournalStatus.Resolved)
                 throw new ArgumentException("The authored reward journal cannot be staged.");
             var core = coreRunner.PrepareRewardReceiptCandidate(
-                Convert.FromBase64String(current.EventV4.EmbeddedV3EnvelopeBase64), plan);
+                Convert.FromBase64String(current.EventV4.EmbeddedV3EnvelopeBase64),
+                plan, current.EventV4.Journal, definitions);
             var receipt = core.Receipts.Last();
             if (core.Revision != plan.CoreRevision ||
                 staged.Next.Revision != current.EventV4.Journal.Revision + 1 ||

@@ -81,7 +81,7 @@ namespace StartupLife.Integration
             out GameState core)
         {
             if (source?.Journal == null) throw new ArgumentException("Missing V4 journal.");
-            core = ReadV3Core(newV3Envelope);
+            core = ReadV3Core(newV3Envelope, source.Journal);
             if (core.RunId != source.Journal.RunId ||
                 core.EventRng != source.Journal.InitialEventRng)
                 throw new ArgumentException("V3 core and event RNG/run identity must be stable.");
@@ -92,9 +92,12 @@ namespace StartupLife.Integration
             return candidate;
         }
 
-        internal GameState ReadV3Core(byte[] envelope)
+        internal GameState ReadV3Core(byte[] envelope, EventJournalState? journal = null)
         {
-            var result = v3.DeserializeAndValidate(envelope);
+            var result = journal == null
+                ? v3.DeserializeAndValidate(envelope)
+                : new V4ScopedCoreSerializer(v3, journal, definitions)
+                    .DeserializeAndValidate(envelope);
             if (result.Status != LoadStatus.Valid || result.State == null ||
                 result.State.SaveVersion != 3)
                 throw new ArgumentException("V3 command failed independent receipt replay.");
