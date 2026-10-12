@@ -187,7 +187,27 @@ namespace StartupLife.Simulation
 
         public static EventJournalResult Resolve(EventJournalState source,
             IReadOnlyList<GameEventDefinition> definitions, IReadOnlyList<EventCategoryPolicy> policies,
-            long expectedRevision, string commandId, string ticketId, string choiceId)
+            long expectedRevision, string commandId, string ticketId, string choiceId) =>
+            ResolveInternal(source, definitions, policies, expectedRevision,
+                commandId, ticketId, choiceId, null);
+
+        // Stage only: this trusted plan proves the intended V4 outcome, but the
+        // returned journal CANNOT be saved until a matching V3 financial receipt
+        // is cold-replayed within the same outer V4 CAS. Normal Resolve still
+        // rejects rewarding choices.
+        public static EventJournalResult StagePlannedRewardResolution(
+            EventJournalState source, IReadOnlyList<GameEventDefinition> definitions,
+            IReadOnlyList<EventCategoryPolicy> policies, EventRewardSettlementPlan plan)
+        {
+            if (plan == null) throw new ArgumentNullException(nameof(plan));
+            return ResolveInternal(source, definitions, policies, source.Revision,
+                plan.ResolutionCommandId, plan.TicketId, plan.ChoiceId, plan);
+        }
+
+        private static EventJournalResult ResolveInternal(EventJournalState source,
+            IReadOnlyList<GameEventDefinition> definitions, IReadOnlyList<EventCategoryPolicy> policies,
+            long expectedRevision, string commandId, string ticketId, string choiceId,
+            EventRewardSettlementPlan? rewardPlan)
         {
             Validate(source, definitions, policies);
             if (string.IsNullOrWhiteSpace(commandId) || string.IsNullOrWhiteSpace(ticketId) ||
@@ -211,10 +231,28 @@ namespace StartupLife.Simulation
             var definition = definitions.Single(x => x.Id == ticket.EventId);
             var selectedChoice = definition.Choices.FirstOrDefault(x => x.Id == choiceId);
             if (selectedChoice == null) return Reject(source, "event.choice_invalid");
-            // The planner must not produce a resolved journal which the cold
-            // validator rejects: no V3-native reward receipt is available yet.
+            // Only an immutable plan produced from a V4-verified pending choice
+            // may stage a reward. This is *not* permission to publish the journal:
+            // cold replay still rejects reward outcomes without a V3 receipt.
             if (selectedChoice.Reward != null)
-                return Reject(source, "event.reward_processor_unavailable");
+            {
+                if (rewardPlan == null)
+                    return Reject(source, "event.reward_processor_unavailable");
+                if (rewardPlan.RunId != source.RunId ||
+                    rewardPlan.TicketId != ticket.Id ||
+                    rewardPlan.EventId != ticket.EventId ||
+                    rewardPlan.ChoiceId != selectedChoice.Id ||
+                    rewardPlan.OutcomeId != selectedChoice.OutcomeId ||
+                    rewardPlan.ResolutionCommandId != commandId ||
+                    rewardPlan.CheckedDateIso != ticket.OpenedDateIso ||
+                    rewardPlan.CoreRevision <= ticket.CoreRevisionAtOffer ||
+                    rewardPlan.GlobalRevision != checked(rewardPlan.CoreRevision + source.Revision) ||
+                    rewardPlan.CashDeltaVnd != selectedChoice.Reward.CashDeltaVnd ||
+                    rewardPlan.CareerXpDelta != selectedChoice.Reward.CareerXpDelta)
+                    return Reject(source, "event.reward_plan_mismatch");
+            }
+            else if (rewardPlan != null)
+                return Reject(source, "event.reward_plan_mismatch");
 
             var candidate = source.Copy();
             var pending = candidate.Tickets[candidate.Tickets.Count - 1];

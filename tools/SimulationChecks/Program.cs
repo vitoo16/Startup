@@ -130,6 +130,36 @@ internal static class Program
             Equal(2L, plan.GlobalRevision);
             Equal(120000L, plan.CashDeltaVnd);
             Equal(50L, plan.CareerXpDelta);
+            // Staged outcome and V3 reward must eventually share ONE CAS.
+            // Until the composite V3 replay proof exists, replay of this
+            // journal alone is deliberately rejected (no free wallet credit).
+            var stagedReward = EventDecisionJournal.StagePlannedRewardResolution(
+                offered.Next, defs, policies, plan);
+            Equal(EventJournalStatus.Resolved, stagedReward.Status);
+            Equal(plan.GlobalRevision, plan.CoreRevision + stagedReward.Next.Revision - 1);
+            Equal(offered.Next.Revision + 1, stagedReward.Next.Revision);
+            Equal("", stagedReward.Next.PendingTicketId);
+            Equal("apply-reward-once", stagedReward.Next.Tickets[0].ResolutionCommandId);
+            Equal("outcome.take", stagedReward.Next.OutcomeReceipts[0].OutcomeId);
+            Equal("", offered.Next.Tickets[0].ResolutionCommandId);
+            Equal(offered.TicketId, offered.Next.PendingTicketId);
+            Throws(() => EventJournalReplay.Validate(stagedReward.Next, defs, policies));
+            var alteredReward = new EventChoiceDefinition("take-bonus", "event.take",
+                "outcome.take", reward: new EventChoiceReward(120001, 50));
+            var alteredDefs = new[] { new GameEventDefinition("cash-offer", "life", 2026,
+                0, 1, 0, 1, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { alteredReward, cost, fallback }) };
+            Equal(EventJournalStatus.Rejected,
+                EventDecisionJournal.StagePlannedRewardResolution(
+                    offered.Next, alteredDefs, policies, plan).Status);
+            var otherOffer = EventDecisionJournal.Offer(
+                EventDecisionJournal.New("other-reward-run", 94731), defs, policies,
+                new GameEventContext(origin, origin, 0, Array.Empty<string>(),
+                    Array.Empty<EventOccurrence>()), 0, "other-offer", 0);
+            Equal(EventJournalStatus.Offered, otherOffer.Status);
+            Equal(EventJournalStatus.Rejected,
+                EventDecisionJournal.StagePlannedRewardResolution(
+                    otherOffer.Next, defs, policies, plan).Status);
             var encoded = plan.ToCoreCommand();
             var decoded = GameCommand.ParseCanonicalPayload(encoded.CanonicalPayload);
             Equal(CommandKind.SettleEventReward, decoded.Kind);
