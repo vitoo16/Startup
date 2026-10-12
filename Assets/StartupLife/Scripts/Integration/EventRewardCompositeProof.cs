@@ -65,9 +65,7 @@ namespace StartupLife.Integration
                 staged.Next.Revision != current.EventV4.Journal.Revision + 1 ||
                 checked(core.Revision + staged.Next.Revision) != plan.GlobalRevision ||
                 plan.GlobalRevision != checked(current.Revision + 2L) ||
-                receipt.CommandId != plan.CoreReceiptCommandId ||
-                !plan.MatchesCoreCommand(GameCommand.ParseCanonicalPayload(receipt.Payload)) ||
-                receipt.MinutesConsumed != 0 || receipt.Revision != core.Revision ||
+                !plan.MatchesCoreReceipt(receipt) ||
                 staged.Next.PendingTicketId.Length != 0 ||
                 staged.Next.Tickets.Last().ResolutionCommandId != plan.ResolutionCommandId ||
                 staged.Next.OutcomeReceipts.Last().OutcomeId != plan.OutcomeId)

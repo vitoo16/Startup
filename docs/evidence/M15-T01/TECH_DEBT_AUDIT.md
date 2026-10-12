@@ -41,3 +41,10 @@ Initial refactor `75c695652483439a296aae5a5a5e0ddd5e6d90df` reached 0 build warn
 - `Integration/EventV4CommandGuard.cs` provides a single namespace/frontier predicate implementation reused by both gateway and batch coordinator. Command-result conversion is reused across regular and batch paths.
 - `EventV4CommitGateway` public methods, payload contracts and event error/status semantics remain unchanged. This is a responsibility separation, **not** a new scheduler or a second transaction engine.
 - Target regression: engine-free economic checks including durable day/month batches, pending event interruptions, ambiguous CAS/cold retry, V2/V3 historical replay; Unity runtime tests remain deferred per AGENTS.md.
+
+
+## Increment 54 — Canonical financial receipt identity
+
+- Consolidated the duplicated *receipt-shape* checks from candidate construction, V4 cold replay and CAS transition into `EventRewardSettlementPlan.MatchesCoreReceipt`. Historical/source-authority validation **must remain separate** at each trust boundary.
+- Negative tests exercise internal command namespace, canonical payload, revision, cue, duration, operation ID, parent and advance metadata. Never assume a receipt-shape match alone licenses payout.
+- Milestone remains PARTIAL; exact-head CI results are documented separately in the M15 journal.

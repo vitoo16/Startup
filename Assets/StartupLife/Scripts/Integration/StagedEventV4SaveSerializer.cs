@@ -210,13 +210,7 @@ namespace StartupLife.Integration
                         .SequenceEqual(JsonSaveSerializer.WriteObject(after.Receipts[i])))
                         return false;
                 var financialReceipt = after.Receipts[after.Receipts.Count - 1];
-                if (financialReceipt.CommandId != plan.CoreReceiptCommandId ||
-                    !plan.MatchesCoreCommand(GameCommand.ParseCanonicalPayload(
-                        financialReceipt.Payload)) ||
-                    financialReceipt.Revision != plan.CoreRevision ||
-                    financialReceipt.MinutesConsumed != 0 ||
-                    financialReceipt.AdvanceTargetIso.Length != 0 ||
-                    financialReceipt.ParentPayload.Length != 0)
+                if (!plan.MatchesCoreReceipt(financialReceipt))
                     return false;
 
                 // No change to the frozen V2 provenance or V3 activation anchor.

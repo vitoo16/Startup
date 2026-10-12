@@ -32,9 +32,7 @@ namespace StartupLife.Simulation
                 core.SaveVersion != 3 || core.RunId != journal.RunId ||
                 core.Revision != core.Receipts.Count ||
                 receipt.Revision != checked(core.Revision + 1L) ||
-                receipt.OperationId != operationId ||
-                receipt.MinutesConsumed != 0 || receipt.Cue != "event.resolved" ||
-                receipt.AdvanceTargetIso.Length != 0 || receipt.ParentPayload.Length != 0)
+                receipt.OperationId != operationId)
                 throw new ArgumentException("Invalid V3 financial reward receipt frontier.");
 
             var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
@@ -55,7 +53,7 @@ namespace StartupLife.Simulation
                 !journal.OutcomeReceipts.Any(x => x.TicketId == ticket.Id &&
                     x.OutcomeId == ticket.OutcomeId &&
                     x.ResolutionCommandId == ticket.ResolutionCommandId) ||
-                !applied.Add(ticket.Id))
+                applied.Contains(ticket.Id))
                 throw new ArgumentException("Missing or duplicate V4 financial outcome.");
 
             // A blocking pending event allows only playback acknowledgement
@@ -67,9 +65,9 @@ namespace StartupLife.Simulation
 
             var plan = new EventRewardSettlementPlan(core, ticket, choice,
                 ticket.ResolutionCommandId, checked(core.Revision + 1L), 0);
-            if (receipt.CommandId != plan.CoreReceiptCommandId ||
-                !plan.MatchesCoreCommand(command))
+            if (!plan.MatchesCoreReceipt(receipt))
                 throw new ArgumentException("Financial receipt does not match V4 choice provenance.");
+            applied.Add(ticket.Id);
             new SimulationEngine(content, candidate.EconomicRecords)
                 .ApplyPlannedEventReward(core, plan, operationId);
         }

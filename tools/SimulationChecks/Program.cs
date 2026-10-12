@@ -172,6 +172,44 @@ internal static class Program
             Equal("cash-offer", decoded.AppearanceId);
             Equal(0, decoded.Amount);
             True(plan.MatchesCoreCommand(decoded));
+            // One receipt identity contract is exercised at candidate, cold
+            // replay and CAS boundaries; no boundary may silently admit a
+            // changed cue, revision, timing or unrelated parent payload.
+            CommandReceipt CanonicalRewardReceipt() => new CommandReceipt
+            {
+                CommandId = plan.CoreReceiptCommandId,
+                Payload = encoded.CanonicalPayload,
+                OperationId = "event-reward-operation",
+                Revision = plan.CoreRevision,
+                Cue = "event.resolved",
+                MinutesConsumed = 0
+            };
+            True(plan.MatchesCoreReceipt(CanonicalRewardReceipt()));
+            var wrongInternalId = CanonicalRewardReceipt();
+            wrongInternalId.CommandId = plan.ResolutionCommandId;
+            True(!plan.MatchesCoreReceipt(wrongInternalId));
+            var wrongPayload = CanonicalRewardReceipt();
+            wrongPayload.Payload = new GameCommand(CommandKind.AcknowledgePlayback).CanonicalPayload;
+            True(!plan.MatchesCoreReceipt(wrongPayload));
+            var wrongRevision = CanonicalRewardReceipt();
+            wrongRevision.Revision++;
+            True(!plan.MatchesCoreReceipt(wrongRevision));
+            var missingOperation = CanonicalRewardReceipt();
+            missingOperation.OperationId = "";
+            True(!plan.MatchesCoreReceipt(missingOperation));
+            var wrongCue = CanonicalRewardReceipt();
+            wrongCue.Cue = "event.offered";
+            True(!plan.MatchesCoreReceipt(wrongCue));
+            var wrongDuration = CanonicalRewardReceipt();
+            wrongDuration.MinutesConsumed = 1;
+            True(!plan.MatchesCoreReceipt(wrongDuration));
+            var wrongAdvance = CanonicalRewardReceipt();
+            wrongAdvance.AdvanceTargetIso = "2026-10-02";
+            True(!plan.MatchesCoreReceipt(wrongAdvance));
+            var wrongParent = CanonicalRewardReceipt();
+            wrongParent.ParentPayload = encoded.CanonicalPayload;
+            True(!plan.MatchesCoreReceipt(wrongParent));
+            True(!plan.MatchesCoreReceipt(null!));
             True(!plan.MatchesCoreCommand(new GameCommand(
                 CommandKind.SettleEventReward, offered.TicketId, 120000,
                 "take-bonus", "cash-offer")));

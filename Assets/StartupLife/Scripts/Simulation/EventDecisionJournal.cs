@@ -42,6 +42,21 @@ namespace StartupLife.Simulation
         public bool MatchesCoreCommand(GameCommand command) =>
             command != null && command.CanonicalPayload == ToCoreCommand().CanonicalPayload;
 
+        // Canonical receipt identity and metadata are shared between the
+        // prospective candidate, cold V3 replay and locked V4 CAS admission.
+        // This checks the receipt ONLY; each trust boundary must still prove
+        // the authored ticket, historical frontiers and state transitions.
+        public bool MatchesCoreReceipt(CommandReceipt receipt) =>
+            receipt != null &&
+            receipt.CommandId == CoreReceiptCommandId &&
+            receipt.Payload == ToCoreCommand().CanonicalPayload &&
+            receipt.Revision == CoreRevision &&
+            !string.IsNullOrWhiteSpace(receipt.OperationId) &&
+            receipt.Cue == "event.resolved" &&
+            receipt.MinutesConsumed == 0 &&
+            receipt.AdvanceTargetIso == "" &&
+            receipt.ParentPayload == "";
+
         internal EventRewardSettlementPlan(GameState verifiedState,
             EventTicketRecord ticket, EventChoiceDefinition choice, string commandId,
             long coreRevision, long globalRevision)
