@@ -341,7 +341,19 @@ namespace StartupLife.Simulation
         // Structural and content validation for prospective cold restoration.
         // Not a substitute for main-save receipt replay once M15 is integrated.
         public static IReadOnlyDictionary<string, EventCategoryPolicy> Validate(EventJournalState state,
-            IReadOnlyList<GameEventDefinition> definitions, IReadOnlyList<EventCategoryPolicy> policies)
+            IReadOnlyList<GameEventDefinition> definitions, IReadOnlyList<EventCategoryPolicy> policies) =>
+            ValidateCore(state, definitions, policies, false);
+
+        // Only V4's joint cold-replay path may admit authored financial outcomes.
+        // The normal journal-only validator still rejects them.
+        public static IReadOnlyDictionary<string, EventCategoryPolicy> ValidateWithFinancialReceipts(
+            EventJournalState state, IReadOnlyList<GameEventDefinition> definitions,
+            IReadOnlyList<EventCategoryPolicy> policies) =>
+            ValidateCore(state, definitions, policies, true);
+
+        private static IReadOnlyDictionary<string, EventCategoryPolicy> ValidateCore(
+            EventJournalState state, IReadOnlyList<GameEventDefinition> definitions,
+            IReadOnlyList<EventCategoryPolicy> policies, bool jointReplay)
         {
             if (state == null || definitions == null || policies == null ||
                 string.IsNullOrWhiteSpace(state.RunId) || state.EventRng == 0 || state.InitialEventRng == 0 ||
@@ -415,7 +427,7 @@ namespace StartupLife.Simulation
                     // Until V3-native financial receipts are coupled to this
                     // ticket, cold admission must fail instead of inventing credit.
                     if (string.IsNullOrWhiteSpace(ticket.ChoiceId) ||
-                        choice?.Reward != null ||
+                        (choice?.Reward != null && !jointReplay) ||
                         ConflictsWithBatchIdentity(state, ticket.ResolutionCommandId) ||
                         !usedCommands.Add(ticket.ResolutionCommandId) || choice == null ||
                         completed >= state.OutcomeReceipts.Count)

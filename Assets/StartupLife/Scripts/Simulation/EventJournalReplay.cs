@@ -13,9 +13,21 @@ namespace StartupLife.Simulation
     {
         public static void Validate(EventJournalState saved,
             IReadOnlyList<GameEventDefinition> definitions,
-            IReadOnlyList<EventCategoryPolicy> policies)
+            IReadOnlyList<EventCategoryPolicy> policies) =>
+            ValidateCore(saved, definitions, policies, false);
+
+        public static void ValidateWithFinancialReceipts(EventJournalState saved,
+            IReadOnlyList<GameEventDefinition> definitions,
+            IReadOnlyList<EventCategoryPolicy> policies) =>
+            ValidateCore(saved, definitions, policies, true);
+
+        private static void ValidateCore(EventJournalState saved,
+            IReadOnlyList<GameEventDefinition> definitions,
+            IReadOnlyList<EventCategoryPolicy> policies, bool jointReplay)
         {
-            var catalog = EventDecisionJournal.Validate(saved, definitions, policies);
+            var catalog = jointReplay
+                ? EventDecisionJournal.ValidateWithFinancialReceipts(saved, definitions, policies)
+                : EventDecisionJournal.Validate(saved, definitions, policies);
             var history = new EventSelectionHistory();
             var rng = saved.InitialEventRng;
             // Recheck positive and negative windows in chronological order with

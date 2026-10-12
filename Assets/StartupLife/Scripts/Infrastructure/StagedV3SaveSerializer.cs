@@ -44,7 +44,13 @@ namespace StartupLife.Infrastructure
         // V4 may observe each verified historical receipt frontier during the SAME
         // source replay. The ordinary V2/V3 serializer path remains unchanged.
         public StagedV3LoadResult DeserializeVerified(byte[] envelopeBytes,
-            Action<GameState>? observeFrontier)
+            Action<GameState>? observeFrontier) =>
+            DeserializeVerified(envelopeBytes, observeFrontier, null);
+
+        // Only the enclosing schema-4 replay supplies this proof. Standalone V3
+        // admission uses the original overload and always rejects reward receipts.
+        public StagedV3LoadResult DeserializeVerified(byte[] envelopeBytes,
+            Action<GameState>? observeFrontier, IVerifiedEventRewardReplay? rewardProof)
         {
             SaveEnvelope envelope;
             try { envelope=JsonSaveSerializer.ReadObject<SaveEnvelope>(envelopeBytes); }
@@ -61,7 +67,7 @@ namespace StartupLife.Infrastructure
                 var payload=EconomicV3PayloadCodec.ReadChecked(bytes);
                 if (payload.Current!.Revision!=envelope.Generation)
                     return new StagedV3LoadResult(LoadStatus.Corrupt,reason:"save.generation");
-                VerifySource(payload, observeFrontier);
+                VerifySource(payload, observeFrontier, rewardProof);
                 return new StagedV3LoadResult(LoadStatus.Valid,payload);
             }
             catch (ContentCompatibilityException error)
@@ -79,7 +85,8 @@ namespace StartupLife.Infrastructure
         }
 
         private void VerifySource(EconomicV3Payload body,
-            Action<GameState>? observeFrontier = null)
+            Action<GameState>? observeFrontier = null,
+            IVerifiedEventRewardReplay? rewardProof = null)
         {
             var legacy=JsonSaveSerializer.ReadObject<GameState>(
                 Convert.FromBase64String(body.OriginalV2PayloadBase64));
@@ -88,7 +95,13 @@ namespace StartupLife.Infrastructure
             {
                 if (observeFrontier != null)
                 {
-                    if (replay is IVersionedV3FrontierReplay frontiers)
+                    if (rewardProof != null)
+                    {
+                        if (replay is IVersionedV3RewardReplay joint)
+                            joint.ValidateV3(body, archives, observeFrontier, rewardProof);
+                        else throw new NotSupportedException("V3/V4 receipt replay unavailable.");
+                    }
+                    else if (replay is IVersionedV3FrontierReplay frontiers)
                         frontiers.ValidateV3(body, archives, observeFrontier);
                     else throw new NotSupportedException("V3 receipt frontier observer unavailable.");
                 }

@@ -41,7 +41,12 @@ namespace StartupLife.Infrastructure
         // V4-only extension: expose verified source receipt frontiers in one replay.
         // The active V2/V3 read path still uses the original overload unchanged.
         public LoadResult DeserializeAndValidateWithFrontiers(byte[] bytes,
-            Action<GameState> observeFrontier)
+            Action<GameState> observeFrontier) =>
+            DeserializeAndValidateWithFrontiers(bytes, observeFrontier, null);
+
+        public LoadResult DeserializeAndValidateWithFrontiers(byte[] bytes,
+            Action<GameState> observeFrontier,
+            IVerifiedEventRewardReplay? rewardProof)
         {
             if (observeFrontier == null) throw new ArgumentNullException(nameof(observeFrontier));
             SaveEnvelope envelope;
@@ -49,7 +54,7 @@ namespace StartupLife.Infrastructure
             catch (Exception) { return new LoadResult(LoadStatus.Corrupt, reason:"save.invalid"); }
             if (envelope.SchemaVersion != 3)
                 return new LoadResult(LoadStatus.Corrupt, reason:"save.schema_mismatch");
-            var loaded = staged.DeserializeVerified(bytes, observeFrontier);
+            var loaded = staged.DeserializeVerified(bytes, observeFrontier, rewardProof);
             if (loaded.Status != LoadStatus.Valid)
                 return new LoadResult(loaded.Status, reason:loaded.ReasonKey, sourceSchemaVersion:3);
             var state = loaded.Payload!.Current!;

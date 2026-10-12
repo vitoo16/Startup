@@ -181,8 +181,9 @@ namespace StartupLife.Integration
                 throw new ArgumentException("Embedded V3 checkpoint digest mismatch.");
             // Before reading user-provided receipts, validate journal identities,
             // content eligibility and RNG using the existing deterministic selector.
-            EventJournalReplay.Validate(payload.Journal, definitions, policies);
+            EventJournalReplay.ValidateWithFinancialReceipts(payload.Journal, definitions, policies);
             var journal = payload.Journal;
+            var rewardProof = new EventRewardReplayProof(journal, definitions);
             var byFrontier = journal.Tickets.GroupBy(t => t.CoreRevisionAtOffer)
                 .ToDictionary(g => g.Key, g => g.ToArray());
             if (byFrontier.ContainsKey(-1) || byFrontier.Keys.Any(x => x < 0))
@@ -249,7 +250,8 @@ namespace StartupLife.Integration
                             "Historical event context differs from its verified V3 receipt prefix.");
                 }
                 visited.Add(frontier.Revision);
-            });
+            }, rewardProof);
+            rewardProof.AssertComplete();
 
             if (core.Status == LoadStatus.UnsupportedContent)
                 throw new ContentCompatibilityException(core.Reason, "Embedded V3 content is unavailable.");
