@@ -146,22 +146,12 @@ namespace StartupLife.Simulation
                 else duration = evaluator.Evaluate(candidate, command, operation);
                 if (duration != receipt.MinutesConsumed || state.CurrentCue != receipt.Cue)
                     throw new ArgumentException("V3 suffix duration or cue differs from committed rules.");
-                state.Revision = checked(state.Revision + 1);
-                if (command.Kind != CommandKind.AdvanceBoundary &&
-                    command.Kind != CommandKind.AcknowledgePlayback)
-                {
-                    state.CurrentActivity = operation;
-                    state.PlaybackCursor = 0;
-                }
-                var replayedReceipt = new CommandReceipt
-                {
-                    CommandId = receipt.CommandId, Payload = command.CanonicalPayload,
-                    OperationId = operation, Revision = state.Revision, Cue = state.CurrentCue,
-                    MinutesConsumed = duration, AdvanceTargetIso = receipt.AdvanceTargetIso,
-                    ParentPayload = receipt.ParentPayload
-                };
-                state.Receipts.Add(replayedReceipt);
-                evaluator.FinalizeReceipt(candidate, replayedReceipt);
+                // The exact same canonical receipt path is used for live V3
+                // commands and V4 payout candidates. A cold replay still
+                // independently compares its resulting state/finance below.
+                ReceiptCandidateFinalizer.Append(state, command, receipt.CommandId,
+                    operation, duration, evaluator, receipt.AdvanceTargetIso,
+                    receipt.ParentPayload);
                 observeFrontier?.Invoke(state);
             }
             financial.Validate();

@@ -647,3 +647,12 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - Preserved separate before-write failure coverage, healthy +2 CAS, duplicate/conflict IDs, and gameplay +1 after reward in Increment 50. Closed an edge-case overflow in `AtomicFileSaveStore`: valid +1 at long.MaxValue-1 does not eagerly compute overflowing +2.
 - **Previous exact-head CI:** Increment 50 `1d938e76757c795f770afd5c28f79e0b827ec0b5` SUCCESS https://github.com/vitoo16/Startup/actions/runs/38277593813 (Simulation 68/68, Business 90/90, Economy 79/79, Astra 20/20, Restore 35/35, Presentation 14/14, Content 16/16; 0 warnings/errors).
 - **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-cli; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler. **Tests:** exact-head CI pending for this increment. **Visual:** NOT RUN. **Save impact:** none to schema or frozen v2/v3 fixtures. **Known limitations:** XP/multiple-award and catalog revision policy still need coverage; production V4 bootstrap and Unity device QA deferred. **Files:** Infrastructure/AtomicFileSaveStore.cs, tools/EconomicChecks/Program.cs, JOURNAL.md.
+
+
+## Increment 52 — Source duplication audit and shared receipt replay finalizer
+
+- Reviewed concrete duplicate/tech-debt hotspots and recorded classified findings in `docs/evidence/M15-T01/TECH_DEBT_AUDIT.md`.
+- Canonical receipt append + economic finalize moved to Simulation so V3 cold replay no longer copies the same logic from live GameSession. Preserved Unity .meta GUID, existing canonical payload/revision/cue/timing and economic finalization order.
+- Frozen archived V2 simulation **intentionally left unchanged**; UI and oversized-gateway debts tracked, not churned without the appropriate QA gate.
+- **Owner:** GPT-6 Technical Director. **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; project-auditor-fixes; unity-gameplay-systems; unity-game-economy; unity-qa-release; unity-debug-profiler.
+- **Tests:** exact-head engine-free CI pending. **Visual:** NOT RUN (Unity Editor unavailable). **Save impact:** no schema or frozen fixtures changed. **Known limitations:** other hotspots remain under tracked debt; M15-T01 still PARTIAL / PR #52 Draft.

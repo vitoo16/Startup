@@ -1,13 +1,11 @@
 #nullable enable
 using System;
 using StartupLife.Core;
-using StartupLife.Simulation;
-
-namespace StartupLife.Application
+namespace StartupLife.Simulation
 {
-    // Shared candidate receipt assembly for both GameSession and staged V4
-    // reward intents. No store, CAS, or independent gameplay evaluator here:
-    // every caller still needs the authoritative serializer/replay admission.
+    // Single canonical receipt append/finalize path for GameSession, V3 cold
+    // replay and staged V4 rewards. This never evaluates gameplay or writes a
+    // checkpoint; every caller still requires full versioned replay and CAS.
     public static class ReceiptCandidateFinalizer
     {
         public static CommandReceipt Append(GameState candidate, GameCommand command,
