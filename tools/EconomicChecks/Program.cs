@@ -2472,7 +2472,8 @@ internal static class Program
                         PairPayload(pair.Core, pair.Journal).EmbeddedV3EnvelopeBase64))
                         .Status != LoadStatus.Valid,
                     "standalone V3 replay must still refuse the same reward receipt");
-                var absentCore = EventV4CompatibilitySerializer.RestoreCoreProjection(current);
+                var absentCore = v3.DeserializeAndValidate(Convert.FromBase64String(
+                    current.EventV4!.EmbeddedV3EnvelopeBase64)).State!;
                 Throws<ArgumentException>(() => stagedWire.SerializeVerified(
                     PairPayload(absentCore, pair.Journal)));
                 var mismatchedPair = EventRewardCompositeProof.Prepare(before, serializer,
