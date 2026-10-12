@@ -525,3 +525,14 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-head engine-free CI pending. **Save impact:** existing receipt ordinal bytes and historical fixtures unchanged; new command type never admitted by V3 without V4 proof. **Visual evidence:** NOT RUN. **Remaining:** trusted V3 evaluator and V4 composite CAS+cross-replay binding for spendable cash/XP; Unity runtime QA pending.
 - **Files:** Core/Contracts.cs; Simulation/EventDecisionJournal.cs; Integration/EventV4CommitGateway.cs; SimulationChecks; EconomicChecks; JOURNAL.md.
+
+
+## Increment 41 — Reuse native V3 wallet and career rules for isolated reward candidates
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL, PR #52 Draft/unmerged.
+
+- The existing `SimulationEngine` now has `ApplyPlannedEventReward`: a **candidate-only** evaluator that consumes the immutable authored `EventRewardSettlementPlan`. It verifies V3 run/date/core revision, expected cash and career XP frontiers, preflights checked arithmetic and affordability, then uses the **same native ledger Entry(...) and career Promote(...)** paths as normal gameplay. It changes neither receipt history nor global revision and has no store writer.
+- The plan now binds RunId, CheckedDateIso, ExpectedCashVnd and ExpectedCareerXp, derived only from the V4 planner input; the new evaluator rejects a V3 candidate from a mismatched source before posting anything.
+- SimulationChecks exercises a cash+XP candidate ledger entry, rank/XP path, identity preservation and standalone V3 `SimulationEngine.Evaluate(SettleEventReward)` rejection with zero grant. This is **not spendable money yet**; it is an isolated trusted-candidate effect awaiting one proof-bound V4/V3 composite save-and-replay path.
+- **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler. **Tests:** exact-head CI pending. **Visual:** NOT RUN. **Save:** no wire/schema/frozen fixture changes; new command still fail-closed in ordinary V3.
+- **Files:** Simulation/EventDecisionJournal.cs, Simulation/SimulationEngine.cs, tools/SimulationChecks/Program.cs, JOURNAL.md.

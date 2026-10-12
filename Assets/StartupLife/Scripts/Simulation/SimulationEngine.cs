@@ -42,6 +42,49 @@ namespace StartupLife.Simulation
             }
             return 0;
         }
+        // Pure V3 candidate effect for a PlanReward-authorized V4 settlement.
+        // Does not append a receipt, increment a revision, or persist a save.
+        // Publication remains forbidden until one V4 CAS can cold-replay both
+        // this native V3 effect and its matching resolved event outcome.
+        public void ApplyPlannedEventReward(GameState candidate,
+            EventRewardSettlementPlan plan, string operationId)
+        {
+            if (candidate == null || plan == null ||
+                candidate.SaveVersion != 3 ||
+                candidate.Revision != candidate.Receipts.Count ||
+                plan.CoreRevision != checked(candidate.Revision + 1) ||
+                candidate.RunId != plan.RunId || candidate.DateIso != plan.CheckedDateIso ||
+                candidate.Cash != plan.ExpectedCashVnd ||
+                string.IsNullOrWhiteSpace(operationId) ||
+                candidate.Name.Length == 0)
+                throw new ArgumentException("A verified V3 reward frontier is required.");
+            if (plan.CareerXpDelta > 0 &&
+                (candidate.Employment == null ||
+                 candidate.Employment.EndedIso.Length > 0 ||
+                 candidate.Employment.Xp != plan.ExpectedCareerXp ||
+                 !content.Careers.ContainsKey(candidate.Employment.CareerId)))
+                throw new ArgumentException("V3 career reward frontier differs from V4 choice.");
+            var nextCash = checked(candidate.Cash + plan.CashDeltaVnd);
+            if (nextCash < 0)
+                throw new ArgumentException("An event cannot overdraw the wallet.");
+            var nextXp = plan.CareerXpDelta > 0
+                ? checked(candidate.Employment!.Xp + plan.CareerXpDelta)
+                : 0L;
+
+            candidate.Cash = nextCash;
+            if (plan.CashDeltaVnd != 0)
+                Entry(candidate, operationId,
+                    plan.CashDeltaVnd > 0 ? "event.reward" : "event.expense",
+                    plan.CashDeltaVnd, Math.Abs(plan.CashDeltaVnd), plan.TicketId);
+            if (plan.CareerXpDelta > 0)
+            {
+                candidate.Employment!.Xp = nextXp;
+                Promote(candidate); // Reuse the normal career rules and skill grants.
+            }
+            candidate.CurrentCue = "event.resolved";
+            candidate.History.Add("event.resolved:" + plan.TicketId + ":" + plan.ChoiceId);
+        }
+
         private void Create(GameState state, GameCommand command, string operation)
         {
             if (state.Name.Length > 0) Fail("character.exists");

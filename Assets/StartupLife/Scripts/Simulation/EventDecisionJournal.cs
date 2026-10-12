@@ -13,6 +13,10 @@ namespace StartupLife.Simulation
     // or a second wallet authority.
     public sealed class EventRewardSettlementPlan
     {
+        public string RunId { get; }
+        public string CheckedDateIso { get; }
+        public long ExpectedCashVnd { get; }
+        public long ExpectedCareerXp { get; }
         public string TicketId { get; }
         public string EventId { get; }
         public string ChoiceId { get; }
@@ -33,10 +37,14 @@ namespace StartupLife.Simulation
         public bool MatchesCoreCommand(GameCommand command) =>
             command != null && command.CanonicalPayload == ToCoreCommand().CanonicalPayload;
 
-        internal EventRewardSettlementPlan(EventTicketRecord ticket,
-            EventChoiceDefinition choice, string commandId,
+        internal EventRewardSettlementPlan(GameState verifiedState,
+            EventTicketRecord ticket, EventChoiceDefinition choice, string commandId,
             long coreRevision, long globalRevision)
         {
+            RunId = verifiedState.RunId;
+            CheckedDateIso = verifiedState.DateIso;
+            ExpectedCashVnd = verifiedState.Cash;
+            ExpectedCareerXp = verifiedState.Employment?.Xp ?? 0;
             TicketId = ticket.Id;
             EventId = ticket.EventId;
             ChoiceId = choice.Id;
@@ -276,7 +284,7 @@ namespace StartupLife.Simulation
                     throw new ArgumentException("Career XP requires active employment.");
                 _ = checked(current.Employment.Xp + reward.CareerXpDelta);
             }
-            return new EventRewardSettlementPlan(ticket, choice, commandId,
+            return new EventRewardSettlementPlan(current, ticket, choice, commandId,
                 checked(current.Receipts.Count + 1L), checked(current.Revision + 1));
         }
 

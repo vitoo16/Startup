@@ -150,6 +150,44 @@ internal static class Program
             True(!plan.MatchesCoreCommand(new GameCommand(
                 CommandKind.AcknowledgePlayback, offered.TicketId, 0,
                 "take-bonus", "cash-offer")));
+            // The only evaluator for this provisional command lives in the
+            // existing SimulationEngine. It can alter an isolated V3 candidate,
+            // but cannot append a receipt or publish via standalone V3 CAS.
+            var isolated = GameSession.NewState(content, state.RunId, state.Seed, origin);
+            isolated.SaveVersion = 3;
+            isolated.Name = "Reward Candidate";
+            isolated.Cash = cashBefore;
+            isolated.Employment = new EmploymentState
+            {
+                CareerId = "developer", StartedIso = origin.ToString(),
+                Xp = xpBefore
+            };
+            isolated.Skills = content.Skills.Keys.Select(x => new SkillState { Id = x }).ToList();
+            var simulation = new SimulationEngine(content);
+            simulation.ApplyPlannedEventReward(isolated, plan, "planned-only-op");
+            Equal(checked(cashBefore + plan.CashDeltaVnd), isolated.Cash);
+            Equal(checked(xpBefore + plan.CareerXpDelta), isolated.Employment.Xp);
+            True(isolated.Ledger.Count == 1 &&
+                isolated.Ledger[0].Category == "event.reward" &&
+                isolated.Ledger[0].CashDelta == plan.CashDeltaVnd &&
+                isolated.Ledger[0].AttributionId == offered.TicketId);
+            True(isolated.History.Any(x => x.Contains(offered.TicketId)) &&
+                isolated.Receipts.Count == 0 && isolated.Revision == 0);
+            var raw = GameSession.NewState(content, state.RunId, state.Seed, origin);
+            raw.SaveVersion = 3;
+            raw.Name = "Untrusted Reward";
+            raw.Cash = cashBefore;
+            try
+            {
+                simulation.Evaluate(raw, decoded, "unsupported-direct-reward");
+                throw new Exception("Expected public reward execution to fail closed.");
+            }
+            catch (RuleFailure error)
+            {
+                Equal("command.unsupported", error.ReasonKey);
+            }
+            Equal(cashBefore, raw.Cash);
+            True(raw.Ledger.Count == 0);
             Equal(cashBefore, state.Cash);
             Equal(xpBefore, state.Employment.Xp);
             Equal(offered.TicketId, state.EventV4.Journal.PendingTicketId);
