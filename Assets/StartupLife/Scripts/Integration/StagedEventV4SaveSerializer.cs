@@ -32,6 +32,7 @@ namespace StartupLife.Integration
         private readonly V3SaveCompatibilitySerializer v3;
         private readonly IReadOnlyList<GameEventDefinition> definitions;
         private readonly IReadOnlyList<EventCategoryPolicy> policies;
+        private readonly string catalogFingerprint;
 
         public StagedEventV4SaveSerializer(V3SaveCompatibilitySerializer v3,
             IEnumerable<GameEventDefinition> definitions, IEnumerable<EventCategoryPolicy> policies)
@@ -43,6 +44,7 @@ namespace StartupLife.Integration
             // Validate the authoring roster before accepting any persisted checkpoint.
             EventDecisionJournal.Validate(EventDecisionJournal.New("catalog-validation", 1),
                 this.definitions, this.policies);
+            catalogFingerprint = EventCatalogFingerprint.Compute(this.definitions, this.policies);
         }
 
         // Historical migration is in-memory only; never rewrites the user's store.
@@ -120,6 +122,7 @@ namespace StartupLife.Integration
                 throw new ArgumentException("A verified V3 migration origin is required.");
             var journal = EventDecisionJournal.New(core.RunId, core.EventRng);
             journal.OriginDateIso = activation.MigratedAtDateIso;
+            journal.CatalogFingerprint = catalogFingerprint;
             return new EventV4Payload
             {
                 EmbeddedV3EnvelopeBase64 = Convert.ToBase64String(verifiedV3Envelope),
@@ -235,6 +238,17 @@ namespace StartupLife.Integration
                 string.IsNullOrEmpty(payload.EmbeddedV3EnvelopeSha256) ||
                 payload.Journal == null)
                 throw new ArgumentException("Incomplete event v4 wire payload.");
+            // Reject pinned-but-missing historical authored content as an
+            // availability problem, never a corrupted save or a fresh RNG roll.
+            // Legacy pre-fingerprint V4 journals are left untouched; they still
+            // require their original roster for reliable historical replay.
+            if (payload.Journal.CatalogFingerprint == null)
+                throw new ArgumentException("Null V4 event catalog identity.");
+            if (payload.Journal.CatalogFingerprint.Length > 0 &&
+                (!EventCatalogFingerprint.IsWellFormed(payload.Journal.CatalogFingerprint) ||
+                 payload.Journal.CatalogFingerprint != catalogFingerprint))
+                throw new ContentCompatibilityException("save.event_catalog_unavailable",
+                    "Pinned V4 event catalog is not available for deterministic replay.");
             var v3Bytes = Convert.FromBase64String(payload.EmbeddedV3EnvelopeBase64);
             // Nested checkpoint must really be schema3, not silently promoted legacy bytes.
             var inner = JsonSaveSerializer.ReadObject<SaveEnvelope>(v3Bytes);

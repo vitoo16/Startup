@@ -700,3 +700,15 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 
 - Added the explicit `Unity.ugui` assembly reference to `StartupLife.Tests.EditMode.asmdef`, because the new EditMode test directly references UnityEngine.UI types. The Presentation runtime already declares its own Unity.ugui reference. This is a test-assembly compile contract fix, not a validator or runtime behavior change.
 - Engine-free CI for the final HEAD required; Unity EditMode tests authored but NOT RUN in a live Editor.
+
+
+## Increment 56 — Deterministic V4 event catalog fingerprint (provenance foundation)
+
+**Owner:** GPT-6 Technical Director. **Scope:** deterministic event catalog compatibility/versioning, additive V4 journal metadata; M15-T01 stays PARTIAL, PR #52 Draft/unmerged.
+
+- `EventCatalogFingerprint.Compute` binds each authored event's selection gates, weights, cooldowns, categories, tag requirements, narrative/choice keys and reward cash/XP to a deterministic SHA-256, with unambiguous length-framed serialization and culture-invariant numeric formatting. Event/category enumeration is canonicalized by ID; player-visible choice order remains significant. Not a second event selection or replay engine.
+- New V4 migrations pin this content fingerprint to an append-only `EventJournalState.CatalogFingerprint` wire member. The journal `Copy()` preserves it, and the strict V4 serializer refuses a changed/missing **pinned** catalog with `LoadStatus.UnsupportedContent`, without modifying the file, charging money or falling back to another roster.
+- Historical unversioned V4 checkpoints with the member absent retain empty legacy identity on cold read, and are not rewritten until normal CAS. They still replay against the supplied historical definitions; **this increment does not yet provide an archive resolver** for loading such runs after catalog changes. A future catalog archive manifest/selection policy is required before publishing changed live content. Legacy V2/V3 bytes unchanged.
+- Tests cover stable canonical fingerprint, distinct selection weight/reward/policy fingerprints, signature serialization, new V3→V4 activation pin, unsupported rebalanced content, mismatched pinned wire and early V4 wire missing the field. All existing validators/thresholds and frozen fixtures are retained.
+- **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-gameplay-systems; unity-game-economy; unity-qa-release.
+- **Tests:** exact-head engine-free CI pending; Unity runtime NOT RUN. **Visual evidence:** NOT RUN (backend-only). **Save impact:** additive V4 journal field, new migrations pinned, legacy V4 missing field still accepted; no V2/V3 changes. **Known limitations:** immutable archived event catalog lookup/version migration and Unity/device QA outstanding. **Files:** Core/EventJournalContracts.cs, Simulation/EventCatalogFingerprint.cs (+meta), Integration/StagedEventV4SaveSerializer.cs, SimulationChecks, EconomicChecks, JOURNAL.md, TECH_DEBT_AUDIT.md.

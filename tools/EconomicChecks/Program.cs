@@ -1060,6 +1060,8 @@ internal static class Program
             Equal(LoadStatus.Valid, migrated.Status);
             True(migrated.Payload != null && migrated.CoreState != null);
             Equal(0L, migrated.Payload!.Journal!.Revision);
+            var pinnedCatalog = EventCatalogFingerprint.Compute(definitions, policies);
+            Equal(pinnedCatalog, migrated.Payload.Journal.CatalogFingerprint);
             Equal(original.EventRng, migrated.Payload.Journal.InitialEventRng);
             Bytes(unchangedV2, v2Bytes);
             var v3Bytes = Convert.FromBase64String(migrated.Payload.EmbeddedV3EnvelopeBase64);
@@ -1073,6 +1075,22 @@ internal static class Program
             Equal(EventJournalStatus.Offered, offer.Status);
             migrated.Payload.Journal = offer.Next;
             var v4Bytes = stage.SerializeVerified(migrated.Payload);
+            // An updated authoring roster without the pinned revision must
+            // fail as unsupported content, not silently select a new event.
+            var rebalanced = new[] { new GameEventDefinition("career-intro", "career",
+                2026, 0, 2, 0, 5, 4, 0, Array.Empty<string>(),
+                Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("continue",
+                    "event.continue", "outcome.continue") }) };
+            var newCatalog = new StagedEventV4SaveSerializer(v3, rebalanced, policies);
+            Equal(LoadStatus.UnsupportedContent, newCatalog.DeserializeVerified(v4Bytes).Status);
+            var persistedFingerprint = JsonSaveSerializer.ReadObject<EventV4Payload>(
+                JsonSaveSerializer.WriteObject(migrated.Payload));
+            persistedFingerprint.Journal!.CatalogFingerprint =
+                EventCatalogFingerprint.Prefix + new string('0', EventCatalogFingerprint.HexLength);
+            var mismatchedWire = JsonSaveSerializer.Wrap(
+                JsonSaveSerializer.WriteObject(persistedFingerprint), 4, 1);
+            Equal(LoadStatus.UnsupportedContent, stage.DeserializeVerified(mismatchedWire).Status);
             // Recreate a byte-authentic early V4 *wire shape* with the new
             // optional member omitted, without weakening current V4 replay.
             // Generate fresh envelope checksum instead of faking disk bytes.
@@ -1097,6 +1115,12 @@ internal static class Program
                         writer.WriteStartObject();
                         foreach (var member in field.Value.EnumerateObject())
                         {
+                            if (member.Name == "CatalogFingerprint")
+                            {
+                                // Earlier schema-4 checkpoints did not carry
+                                // a catalog pin; preserve that exact old shape.
+                                continue;
+                            }
                             if (member.Name == "NoEligibleDays")
                             {
                                 removed = true;
@@ -1116,6 +1140,7 @@ internal static class Program
             var legacyRead = stage.DeserializeVerified(legacyV4Bytes);
             Equal(LoadStatus.Valid, legacyRead.Status);
             Equal(0, legacyRead.Payload!.Journal!.NoEligibleDays.Count);
+            Equal("", legacyRead.Payload.Journal.CatalogFingerprint);
             Equal(offer.TicketId, legacyRead.Payload.Journal.PendingTicketId);
             Equal(LoadStatus.Corrupt,
                 stage.DeserializeVerified(LegacyDailyShape(true)).Status);

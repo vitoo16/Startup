@@ -377,6 +377,51 @@ internal static class Program
             });
         });
 
+        Check("M15 event catalog fingerprint is deterministic and binds selection plus effects", () =>
+        {
+            var a = new GameEventDefinition("catalog-one", "life", 2026, 0,
+                2, 1, 5, 7, 0, new[] { "event/ready" }, Array.Empty<string>(),
+                new[] {
+                    new EventChoiceDefinition("claim", "event.claim", "outcome.claim",
+                        new[] { "event/claimed" }, new EventChoiceReward(1100, 25)),
+                    new EventChoiceDefinition("skip", "event.skip", "outcome.skip")
+                }, "event.title", "event.body");
+            var b = new GameEventDefinition("catalog-two", "life", 2026, 0,
+                1, 1, 5, 7, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("skip", "event.skip", "outcome.skip") });
+            var policies = new[] { new EventCategoryPolicy("life", 1, 7, 3) };
+            var baseId = EventCatalogFingerprint.Compute(new[] { a, b }, policies);
+            Equal(EventCatalogFingerprint.Prefix.Length + EventCatalogFingerprint.HexLength,
+                baseId.Length);
+            True(EventCatalogFingerprint.IsWellFormed(baseId));
+            Equal(baseId, EventCatalogFingerprint.Compute(new[] { b, a }, policies));
+            True(!EventCatalogFingerprint.IsWellFormed(baseId.ToUpperInvariant()));
+            var changedWeight = new GameEventDefinition("catalog-one", "life", 2026, 0,
+                3, 1, 5, 7, 0, new[] { "event/ready" }, Array.Empty<string>(),
+                a.Choices, "event.title", "event.body");
+            True(baseId != EventCatalogFingerprint.Compute(new[] { changedWeight, b }, policies));
+            var changedChoice = new GameEventDefinition("catalog-one", "life", 2026, 0,
+                2, 1, 5, 7, 0, new[] { "event/ready" }, Array.Empty<string>(),
+                new[] {
+                    new EventChoiceDefinition("claim", "event.claim", "outcome.claim",
+                        new[] { "event/claimed" }, new EventChoiceReward(1101, 25)),
+                    new EventChoiceDefinition("skip", "event.skip", "outcome.skip")
+                }, "event.title", "event.body");
+            True(baseId != EventCatalogFingerprint.Compute(new[] { changedChoice, b }, policies));
+            True(baseId != EventCatalogFingerprint.Compute(new[] { a, b },
+                new[] { new EventCategoryPolicy("life", 2, 7, 3) }));
+            var journal = EventDecisionJournal.New("catalog-run", 123);
+            journal.CatalogFingerprint = baseId;
+            var copy = journal.Copy();
+            Equal(baseId, copy.CatalogFingerprint);
+            var wire = JsonSaveSerializer.WriteObject(copy);
+            Equal(baseId, JsonSaveSerializer.ReadObject<EventJournalState>(wire).CatalogFingerprint);
+            // Historical unversioned V4 wire remains loadable without writing
+            // a signature to the original bytes on an ordinary cold read.
+            var legacy = EventDecisionJournal.New("legacy-catalog-run", 123);
+            Equal("", JsonSaveSerializer.ReadObject<EventJournalState>(
+                JsonSaveSerializer.WriteObject(legacy)).CatalogFingerprint);
+        });
         Check("M15 journal pending choice survives serialized cold read and resolves exactly once", () =>
         {
             var definitions = new[] { Event("career-interview", 3, 1, 0, 1, 0,

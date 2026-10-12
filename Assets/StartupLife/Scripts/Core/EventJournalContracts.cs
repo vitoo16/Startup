@@ -109,6 +109,10 @@ namespace StartupLife.Core
             new List<EventAdvanceBatchRecord>();
         [DataMember(Order = 10)] public List<EventNoEligibleDayRecord> NoEligibleDays { get; set; } =
             new List<EventNoEligibleDayRecord>();
+        // Empty = historical pre-fingerprint V4 checkpoint. Nonempty = exact
+        // authored event definition/policy snapshot used throughout this run.
+        // Append only; never reinterpret a pinned checkpoint as current content.
+        [DataMember(Order = 11)] public string CatalogFingerprint { get; set; } = "";
 
         // Early unshipped V4 checkpoints predate NoEligibleDays. DataContract
         // deserialization skips field initializers, so explicitly initialize
@@ -118,6 +122,7 @@ namespace StartupLife.Core
         private void InitializeLegacyDailyChecks(StreamingContext context)
         {
             NoEligibleDays = new List<EventNoEligibleDayRecord>();
+            CatalogFingerprint = "";
         }
 
         public EventJournalState Copy() => new EventJournalState
@@ -128,7 +133,8 @@ namespace StartupLife.Core
             Tickets = Tickets.ConvertAll(ticket => ticket.Copy()),
             OutcomeReceipts = OutcomeReceipts.ConvertAll(receipt => receipt.Copy()),
             AdvanceBatches = AdvanceBatches.ConvertAll(batch => batch.Copy()),
-            NoEligibleDays = NoEligibleDays.ConvertAll(day => day.Copy())
+            NoEligibleDays = NoEligibleDays.ConvertAll(day => day.Copy()),
+            CatalogFingerprint = CatalogFingerprint
         };
     }
 

@@ -54,3 +54,10 @@ Initial refactor `75c695652483439a296aae5a5a5e0ddd5e6d90df` reached 0 build warn
 - One uGUI hierarchy constructor `Presentation/MobileScrollViewFactory` replaces equivalent scroll creation in LifeDashboardOverlay, BusinessManagementOverlay and EventChoiceOverlay; per-screen visual parameters remain explicit and unchanged. No secondary safe-area or navigation authority introduced.
 - Added Unity EditMode tests covering required ScrollRect/Viewport/Content hierarchy, rect anchors, masking, content growth and variant padding/spacing/sensitivity. These require an actual Editor run to count as evidence; engine-free static checks are not visual QA.
 - Unrelated ButtonNode/TextNode helpers are intentionally not merged in this slice. Tests and frozen saves were not loosened.
+
+
+## Increment 56 — Catalog provenance / compatibility debt
+
+- V4 migration now stamps one deterministic SHA-256 fingerprint for **all selection and authored outcome inputs**, not a handwritten version label that can drift. Serializer rejects mismatched pinned content as `UnsupportedContent`.
+- Untagged older V4 checkpoint compatibility is preserved (missing field means legacy, no invented fingerprint). Never introduce changed event content in production without an explicit archived-baseline roster and resolver: a missing field does not prove which authoring version selected past events.
+- Next debt slice: supply immutable archived catalogs and an explicit policy for old untagged V4 runs, and route both read replay and future event commands through the resolved run-specific catalog.
