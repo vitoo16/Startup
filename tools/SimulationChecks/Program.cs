@@ -126,8 +126,12 @@ internal static class Program
             Equal("take-bonus", plan.ChoiceId);
             Equal("outcome.take", plan.OutcomeId);
             Equal("apply-reward-once", plan.ResolutionCommandId);
+            True(plan.CoreReceiptCommandId.StartsWith(
+                EventRewardSettlementPlan.ReservedReceiptPrefix, StringComparison.Ordinal));
+            Equal(EventRewardSettlementPlan.ReservedReceiptPrefix.Length + 64,
+                plan.CoreReceiptCommandId.Length);
             Equal(1L, plan.CoreRevision);
-            Equal(2L, plan.GlobalRevision);
+            Equal(3L, plan.GlobalRevision);
             Equal(120000L, plan.CashDeltaVnd);
             Equal(50L, plan.CareerXpDelta);
             // Staged outcome and V3 reward must eventually share ONE CAS.
@@ -136,7 +140,7 @@ internal static class Program
             var stagedReward = EventDecisionJournal.StagePlannedRewardResolution(
                 offered.Next, defs, policies, plan);
             Equal(EventJournalStatus.Resolved, stagedReward.Status);
-            Equal(plan.GlobalRevision, plan.CoreRevision + stagedReward.Next.Revision - 1);
+            Equal(plan.GlobalRevision, plan.CoreRevision + stagedReward.Next.Revision);
             Equal(offered.Next.Revision + 1, stagedReward.Next.Revision);
             Equal("", stagedReward.Next.PendingTicketId);
             Equal("apply-reward-once", stagedReward.Next.Tickets[0].ResolutionCommandId);

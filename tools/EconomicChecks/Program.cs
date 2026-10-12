@@ -2436,6 +2436,30 @@ internal static class Program
                 var before = File.ReadAllBytes(path);
                 var plan = EventDecisionJournal.PlanReward(current, defs, policies,
                     "settle-reward-proof", offered.TicketId, "receive");
+                var candidateReward = runner.PrepareRewardReceiptCandidate(
+                    Convert.FromBase64String(current.EventV4!.EmbeddedV3EnvelopeBase64), plan);
+                var payoutReceipt = candidateReward.Receipts.Last();
+                Assert(candidateReward.Revision == plan.CoreRevision &&
+                    candidateReward.Cash == checked(current.Cash + plan.CashDeltaVnd) &&
+                    payoutReceipt.CommandId == plan.CoreReceiptCommandId &&
+                    payoutReceipt.CommandId != plan.ResolutionCommandId &&
+                    payoutReceipt.Payload == plan.ToCoreCommand().CanonicalPayload &&
+                    payoutReceipt.Revision == plan.CoreRevision &&
+                    payoutReceipt.MinutesConsumed == 0 &&
+                    candidateReward.EconomicV3?.Current == candidateReward &&
+                    current.Cash != candidateReward.Cash &&
+                    File.ReadAllBytes(path).SequenceEqual(before),
+                    "V3-native reward candidate must have one canonical operation/receipt without changing disk");
+                var forgedInner = JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(candidateReward.EconomicV3!),
+                    3, candidateReward.Revision);
+                Assert(v3.DeserializeAndValidate(forgedInner).Status != LoadStatus.Valid,
+                    "ordinary V3 cold replay must reject a reward without V4 proof");
+                Assert(Cold().ExecuteCore(new CommandEnvelope(seed.RunId,
+                        plan.CoreReceiptCommandId, current.Revision,
+                        new GameCommand(CommandKind.AcknowledgePlayback))).ReasonKey ==
+                        "command.reserved_id",
+                    "V3-reward receipt namespace must be unavailable to public V4 commands");
                 var encodedReward = plan.ToCoreCommand();
                 Assert(plan.MatchesCoreCommand(
                         GameCommand.ParseCanonicalPayload(encodedReward.CanonicalPayload)) &&
@@ -2445,7 +2469,7 @@ internal static class Program
                     File.ReadAllBytes(path).SequenceEqual(before),
                     "canonical reward intent cannot be executed as a public V3 command");
                 Assert(plan.CoreRevision == current.Receipts.Count + 1L &&
-                    plan.GlobalRevision == current.Revision + 1 &&
+                    plan.GlobalRevision == current.Revision + 2 &&
                     plan.ResolutionCommandId == "settle-reward-proof" &&
                     plan.CashDeltaVnd == 125000 && plan.CareerXpDelta == 0 &&
                     plan.TicketId == offered.TicketId &&

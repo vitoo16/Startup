@@ -1,8 +1,10 @@
 #nullable enable
 using System;
+using System.Linq;
 using StartupLife.Application;
 using StartupLife.Core;
 using StartupLife.Infrastructure;
+using StartupLife.Simulation;
 
 namespace StartupLife.Integration
 {
@@ -45,6 +47,49 @@ namespace StartupLife.Integration
             if (result.Status == CommandStatus.Committed)
                 candidateV3 = session.ExportCheckpoint();
             return result;
+        }
+
+        // Staged receipt only. V3 serializer/replay must still reject this
+        // until the V4 journal provides an authoritative cross-ledger proof.
+        // No disk writer or CAS is exposed by this method.
+        public GameState PrepareRewardReceiptCandidate(byte[] verifiedV3Envelope,
+            EventRewardSettlementPlan plan)
+        {
+            if (verifiedV3Envelope == null || plan == null)
+                throw new ArgumentNullException("Reward source and proof are required.");
+            var read = serializer.DeserializeAndValidate(verifiedV3Envelope);
+            var candidate = read.State;
+            if (read.Status != LoadStatus.Valid || candidate?.SaveVersion != 3 ||
+                candidate.EconomicV3?.Current != candidate ||
+                candidate.EconomicV3.Activation == null ||
+                candidate.EconomicV3.EconomicRecords == null ||
+                candidate.Revision != candidate.Receipts.Count ||
+                candidate.Revision != plan.CoreRevision - 1L ||
+                candidate.RunId != plan.RunId ||
+                candidate.Receipts.Any(x => x.CommandId == plan.CoreReceiptCommandId ||
+                    x.CommandId == plan.ResolutionCommandId))
+                throw new ArgumentException("An independently verified V3 reward frontier is required.");
+            var operationId = candidate.NewOperation();
+            new SimulationEngine(content, candidate.EconomicV3.EconomicRecords)
+                .ApplyPlannedEventReward(candidate, plan, operationId);
+            candidate.Revision = checked(candidate.Revision + 1L);
+            candidate.CurrentActivity = operationId;
+            candidate.PlaybackCursor = 0;
+            var receipt = new CommandReceipt
+            {
+                CommandId = plan.CoreReceiptCommandId,
+                Payload = plan.ToCoreCommand().CanonicalPayload,
+                OperationId = operationId,
+                Revision = candidate.Revision,
+                Cue = candidate.CurrentCue,
+                MinutesConsumed = 0
+            };
+            candidate.Receipts.Add(receipt);
+            var processor = new V3EconomicReceiptProcessor(content, economics,
+                candidate.EconomicV3.Activation.ToAnchor());
+            processor.FinalizeReceipt(candidate.EconomicV3, receipt);
+            candidate.EconomicV3.EconomicRecords.Validate();
+            return candidate;
         }
 
         // In-memory candidate buffer only. It reuses the authoritative V3 serializer

@@ -425,7 +425,9 @@ namespace StartupLife.Integration
             else if (command.CommandId.StartsWith(
                 EventAdvanceBatchHistory.ReservedChildPrefix, StringComparison.Ordinal) ||
                 command.CommandId.StartsWith(
-                    EventDecisionJournal.DailyCheckPrefix, StringComparison.Ordinal))
+                    EventDecisionJournal.DailyCheckPrefix, StringComparison.Ordinal) ||
+                command.CommandId.StartsWith(
+                    EventRewardSettlementPlan.ReservedReceiptPrefix, StringComparison.Ordinal))
                 return Reject(current, "command.reserved_id");
             if (!batchChild && journal.AdvanceBatches.Any(x =>
                 string.CompareOrdinal(current.DateIso, x.TargetDateIso) < 0) &&
@@ -568,6 +570,8 @@ namespace StartupLife.Integration
 
         private static bool ConflictsWithCoreOrBatch(GameState state, string commandId) =>
             commandId.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
+                StringComparison.Ordinal) ||
+            commandId.StartsWith(EventRewardSettlementPlan.ReservedReceiptPrefix,
                 StringComparison.Ordinal) ||
             state.Receipts.Any(x => x.CommandId == commandId) ||
             state.EventV4!.Journal!.AdvanceBatches.Any(x => x.RootCommandId == commandId);

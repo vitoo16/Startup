@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using StartupLife.Core;
 
 namespace StartupLife.Simulation
@@ -23,7 +25,10 @@ namespace StartupLife.Simulation
         public string OutcomeId { get; }
         public string ResolutionCommandId { get; }
         public long CoreRevision { get; }
+        // One V3 receipt and one V4 resolution increment different ledgers.
         public long GlobalRevision { get; }
+        public const string ReservedReceiptPrefix = "v4reward/";
+        public string CoreReceiptCommandId { get; }
         public long CashDeltaVnd { get; }
         public long CareerXpDelta { get; }
 
@@ -50,6 +55,13 @@ namespace StartupLife.Simulation
             ChoiceId = choice.Id;
             OutcomeId = choice.OutcomeId;
             ResolutionCommandId = commandId;
+            // Fixed-width internal ID; never reuse the public V4 command ID.
+            using (var sha = SHA256.Create())
+            {
+                var identity = Encoding.UTF8.GetBytes(RunId + "\n" + TicketId + "\n" + commandId);
+                CoreReceiptCommandId = ReservedReceiptPrefix +
+                    BitConverter.ToString(sha.ComputeHash(identity)).Replace("-", "").ToLowerInvariant();
+            }
             CoreRevision = coreRevision;
             GlobalRevision = globalRevision;
             CashDeltaVnd = choice.Reward!.CashDeltaVnd;
@@ -246,7 +258,7 @@ namespace StartupLife.Simulation
                     rewardPlan.ResolutionCommandId != commandId ||
                     rewardPlan.CheckedDateIso != ticket.OpenedDateIso ||
                     rewardPlan.CoreRevision <= ticket.CoreRevisionAtOffer ||
-                    rewardPlan.GlobalRevision != checked(rewardPlan.CoreRevision + source.Revision) ||
+                    rewardPlan.GlobalRevision != checked(rewardPlan.CoreRevision + source.Revision + 1L) ||
                     rewardPlan.CashDeltaVnd != selectedChoice.Reward.CashDeltaVnd ||
                     rewardPlan.CareerXpDelta != selectedChoice.Reward.CareerXpDelta)
                     return Reject(source, "event.reward_plan_mismatch");
@@ -323,7 +335,7 @@ namespace StartupLife.Simulation
                 _ = checked(current.Employment.Xp + reward.CareerXpDelta);
             }
             return new EventRewardSettlementPlan(current, ticket, choice, commandId,
-                checked(current.Receipts.Count + 1L), checked(current.Revision + 1));
+                checked(current.Receipts.Count + 1L), checked(current.Revision + 2L));
         }
 
         // Structural and content validation for prospective cold restoration.
@@ -475,6 +487,8 @@ namespace StartupLife.Simulation
         // validation, not merely commands entering through the V4 save gateway.
         private static bool ConflictsWithBatchIdentity(EventJournalState state, string id) =>
             id.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
+                StringComparison.Ordinal) ||
+            id.StartsWith(EventRewardSettlementPlan.ReservedReceiptPrefix,
                 StringComparison.Ordinal) ||
             state.AdvanceBatches.Any(x => x != null && x.RootCommandId == id);
 
