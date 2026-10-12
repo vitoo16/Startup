@@ -695,3 +695,8 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - Added NUnit EditMode source tests verifying hierarchy/components/anchors/mask/size/layout/scroll settings for all three existing overlay styles, plus null-parent rejection. These are **authored, not executed in Unity yet**.
 - **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, Unity official ui, ui-ugui and scrollview-setup, unity-gameplay-systems, unity-qa-release.
 - **Tests:** exact-head engine-free CI required; Unity EditMode/PlayMode and portrait screenshots still NOT RUN. **Visual evidence:** NOT RUN. **Save impact:** none; no wire, economy or frozen fixture change. **Known limitations:** Unity runner/editor not available in this session; visual safe-area/touch/overflow proof deferred. **Files changed:** Presentation/MobileScrollViewFactory.cs + meta, LifeDashboardOverlay.cs, BusinessManagementOverlay.cs, EventChoiceOverlay.cs, Tests/EditMode/MobileScrollViewFactoryTests.cs + meta, this journal, TECH_DEBT_AUDIT.md.
+
+### Increment 55 assembly dependency correction
+
+- Added the explicit `Unity.ugui` assembly reference to `StartupLife.Tests.EditMode.asmdef`, because the new EditMode test directly references UnityEngine.UI types. The Presentation runtime already declares its own Unity.ugui reference. This is a test-assembly compile contract fix, not a validator or runtime behavior change.
+- Engine-free CI for the final HEAD required; Unity EditMode tests authored but NOT RUN in a live Editor.
