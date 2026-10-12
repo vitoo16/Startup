@@ -656,3 +656,10 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - Frozen archived V2 simulation **intentionally left unchanged**; UI and oversized-gateway debts tracked, not churned without the appropriate QA gate.
 - **Owner:** GPT-6 Technical Director. **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; project-auditor-fixes; unity-gameplay-systems; unity-game-economy; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-head engine-free CI pending. **Visual:** NOT RUN (Unity Editor unavailable). **Save impact:** no schema or frozen fixtures changed. **Known limitations:** other hotspots remain under tracked debt; M15-T01 still PARTIAL / PR #52 Draft.
+
+
+### Increment 52 CI correction — explicit V3 cold-replay candidate payload
+
+- Initial cleanup SHA `75c695652483439a296aae5a5a5e0ddd5e6d90df` compiled but **FAILED EconomicChecks** at https://github.com/vitoo16/Startup/actions/runs/38284245191. Root cause: `GameSession`/V4 live candidates attach `EconomicV3` to `GameState`, but `VersionedReceiptReplay` constructs a separate `EconomicV3Payload`; moving the helper exposed an incorrect assumption that the attachment is always present. This regression was **not suppressed**.
+- `ReceiptCandidateFinalizer.Append` now accepts the explicitly verified replay payload where required and validates it is attached to the same candidate state by identity before calling the *unchanged* `V3EconomicReceiptProcessor.FinalizeReceipt`. Replay passes its existing `candidate` payload; all other callers retain the normal attachment path. Economic receipt semantics and source bytes are unchanged.
+- **Tests:** exact-head CI pending for correction; do not cite previous failing SHA as PASS. **Visual:** NOT RUN. **Save impact:** none. **Files:** Simulation/ReceiptCandidateFinalizer.cs, Simulation/VersionedReceiptReplay.cs, JOURNAL.md, TECH_DEBT_AUDIT.md.

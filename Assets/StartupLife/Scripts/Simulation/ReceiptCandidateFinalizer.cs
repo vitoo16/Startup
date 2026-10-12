@@ -11,7 +11,8 @@ namespace StartupLife.Simulation
         public static CommandReceipt Append(GameState candidate, GameCommand command,
             string commandId, string operationId, int minutesConsumed,
             V3EconomicReceiptProcessor? v3Processor = null,
-            string advanceTargetIso = "", string parentPayload = "")
+            string advanceTargetIso = "", string parentPayload = "",
+            EconomicV3Payload? economicReplayCandidate = null)
         {
             if (candidate == null || command == null ||
                 candidate.Receipts == null || candidate.Revision != candidate.Receipts.Count ||
@@ -37,7 +38,16 @@ namespace StartupLife.Simulation
                 ParentPayload = parentPayload
             };
             candidate.Receipts.Add(receipt);
-            v3Processor?.FinalizeReceipt(candidate.EconomicV3!, receipt);
+            if (v3Processor != null)
+            {
+                // Live candidates attach the V3 payload to GameState. During
+                // cold replay the authoritative payload is constructed
+                // separately: never assume this state owns that attachment.
+                var economic = economicReplayCandidate ?? candidate.EconomicV3;
+                if (economic?.Current != candidate)
+                    throw new ArgumentException("V3 receipt finalization needs its exact replay candidate.");
+                v3Processor.FinalizeReceipt(economic, receipt);
+            }
             return receipt;
         }
     }

@@ -28,3 +28,8 @@ Move `ReceiptCandidateFinalizer` (preserving Unity .meta GUID) into the `Simulat
 **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; project-auditor-fixes (instructions reviewed; Unity Project Auditor execution unavailable); unity-gameplay-systems; unity-game-economy; unity-qa-release; unity-debug-profiler.
 
 **Visual evidence:** NOT RUN (code-only). **Save impact:** none intended (schema and frozen fixtures untouched). **Limitations:** full Unity/static Project Auditor and broader AST duplication scan not run.
+
+
+## Regression caught during refactor
+
+Initial refactor `75c695652483439a296aae5a5a5e0ddd5e6d90df` reached 0 build warnings/errors but failed 14+ real-file economic tests (CI #38284245191): the replay GameState had no `EconomicV3` attachment, while the authoritative payload was separately constructed. This is a **real boundary difference**, not proof of a valid historical replay state. Corrective approach: explicitly supply that payload to the one finalizer, validate `payload.Current == candidate`, and keep replay tests unchanged. Do not waive thresholds or relabel the initial result. Corrected SHA and CI results belong in the implementation journal.

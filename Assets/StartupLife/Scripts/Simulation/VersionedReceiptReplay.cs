@@ -151,7 +151,7 @@ namespace StartupLife.Simulation
                 // independently compares its resulting state/finance below.
                 ReceiptCandidateFinalizer.Append(state, command, receipt.CommandId,
                     operation, duration, evaluator, receipt.AdvanceTargetIso,
-                    receipt.ParentPayload);
+                    receipt.ParentPayload, candidate);
                 observeFrontier?.Invoke(state);
             }
             financial.Validate();
