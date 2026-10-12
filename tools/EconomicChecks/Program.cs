@@ -2639,6 +2639,34 @@ internal static class Program
                     Cold().Read().State!.Revision == paid.Revision + 1 &&
                     Cold().Read().Status == LoadStatus.Valid,
                     "ordinary V3 gameplay receipt must cold replay after the V4 reward");
+
+                // Crash after physical promotion: the caller cannot know
+                // whether the payout committed, but a new cold session can.
+                var ambiguousPath = Path.Combine(folder, "ambiguous.save");
+                File.WriteAllBytes(ambiguousPath, before);
+                var ambiguousGateway = new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(ambiguousPath, serializer,
+                        stage => stage == "after-replace"), defs, policies, runner);
+                var ambiguous = ambiguousGateway.Resolve(seed.RunId,
+                    "settle-reward-proof", current.Revision, offered.TicketId, "receive");
+                Assert(ambiguous.Status == EventCommitStatus.RecoveryRequired,
+                    "post-promotion fault must never return definite failure or success");
+                EventV4CommitGateway ColdAmbiguous() => new EventV4CommitGateway(
+                    serializer, new AtomicFileSaveStore(ambiguousPath, serializer),
+                    defs, policies, runner);
+                var recoveredReward = ColdAmbiguous().Read();
+                Assert(recoveredReward.Status == LoadStatus.Valid &&
+                    recoveredReward.State != null &&
+                    recoveredReward.State.Cash == checked(current.Cash + plan.CashDeltaVnd) &&
+                    recoveredReward.State.Revision == current.Revision + 2L &&
+                    recoveredReward.State.EventV4!.Journal!.PendingTicketId.Length == 0,
+                    "cold recovery must discover the single promoted composite");
+                var promotedBytes = File.ReadAllBytes(ambiguousPath);
+                Assert(ColdAmbiguous().Resolve(seed.RunId, "settle-reward-proof",
+                        current.Revision, offered.TicketId, "receive").Status ==
+                        EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(ambiguousPath).SequenceEqual(promotedBytes),
+                    "ambiguous retry must remain byte-stable and never credit twice");
             }
             finally
             {

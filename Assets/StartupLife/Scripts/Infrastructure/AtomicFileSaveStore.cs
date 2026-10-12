@@ -101,7 +101,9 @@ namespace StartupLife.Infrastructure
                         var newRevision = candidate.State!.Revision;
                         var single = expectedCheckpoint == null &&
                             newRevision == checked(expectedRevision + 1L);
-                        var composite = expectedCheckpoint == null &&
+                        // Avoid overflowing +2 on a valid single-step write at
+                        // the edge of the long revision range.
+                        var composite = !single && expectedCheckpoint == null &&
                             newRevision == checked(expectedRevision + 2L);
                         if (expectedCheckpoint != null && newRevision != expectedRevision ||
                             expectedCheckpoint == null && !single && !composite)
