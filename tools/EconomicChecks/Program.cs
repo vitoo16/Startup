@@ -2436,6 +2436,14 @@ internal static class Program
                 var before = File.ReadAllBytes(path);
                 var plan = EventDecisionJournal.PlanReward(current, defs, policies,
                     "settle-reward-proof", offered.TicketId, "receive");
+                var encodedReward = plan.ToCoreCommand();
+                Assert(plan.MatchesCoreCommand(
+                        GameCommand.ParseCanonicalPayload(encodedReward.CanonicalPayload)) &&
+                    Cold().ExecuteCore(new CommandEnvelope(seed.RunId,
+                        "forged-public-payout", current.Revision, encodedReward)).ReasonKey ==
+                        "event.reward_requires_v4_settlement" &&
+                    File.ReadAllBytes(path).SequenceEqual(before),
+                    "canonical reward intent cannot be executed as a public V3 command");
                 Assert(plan.CoreRevision == current.Receipts.Count + 1L &&
                     plan.GlobalRevision == current.Revision + 1 &&
                     plan.ResolutionCommandId == "settle-reward-proof" &&

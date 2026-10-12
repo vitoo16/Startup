@@ -406,6 +406,11 @@ namespace StartupLife.Integration
                 !ValidIdentity(command.RunId, command.CommandId, current))
                 return Reject(current, "command.invalid_id");
             var journal = current.EventV4!.Journal!;
+            // Even a valid-looking encoded event reward is not a public V3
+            // command. Only the future atomic V4 settlement path may submit a
+            // receipt that has been bound to PlanReward and cold journal proof.
+            if (command.Command.Kind == CommandKind.SettleEventReward)
+                return Reject(current, "event.reward_requires_v4_settlement");
             if (batchChild)
             {
                 var active = journal.AdvanceBatches.LastOrDefault();

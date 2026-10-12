@@ -512,3 +512,16 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - The same test verifies planning is read-only, the current gateway still rejects premature cash payouts without spending the pending choice or modifying disk bytes, and a forged state revision cannot obtain a plan.
 - **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler. **Tests:** exact-head CI required. **Save impact:** none. **Visual QA:** NOT RUN. **Remaining:** composite V3-native reward receipt and atomic V4 outcome coupling not yet implemented.
 - **Files changed:** tools/EconomicChecks/Program.cs, this journal.
+
+
+## Increment 40 — Canonical V3 reward receipt intent, public execution forbidden
+
+**Owner model:** GPT-6 Technical Director. **M15-T01 PARTIAL**, PR #52 remains Draft/unmerged.
+
+- Reserved append-only `CommandKind.SettleEventReward = 13` (existing V2/V3 command ordinals unchanged) for the future V4-authorized composite event settlement. The V3 `SimulationEngine` has no evaluator branch for this kind and therefore fails closed on direct V3 replay and execution.
+- Added `EventRewardSettlementPlan.ToCoreCommand()` and exact `MatchesCoreCommand()`. The canonical command has **zero user-owned amounts**: it encodes ticket, choice and event IDs; authenticated cash and XP values remain only in the authored-choice settlement plan. A different event, option, kind or nonzero amount never matches.
+- `EventV4CommitGateway.ExecuteCoreInternal` explicitly rejects public attempts to execute this command before calling the V3 evaluator or reaching any CAS writer. A future composite settlement must use a separate proof-bound internal path; never open this public command case.
+- Extended SimulationChecks with canonical receipt round-trip and field-falsification tests, plus real-file EconomicChecks proving even a correctly encoded plan command submitted through public gameplay is rejected without modifying the save.
+- **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Tests:** exact-head engine-free CI pending. **Save impact:** existing receipt ordinal bytes and historical fixtures unchanged; new command type never admitted by V3 without V4 proof. **Visual evidence:** NOT RUN. **Remaining:** trusted V3 evaluator and V4 composite CAS+cross-replay binding for spendable cash/XP; Unity runtime QA pending.
+- **Files:** Core/Contracts.cs; Simulation/EventDecisionJournal.cs; Integration/EventV4CommitGateway.cs; SimulationChecks; EconomicChecks; JOURNAL.md.

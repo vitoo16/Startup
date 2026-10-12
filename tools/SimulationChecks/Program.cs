@@ -130,6 +130,26 @@ internal static class Program
             Equal(2L, plan.GlobalRevision);
             Equal(120000L, plan.CashDeltaVnd);
             Equal(50L, plan.CareerXpDelta);
+            var encoded = plan.ToCoreCommand();
+            var decoded = GameCommand.ParseCanonicalPayload(encoded.CanonicalPayload);
+            Equal(CommandKind.SettleEventReward, decoded.Kind);
+            Equal(offered.TicketId, decoded.ContentId);
+            Equal("take-bonus", decoded.Name);
+            Equal("cash-offer", decoded.AppearanceId);
+            Equal(0, decoded.Amount);
+            True(plan.MatchesCoreCommand(decoded));
+            True(!plan.MatchesCoreCommand(new GameCommand(
+                CommandKind.SettleEventReward, offered.TicketId, 120000,
+                "take-bonus", "cash-offer")));
+            True(!plan.MatchesCoreCommand(new GameCommand(
+                CommandKind.SettleEventReward, offered.TicketId, 0,
+                "skip", "cash-offer")));
+            True(!plan.MatchesCoreCommand(new GameCommand(
+                CommandKind.SettleEventReward, offered.TicketId, 0,
+                "take-bonus", "other-event")));
+            True(!plan.MatchesCoreCommand(new GameCommand(
+                CommandKind.AcknowledgePlayback, offered.TicketId, 0,
+                "take-bonus", "cash-offer")));
             Equal(cashBefore, state.Cash);
             Equal(xpBefore, state.Employment.Xp);
             Equal(offered.TicketId, state.EventV4.Journal.PendingTicketId);

@@ -23,6 +23,16 @@ namespace StartupLife.Simulation
         public long CashDeltaVnd { get; }
         public long CareerXpDelta { get; }
 
+        // This is a deterministic V3 *receipt intent*, NOT authority to post
+        // cash. The V4 settlement caller must prove the canonical payload
+        // against the pending authored choice and then publish one CAS.
+        public GameCommand ToCoreCommand() =>
+            new GameCommand(CommandKind.SettleEventReward, TicketId, 0,
+                ChoiceId, EventId);
+
+        public bool MatchesCoreCommand(GameCommand command) =>
+            command != null && command.CanonicalPayload == ToCoreCommand().CanonicalPayload;
+
         internal EventRewardSettlementPlan(EventTicketRecord ticket,
             EventChoiceDefinition choice, string commandId,
             long coreRevision, long globalRevision)

@@ -19,7 +19,10 @@ namespace StartupLife.Core
         SetBusinessPricing = 9,
         CloseBusiness = 10,
         PauseBusiness = 11,
-        ResumeBusiness = 12
+        ResumeBusiness = 12,
+        // Reserved for the future V4-authenticated composite settlement.
+        // Ordinary V2/V3 execution must never grant a free reward receipt.
+        SettleEventReward = 13
     }
     public sealed class GameCommand
     {
