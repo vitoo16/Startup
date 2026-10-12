@@ -72,22 +72,10 @@ namespace StartupLife.Integration
             var operationId = candidate.NewOperation();
             new SimulationEngine(content, candidate.EconomicV3.EconomicRecords)
                 .ApplyPlannedEventReward(candidate, plan, operationId);
-            candidate.Revision = checked(candidate.Revision + 1L);
-            candidate.CurrentActivity = operationId;
-            candidate.PlaybackCursor = 0;
-            var receipt = new CommandReceipt
-            {
-                CommandId = plan.CoreReceiptCommandId,
-                Payload = plan.ToCoreCommand().CanonicalPayload,
-                OperationId = operationId,
-                Revision = candidate.Revision,
-                Cue = candidate.CurrentCue,
-                MinutesConsumed = 0
-            };
-            candidate.Receipts.Add(receipt);
             var processor = new V3EconomicReceiptProcessor(content, economics,
                 candidate.EconomicV3.Activation.ToAnchor());
-            processor.FinalizeReceipt(candidate.EconomicV3, receipt);
+            ReceiptCandidateFinalizer.Append(candidate, plan.ToCoreCommand(),
+                plan.CoreReceiptCommandId, operationId, 0, processor);
             candidate.EconomicV3.EconomicRecords.Validate();
             return candidate;
         }

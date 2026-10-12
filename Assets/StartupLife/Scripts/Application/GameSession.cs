@@ -167,13 +167,9 @@ namespace StartupLife.Application
                     minutes = v3Processor.Evaluate(candidate.EconomicV3,envelope.Command,operation);
                 }
                 else minutes = simulation.Evaluate(candidate, envelope.Command, operation);
-                candidate.Revision = checked(state.Revision + 1);
-                if (envelope.Command.Kind != CommandKind.AdvanceBoundary && envelope.Command.Kind != CommandKind.AcknowledgePlayback)
-                { candidate.CurrentActivity = operation; candidate.PlaybackCursor = 0; }
-                receipt = new CommandReceipt { CommandId = envelope.CommandId, Payload = envelope.Command.CanonicalPayload, OperationId = operation,
-                    Revision = candidate.Revision, Cue = candidate.CurrentCue, MinutesConsumed = minutes, AdvanceTargetIso = advanceTarget, ParentPayload = parentPayload };
-                candidate.Receipts.Add(receipt);
-                v3Processor?.FinalizeReceipt(candidate.EconomicV3!, receipt);
+                receipt = ReceiptCandidateFinalizer.Append(candidate, envelope.Command,
+                    envelope.CommandId, operation, minutes, v3Processor,
+                    advanceTarget, parentPayload);
                 if (candidate.SaveVersion == 3)
                     candidate.EconomicV3!.EconomicRecords!.Validate();
                 else StateValidation.Validate(candidate, content);

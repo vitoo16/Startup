@@ -559,3 +559,15 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - New real-file EconomicChecks verifies the candidate's wallet/receipt/provenance while disk bytes remain unchanged, proves ordinary V3 cold replay denies the candidate, and rejects public use of the internal receipt namespace. SimulationChecks checks the corrected revision equation and fixed-width internal ID.
 - **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-cli; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-head engine-free CI pending; Unity Editor/PlayMode/device tests NOT RUN. **Visual evidence:** NOT RUN (backend-only). **Save impact:** no persisted schema or historical fixture changes. **Known limitations:** combined V3/V4 cold replay and exactly-once physical CAS admission remain blocked, so reward cash/XP are NOT spendable. **Files changed:** Simulation/EventDecisionJournal.cs, Integration/EventV4CoreCommandRunner.cs, Integration/EventV4CommitGateway.cs, SimulationChecks, EconomicChecks, this journal.
+
+
+## Increment 44 — Reuse one candidate receipt finalizer for V3 gameplay and staged rewards
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL, PR #52 Draft/unmerged.
+
+- Extracted the duplicated receipt increment/activity/cue/metadata append and V3 finalization into one `Application.ReceiptCandidateFinalizer.Append` helper with no store or CAS authority.
+- Both authoritative `GameSession.ExecuteInternal` and staged `EventV4CoreCommandRunner.PrepareRewardReceiptCandidate` now use this identical receipt path. Normal gameplay still controls evaluation, outcome, economic validation and physical writes; event payout remains deliberately nonpublishable pending V4-authenticated replay.
+- Extended real-file reward-candidate regression to check shared receipt metadata, operation/current activity, cursor and exactly one appended receipt. Existing gameplay, batch replay, economic and migration suites provide full path regression.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-cli; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Tests:** exact-commit engine-free CI pending; Increment 43 code SHA `bd090f18c85eda640196f8bc6710e17e3a4b1eeb` verified SUCCESS at https://github.com/vitoo16/Startup/actions/runs/38268088659 (Simulation 68/68, Business 90/90, Astra 20/20, Restore 35/35, Presentation 14/14, Content 16/16, Economy 79/79; 0 errors/warnings).
+- **Visual evidence:** NOT RUN (source-only). **Save impact:** None: historical V2/V3 bytes, frozen validators, staged V4 wire and serializers unchanged. **Known limitations:** reward effects are NOT spendable; production V4 cutover, combined replay and device acceptance deferred. **Files changed:** Application/GameSession.cs; Application/ReceiptCandidateFinalizer.cs + Unity .meta; Integration/EventV4CoreCommandRunner.cs; tools/EconomicChecks/Program.cs; this journal.

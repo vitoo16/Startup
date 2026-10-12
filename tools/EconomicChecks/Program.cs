@@ -2446,6 +2446,10 @@ internal static class Program
                     payoutReceipt.Payload == plan.ToCoreCommand().CanonicalPayload &&
                     payoutReceipt.Revision == plan.CoreRevision &&
                     payoutReceipt.MinutesConsumed == 0 &&
+                    candidateReward.CurrentActivity == payoutReceipt.OperationId &&
+                    candidateReward.PlaybackCursor == 0 &&
+                    payoutReceipt.Cue == candidateReward.CurrentCue &&
+                    candidateReward.Receipts.Count == current.Receipts.Count + 1 &&
                     candidateReward.EconomicV3?.Current == candidateReward &&
                     current.Cash != candidateReward.Cash &&
                     File.ReadAllBytes(path).SequenceEqual(before),
