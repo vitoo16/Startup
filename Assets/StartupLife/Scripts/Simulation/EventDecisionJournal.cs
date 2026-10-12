@@ -103,7 +103,7 @@ namespace StartupLife.Simulation
             GameEventContext context, long expectedRevision, string offerCommandId,
             long coreRevisionAtOffer, bool persistEmpty)
         {
-            var policyIndex = Validate(source, definitions, policies);
+            var policyIndex = ValidateWithFinancialReceipts(source, definitions, policies);
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (offerCommandId == null || coreRevisionAtOffer < -1 ||
                 (persistEmpty && (coreRevisionAtOffer < 0 ||
@@ -221,7 +221,7 @@ namespace StartupLife.Simulation
             long expectedRevision, string commandId, string ticketId, string choiceId,
             EventRewardSettlementPlan? rewardPlan)
         {
-            Validate(source, definitions, policies);
+            ValidateWithFinancialReceipts(source, definitions, policies);
             if (string.IsNullOrWhiteSpace(commandId) || string.IsNullOrWhiteSpace(ticketId) ||
                 string.IsNullOrWhiteSpace(choiceId))
                 return Reject(source, "event.invalid_command");
@@ -298,7 +298,7 @@ namespace StartupLife.Simulation
                 current.Receipts == null || definitions == null || policies == null)
                 throw new ArgumentException("Verified V4 reward projection required.");
             var journal = current.EventV4.Journal;
-            Validate(journal, definitions, policies);
+            ValidateWithFinancialReceipts(journal, definitions, policies);
             if (journal.RunId != current.RunId ||
                 current.Revision != checked(current.Receipts.Count + journal.Revision) ||
                 journal.PendingTicketId != ticketId ||

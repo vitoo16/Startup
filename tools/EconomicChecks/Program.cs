@@ -2442,6 +2442,63 @@ internal static class Program
                     defs, policies, "settle-reward-proof", offered.TicketId, "receive");
                 EventRewardCompositeProof.Validate(before, pair, serializer, runner,
                     defs, policies);
+                // A genuine V4 wire now cold-replays BOTH the native V3 reward
+                // receipt and the independently resolved V4 event outcome.
+                EventV4Payload PairPayload(GameState core, EventJournalState outcome)
+                {
+                    var inner = JsonSaveSerializer.Wrap(
+                        JsonSaveSerializer.WriteObject(core.EconomicV3!),
+                        3, core.Revision);
+                    using (var sha = System.Security.Cryptography.SHA256.Create())
+                        return new EventV4Payload
+                        {
+                            EmbeddedV3EnvelopeBase64 = Convert.ToBase64String(inner),
+                            EmbeddedV3EnvelopeSha256 = BitConverter.ToString(
+                                sha.ComputeHash(inner)).Replace("-", "").ToLowerInvariant(),
+                            Journal = outcome
+                        };
+                }
+                var stagedWire = new StagedEventV4SaveSerializer(v3, defs, policies);
+                var combinedWire = stagedWire.SerializeVerified(PairPayload(pair.Core, pair.Journal));
+                var combinedRead = serializer.DeserializeAndValidate(combinedWire);
+                Assert(combinedRead.Status == LoadStatus.Valid &&
+                    combinedRead.State != null &&
+                    combinedRead.State.Cash == checked(current.Cash + plan.CashDeltaVnd) &&
+                    combinedRead.State.Revision == plan.GlobalRevision &&
+                    combinedRead.State.PendingChoiceId.Length == 0 &&
+                    combinedRead.State.Receipts.Last().CommandId == plan.CoreReceiptCommandId,
+                    "joint cold replay must admit one authenticated cash reward and resolution");
+                Assert(v3.DeserializeAndValidate(Convert.FromBase64String(
+                        PairPayload(pair.Core, pair.Journal).EmbeddedV3EnvelopeBase64))
+                        .Status != LoadStatus.Valid,
+                    "standalone V3 replay must still refuse the same reward receipt");
+                var absentCore = EventV4CompatibilitySerializer.RestoreCoreProjection(current);
+                Throws<ArgumentException>(() => stagedWire.SerializeVerified(
+                    PairPayload(absentCore, pair.Journal)));
+                var mismatchedPair = EventRewardCompositeProof.Prepare(before, serializer,
+                    runner, defs, policies, "settle-reward-proof", offered.TicketId, "receive");
+                mismatchedPair.Core.Cash++;
+                Throws<ArgumentException>(() => stagedWire.SerializeVerified(
+                    PairPayload(mismatchedPair.Core, mismatchedPair.Journal)));
+                var wrongOutcomePair = EventRewardCompositeProof.Prepare(before, serializer,
+                    runner, defs, policies, "settle-reward-proof", offered.TicketId, "receive");
+                wrongOutcomePair.Journal.Tickets.Last().OutcomeId = "outcome.forged";
+                Throws<ArgumentException>(() => stagedWire.SerializeVerified(
+                    PairPayload(wrongOutcomePair.Core, wrongOutcomePair.Journal)));
+                var alteredFinancialChoice = new EventChoiceDefinition("receive",
+                    "event.receive", "outcome.receive",
+                    reward: new EventChoiceReward(125001, 0));
+                var alteredCatalog = new[] { new GameEventDefinition("verified-reward",
+                    "life", 2026, 0, 1, 0, 1, 1, 0,
+                    Array.Empty<string>(), Array.Empty<string>(),
+                    new[] { alteredFinancialChoice,
+                        new EventChoiceDefinition("skip", "event.skip", "outcome.skip") }) };
+                Assert(new EventV4CompatibilitySerializer(
+                    new StagedEventV4SaveSerializer(v3, alteredCatalog, policies))
+                    .DeserializeAndValidate(combinedWire).Status != LoadStatus.Valid,
+                    "altered authored reward must not replay an existing ledger amount");
+                Assert(File.ReadAllBytes(path).SequenceEqual(before),
+                    "joint cold replay is read-only until a proven composite CAS is available");
                 Assert(pair.Plan.CoreReceiptCommandId == plan.CoreReceiptCommandId &&
                     pair.Plan.GlobalRevision == current.Revision + 2 &&
                     pair.Core.Revision + pair.Journal.Revision == pair.Plan.GlobalRevision &&

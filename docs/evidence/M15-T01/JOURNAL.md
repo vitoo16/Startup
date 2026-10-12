@@ -593,3 +593,15 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - V4 cold replay now uses the financial-aware journal structural/RNG validation, while legacy journal-only `EventJournalReplay.Validate` stays fail-closed for financial outcomes. Historical V2/V3 source validators, checksum/receipt provenance, and V3 standalone admission are not loosened.
 - **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-cli; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
 - **Tests:** exact-head engine-free CI pending. **Visual evidence:** Unity runtime/device NOT RUN. **Save impact:** V4 cold-read acceptance extends only to an exactly matched V3 receipt + V4 outcome pair; no schema field or frozen fixture changes. **Known limitations:** CAS still requires +1 and cannot publish a +2 reward transaction; no spendable payout, versioned event catalog policy or Unity production cutover. **Files changed:** Core/IVersionedV3RewardReplay.cs (+ .meta), Simulation/EventRewardReplayProof.cs (+ .meta), Simulation/EventDecisionJournal.cs, Simulation/EventJournalReplay.cs, Simulation/VersionedReceiptReplay.cs, Infrastructure/StagedV3SaveSerializer.cs, Infrastructure/V3SaveCompatibilitySerializer.cs, Integration/StagedEventV4SaveSerializer.cs, EconomicChecks, JOURNAL.md.
+
+
+## Increment 47 — Green-path V4 cold replay of one authentic economic reward
+
+**Owner:** GPT-6 Technical Director. **Status:** M15-T01 PARTIAL; PR #52 Draft/unmerged.
+
+- Updated EventDecisionJournal planners to accept verified historical financial outcomes after V4 cold replay, without changing standalone `EventJournalReplay.Validate` (which still fails closed without V3 receipt proof).
+- Extended real-file EconomicChecks to build a legitimate composite schema-4 envelope from the previous cold-verified pending save, prove reward cash + one V3 receipt + exactly one V4 outcome through the real serializer, and confirm the exact same inner V3 checkpoint is **rejected** on standalone cold read.
+- Negative cases: V4 resolution with missing V3 payout receipt, forged cash balance, forged V4 outcome and altered authored reward amount all fail to validate. The test asserts that checking the composite has zero disk side effects.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-cli; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler.
+- **Tests:** exact-commit engine-free CI pending. **Visual evidence:** NOT RUN. **Save impact:** no frozen fixture, historical schema, or production CAS changes. **Known limitations:** an authentic V4 composite can be cold-replayed but **cannot yet be published** with existing +1 CAS policy; production reward remains disabled.
+- **Files changed:** Simulation/EventDecisionJournal.cs; tools/EconomicChecks/Program.cs; JOURNAL.md.
