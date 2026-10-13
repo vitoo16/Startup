@@ -7,7 +7,9 @@ namespace StartupLife.Core
     // deserialize/serialize never accepts reward commands or this authorizer.
     public interface IVerifiedEventRewardReplay
     {
-        void Apply(EconomicV3Payload candidate, CommandReceipt receipt,
+        // Return native consumed minutes derived from an authenticated V4
+        // authored outcome, never from the untrusted receipt's claimed duration.
+        int Apply(EconomicV3Payload candidate, CommandReceipt receipt,
             string operationId, ContentCatalog content);
     }
 
