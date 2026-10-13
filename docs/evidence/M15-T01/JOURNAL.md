@@ -759,3 +759,10 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 **Owner:** GPT-6 Technical Director. Updated `LifeDashboardOverlay.TextNode` from deprecated `TMP_Text.enableWordWrapping = true` to the Unity 6 `textWrappingMode = TextWrappingModes.Normal` API, preserving the same intended wrap behavior. This addresses the observed Editor CS0618 source warning without changing layout values, gameplay state, save schema or asset references.
 
 **Skills used:** startup-life-session-orchestrator; ui-ugui; localization. **Tests/Unity visual QA:** NOT RUN by explicit user instruction (code-first development); no PASS claimed. **Save impact:** none. **Known limitations:** will require Unity compile/portrait visual inspection in the consolidated QA phase. **Files:** Presentation/LifeDashboardOverlay.cs; JOURNAL.md.
+
+
+## Increment 61 — Give published V4 narrative priority for identical catalog fingerprints
+
+- Fixed a subtle release-version authority issue: the archive previously indexed `Current` before `LegacyBaseline`. When both have the same authored-rule fingerprint, this would bypass the frozen Vietnamese release strings despite the newly bundled historical copy. The immutable historical baseline now wins for that exact identity; a genuinely new definition fingerprint still selects `Current`.
+- Future text-only releases must be accompanied by an explicit authoring revision (or an additive locale fingerprint contract); editing today's live StringTable under an unchanged fingerprint may not retroactively relabel historical V4 stories. No current gameplay/economy/save wire changes.
+- **Skills:** startup-life-session-orchestrator; startup-life-gameplay-guardian; localization; vietnam-art-direction. **Tests and visual QA:** intentionally DEFERRED by user; no PASS claimed. **Known limitations:** locale fingerprint/authoring release policy needs further implementation before shipping additional locales. **Files:** Simulation/EventCatalogArchive.cs; JOURNAL.md.
