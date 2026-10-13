@@ -799,3 +799,19 @@ Only `FirstPlayableEventContent.Choice` has a new optional authored `EventChoice
 - **Tests/compile:** NOT RUN per code-first user instruction. **Visual evidence:** NOT RUN. **Save impact:** none.
 - **Known limitations:** external persistent `OnUpdateString` listeners on a pre-existing localizer are not rewritten; Unity editor/portrait callback-order QA remains deferred.
 - **Files changed:** Presentation/LocalizedKeyLabel.cs; this journal.
+
+
+## Increment 65 — Affordability-aware V4 choices and recoverable business expense
+
+**Owner model:** GPT-6 Technical Director. **Branch:** feat/m15-implementation-continuation. **Task:** M15-T02 event content and portrait choice presentation. M15-T01 remains PARTIAL; no milestone closure.
+
+- Added the current-only `local-promotion-print` story: optional 40,000 VND promotional printing cost and a free defer alternative. The initial released 20 events, 40 choices, and 80 archived Vietnamese strings remain untouched. The live roster now contains 23 event definitions and has a distinct fingerprint from the frozen release.
+- `EventDecisionJournal.RewardUnavailableReason` provides a pure checked-range preview for insufficient cash, cash overflow, missing/inactive employment and XP overflow. The authoritative `PlanReward` invokes this exact preflight before staging a V3 event-expense receipt; V3/V4 CAS and cold-replay authority remain unchanged.
+- `EventV4CommitGateway.ReadPendingChoice` projects per-choice unavailable reasons from a freshly verified save. `EventChoiceOverlay` disables only blocked options and displays localization-keyed guidance. Direct commands and stale clients remain subject to authoritative planner rejection. Tag-only free exit remains selectable.
+- Existing engine-free fixed-count assertions were updated to expect 23 current definitions and 3 optional affected choices without changing historical release expectations. New Unity EditMode tests were authored for exact cash threshold, cash/XP overflow, unemployed/ended employment, and frozen-release integrity.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; official ui and ui-ugui; unity-ui-designer; official localization; unity-localization; vietnam-art-direction.
+- **Acceptance criteria:** expense cannot overdraw a verified wallet, exact funds allow a choice, a free alternative remains available, frozen historical events remain unchanged, and no shadow client-side economy is introduced.
+- **Tests:** NOT RUN (owner's explicit code-first directive); EditMode tests and EconomicChecks assertions authored/updated only. **Compilation:** NOT RUN. **Visual evidence:** NOT RUN; Unity Editor and portrait device deferred.
+- **Save impact:** no schema, migration, frozen historical data, V2/V3 source, or CAS contract change. New V4 runs use the evolved current catalog fingerprint; prior runs resolve bundled archive.
+- **Known limitations:** cross-ledger receipt/CAS and cold-replay behavior for the negative expense, StringTable Editor sync, Vietnamese diacritics/portrait touch targets, device QA, and complete M15 event matrix still require consolidated verification. No PASS or CLOSED claim.
+- **Files changed:** Simulation/EventDecisionJournal.cs; Integration/EventV4CommitGateway.cs; Presentation/EventChoiceOverlay.cs; Presentation/EventLocalizationCatalog.cs; Content/FirstPlayableEventContent.cs; tools/EconomicChecks/Program.cs; Tests/EditMode/EventChoiceAvailabilityTests.cs (+ .meta); this journal.
