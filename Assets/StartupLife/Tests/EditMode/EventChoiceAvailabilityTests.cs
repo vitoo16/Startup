@@ -126,7 +126,7 @@ namespace StartupLife.Tests.EditMode
                         !string.IsNullOrWhiteSpace(label), Is.True,
                         story.Id + " choice " + choice.Id);
             }
-            Assert.That(entries.Count, Is.EqualTo(140),
+            Assert.That(entries.Count, Is.EqualTo(144),
                 "Every one of the 35 current stories has a title, body and two choices.");
         }
 
@@ -194,7 +194,7 @@ namespace StartupLife.Tests.EditMode
             Assert.That(released.VietnameseText.Count, Is.EqualTo(80));
             Assert.That(released.Definitions.Any(x => x.Id == "local-promotion-print"),
                 Is.False);
-            Assert.That(FirstPlayableEventContent.Definitions.Count, Is.EqualTo(35));
+            Assert.That(FirstPlayableEventContent.Definitions.Count, Is.EqualTo(36));
             Assert.That(EventCatalogFingerprint.Compute(
                 FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies),
                 Is.Not.EqualTo(released.Fingerprint));
