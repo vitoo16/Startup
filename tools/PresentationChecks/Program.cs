@@ -52,7 +52,7 @@ internal static class Program
         // The two affordability/reward-unavailable labels introduced by M15
         // are required localized UI copy, not optional test exceptions.
         var sharedKeys = new[] { "title", "prompt", "retry", "changed", "unavailable",
-            "insufficient_funds", "reward_unavailable", "time_unavailable",
+            "reload", "insufficient_funds", "reward_unavailable", "time_unavailable",
             "after_shift_required" };
         Equal(sharedKeys.Length + FirstPlayableEventContent.VietnameseEntries.Count,
             entries.Count);
