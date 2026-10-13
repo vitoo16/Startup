@@ -15,6 +15,9 @@ namespace StartupLife.Infrastructure
         private readonly JsonSaveSerializer legacy;
         private readonly V2ToV3Migration migration;
         private readonly StagedV3SaveSerializer staged;
+        // Read-only catalog used by the same verified V3 evaluator. The V4
+        // CAS transition validator must not guess working-hour eligibility.
+        public ContentCatalog Content { get; }
 
         public int ActiveSchemaVersion => 3;
 
@@ -24,6 +27,7 @@ namespace StartupLife.Infrastructure
         {
             if (historicalContent == null || originalRestoreValidator == null)
                 throw new ArgumentNullException(nameof(historicalContent));
+            Content = historicalContent;
             legacy = new JsonSaveSerializer(historicalContent, originalRestoreValidator,
                 new SyntheticV0Migration(), new V1ToV2Migration());
             this.migration = migration ?? throw new ArgumentNullException(nameof(migration));
