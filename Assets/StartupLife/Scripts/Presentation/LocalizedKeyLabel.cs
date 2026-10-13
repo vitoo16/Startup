@@ -21,17 +21,19 @@ namespace StartupLife.Presentation
 
             var localizer = text.GetComponent<LocalizeStringEvent>();
             var label = text.GetComponent<LocalizedKeyLabel>();
-            var createdLocalizer = !localizer;
-            if (createdLocalizer)
+            if (!localizer)
                 localizer = text.gameObject.AddComponent<LocalizeStringEvent>();
 
             if (!label) label = text.gameObject.AddComponent<LocalizedKeyLabel>();
+            // A pre-existing LocalizeStringEvent may be supplied by a prefab.
+            // Rebind the single runtime handler even when EnsureFor is called
+            // repeatedly, so frozen copy cannot be overwritten by late updates.
+            if (label.localizer && label.localizer != localizer)
+                label.localizer.OnUpdateString.RemoveListener(label.ApplyLocalizedValue);
+            localizer.OnUpdateString.RemoveListener(label.ApplyLocalizedValue);
             label.localizer = localizer;
             label.target = text;
-            // Installed exactly once for programmatically generated labels;
-            // repeated EnsureFor calls never stack callback subscriptions.
-            if (createdLocalizer)
-                localizer.OnUpdateString.AddListener(label.ApplyLocalizedValue);
+            localizer.OnUpdateString.AddListener(label.ApplyLocalizedValue);
             return label;
         }
 
