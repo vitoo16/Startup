@@ -56,6 +56,8 @@ namespace StartupLife.Tests.EditMode
         [TestCase("mentor-workshop-materials", "contribute", -25_000L, 45L)]
         [TestCase("supplier-quality-sample", "sample", -70_000L, 0L)]
         [TestCase("customer-trust-repair", "compensate", -55_000L, 0L)]
+        [TestCase("delivery-incident", "support", -90_000L, 0L)]
+        [TestCase("supplier-backorder", "reserve", -120_000L, 0L)]
         public void NewTradeOffsHaveAuthoredCostsAndNoCostFallback(
             string eventId, string paidId, long cashCost, long careerXp)
         {
@@ -86,6 +88,8 @@ namespace StartupLife.Tests.EditMode
         [TestCase("customer-trust-repair", "follow-up", "customer-care-follow-up")]
         [TestCase("supplier-quality-sample", "sample", "supplier-sample-review")]
         [TestCase("mentor-workshop-materials", "contribute", "mentor-workshop-reflection")]
+        [TestCase("delivery-incident", "coordinate", "delivery-incident-follow-up")]
+        [TestCase("supplier-backorder", "source", "supplier-backorder-follow-up")]
         public void NewConsequencesLeadToReachableFollowUpStories(
             string sourceId, string selectedChoiceId, string continuationId)
         {
@@ -122,8 +126,27 @@ namespace StartupLife.Tests.EditMode
                         !string.IsNullOrWhiteSpace(label), Is.True,
                         story.Id + " choice " + choice.Id);
             }
-            Assert.That(entries.Count, Is.EqualTo(116),
-                "Every one of the 29 current stories has a title, body and two choices.");
+            Assert.That(entries.Count, Is.EqualTo(132),
+                "Every one of the 33 current stories has a title, body and two choices.");
+        }
+
+        [Test]
+        public void RetainedTwentyNineStoryVersionRemainsIndependentlyResolvable()
+        {
+            var baseline = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
+            var retained = RetainedM15DevelopmentEventCatalogs.Create(baseline);
+            var previous = retained.Single(x => x.Definitions.Count == 29);
+            Assert.That(previous.Definitions.Sum(x => x.Choices.Count), Is.EqualTo(58));
+            Assert.That(previous.VietnameseText.Count, Is.EqualTo(116));
+            Assert.That(previous.Definitions.Any(x => x.Id == "delivery-incident"),
+                Is.False, "New recoverable challenges must not be backported into older saves.");
+
+            var archive = ReleasedFirstPlayableEventCatalog.CreateArchive(
+                FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
+            var pinned = EventDecisionJournal.New("retained-29", 31);
+            pinned.CatalogFingerprint = previous.Fingerprint;
+            Assert.That(archive.Resolve(pinned).Fingerprint, Is.EqualTo(previous.Fingerprint));
+            Assert.That(archive.Resolve(pinned).VietnameseText.Count, Is.EqualTo(116));
         }
 
         [Test]
@@ -135,7 +158,7 @@ namespace StartupLife.Tests.EditMode
             Assert.That(released.VietnameseText.Count, Is.EqualTo(80));
             Assert.That(released.Definitions.Any(x => x.Id == "local-promotion-print"),
                 Is.False);
-            Assert.That(FirstPlayableEventContent.Definitions.Count, Is.EqualTo(29));
+            Assert.That(FirstPlayableEventContent.Definitions.Count, Is.EqualTo(33));
             Assert.That(EventCatalogFingerprint.Compute(
                 FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies),
                 Is.Not.EqualTo(released.Fingerprint));
