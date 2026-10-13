@@ -2692,15 +2692,41 @@ internal static class Program
                     afterOffer.Minute == atShift.Minute &&
                     afterOffer.EventV4!.Journal!.Tickets.Count == 1,
                     "first post-shift boundary must offer a viable reward before advancing time");
+                // A failed write cannot consume the pending event or award
+                // time/cash; an after-replace ambiguity must cold-replay as one
+                // complete V4 choice and its one authenticated V3 receipt.
+                EventV4CommitGateway Faulted(string stage) => new EventV4CommitGateway(
+                    serializer, new AtomicFileSaveStore(file, serializer,
+                        point => point == stage), definitions, policies,
+                    runner, automaticDailyChecks: true);
+                var pendingBytes = File.ReadAllBytes(file);
+                var failed = Faulted("during-temp-write").Resolve(initial.RunId,
+                    "accept-post-shift", afterOffer.Revision, pending.TicketId, "accept");
+                var unchanged = Cold().Read().State!;
+                Assert(failed.Status == EventCommitStatus.PersistenceFailed &&
+                    unchanged.Revision == afterOffer.Revision &&
+                    unchanged.Cash == atShift.Cash &&
+                    unchanged.Minute == atShift.Minute &&
+                    Cold().ReadPendingChoice()!.TicketId == pending.TicketId &&
+                    File.ReadAllBytes(file).SequenceEqual(pendingBytes),
+                    "failed overtime write must preserve exact pending checkpoint");
+                var ambiguous = Faulted("after-replace").Resolve(initial.RunId,
+                    "accept-post-shift", afterOffer.Revision, pending.TicketId, "accept");
+                Assert(ambiguous.Status == EventCommitStatus.RecoveryRequired,
+                    "ambiguous overtime promotion cannot claim a successful payout");
                 var paid = Cold().Resolve(initial.RunId, "accept-post-shift",
                     afterOffer.Revision, pending.TicketId, "accept");
-                var committed = Cold().Read().State!;
-                Assert(paid.Status == EventCommitStatus.Committed &&
+                var committedRead = Cold().Read();
+                var committed = committedRead.State!;
+                Assert(paid.Status == EventCommitStatus.AlreadyCommitted &&
+                    committedRead.Status == LoadStatus.Valid &&
                     committed.Cash == atShift.Cash + 90_000L &&
                     committed.Minute == atShift.Minute + 90 &&
+                    committed.Receipts.Count == atShift.Receipts.Count + 1 &&
                     committed.EventV4!.Journal!.Tickets.Count == 1 &&
+                    committed.EventV4.Journal.OutcomeReceipts.Count == 1 &&
                     committed.EventV4.Journal.NoEligibleDays.Count == 0,
-                    "overtime payout and time debit must share the existing V4 CAS receipt");
+                    "ambiguous overtime must restore one receipt, one payout and one time debit");
                 var bytes = File.ReadAllBytes(file);
                 Assert(Cold().Resolve(initial.RunId, "accept-post-shift",
                     afterOffer.Revision, pending.TicketId, "accept").Status ==

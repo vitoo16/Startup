@@ -78,7 +78,13 @@ namespace StartupLife.Integration
                 if (!Valid(read)) return BatchStop(results, state, "RecoveryRequired");
                 state = read.State!;
                 journal = state.EventV4!.Journal!;
-                batch = journal.AdvanceBatches.Last();
+                // Another writer may advance the run between the successful
+                // CAS verification and this cold read. Never inherit the last
+                // writer's unrelated batch as the caller's root intent.
+                batch = journal.AdvanceBatches.SingleOrDefault(
+                    x => x.RootCommandId == request.CommandId);
+                if (batch == null || batch.Mode != mode)
+                    return BatchStop(results, state, "RecoveryRequired");
             }
             else if (batch.Mode != mode)
                 return BatchStop(results, state, "InvalidRequest");
