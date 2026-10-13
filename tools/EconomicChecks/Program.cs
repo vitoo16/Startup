@@ -1256,13 +1256,47 @@ internal static class Program
             FirstPlayableEventContent.ValidateAuthoredPaths(
                 FirstPlayableEventContent.Definitions);
         });
+        Check("M15 active-course opportunity unlocks a free follow-up without fake study time", () =>
+        {
+            var courseStory = FirstPlayableEventContent.Definitions.Single(x =>
+                x.Id == "course-study-questions");
+            var followUp = FirstPlayableEventContent.Definitions.Single(x =>
+                x.Id == "course-question-follow-up");
+            Assert(courseStory.CategoryId == "study" &&
+                courseStory.RequiredTags.SequenceEqual(new[] { "course-active" }) &&
+                followUp.CategoryId == "study" &&
+                followUp.RequiredTags.SequenceEqual(new[] { "event/course-questions-prepared" }),
+                "a course event must use the V3 course eligibility fact and only real event-tag receipts");
+            var prepare = courseStory.Choices.Single(x => x.Id == "prepare");
+            var decline = courseStory.Choices.Single(x => x.Id == "review");
+            Assert(prepare.Reward == null && decline.Reward == null &&
+                prepare.GrantedTags.Contains("event/course-questions-prepared") &&
+                !decline.GrantedTags.Contains("event/course-questions-prepared") &&
+                followUp.Choices.All(choice => choice.Reward == null),
+                "course narrative choices must not mint XP, unreceipted minutes, or course progress");
+            var context = new GameEventContext(new SimDate(2026, 10, 1),
+                new SimDate(2026, 10, 8), 1,
+                new[] { "character-created", "course-active" },
+                Array.Empty<EventOccurrence>());
+            Assert(GameEventSelector.IsEligible(courseStory, context) &&
+                !GameEventSelector.IsEligible(followUp, context),
+                "the follow-up is gated on an accepted choice, not arbitrary active-course state");
+            var nextContext = new GameEventContext(new SimDate(2026, 10, 1),
+                new SimDate(2026, 10, 8), 1,
+                new[] { "character-created", "event/course-questions-prepared" },
+                Array.Empty<EventOccurrence>());
+            Assert(GameEventSelector.IsEligible(followUp, nextContext),
+                "a committed follow-up tag survives the V3 course completing later");
+            FirstPlayableEventContent.ValidateAuthoredPaths(
+                FirstPlayableEventContent.Definitions);
+        });
         Check("M15 retained pinned development catalogs survive later authoring revisions", () =>
         {
             var baseline = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
             var retained = RetainedM15DevelopmentEventCatalogs.Create(baseline);
-            var expectedCounts = new[] { 22, 23, 26, 29 };
+            var expectedCounts = new[] { 22, 23, 26, 29, 33 };
             Assert(retained.Count == expectedCounts.Length,
-                "four known development fingerprints must remain independently resolvable");
+                "five known development fingerprints must remain independently resolvable");
             var archive = ReleasedFirstPlayableEventCatalog.CreateArchive(
                 FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
             var fingerprints = new HashSet<string>(StringComparer.Ordinal) { baseline.Fingerprint };
@@ -1288,7 +1322,7 @@ internal static class Program
                     "historical Vietnamese narrative must not use mutable live StringTables");
             }
             Assert(fingerprints.Add(archive.Current.Fingerprint),
-                "33-story current roster must have a distinct content fingerprint");
+                "35-story current roster must have a distinct content fingerprint");
             var oldCurrent = retained[1];
             var restored = new EventCatalogArchive(
                 new EventCatalogSnapshot(oldCurrent.Definitions, oldCurrent.Policies),
@@ -1325,7 +1359,7 @@ internal static class Program
             var compound = FirstPlayableEventContent.Definitions.Single(x =>
                 x.Id == "mentor-workshop-materials").Choices.Single(x =>
                 x.Id == "contribute").Reward;
-            Assert(FirstPlayableEventContent.Definitions.Count == 33 &&
+            Assert(FirstPlayableEventContent.Definitions.Count == 35 &&
                 rewarded.Length == 8 &&
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == 100000L &&
                     x.Reward.CareerXpDelta == 0) &&
