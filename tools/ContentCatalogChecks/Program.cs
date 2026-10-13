@@ -19,6 +19,7 @@ internal static class Program
         Check("M15 narrative events have unique immutable content and valid policies", EventCatalogValid);
         Check("M15 story eligibility uses authoritative tag/stage combinations", EventStoryEligibility);
         Check("M15 authored event chains replay exactly and require accepted choices", EventStoryChainReplay);
+        Check("M15 course event choice unlocks deterministic cold replay follow-up", CourseEventStoryReplay);
         Check("duplicate content ids reject at conversion boundary", DuplicateIdsReject);
         Check("missing career skill reference rejects", MissingCareerSkillRejects);
         Check("missing course skill reference rejects", MissingCourseSkillRejects);
@@ -142,6 +143,58 @@ internal static class Program
             Context(later, baseTags), declined.Next.Revision, "chain-offer-2-declined");
         Equal(EventJournalStatus.NoEligibleEvent, notUnlocked.Status);
         Equal(declined.Next.EventRng, notUnlocked.Next.EventRng);
+    }
+
+    private static void CourseEventStoryReplay()
+    {
+        var full = FirstPlayableEventContent.Definitions;
+        var stories = new[]
+        {
+            full.Single(x => x.Id == "course-study-questions"),
+            full.Single(x => x.Id == "course-question-follow-up")
+        };
+        var categories = new[]
+        {
+            FirstPlayableEventContent.Policies.Single(x => x.Id == "study")
+        };
+        var firstDay = new SimDate(2026, 10, 12);
+        var nextWeek = new SimDate(2026, 10, 19);
+        GameEventContext Context(SimDate date, params string[] tags) =>
+            new GameEventContext(firstDay, date, 1, tags, Array.Empty<EventOccurrence>());
+        var initial = EventDecisionJournal.New("course-story-run", 0xCA71U);
+        var offered = EventDecisionJournal.Offer(initial, stories, categories,
+            Context(firstDay, "character-created", "course-active"),
+            initial.Revision, "course-offer");
+        Equal(EventJournalStatus.Offered, offered.Status);
+        Equal("course-study-questions", offered.Next.Tickets.Single().EventId);
+        var prepared = EventDecisionJournal.Resolve(offered.Next, stories, categories,
+            offered.Next.Revision, "course-prepare", offered.TicketId, "prepare");
+        Equal(EventJournalStatus.Resolved, prepared.Status);
+        True(prepared.Next.OutcomeReceipts.Single().GrantedTags
+            .Contains("event/course-questions-prepared"));
+
+        // The course may have completed by the following week: the later
+        // narrative depends only on the authenticated event outcome tag.
+        var continued = EventDecisionJournal.Offer(prepared.Next, stories, categories,
+            Context(nextWeek, "character-created", "event/course-questions-prepared"),
+            prepared.Next.Revision, "course-next-week");
+        Equal(EventJournalStatus.Offered, continued.Status);
+        Equal("course-question-follow-up", continued.Next.Tickets.Last().EventId);
+        EventJournalReplay.Validate(continued.Next, stories, categories);
+        var forged = continued.Next.Copy();
+        forged.Tickets.Last().Tags.Remove("event/course-questions-prepared");
+        Throws(() => EventJournalReplay.Validate(forged, stories, categories));
+
+        var reviewed = EventDecisionJournal.Resolve(offered.Next, stories, categories,
+            offered.Next.Revision, "course-review", offered.TicketId, "review");
+        Equal(EventJournalStatus.Resolved, reviewed.Status);
+        True(!reviewed.Next.OutcomeReceipts.Single().GrantedTags
+            .Contains("event/course-questions-prepared"));
+        var noFollowUp = EventDecisionJournal.Offer(reviewed.Next, stories, categories,
+            Context(nextWeek, "character-created"),
+            reviewed.Next.Revision, "course-no-followup");
+        Equal(EventJournalStatus.NoEligibleEvent, noFollowUp.Status);
+        Equal(reviewed.Next.EventRng, noFollowUp.Next.EventRng);
     }
 
     private static void EventStoryEligibility()
