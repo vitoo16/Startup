@@ -2827,7 +2827,7 @@ internal static class Program
 
                 // Independent V3 replay must still reject the inner receipt:
                 // V4 outcome provenance is required to authorize any time debit.
-                var inner = Convert.FromBase64String(after.EventV4.EmbeddedV3EnvelopeBase64);
+                var inner = Convert.FromBase64String(after.EventV4!.EmbeddedV3EnvelopeBase64);
                 Assert(v3.DeserializeAndValidate(inner).Status != LoadStatus.Valid,
                     "time debit cannot be replayed in an unpaired V3 save");
             }
