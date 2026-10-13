@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using StartupLife.Core;
 using StartupLife.Infrastructure;
+using StartupLife.Simulation;
 
 namespace StartupLife.Integration
 {
