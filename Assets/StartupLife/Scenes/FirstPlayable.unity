@@ -2919,6 +2919,7 @@ MonoBehaviour:
   daySummary: {fileID: 406214051}
   fatalStatus: {fileID: 1601428253}
   saveFileName: startup-life.json
+  enableVerifiedEventV4: 1
   initialYear: 2026
   initialMonth: 9
   initialDay: 1
