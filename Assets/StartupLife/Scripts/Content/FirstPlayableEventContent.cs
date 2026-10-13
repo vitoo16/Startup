@@ -265,40 +265,32 @@ namespace StartupLife.Content
         // gates are deliberately left to AuthoritativeEventContext.
         private static void ValidateAuthoredPaths(IReadOnlyList<GameEventDefinition> definitions)
         {
-            var produced = new HashSet<string>(StringComparer.Ordinal);
-            var reachable = new HashSet<string>(StringComparer.Ordinal);
             foreach (var entry in definitions)
-            {
                 if (entry.Choices.Any(choice => choice.Reward != null) &&
                     entry.Choices.All(choice => choice.Reward != null))
                     throw new InvalidOperationException(
                         "A financial event must offer a no-cost resolution: " + entry.Id);
-                foreach (var choice in entry.Choices)
-                    foreach (var tag in choice.GrantedTags)
-                        produced.Add(tag);
-            }
 
-            // A monotone fixed point handles long chains without depending on
-            // source order; cycles with no valid entry point remain unreachable.
-            var changed = true;
-            while (changed)
+            var availableTags = new HashSet<string>(StringComparer.Ordinal);
+            var reachable = new HashSet<string>(StringComparer.Ordinal);
+            bool changed;
+            do
             {
                 changed = false;
                 foreach (var entry in definitions)
                 {
                     if (reachable.Contains(entry.Id) ||
                         entry.RequiredTags.Any(tag => tag.StartsWith("event/",
-                            StringComparison.Ordinal) && !produced.Contains(tag)))
-                        continue;
-                    if (entry.RequiredTags.Any(tag => tag.StartsWith("event/",
-                            StringComparison.Ordinal) && !reachable.Any(id =>
-                                definitions.First(candidate => candidate.Id == id)
-                                    .Choices.Any(choice => choice.GrantedTags.Contains(tag)))))
+                            StringComparison.Ordinal) && !availableTags.Contains(tag)))
                         continue;
                     reachable.Add(entry.Id);
+                    foreach (var choice in entry.Choices)
+                        foreach (var tag in choice.GrantedTags)
+                            availableTags.Add(tag);
                     changed = true;
                 }
-            }
+            } while (changed);
+
             var inaccessible = definitions.Where(entry => !reachable.Contains(entry.Id))
                 .Select(entry => entry.Id).ToArray();
             if (inaccessible.Length != 0)
