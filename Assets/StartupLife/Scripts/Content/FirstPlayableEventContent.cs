@@ -226,7 +226,41 @@ namespace StartupLife.Content
                 new Choice("share", "Chia sẻ ghi chú thực hành",
                     "event/workshop-notes-shared"),
                 new Choice("reflect", "Tự ôn lại bài học",
-                    "event/workshop-self-review"))
+                    "event/workshop-self-review")),
+            // Significant but recoverable setbacks: a paid response is never
+            // mandatory, and the zero-cost response starts an authored recovery arc.
+            new Story("delivery-incident", "business", 2, 5,
+                new[] { "business-active", "event/customer-care-reviewed" },
+                "Đơn hàng bị giao chậm",
+                "Một đơn hàng đến tay khách trễ hơn dự kiến. Khách muốn biết cách cơ sở xử lý để họ có thể tiếp tục yên tâm đặt hàng.",
+                new Choice("support", "Chi 90.000 ₫ hỗ trợ giao lại",
+                    new EventChoiceReward(-90_000L, 0), "event/delivery-support"),
+                new Choice("coordinate", "Gọi khách và hẹn phương án xử lý",
+                    "event/delivery-recovery-contact")),
+            new Story("delivery-incident-follow-up", "business", 2, 6,
+                new[] { "business-active", "event/delivery-recovery-contact" },
+                "Xác nhận phương án giao hàng",
+                "Sau cuộc gọi, bạn có thể phối hợp lại lịch giao với khách hoặc rà soát bước nhận đơn để hạn chế trễ hẹn.",
+                new Choice("schedule", "Thống nhất lại thời điểm giao",
+                    "event/delivery-recovery-agreed"),
+                new Choice("review", "Rà soát cách nhận và chuyển đơn",
+                    "event/delivery-process-reviewed")),
+            new Story("supplier-backorder", "business", 2, 5,
+                new[] { "business-active", "event/packaging-reviewed" },
+                "Lô hàng đóng gói đến muộn",
+                "Nhà cung cấp báo thiếu một số mẫu đóng gói đã chọn. Bạn cân nhắc đặt bộ thay thế hoặc tìm nguồn khác để tránh phụ thuộc vào một đối tác.",
+                new Choice("reserve", "Chi 120.000 ₫ đặt bộ mẫu thay thế",
+                    new EventChoiceReward(-120_000L, 0), "event/supply-alternative-reserved"),
+                new Choice("source", "Trao đổi với nguồn hàng khác, chưa đặt tiền",
+                    "event/supply-recovery-contact")),
+            new Story("supplier-backorder-follow-up", "business", 2, 6,
+                new[] { "business-active", "event/supply-recovery-contact" },
+                "Tìm phương án nguồn hàng dự phòng",
+                "Một đơn vị khác gửi thông tin về quy cách và lịch giao. Bạn có thể so sánh trước khi quyết định có đặt hàng hay không.",
+                new Choice("compare", "So sánh quy cách và điều kiện giao",
+                    "event/supply-options-compared"),
+                new Choice("defer", "Theo dõi thêm, không cam kết mua",
+                    "event/supply-options-deferred"))
         };
 
         private static readonly IReadOnlyList<GameEventDefinition> DefinitionsValue = BuildDefinitions();
