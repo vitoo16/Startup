@@ -1,6 +1,8 @@
 # Implementation progress
 
-The [implementation ledger](IMPLEMENTATION_PLAN_MVP.md#active_status) is the authoritative task-status source. This page is an evidence index, not a second checklist.
+**Active as of 2026-10-14:** [Production Execution Roadmap](PRODUCTION_EXECUTION_ROADMAP.md) owns forward production sequencing, proof gates and weekly task IDs. [Original Pixel Style Contract](PRODUCTION_PIXEL_STYLE_CONTRACT.md) and [Asset IP/Provenance Policy](PRODUCTION_ASSET_IP_POLICY.md) own new visual and clearance requirements. The older [MVP implementation ledger](IMPLEMENTATION_PLAN_MVP.md) remains an historical milestone/evidence source, **not** the active commercial-release checklist.
+
+This page is still an evidence index, not a second task-status authority. Do not infer production PASS from historical engine-free tests or unrun Unity gates.
 
 - [M0-T01 canonical documentation](evidence/M0-T01/SESSION.md): source parity, stable task IDs, skill expansion, and links verified.
 - [M0-T02 tooling preparation](evidence/M0-T02/SESSION.md): skill lock and working local tools; Unity compatibility gate pending.
