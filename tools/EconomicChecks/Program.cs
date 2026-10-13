@@ -1237,7 +1237,7 @@ internal static class Program
             Assert(old.Fingerprint != currentCatalog.Fingerprint,
                 "a different event weight or narrative must change the catalog identity");
             Throws<ArgumentException>(() => new EventCatalogArchive(currentCatalog,
-                new[] { old }), "explicit unpinned baseline required");
+                new[] { old }));
             var archive = new EventCatalogArchive(currentCatalog, new[] { old },
                 legacyBaseline: old);
             var stage = new StagedEventV4SaveSerializer(v3, archive);
