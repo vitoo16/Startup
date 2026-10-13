@@ -752,3 +752,10 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 - No alternative localization engine, event selection engine or CAS writer introduced. No save wire fields, authored economy values, archived V2/V3 replay or frozen fixtures modified.
 - **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; localization; vietnam-art-direction; ui-ugui.
 - **Acceptance criteria:** historical text survives future live edits, current-run labels continue localized lookup, no silent partial historical copy. **Tests:** intentionally NOT RUN, per owner request to finish code first; future Unity Editor EditMode/PlayMode and engine-free validations required before calling this PASS. **Visual evidence:** NOT RUN. **Save impact:** none. **Known limitations:** no Android/Unity runtime verification; a single Vietnamese locale only; additional released catalogs will require their own frozen copy. **Files:** Simulation/EventCatalogArchive.cs, ReleasedFirstPlayableEventCatalog.cs, ReleasedFirstPlayableEventCopy.cs + .meta, Integration/EventV4CommitGateway.cs, Presentation/EventChoiceOverlay.cs, LocalizedKeyLabel.cs, JOURNAL.md.
+
+
+## Increment 60 — Remove obsolete TMP word-wrap API (code-first)
+
+**Owner:** GPT-6 Technical Director. Updated `LifeDashboardOverlay.TextNode` from deprecated `TMP_Text.enableWordWrapping = true` to the Unity 6 `textWrappingMode = TextWrappingModes.Normal` API, preserving the same intended wrap behavior. This addresses the observed Editor CS0618 source warning without changing layout values, gameplay state, save schema or asset references.
+
+**Skills used:** startup-life-session-orchestrator; ui-ugui; localization. **Tests/Unity visual QA:** NOT RUN by explicit user instruction (code-first development); no PASS claimed. **Save impact:** none. **Known limitations:** will require Unity compile/portrait visual inspection in the consolidated QA phase. **Files:** Presentation/LifeDashboardOverlay.cs; JOURNAL.md.
