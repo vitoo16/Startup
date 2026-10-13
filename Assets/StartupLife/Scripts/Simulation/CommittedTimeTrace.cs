@@ -29,14 +29,16 @@ namespace StartupLife.Simulation
             foreach (var receipt in state.Receipts)
             {
                 var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
-                if (command.Kind == CommandKind.AdvanceBoundary || command.Kind == CommandKind.Study)
+                if (command.Kind == CommandKind.AdvanceBoundary || command.Kind == CommandKind.Study ||
+                    command.Kind == CommandKind.SettleEventReward)
                 {
                     var end = checked(minute + receipt.MinutesConsumed);
                     if (date == state.Date && receipt.MinutesConsumed > 0)
                     {
                         var kind = Elapsed;
                         if (command.Kind == CommandKind.Study) kind = Study;
-                        else if (active != null && IsCommittedCareerSlot(active, content, date, minute, end))
+                        else if (command.Kind == CommandKind.AdvanceBoundary &&
+                            active != null && IsCommittedCareerSlot(active, content, date, minute, end))
                             kind = Employment;
                         Mark(slots, minute, Math.Min(1440, end), kind,
                             content.Schedule.WakeMinute, content.Schedule.SleepMinute);
