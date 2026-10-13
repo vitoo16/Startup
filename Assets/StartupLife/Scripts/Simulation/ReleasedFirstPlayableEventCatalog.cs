@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using StartupLife.Core;
 
 namespace StartupLife.Simulation
@@ -212,7 +213,9 @@ namespace StartupLife.Simulation
             IEnumerable<GameEventDefinition> current,
             IEnumerable<EventCategoryPolicy> policies) =>
             new EventCatalogArchive(new EventCatalogSnapshot(current, policies),
-                new[] { BaselineValue }, legacyBaseline: BaselineValue);
+                new[] { BaselineValue }.Concat(
+                    RetainedM15DevelopmentEventCatalogs.Create(BaselineValue)),
+                legacyBaseline: BaselineValue);
 
         private static string TitleKey(string id) => "event.story." + id + ".title";
         private static string BodyKey(string id) => "event.story." + id + ".body";
