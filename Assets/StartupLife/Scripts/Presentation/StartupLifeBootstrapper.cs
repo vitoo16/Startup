@@ -19,9 +19,11 @@ namespace StartupLife.Presentation
         [SerializeField] private DaySummaryModal daySummary;
         [SerializeField] private LocalizedKeyLabel fatalStatus;
         [SerializeField] private string saveFileName = "startup-life.json";
-        // Explicitly staged: default V3 production behavior is unchanged.
-        // Enable only for a pre-existing, verified V2/V3/V4 checkpoint.
-        [SerializeField] private bool enableVerifiedEventV4;
+        // The first-playable scene runs verified V4 events by default.
+        // Existing V2/V3 checkpoints are promoted only through the verified
+        // V4 gateway/CAS path; never rewrite them during a read.
+        // Inspector opt-out is retained for targeted V3 compatibility QA.
+        [SerializeField] private bool enableVerifiedEventV4 = true;
         [SerializeField] private int initialYear = 2026;
         [SerializeField] private int initialMonth = 9;
         [SerializeField] private int initialDay = 1;
