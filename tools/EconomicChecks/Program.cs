@@ -1219,9 +1219,9 @@ internal static class Program
         {
             var baseline = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
             var retained = RetainedM15DevelopmentEventCatalogs.Create(baseline);
-            var expectedCounts = new[] { 22, 23, 26 };
+            var expectedCounts = new[] { 22, 23, 26, 29 };
             Assert(retained.Count == expectedCounts.Length,
-                "three known development fingerprints must remain independently resolvable");
+                "four known development fingerprints must remain independently resolvable");
             var archive = ReleasedFirstPlayableEventCatalog.CreateArchive(
                 FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
             var fingerprints = new HashSet<string>(StringComparer.Ordinal) { baseline.Fingerprint };
@@ -1247,7 +1247,7 @@ internal static class Program
                     "historical Vietnamese narrative must not use mutable live StringTables");
             }
             Assert(fingerprints.Add(archive.Current.Fingerprint),
-                "29-story current roster must have a distinct content fingerprint");
+                "33-story current roster must have a distinct content fingerprint");
             var oldCurrent = retained[1];
             var restored = new EventCatalogArchive(
                 new EventCatalogSnapshot(oldCurrent.Definitions, oldCurrent.Policies),
@@ -1284,8 +1284,8 @@ internal static class Program
             var compound = FirstPlayableEventContent.Definitions.Single(x =>
                 x.Id == "mentor-workshop-materials").Choices.Single(x =>
                 x.Id == "contribute").Reward;
-            Assert(FirstPlayableEventContent.Definitions.Count == 29 &&
-                rewarded.Length == 6 &&
+            Assert(FirstPlayableEventContent.Definitions.Count == 33 &&
+                rewarded.Length == 8 &&
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == 100000L &&
                     x.Reward.CareerXpDelta == 0) &&
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == 0 &&
@@ -1297,6 +1297,10 @@ internal static class Program
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == -70000L &&
                     x.Reward.CareerXpDelta == 0) &&
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == -55000L &&
+                    x.Reward.CareerXpDelta == 0) &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == -90000L &&
+                    x.Reward.CareerXpDelta == 0) &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == -120000L &&
                     x.Reward.CareerXpDelta == 0) &&
                 FirstPlayableEventContent.Definitions.All(x =>
                     x.Choices.Any(choice => choice.Reward == null)),
