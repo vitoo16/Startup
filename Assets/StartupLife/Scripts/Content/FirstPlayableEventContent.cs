@@ -178,7 +178,29 @@ namespace StartupLife.Content
                 "Một khách hàng gợi ý bạn in bảng giới thiệu gọn để mọi người dễ biết sản phẩm và cách liên hệ.",
                 new Choice("print", "Chi 40.000 ₫ để thử in bảng giới thiệu",
                     new EventChoiceReward(-40_000L, 0), "event/promotion-material"),
-                new Choice("wait", "Để dành tiền, chưa in lúc này"))
+                new Choice("wait", "Để dành tiền, chưa in lúc này")),
+            new Story("mentor-workshop-materials", "career", 1, 6,
+                new[] { "employed", "event/mentor-notes" },
+                "Tài liệu cho buổi hướng dẫn",
+                "Người hướng dẫn mời bạn tham gia buổi trao đổi ngắn trong giờ nghỉ. Bạn có thể góp tiền in tài liệu thực hành.",
+                new Choice("contribute", "Góp 25.000 ₫, nhận 45 XP nghề",
+                    new EventChoiceReward(-25_000L, 45), "event/mentor-workshop"),
+                new Choice("listen", "Đến nghe và ghi chép, không mua tài liệu")),
+            new Story("supplier-quality-sample", "business", 2, 6,
+                new[] { "business-active", "event/supplier-insight" },
+                "Thử mẫu đóng gói mới",
+                "Nhà cung cấp cho bạn xem mẫu hộp và túi giao hàng phù hợp với sản phẩm. Bạn được chọn mua một bộ mẫu để đánh giá.",
+                new Choice("sample", "Chi 70.000 ₫ để thử bộ mẫu",
+                    new EventChoiceReward(-70_000L, 0), "event/packaging-sample"),
+                new Choice("compare", "Ghi lại thông tin và so sánh sau")),
+            new Story("customer-trust-repair", "business", 2, 6,
+                new[] { "business-active", "event/customer-listening" },
+                "Đơn hàng cần chăm sóc lại",
+                "Một khách hàng phản ánh khâu giao nhận chưa thuận tiện. Bạn có thể hỗ trợ chi phí đổi trả hoặc trực tiếp hẹn tìm cách xử lý.",
+                new Choice("compensate", "Chi 55.000 ₫ hỗ trợ đổi trả",
+                    new EventChoiceReward(-55_000L, 0), "event/customer-care-complete"),
+                new Choice("follow-up", "Liên hệ để tìm giải pháp không tốn phí",
+                    "event/customer-care-followup"))
         };
 
         private static readonly IReadOnlyList<GameEventDefinition> DefinitionsValue = BuildDefinitions();
