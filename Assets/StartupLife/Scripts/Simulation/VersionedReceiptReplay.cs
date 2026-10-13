@@ -140,8 +140,8 @@ namespace StartupLife.Simulation
                 {
                     if (rewardProof == null)
                         throw new ArgumentException("Reward receipts require joint V4 replay.");
-                    rewardProof.Apply(candidate, receipt, operation, v3Content ?? content);
-                    duration = 0;
+                    duration = rewardProof.Apply(candidate, receipt,
+                        operation, v3Content ?? content);
                 }
                 else duration = evaluator.Evaluate(candidate, command, operation);
                 if (duration != receipt.MinutesConsumed || state.CurrentCue != receipt.Cue)
