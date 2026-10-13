@@ -146,7 +146,8 @@ namespace StartupLife.Integration
             foreach (var option in definition.Choices)
             {
                 if (option.Reward == null) continue;
-                var reason = EventDecisionJournal.RewardUnavailableReason(state, option.Reward);
+                var reason = EventDecisionJournal.RewardUnavailableReason(
+                    state, option.Reward, coreRunner?.Content);
                 if (reason.Length != 0) unavailable.Add(option.Id, reason);
             }
             return new EventPendingChoiceSnapshot(state.RunId, state.Revision,
