@@ -2803,10 +2803,16 @@ internal static class Program
                     definitions, policies));
                 Assert(File.ReadAllBytes(path).SequenceEqual(committedSource),
                     "forged duration candidate must never publish any bytes");
+                var preview = EventRewardCompositeProof.Prepare(committedSource,
+                    serializer, runner, definitions, policies, "time-confirm",
+                    pending!.TicketId, "prepare");
+                EventRewardCompositeProof.Validate(committedSource, preview,
+                    serializer, runner, definitions, policies);
                 var finished = Cold().Resolve(seed.RunId, "time-confirm",
-                    pending!.Revision, pending.TicketId, "prepare");
+                    pending.Revision, pending.TicketId, "prepare");
                 Assert(finished.Status == EventCommitStatus.Committed,
-                    "the time event must use one atomic composite CAS");
+                    "the time event must use one atomic composite CAS: " +
+                    finished.Status + " / " + finished.ReasonKey);
                 var afterRead = Cold().Read();
                 Assert(afterRead.Status == LoadStatus.Valid && afterRead.State != null,
                     "the time receipt and event outcome must cold-replay");
