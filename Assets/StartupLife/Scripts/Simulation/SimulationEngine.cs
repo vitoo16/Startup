@@ -70,6 +70,13 @@ namespace StartupLife.Simulation
             var nextXp = plan.CareerXpDelta > 0
                 ? checked(candidate.Employment!.Xp + plan.CareerXpDelta)
                 : 0L;
+            // A paid event consumes only genuine uncommitted free minutes.
+            // Work shifts/sleep/midnight still belong to the core scheduler.
+            if (plan.MinutesConsumed < 0 ||
+                (plan.MinutesConsumed > 0 &&
+                 FreeMinutes(candidate) < plan.MinutesConsumed))
+                throw new ArgumentException("Event time cost exceeds the authoritative free-time window.");
+            var nextMinute = checked(candidate.Minute + plan.MinutesConsumed);
 
             candidate.Cash = nextCash;
             if (plan.CashDeltaVnd != 0)
@@ -81,6 +88,7 @@ namespace StartupLife.Simulation
                 candidate.Employment!.Xp = nextXp;
                 Promote(candidate); // Reuse the normal career rules and skill grants.
             }
+            candidate.Minute = nextMinute;
             candidate.CurrentCue = "event.resolved";
             candidate.History.Add("event.resolved:" + plan.TicketId + ":" + plan.ChoiceId);
         }
