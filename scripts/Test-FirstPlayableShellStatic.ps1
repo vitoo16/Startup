@@ -71,6 +71,9 @@ $missingBusinessUnwraps = @($businessCommandNames | Where-Object {
 })
 Add-Check 'M15 event dialog reveal is animated without bypassing pending choice authority' (
     ($eventChoiceOverlay -match 'typeof\(CanvasGroup\)') -and
+    ($eventChoiceOverlay -match 'EventChoiceModalScrim') -and
+    ($eventChoiceOverlay -match 'scrimImage\.raycastTarget\s*=\s*true') -and
+    ($eventChoiceOverlay -match 'scrim\.SetActive\(false\)') -and
     ($eventChoiceOverlay -match 'Time\.unscaledDeltaTime') -and
     ($eventChoiceOverlay -match 'revealGroup\.interactable\s*=\s*false') -and
     ($eventChoiceOverlay -match 'revealGroup\.blocksRaycasts\s*=\s*true') -and
