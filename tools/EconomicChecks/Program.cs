@@ -1215,6 +1215,47 @@ internal static class Program
         });
 
 
+        Check("M15 authored tag graph refuses mutually exclusive one-off prerequisites", () =>
+        {
+            GameEventDefinition Fork(int maxOccurrences) => new GameEventDefinition(
+                "branch-choice", "life", 2026, 0, 1, 0, maxOccurrences, 1, 0,
+                Array.Empty<string>(), Array.Empty<string>(),
+                new[]
+                {
+                    new EventChoiceDefinition("left", "event.branch.left", "branch-left",
+                        new[] { "event/branch-left" }),
+                    new EventChoiceDefinition("right", "event.branch.right", "branch-right",
+                        new[] { "event/branch-right" })
+                });
+            var impossibleJoin = new GameEventDefinition(
+                "branch-join", "life", 2026, 0, 1, 0, 1, 1, 0,
+                new[] { "event/branch-left", "event/branch-right" },
+                Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("continue",
+                    "event.join.continue", "join-continue") });
+            Throws<InvalidOperationException>(() =>
+                FirstPlayableEventContent.ValidateAuthoredPaths(
+                    new[] { Fork(1), impossibleJoin }));
+            // A repeatable source can grant the two tags across distinct
+            // occurrences, so its authored dependency is not contradictory.
+            FirstPlayableEventContent.ValidateAuthoredPaths(
+                new[] { Fork(2), impossibleJoin });
+
+            var forcedExpense = new GameEventDefinition(
+                "forced-expense", "life", 2026, 0, 1, 0, 1, 1, 0,
+                Array.Empty<string>(), Array.Empty<string>(),
+                new[]
+                {
+                    new EventChoiceDefinition("first", "event.paid.first", "paid-first",
+                        reward: new EventChoiceReward(-100, 0)),
+                    new EventChoiceDefinition("second", "event.paid.second", "paid-second",
+                        reward: new EventChoiceReward(-200, 0))
+                });
+            Throws<InvalidOperationException>(() =>
+                FirstPlayableEventContent.ValidateAuthoredPaths(new[] { forcedExpense }));
+            FirstPlayableEventContent.ValidateAuthoredPaths(
+                FirstPlayableEventContent.Definitions);
+        });
         Check("M15 retained pinned development catalogs survive later authoring revisions", () =>
         {
             var baseline = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
