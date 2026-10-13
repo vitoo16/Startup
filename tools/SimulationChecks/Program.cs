@@ -33,6 +33,623 @@ internal static class Program
             for (var i = 0; i < 100; i++) { var rng = b.EventRng; DeterministicRng.Next(ref rng); b.EventRng = rng; }
             for (var i = 0; i < 100; i++) Equal(QuotaScheduler.Consume(a, catalog.Careers["developer"]), QuotaScheduler.Consume(b, catalog.Careers["developer"]));
         });
+
+        Check("M15 event definitions enforce unique choices, disjoint tags and valid windows", () =>
+        {
+            var option = new EventChoiceDefinition("accept", "event.accept", "outcome.accept");
+            Throws(() => new EventChoiceDefinition("INVALID", "event.invalid", "outcome.accept"));
+            Throws(() => new GameEventDefinition("offer", "career", 2026, 0, 1, 0, 1, 7, 7,
+                Array.Empty<string>(), Array.Empty<string>(), new[] { option }));
+            Throws(() => new GameEventDefinition("offer", "career", 2026, 0, 1, 0, 1, 7, 0,
+                new[] { "employed" }, new[] { "employed" }, new[] { option }));
+            Throws(() => new GameEventDefinition("offer", "career", 2026, 0, 1, 0, 1, 7, 0,
+                Array.Empty<string>(), Array.Empty<string>(), new[] { option, option }));
+        });
+        Check("M15 authored event rewards are immutable specifications, not wallet mutations", () =>
+        {
+            Throws(() => new EventChoiceReward(0, 0));
+            Throws(() => new EventChoiceReward(0, -1));
+            Throws(() => new EventChoiceReward(long.MinValue, 0));
+            var bonus = new EventChoiceReward(120000, 25);
+            var cost = new EventChoiceReward(-30000, 0);
+            var rewarded = new EventChoiceDefinition("accept", "event.accept",
+                "outcome.accept", new[] { "event/promise" }, bonus);
+            True(rewarded.Reward != null && rewarded.Reward.CashDeltaVnd == 120000 &&
+                rewarded.Reward.CareerXpDelta == 25 &&
+                rewarded.GrantedTags.SequenceEqual(new[] { "event/promise" }));
+            True(cost.CashDeltaVnd == -30000 && cost.CareerXpDelta == 0);
+            var unchanged = new EventChoiceDefinition("decline", "event.decline",
+                "outcome.decline");
+            True(unchanged.Reward == null && unchanged.GrantedTags.Count == 0);
+            var defs = new[] { new GameEventDefinition("bonus-day", "career", 2026,
+                0, 1, 0, 1, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { rewarded, unchanged }) };
+            var rewardOnly = new[] { new GameEventDefinition("reward-only", "career",
+                2026, 0, 1, 0, 1, 1, 0, Array.Empty<string>(),
+                Array.Empty<string>(), new[] { rewarded }) };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 5, 1) };
+            Throws(() => EventDecisionJournal.Validate(
+                EventDecisionJournal.New("reward-only-run", 1),
+                rewardOnly, policies));
+            var origin = new SimDate(2026, 10, 1);
+            var offered = EventDecisionJournal.Offer(
+                EventDecisionJournal.New("intent-only", 1), defs, policies,
+                new GameEventContext(origin, origin, 0, Array.Empty<string>(),
+                    Array.Empty<EventOccurrence>()), 0, "offer-reward", 0);
+            Equal(EventJournalStatus.Offered, offered.Status);
+            var rejected = EventDecisionJournal.Resolve(offered.Next, defs, policies,
+                offered.Next.Revision, "resolve-reward", offered.TicketId, "accept");
+            Equal(EventJournalStatus.Rejected, rejected.Status);
+            Equal("event.reward_processor_unavailable", rejected.ReasonKey);
+            Equal(offered.Next.Revision, rejected.Next.Revision);
+            Equal(offered.TicketId, rejected.Next.PendingTicketId);
+            Equal(EventJournalStatus.Resolved,
+                EventDecisionJournal.Resolve(offered.Next, defs, policies,
+                    offered.Next.Revision, "resolve-tag", offered.TicketId, "decline").Status);
+        });
+        Check("M15 payout plan binds exact pending V4 ticket, authored choice, and V3 frontier", () =>
+        {
+            var bonus = new EventChoiceDefinition("take-bonus", "event.take",
+                "outcome.take", reward: new EventChoiceReward(120000, 50));
+            var cost = new EventChoiceDefinition("pay-cost", "event.pay",
+                "outcome.pay", reward: new EventChoiceReward(-250000, 0));
+            var fallback = new EventChoiceDefinition("skip", "event.skip",
+                "outcome.skip");
+            var defs = new[] { new GameEventDefinition("cash-offer", "life", 2026,
+                0, 1, 0, 1, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { bonus, cost, fallback }) };
+            var policies = new[] { new EventCategoryPolicy("life", 0, 7, 1) };
+            var origin = new SimDate(2026, 10, 1);
+            var offered = EventDecisionJournal.Offer(
+                EventDecisionJournal.New("reward-plan-run", 94731), defs, policies,
+                new GameEventContext(origin, origin, 0, Array.Empty<string>(),
+                    Array.Empty<EventOccurrence>()), 0, "offer-once", 0);
+            Equal(EventJournalStatus.Offered, offered.Status);
+            var content = Catalog();
+            var state = GameSession.NewState(content, "reward-plan-run", 94731UL,
+                origin);
+            state.SaveVersion = 4;
+            state.Name = "Plan Test";
+            state.Cash = 200000;
+            state.Revision = offered.Next.Revision;
+            state.EventV4 = new EventV4Payload { Journal = offered.Next };
+            state.EventRng = offered.Next.EventRng;
+            state.PendingChoiceId = offered.TicketId;
+            state.Employment = new EmploymentState { CareerId = "office-worker",
+                Xp = 100 };
+            var cashBefore = state.Cash;
+            var xpBefore = state.Employment.Xp;
+            var plan = EventDecisionJournal.PlanReward(state, defs, policies,
+                "apply-reward-once", offered.TicketId, "take-bonus");
+            Equal(offered.TicketId, plan.TicketId);
+            Equal("cash-offer", plan.EventId);
+            Equal("take-bonus", plan.ChoiceId);
+            Equal("outcome.take", plan.OutcomeId);
+            Equal("apply-reward-once", plan.ResolutionCommandId);
+            True(plan.CoreReceiptCommandId.StartsWith(
+                EventRewardSettlementPlan.ReservedReceiptPrefix, StringComparison.Ordinal));
+            Equal(EventRewardSettlementPlan.ReservedReceiptPrefix.Length + 64,
+                plan.CoreReceiptCommandId.Length);
+            Equal(1L, plan.CoreRevision);
+            Equal(3L, plan.GlobalRevision);
+            Equal(120000L, plan.CashDeltaVnd);
+            Equal(50L, plan.CareerXpDelta);
+            // Staged outcome and V3 reward must eventually share ONE CAS.
+            // Until the composite V3 replay proof exists, replay of this
+            // journal alone is deliberately rejected (no free wallet credit).
+            var stagedReward = EventDecisionJournal.StagePlannedRewardResolution(
+                offered.Next, defs, policies, plan);
+            Equal(EventJournalStatus.Resolved, stagedReward.Status);
+            Equal(plan.GlobalRevision, plan.CoreRevision + stagedReward.Next.Revision);
+            Equal(offered.Next.Revision + 1, stagedReward.Next.Revision);
+            Equal("", stagedReward.Next.PendingTicketId);
+            Equal("apply-reward-once", stagedReward.Next.Tickets[0].ResolutionCommandId);
+            Equal("outcome.take", stagedReward.Next.OutcomeReceipts[0].OutcomeId);
+            Equal("", offered.Next.Tickets[0].ResolutionCommandId);
+            Equal(offered.TicketId, offered.Next.PendingTicketId);
+            Throws(() => EventJournalReplay.Validate(stagedReward.Next, defs, policies));
+            var alteredReward = new EventChoiceDefinition("take-bonus", "event.take",
+                "outcome.take", reward: new EventChoiceReward(120001, 50));
+            var alteredDefs = new[] { new GameEventDefinition("cash-offer", "life", 2026,
+                0, 1, 0, 1, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { alteredReward, cost, fallback }) };
+            Equal(EventJournalStatus.Rejected,
+                EventDecisionJournal.StagePlannedRewardResolution(
+                    offered.Next, alteredDefs, policies, plan).Status);
+            var otherOffer = EventDecisionJournal.Offer(
+                EventDecisionJournal.New("other-reward-run", 94731), defs, policies,
+                new GameEventContext(origin, origin, 0, Array.Empty<string>(),
+                    Array.Empty<EventOccurrence>()), 0, "other-offer", 0);
+            Equal(EventJournalStatus.Offered, otherOffer.Status);
+            Equal(EventJournalStatus.Rejected,
+                EventDecisionJournal.StagePlannedRewardResolution(
+                    otherOffer.Next, defs, policies, plan).Status);
+            var encoded = plan.ToCoreCommand();
+            var decoded = GameCommand.ParseCanonicalPayload(encoded.CanonicalPayload);
+            Equal(CommandKind.SettleEventReward, decoded.Kind);
+            Equal(offered.TicketId, decoded.ContentId);
+            Equal("take-bonus", decoded.Name);
+            Equal("cash-offer", decoded.AppearanceId);
+            Equal(0, decoded.Amount);
+            True(plan.MatchesCoreCommand(decoded));
+            // One receipt identity contract is exercised at candidate, cold
+            // replay and CAS boundaries; no boundary may silently admit a
+            // changed cue, revision, timing or unrelated parent payload.
+            CommandReceipt CanonicalRewardReceipt() => new CommandReceipt
+            {
+                CommandId = plan.CoreReceiptCommandId,
+                Payload = encoded.CanonicalPayload,
+                OperationId = "event-reward-operation",
+                Revision = plan.CoreRevision,
+                Cue = "event.resolved",
+                MinutesConsumed = 0
+            };
+            True(plan.MatchesCoreReceipt(CanonicalRewardReceipt()));
+            var wrongInternalId = CanonicalRewardReceipt();
+            wrongInternalId.CommandId = plan.ResolutionCommandId;
+            True(!plan.MatchesCoreReceipt(wrongInternalId));
+            var wrongPayload = CanonicalRewardReceipt();
+            wrongPayload.Payload = new GameCommand(CommandKind.AcknowledgePlayback).CanonicalPayload;
+            True(!plan.MatchesCoreReceipt(wrongPayload));
+            var wrongRevision = CanonicalRewardReceipt();
+            wrongRevision.Revision++;
+            True(!plan.MatchesCoreReceipt(wrongRevision));
+            var missingOperation = CanonicalRewardReceipt();
+            missingOperation.OperationId = "";
+            True(!plan.MatchesCoreReceipt(missingOperation));
+            var wrongCue = CanonicalRewardReceipt();
+            wrongCue.Cue = "event.offered";
+            True(!plan.MatchesCoreReceipt(wrongCue));
+            var wrongDuration = CanonicalRewardReceipt();
+            wrongDuration.MinutesConsumed = 1;
+            True(!plan.MatchesCoreReceipt(wrongDuration));
+            var wrongAdvance = CanonicalRewardReceipt();
+            wrongAdvance.AdvanceTargetIso = "2026-10-02";
+            True(!plan.MatchesCoreReceipt(wrongAdvance));
+            var wrongParent = CanonicalRewardReceipt();
+            wrongParent.ParentPayload = encoded.CanonicalPayload;
+            True(!plan.MatchesCoreReceipt(wrongParent));
+            True(!plan.MatchesCoreReceipt(null!));
+            True(!plan.MatchesCoreCommand(new GameCommand(
+                CommandKind.SettleEventReward, offered.TicketId, 120000,
+                "take-bonus", "cash-offer")));
+            True(!plan.MatchesCoreCommand(new GameCommand(
+                CommandKind.SettleEventReward, offered.TicketId, 0,
+                "skip", "cash-offer")));
+            True(!plan.MatchesCoreCommand(new GameCommand(
+                CommandKind.SettleEventReward, offered.TicketId, 0,
+                "take-bonus", "other-event")));
+            True(!plan.MatchesCoreCommand(new GameCommand(
+                CommandKind.AcknowledgePlayback, offered.TicketId, 0,
+                "take-bonus", "cash-offer")));
+            // The only evaluator for this provisional command lives in the
+            // existing SimulationEngine. It can alter an isolated V3 candidate,
+            // but cannot append a receipt or publish via standalone V3 CAS.
+            var isolated = GameSession.NewState(content, state.RunId, state.Seed, origin);
+            isolated.SaveVersion = 3;
+            isolated.Name = "Reward Candidate";
+            isolated.Cash = cashBefore;
+            isolated.Employment = new EmploymentState
+            {
+                CareerId = "developer", StartedIso = origin.ToString(),
+                Xp = xpBefore
+            };
+            isolated.Skills = content.Skills.Keys.Select(x => new SkillState { Id = x }).ToList();
+            var simulation = new SimulationEngine(content);
+            simulation.ApplyPlannedEventReward(isolated, plan, "planned-only-op");
+            Equal(checked(cashBefore + plan.CashDeltaVnd), isolated.Cash);
+            Equal(checked(xpBefore + plan.CareerXpDelta), isolated.Employment.Xp);
+            True(isolated.Ledger.Count == 1 &&
+                isolated.Ledger[0].Category == "event.reward" &&
+                isolated.Ledger[0].CashDelta == plan.CashDeltaVnd &&
+                isolated.Ledger[0].AttributionId == offered.TicketId);
+            True(isolated.History.Any(x => x.Contains(offered.TicketId)) &&
+                isolated.Receipts.Count == 0 && isolated.Revision == 0);
+            var raw = GameSession.NewState(content, state.RunId, state.Seed, origin);
+            raw.SaveVersion = 3;
+            raw.Name = "Untrusted Reward";
+            raw.Cash = cashBefore;
+            try
+            {
+                simulation.Evaluate(raw, decoded, "unsupported-direct-reward");
+                throw new Exception("Expected public reward execution to fail closed.");
+            }
+            catch (RuleFailure error)
+            {
+                Equal("command.unsupported", error.ReasonKey);
+            }
+            Equal(cashBefore, raw.Cash);
+            True(raw.Ledger.Count == 0);
+            Equal(cashBefore, state.Cash);
+            Equal(xpBefore, state.Employment.Xp);
+            Equal(offered.TicketId, state.EventV4.Journal.PendingTicketId);
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "offer-once", offered.TicketId, "take-bonus"));
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "v4batch/forged", offered.TicketId, "take-bonus"));
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "v4day/2026-10-01", offered.TicketId, "take-bonus"));
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", "wrong-ticket", "take-bonus"));
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "skip"));
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "pay-cost"));
+            state.Employment = null;
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "take-bonus"));
+            void ThrowsOverflow(Action action)
+            {
+                try { action(); }
+                catch (OverflowException) { return; }
+                throw new Exception("Expected checked reward arithmetic overflow");
+            }
+            state.Employment = new EmploymentState { Xp = long.MaxValue };
+            ThrowsOverflow(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "take-bonus"));
+            state.Employment.Xp = 100;
+            state.Cash = long.MaxValue;
+            ThrowsOverflow(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "take-bonus"));
+            state.Cash = 200000;
+            state.EventRng++;
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "take-bonus"));
+            state.EventRng = offered.Next.EventRng;
+            state.PendingChoiceId = "";
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "take-bonus"));
+            state.PendingChoiceId = offered.TicketId;
+            state.Receipts.Add(new CommandReceipt { CommandId = "claimed-receipt" });
+            state.Revision++;
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "claimed-receipt", offered.TicketId, "take-bonus"));
+            state.Receipts.Clear();
+            state.Revision++;
+            Throws(() => EventDecisionJournal.PlanReward(state, defs, policies,
+                "pay-reward", offered.TicketId, "take-bonus"));
+            Equal(EventJournalStatus.Rejected, EventDecisionJournal.Resolve(
+                offered.Next, defs, policies, offered.Next.Revision, "still-disabled",
+                offered.TicketId, "take-bonus").Status);
+        });
+        Check("M15 ineligible events never consume RNG, with window, tags, stage and max-use gates", () =>
+        {
+            var eventDef = Event("offer", 2, 2, 5, 4, 1, new[] { "employed" }, new[] { "blocked" });
+            var origin = new SimDate(2026, 10, 1);
+            var eligible = new GameEventContext(origin, origin.AddDays(1), 2, new[] { "employed" }, Array.Empty<EventOccurrence>());
+            True(GameEventSelector.IsEligible(eventDef, eligible));
+            var noWindow = new GameEventContext(origin, origin.AddDays(2), 2, new[] { "employed" }, Array.Empty<EventOccurrence>());
+            var wrongTags = new GameEventContext(origin, origin.AddDays(1), 2, new[] { "blocked" }, Array.Empty<EventOccurrence>());
+            var insufficientStage = new GameEventContext(origin, origin.AddDays(1), 1, new[] { "employed" }, Array.Empty<EventOccurrence>());
+            var capped = new GameEventContext(origin, origin.AddDays(1), 2, new[] { "employed" },
+                new[] { new EventOccurrence("offer", 2, origin) });
+            foreach (var context in new[] { noWindow, wrongTags, insufficientStage, capped })
+            {
+                uint rng = 1234;
+                True(GameEventSelector.Select(new[] { eventDef }, context, ref rng) == null);
+                Equal(1234u, rng);
+            }
+        });
+        Check("M15 event cooldown is inclusive at the eligible boundary", () =>
+        {
+            var def = new GameEventDefinition("supplier-offer", "supplier", 2026, 1, 1, 3, 2, 1, 0,
+                Array.Empty<string>(), Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("continue", "event.continue", "outcome.continue") });
+            var origin = new SimDate(2026, 10, 1);
+            var occurrence = new EventOccurrence("supplier-offer", 1, origin);
+            True(!GameEventSelector.IsEligible(def, new GameEventContext(origin, origin.AddDays(2), 1,
+                Array.Empty<string>(), new[] { occurrence })));
+            True(GameEventSelector.IsEligible(def, new GameEventContext(origin, origin.AddDays(3), 1,
+                Array.Empty<string>(), new[] { occurrence })));
+            Throws(() => new GameEventContext(origin, origin.AddDays(1), 1, Array.Empty<string>(),
+                new[] { new EventOccurrence("supplier-offer", 1, origin.AddDays(2)) }));
+        });
+        Check("M15 weighted selection ignores author ordering and cannot change scheduler RNG", () =>
+        {
+            var a = Event("career-offer", 1, 1, 0, 100, 0, Array.Empty<string>(), Array.Empty<string>());
+            var b = Event("supplier-offer", 1, 1, 0, 1, 0, Array.Empty<string>(), Array.Empty<string>());
+            var context = new GameEventContext(new SimDate(2026, 10, 1), new SimDate(2026, 10, 1), 1,
+                Array.Empty<string>(), Array.Empty<EventOccurrence>());
+            uint first = 939, second = 939;
+            var selected = new List<string>();
+            for (var i = 0; i < 120; i++)
+            {
+                var left = GameEventSelector.Select(new[] { a, b }, context, ref first);
+                var right = GameEventSelector.Select(new[] { b, a }, context, ref second);
+                Equal(left!.Id, right!.Id);
+                selected.Add(left.Id);
+            }
+            Equal(first, second);
+            True(selected.All(x => x == a.Id || x == b.Id));
+            var catalog = Catalog();
+            var stateA = GameSession.NewState(catalog, "event-test-a", 42, new SimDate(2026, 10, 1));
+            var stateB = GameSession.NewState(catalog, "event-test-b", 42, new SimDate(2026, 10, 1));
+            stateA.Employment = stateB.Employment = new EmploymentState();
+            for (var i = 0; i < 80; i++)
+                { var rng = stateB.EventRng; GameEventSelector.Select(new[] { a, b }, context, ref rng); stateB.EventRng = rng; }
+            for (var i = 0; i < 40; i++)
+                Equal(QuotaScheduler.Consume(stateA, catalog.Careers["developer"]),
+                    QuotaScheduler.Consume(stateB, catalog.Careers["developer"]));
+            Throws(() =>
+            {
+                uint invalid = 1;
+                GameEventSelector.Select(new[] { a, a }, context, ref invalid);
+            });
+        });
+
+        Check("M15 event catalog fingerprint is deterministic and binds selection plus effects", () =>
+        {
+            var a = new GameEventDefinition("catalog-one", "life", 2026, 0,
+                2, 1, 5, 7, 0, new[] { "event/ready" }, Array.Empty<string>(),
+                new[] {
+                    new EventChoiceDefinition("claim", "event.claim", "outcome.claim",
+                        new[] { "event/claimed" }, new EventChoiceReward(1100, 25)),
+                    new EventChoiceDefinition("skip", "event.skip", "outcome.skip")
+                }, "event.title", "event.body");
+            var b = new GameEventDefinition("catalog-two", "life", 2026, 0,
+                1, 1, 5, 7, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("skip", "event.skip", "outcome.skip") });
+            var policies = new[] { new EventCategoryPolicy("life", 1, 7, 3) };
+            var baseId = EventCatalogFingerprint.Compute(new[] { a, b }, policies);
+            Equal(EventCatalogFingerprint.Prefix.Length + EventCatalogFingerprint.HexLength,
+                baseId.Length);
+            True(EventCatalogFingerprint.IsWellFormed(baseId));
+            Equal(baseId, EventCatalogFingerprint.Compute(new[] { b, a }, policies));
+            True(!EventCatalogFingerprint.IsWellFormed(baseId.ToUpperInvariant()));
+            var changedWeight = new GameEventDefinition("catalog-one", "life", 2026, 0,
+                3, 1, 5, 7, 0, new[] { "event/ready" }, Array.Empty<string>(),
+                a.Choices, "event.title", "event.body");
+            True(baseId != EventCatalogFingerprint.Compute(new[] { changedWeight, b }, policies));
+            var changedChoice = new GameEventDefinition("catalog-one", "life", 2026, 0,
+                2, 1, 5, 7, 0, new[] { "event/ready" }, Array.Empty<string>(),
+                new[] {
+                    new EventChoiceDefinition("claim", "event.claim", "outcome.claim",
+                        new[] { "event/claimed" }, new EventChoiceReward(1101, 25)),
+                    new EventChoiceDefinition("skip", "event.skip", "outcome.skip")
+                }, "event.title", "event.body");
+            True(baseId != EventCatalogFingerprint.Compute(new[] { changedChoice, b }, policies));
+            True(baseId != EventCatalogFingerprint.Compute(new[] { a, b },
+                new[] { new EventCategoryPolicy("life", 2, 7, 3) }));
+            var journal = EventDecisionJournal.New("catalog-run", 123);
+            journal.CatalogFingerprint = baseId;
+            var copy = journal.Copy();
+            Equal(baseId, copy.CatalogFingerprint);
+            var wire = JsonSaveSerializer.WriteObject(copy);
+            Equal(baseId, JsonSaveSerializer.ReadObject<EventJournalState>(wire).CatalogFingerprint);
+            // Historical unversioned V4 wire remains loadable without writing
+            // a signature to the original bytes on an ordinary cold read.
+            var legacy = EventDecisionJournal.New("legacy-catalog-run", 123);
+            Equal("", JsonSaveSerializer.ReadObject<EventJournalState>(
+                JsonSaveSerializer.WriteObject(legacy)).CatalogFingerprint);
+        });
+        Check("M15 journal pending choice survives serialized cold read and resolves exactly once", () =>
+        {
+            var definitions = new[] { Event("career-interview", 3, 1, 0, 1, 0,
+                Array.Empty<string>(), Array.Empty<string>()) };
+            var policies = new[] { new EventCategoryPolicy("career", 2, 7, 2) };
+            var origin = new SimDate(2026, 10, 1);
+            var context = new GameEventContext(origin, origin, 1, Array.Empty<string>(), Array.Empty<EventOccurrence>());
+            var start = EventDecisionJournal.New("run-journal", 777);
+            var offer = EventDecisionJournal.Offer(start, definitions, policies, context, 0);
+            Equal(EventJournalStatus.Offered, offer.Status);
+            Equal(0L, start.Revision); Equal(777u, start.EventRng);
+            True(start.Tickets.Count == 0);
+            var saved = JsonSaveSerializer.WriteObject(offer.Next);
+            var restored = JsonSaveSerializer.ReadObject<EventJournalState>(saved);
+            EventDecisionJournal.Validate(restored, definitions, policies);
+            Equal(offer.TicketId, restored.PendingTicketId);
+            var denied = EventDecisionJournal.Resolve(restored, definitions, policies,
+                restored.Revision, "event-choice-command", offer.TicketId, "wrong-choice");
+            Equal(EventJournalStatus.Rejected, denied.Status);
+            Bytes(saved, JsonSaveSerializer.WriteObject(restored));
+            var done = EventDecisionJournal.Resolve(restored, definitions, policies,
+                restored.Revision, "event-choice-command", offer.TicketId, "continue");
+            Equal(EventJournalStatus.Resolved, done.Status);
+            Equal("outcome.continue", done.OutcomeId);
+            Equal("", done.Next.PendingTicketId);
+            var checkpoint = JsonSaveSerializer.WriteObject(done.Next);
+            var cold = JsonSaveSerializer.ReadObject<EventJournalState>(checkpoint);
+            var retry = EventDecisionJournal.Resolve(cold, definitions, policies,
+                0, "event-choice-command", offer.TicketId, "continue");
+            Equal(EventJournalStatus.AlreadyCommitted, retry.Status);
+            Equal(done.OutcomeId, retry.OutcomeId);
+            Bytes(checkpoint, JsonSaveSerializer.WriteObject(cold));
+            var conflict = EventDecisionJournal.Resolve(cold, definitions, policies,
+                cold.Revision, "event-choice-command", offer.TicketId, "other");
+            Equal("event.command_id_conflict", conflict.ReasonKey);
+            Bytes(checkpoint, JsonSaveSerializer.WriteObject(cold));
+        });
+        Check("M15 journal uses committed history for category cooldown and frequency", () =>
+        {
+            var definitions = new[]
+            {
+                Event("career-one", 5, 1, 0, 1, 0, Array.Empty<string>(), Array.Empty<string>()),
+                Event("career-two", 5, 1, 0, 1, 0, Array.Empty<string>(), Array.Empty<string>())
+            };
+            var policies = new[] { new EventCategoryPolicy("career", 2, 10, 2) };
+            var origin = new SimDate(2026, 10, 1);
+            EventJournalState state = EventDecisionJournal.New("run-frequency", 123);
+            GameEventContext Context(int days) => new GameEventContext(origin, origin.AddDays(days), 1,
+                Array.Empty<string>(), Array.Empty<EventOccurrence>());
+            EventJournalResult Offer(int days) => EventDecisionJournal.Offer(state, definitions, policies,
+                Context(days), state.Revision);
+            var first = Offer(0);
+            Equal(EventJournalStatus.Offered, first.Status);
+            state = EventDecisionJournal.Resolve(first.Next, definitions, policies,
+                first.Next.Revision, "choice-one", first.TicketId, "continue").Next;
+            var before = JsonSaveSerializer.WriteObject(state);
+            var early = Offer(1);
+            Equal(EventJournalStatus.NoEligibleEvent, early.Status);
+            Bytes(before, JsonSaveSerializer.WriteObject(state));
+            var second = Offer(4); // authored four-day event window
+            Equal(EventJournalStatus.Offered, second.Status);
+            state = EventDecisionJournal.Resolve(second.Next, definitions, policies,
+                second.Next.Revision, "choice-two", second.TicketId, "continue").Next;
+            Equal(EventJournalStatus.NoEligibleEvent, Offer(8).Status);
+            var third = Offer(12); // day zero expired from ten-day rolling frequency window
+            Equal(EventJournalStatus.Offered, third.Status);
+            Equal(2, state.Tickets.Count);
+            True(third.Next.EventRng != state.EventRng);
+            var after = JsonSaveSerializer.WriteObject(third.Next);
+            var cold = JsonSaveSerializer.ReadObject<EventJournalState>(after);
+            EventDecisionJournal.Validate(cold, definitions, policies);
+        });
+        Check("M15 journal rejects replay drift, stale revisions and duplicated choices without mutation", () =>
+        {
+            var def = Event("career-one", 5, 1, 0, 1, 0, Array.Empty<string>(), Array.Empty<string>());
+            var definitions = new[] { def };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 7, 5) };
+            var origin = new SimDate(2026, 10, 1);
+            var context = new GameEventContext(origin, origin, 1, Array.Empty<string>(), Array.Empty<EventOccurrence>());
+            var state = EventDecisionJournal.New("run-guard", 321);
+            var pending = EventDecisionJournal.Offer(state, definitions, policies, context, 0).Next;
+            var before = JsonSaveSerializer.WriteObject(pending);
+            Equal("event.stale_revision", EventDecisionJournal.Resolve(pending, definitions, policies,
+                0, "cmd-one", pending.PendingTicketId, "continue").ReasonKey);
+            Equal("event.choice_required", EventDecisionJournal.Offer(pending, definitions, policies,
+                context, pending.Revision).ReasonKey);
+            Bytes(before, JsonSaveSerializer.WriteObject(pending));
+            var poisoned = JsonSaveSerializer.ReadObject<EventJournalState>(before);
+            poisoned.Tickets[0].CategoryId = "business";
+            Throws(() => EventDecisionJournal.Validate(poisoned, definitions, policies));
+            var badRng = JsonSaveSerializer.ReadObject<EventJournalState>(before);
+            badRng.EventRng = 0;
+            Throws(() => EventDecisionJournal.Validate(badRng, definitions, policies));
+            var wrongRevision = JsonSaveSerializer.ReadObject<EventJournalState>(before);
+            wrongRevision.Revision++;
+            Throws(() => EventDecisionJournal.Validate(wrongRevision, definitions, policies));
+        });
+
+        Check("M15 cold journal replay verifies the entire RNG and choice trace", () =>
+        {
+            var definitions = new[] { Event("career-offer", 5, 1, 0, 2, 0,
+                Array.Empty<string>(), Array.Empty<string>()) };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 7, 5) };
+            var origin = new SimDate(2026, 10, 1);
+            var context = new GameEventContext(origin, origin, 1, new[] { "employed" },
+                Array.Empty<EventOccurrence>());
+            var empty = EventDecisionJournal.New("run-replay", 539);
+            EventJournalReplay.Validate(empty, definitions, policies);
+            var open = EventDecisionJournal.Offer(empty, definitions, policies, context, 0);
+            var pending = JsonSaveSerializer.ReadObject<EventJournalState>(
+                JsonSaveSerializer.WriteObject(open.Next));
+            EventJournalReplay.Validate(pending, definitions, policies);
+            var closed = EventDecisionJournal.Resolve(pending, definitions, policies, pending.Revision,
+                "choice-replay", open.TicketId, "continue").Next;
+            EventJournalReplay.Validate(closed, definitions, policies);
+            var saved = JsonSaveSerializer.WriteObject(closed);
+            var tampered = JsonSaveSerializer.ReadObject<EventJournalState>(saved);
+            tampered.EventRng = tampered.EventRng == uint.MaxValue ? 1 : tampered.EventRng + 1;
+            Throws(() => EventJournalReplay.Validate(tampered, definitions, policies));
+            tampered = JsonSaveSerializer.ReadObject<EventJournalState>(saved);
+            tampered.Tickets[0].Stage = 0;
+            Throws(() => EventJournalReplay.Validate(tampered, definitions, policies));
+            tampered = JsonSaveSerializer.ReadObject<EventJournalState>(saved);
+            tampered.Tickets[0].Tags.Insert(0, "zebra");
+            Throws(() => EventJournalReplay.Validate(tampered, definitions, policies));
+            tampered = JsonSaveSerializer.ReadObject<EventJournalState>(saved);
+            tampered.InitialEventRng = 538;
+            Throws(() => EventJournalReplay.Validate(tampered, definitions, policies));
+            Bytes(saved, JsonSaveSerializer.WriteObject(closed));
+        });
+
+
+        Check("M15 explicit event offer receipt ID makes retries idempotent across cold restores", () =>
+        {
+            var definition = Event("career-idempotent", 3, 1, 0, 1, 0,
+                Array.Empty<string>(), Array.Empty<string>());
+            var definitions = new[] { definition };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 30, 3) };
+            var origin = new SimDate(2026, 10, 1);
+            var context = new GameEventContext(origin, origin, 1,
+                new[] { "employed" }, Array.Empty<EventOccurrence>());
+            var source = EventDecisionJournal.New("offer-retries", 138);
+            var offered = EventDecisionJournal.Offer(source, definitions, policies, context, 0, "offer-command-1");
+            Equal(EventJournalStatus.Offered, offered.Status);
+            var offerBytes = JsonSaveSerializer.WriteObject(offered.Next);
+            var pending = JsonSaveSerializer.ReadObject<EventJournalState>(offerBytes);
+            var retry = EventDecisionJournal.Offer(pending, definitions, policies, context, 0, "offer-command-1");
+            Equal(EventJournalStatus.AlreadyCommitted, retry.Status);
+            Equal(offered.TicketId, retry.TicketId);
+            Bytes(offerBytes, JsonSaveSerializer.WriteObject(pending));
+            var changedContext = new GameEventContext(origin, origin, 1,
+                new[] { "not-employed" }, Array.Empty<EventOccurrence>());
+            Equal("event.command_id_conflict", EventDecisionJournal.Offer(pending, definitions, policies,
+                changedContext, pending.Revision, "offer-command-1").ReasonKey);
+            Equal("event.command_id_conflict", EventDecisionJournal.Resolve(pending, definitions, policies,
+                pending.Revision, "offer-command-1", offered.TicketId, "continue").ReasonKey);
+            var resolved = EventDecisionJournal.Resolve(pending, definitions, policies,
+                pending.Revision, "resolve-command-1", offered.TicketId, "continue");
+            Equal(EventJournalStatus.Resolved, resolved.Status);
+            var afterResolve = JsonSaveSerializer.ReadObject<EventJournalState>(
+                JsonSaveSerializer.WriteObject(resolved.Next));
+            retry = EventDecisionJournal.Offer(afterResolve, definitions, policies,
+                context, 0, "offer-command-1");
+            Equal(EventJournalStatus.AlreadyCommitted, retry.Status);
+            EventJournalReplay.Validate(afterResolve, definitions, policies);
+            var nextContext = new GameEventContext(origin, origin.AddDays(4), 1,
+                new[] { "employed" }, Array.Empty<EventOccurrence>());
+            Equal("event.command_id_conflict", EventDecisionJournal.Offer(afterResolve, definitions,
+                policies, nextContext, afterResolve.Revision, "resolve-command-1").ReasonKey);
+            var next = EventDecisionJournal.Offer(afterResolve, definitions, policies,
+                nextContext, afterResolve.Revision, "offer-command-2");
+            Equal(EventJournalStatus.Offered, next.Status);
+            var altered = JsonSaveSerializer.ReadObject<EventJournalState>(
+                JsonSaveSerializer.WriteObject(next.Next));
+            altered.Tickets[1].OfferCommandId = "offer-command-1";
+            Throws(() => EventJournalReplay.Validate(altered, definitions, policies));
+        });
+        Check("M15 large journal cold replay shares one selection history without RNG drift", () =>
+        {
+            const int eventCount = 240;
+            var definitions = new[] { Event("long-career", eventCount + 1, 1, 0, 3, 0,
+                Array.Empty<string>(), Array.Empty<string>()) };
+            var policies = new[] { new EventCategoryPolicy("career", 0, int.MaxValue, eventCount + 1) };
+            var origin = new SimDate(2026, 10, 1);
+            var state = EventDecisionJournal.New("run-long-history", 68149);
+            for (var i = 0; i < eventCount; i++)
+            {
+                var now = origin.AddDays(4 * i);
+                var context = new GameEventContext(origin, now, 1, Array.Empty<string>(),
+                    Array.Empty<EventOccurrence>());
+                var offer = EventDecisionJournal.Offer(state, definitions, policies,
+                    context, state.Revision);
+                Equal(EventJournalStatus.Offered, offer.Status);
+                var resolved = EventDecisionJournal.Resolve(offer.Next, definitions, policies,
+                    offer.Next.Revision, "long-choice-" + i, offer.TicketId, "continue");
+                Equal(EventJournalStatus.Resolved, resolved.Status);
+                state = resolved.Next;
+            }
+            Equal(eventCount, state.Tickets.Count);
+            EventJournalReplay.Validate(state, definitions, policies);
+            var bytes = JsonSaveSerializer.WriteObject(state);
+            var cold = JsonSaveSerializer.ReadObject<EventJournalState>(bytes);
+            EventJournalReplay.Validate(cold, definitions, policies);
+            Equal(state.EventRng, cold.EventRng);
+            Bytes(bytes, JsonSaveSerializer.WriteObject(cold));
+            var tampered = JsonSaveSerializer.ReadObject<EventJournalState>(bytes);
+            tampered.Tickets[eventCount / 2].OpenedDateIso = origin.AddDays(4 * (eventCount / 2) + 1).ToString();
+            Throws(() => EventJournalReplay.Validate(tampered, definitions, policies));
+        });
+        Check("M15 category window handles maximum configured duration without overflow", () =>
+        {
+            var def = Event("long-window", 8, 1, 0, 1, 0, Array.Empty<string>(),
+                Array.Empty<string>());
+            var policies = new[] { new EventCategoryPolicy("career", 0, int.MaxValue, 1) };
+            var origin = new SimDate(2026, 10, 1);
+            var context = new GameEventContext(origin, origin, 1,
+                Array.Empty<string>(), Array.Empty<EventOccurrence>());
+            var start = EventDecisionJournal.New("run-wide-window", 19);
+            var first = EventDecisionJournal.Offer(start, new[] { def }, policies, context, 0);
+            Equal(EventJournalStatus.Offered, first.Status);
+            var state = EventDecisionJournal.Resolve(first.Next, new[] { def }, policies,
+                first.Next.Revision, "wide-window-choice", first.TicketId, "continue").Next;
+            var later = new GameEventContext(origin, origin.AddDays(4), 1,
+                Array.Empty<string>(), Array.Empty<EventOccurrence>());
+            Equal(EventJournalStatus.NoEligibleEvent,
+                EventDecisionJournal.Offer(state, new[] { def }, policies, later, state.Revision).Status);
+            EventJournalReplay.Validate(state, new[] { def }, policies);
+        });
         Check("Developer 20-slot quota exact across cycles", () =>
         {
             var scenes = Catalog().Careers["developer"].Scenes; var expected = new[] { 8, 4, 3, 2, 2, 1 }; uint rng = 987;
@@ -752,6 +1369,11 @@ internal static class Program
         new("developer", "v1", "career.developer", 540, 1020, 4, 20,
             days ?? new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday }, scenes,
             new[] { new CareerRankDefinition("junior", 0, 0, 10000000, "problem-solving", 0), new CareerRankDefinition("mid", promotionXp, promotionDays, 15000000, "problem-solving", 2) });
+    private static GameEventDefinition Event(string id, int maxOccurrences, int stage, int cooldownDays,
+        int weight, int offset, string[] required, string[] forbidden) =>
+        new GameEventDefinition(id, "career", 2026, stage, weight, cooldownDays, maxOccurrences, 4, offset,
+            required, forbidden, new[] { new EventChoiceDefinition("continue", "event.continue", "outcome.continue") });
+
     private static ContentCatalog Catalog(long cash = 3000000, int speed = 10000, long promotionXp = 1000, int promotionDays = 30, int payday = 1, long cost = 1000000, long sceneXp = 10) =>
         new("fixture.v1", skillIds.Select(Skill),
             new[] { Career(new[] { Scene("coding", 40, sceneXp), Scene("meeting", 20, sceneXp), Scene("bug-fixing", 15, sceneXp), Scene("client-discussion", 10, sceneXp), Scene("demo", 10, sceneXp), Scene("documentation", 5, sceneXp) }, promotionXp, promotionDays) },

@@ -11,5 +11,7 @@
     <ProjectReference Include="../SimulationChecks/StartupLife.Core.csproj" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/FirstPlayableFlow.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs" />
+    <Compile Include="../../Assets/StartupLife/Scripts/Presentation/EventLocalizationCatalog.cs" />
+    <Compile Include="../../Assets/StartupLife/Scripts/Content/FirstPlayableEventContent.cs" Link="FirstPlayableEventContent.cs" />
   </ItemGroup>
 </Project>

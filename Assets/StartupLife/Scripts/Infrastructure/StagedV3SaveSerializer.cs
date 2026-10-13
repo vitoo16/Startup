@@ -38,7 +38,19 @@ namespace StartupLife.Infrastructure
             return JsonSaveSerializer.Wrap(data,3,payload.Current!.Revision);
         }
 
-        public StagedV3LoadResult DeserializeVerified(byte[] envelopeBytes)
+        public StagedV3LoadResult DeserializeVerified(byte[] envelopeBytes) =>
+            DeserializeVerified(envelopeBytes, null);
+
+        // V4 may observe each verified historical receipt frontier during the SAME
+        // source replay. The ordinary V2/V3 serializer path remains unchanged.
+        public StagedV3LoadResult DeserializeVerified(byte[] envelopeBytes,
+            Action<GameState>? observeFrontier) =>
+            DeserializeVerified(envelopeBytes, observeFrontier, null);
+
+        // Only the enclosing schema-4 replay supplies this proof. Standalone V3
+        // admission uses the original overload and always rejects reward receipts.
+        public StagedV3LoadResult DeserializeVerified(byte[] envelopeBytes,
+            Action<GameState>? observeFrontier, IVerifiedEventRewardReplay? rewardProof)
         {
             SaveEnvelope envelope;
             try { envelope=JsonSaveSerializer.ReadObject<SaveEnvelope>(envelopeBytes); }
@@ -55,7 +67,7 @@ namespace StartupLife.Infrastructure
                 var payload=EconomicV3PayloadCodec.ReadChecked(bytes);
                 if (payload.Current!.Revision!=envelope.Generation)
                     return new StagedV3LoadResult(LoadStatus.Corrupt,reason:"save.generation");
-                VerifySource(payload);
+                VerifySource(payload, observeFrontier, rewardProof);
                 return new StagedV3LoadResult(LoadStatus.Valid,payload);
             }
             catch (ContentCompatibilityException error)
@@ -72,18 +84,42 @@ namespace StartupLife.Infrastructure
             }
         }
 
-        private void VerifySource(EconomicV3Payload body)
+        private void VerifySource(EconomicV3Payload body,
+            Action<GameState>? observeFrontier = null,
+            IVerifiedEventRewardReplay? rewardProof = null)
         {
             var legacy=JsonSaveSerializer.ReadObject<GameState>(
                 Convert.FromBase64String(body.OriginalV2PayloadBase64));
             var anchor = body.Activation!.ToAnchor();
             if (body.Current!.Receipts.Count > anchor.LegacyReceiptCount)
             {
-                if (replay is IVersionedV3ReceiptReplay v3)
+                if (observeFrontier != null)
+                {
+                    if (rewardProof != null)
+                    {
+                        if (replay is IVersionedV3RewardReplay joint)
+                            joint.ValidateV3(body, archives, observeFrontier, rewardProof);
+                        else throw new NotSupportedException("V3/V4 receipt replay unavailable.");
+                    }
+                    else if (replay is IVersionedV3FrontierReplay frontiers)
+                        frontiers.ValidateV3(body, archives, observeFrontier);
+                    else throw new NotSupportedException("V3 receipt frontier observer unavailable.");
+                }
+                else if (replay is IVersionedV3ReceiptReplay v3)
                     v3.ValidateV3(body,archives);
                 else throw new NotSupportedException("V3 suffix evaluator is not registered.");
             }
-            else replay.Validate(legacy,body.Current!,anchor,archives);
+            else
+            {
+                replay.Validate(legacy,body.Current!,anchor,archives);
+                // For migrated checkpoints without V3 receipts, observe the immutable
+                // archived V2 identity, NEVER unverified mutable V3 fields.
+                if (observeFrontier != null)
+                {
+                    legacy.SaveVersion = 3;
+                    observeFrontier(legacy);
+                }
+            }
         }
 
         private static string Digest(byte[] payload)

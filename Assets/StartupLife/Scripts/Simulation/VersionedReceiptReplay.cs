@@ -9,7 +9,7 @@ namespace StartupLife.Simulation
     // Central versioned replay authority. At the migration-only gate this proves the
     // entire v2 prefix against *frozen* source and rejects unaudited v3 suffixes.
     // Must be extended with a tested V3 evaluator BEFORE schema3 becomes live.
-    public sealed class VersionedReceiptReplay : IVersionedReceiptReplay, IVersionedV3ReceiptReplay
+    public sealed class VersionedReceiptReplay : IVersionedReceiptReplay, IVersionedV3RewardReplay
     {
         private readonly BusinessEconomicCatalog? economicRules;
         private readonly ContentCatalog? v3Content;
@@ -80,7 +80,26 @@ namespace StartupLife.Simulation
 
 
         // One reproducible v3 suffix dispatcher, following exact frozen-v2 replay admission.
-        public void ValidateV3(EconomicV3Payload target, IHistoricalEconomicRulesResolver archives)
+        public void ValidateV3(EconomicV3Payload target, IHistoricalEconomicRulesResolver archives) =>
+            ValidateV3Core(target, archives, null, null);
+
+        public void ValidateV3(EconomicV3Payload target, IHistoricalEconomicRulesResolver archives,
+            Action<GameState> observeFrontier)
+        {
+            if (observeFrontier == null) throw new ArgumentNullException(nameof(observeFrontier));
+            ValidateV3Core(target, archives, observeFrontier, null);
+        }
+
+        public void ValidateV3(EconomicV3Payload target, IHistoricalEconomicRulesResolver archives,
+            Action<GameState> observeFrontier, IVerifiedEventRewardReplay rewardProof)
+        {
+            if (observeFrontier == null || rewardProof == null)
+                throw new ArgumentNullException("Combined V3/V4 replay requires both proofs.");
+            ValidateV3Core(target, archives, observeFrontier, rewardProof);
+        }
+
+        private void ValidateV3Core(EconomicV3Payload target, IHistoricalEconomicRulesResolver archives,
+            Action<GameState>? observeFrontier, IVerifiedEventRewardReplay? rewardProof)
         {
             if (economicRules == null) throw new NotSupportedException("V3 evaluator not registered.");
             if (target == null || target.Current == null || target.Activation == null ||
@@ -101,6 +120,9 @@ namespace StartupLife.Simulation
                 Current = state, Activation = target.Activation, EconomicRecords = financial
             };
             var evaluator = new V3EconomicReceiptProcessor(v3Content ?? content, economicRules, anchor);
+            // The archived V2 checkpoint is the first valid V3 receipt frontier.
+            // Emit only verified deterministic state, not target-provided tags.
+            observeFrontier?.Invoke(state);
             if (anchor.LegacyReceiptCount < 0 || anchor.LegacyReceiptCount > target.Current.Receipts.Count)
                 throw new ArgumentException("Invalid historical receipt frontier.");
             for (var index = checked((int)anchor.LegacyReceiptCount);
@@ -113,25 +135,24 @@ namespace StartupLife.Simulation
                 if (operation != receipt.OperationId)
                     throw new ArgumentException("V3 receipt operation identity differs from replay.");
                 var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
-                var duration = evaluator.Evaluate(candidate,command,operation);
+                int duration;
+                if (command.Kind == CommandKind.SettleEventReward)
+                {
+                    if (rewardProof == null)
+                        throw new ArgumentException("Reward receipts require joint V4 replay.");
+                    rewardProof.Apply(candidate, receipt, operation, v3Content ?? content);
+                    duration = 0;
+                }
+                else duration = evaluator.Evaluate(candidate, command, operation);
                 if (duration != receipt.MinutesConsumed || state.CurrentCue != receipt.Cue)
                     throw new ArgumentException("V3 suffix duration or cue differs from committed rules.");
-                state.Revision = checked(state.Revision + 1);
-                if (command.Kind != CommandKind.AdvanceBoundary &&
-                    command.Kind != CommandKind.AcknowledgePlayback)
-                {
-                    state.CurrentActivity = operation;
-                    state.PlaybackCursor = 0;
-                }
-                var replayedReceipt = new CommandReceipt
-                {
-                    CommandId = receipt.CommandId, Payload = command.CanonicalPayload,
-                    OperationId = operation, Revision = state.Revision, Cue = state.CurrentCue,
-                    MinutesConsumed = duration, AdvanceTargetIso = receipt.AdvanceTargetIso,
-                    ParentPayload = receipt.ParentPayload
-                };
-                state.Receipts.Add(replayedReceipt);
-                evaluator.FinalizeReceipt(candidate, replayedReceipt);
+                // The exact same canonical receipt path is used for live V3
+                // commands and V4 payout candidates. A cold replay still
+                // independently compares its resulting state/finance below.
+                ReceiptCandidateFinalizer.Append(state, command, receipt.CommandId,
+                    operation, duration, evaluator, receipt.AdvanceTargetIso,
+                    receipt.ParentPayload, candidate);
+                observeFrontier?.Invoke(state);
             }
             financial.Validate();
             if (!Write(state).SequenceEqual(Write(target.Current)) ||

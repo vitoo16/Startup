@@ -31,6 +31,8 @@ namespace StartupLife.Editor
 
         private const string LocalePath = "Assets/StartupLife/Localization";
         private const string FontPath = "Assets/StartupLife/UI/Fonts/NotoSansVietnamese.asset";
+        private static IEnumerable<KeyValuePair<string, string>> SourceEntries =>
+            DashboardLocalizationCatalog.Entries.Concat(EventLocalizationCatalog.Entries);
 
         [MenuItem("Tools/Startup Life/Localization/Sync Dashboard Vietnamese")]
         public static void SyncVietnamese()
@@ -56,7 +58,7 @@ namespace StartupLife.Editor
         {
             if (table == null) throw new ArgumentNullException(nameof(table));
             var changed = 0;
-            foreach (var translation in DashboardLocalizationCatalog.Entries)
+            foreach (var translation in SourceEntries)
             {
                 var entry = table.GetEntry(translation.Key);
                 if (entry == null) { table.AddEntry(translation.Key, translation.Value); changed++; }
@@ -79,13 +81,13 @@ namespace StartupLife.Editor
             var table = (StringTable)collection.GetTable(locale.Identifier);
             var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath);
             if (font == null) throw new InvalidOperationException("NotoSansVietnamese TMP font missing.");
-            var invalid = DashboardLocalizationCatalog.Entries
+            var invalid = SourceEntries
                 .Where(x => table.GetEntry(x.Key)?.Value != x.Value).Select(x => x.Key).ToArray();
             if (invalid.Length > 0)
                 throw new InvalidOperationException("Missing/stale Vietnamese keys: " +
                     string.Join(", ", invalid));
             var glyphs = new HashSet<char>();
-            foreach (var pair in DashboardLocalizationCatalog.Entries)
+            foreach (var pair in SourceEntries)
                 foreach (var ch in pair.Value)
                     if (!char.IsWhiteSpace(ch) && !font.HasCharacter(ch))
                         glyphs.Add(ch);

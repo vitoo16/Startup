@@ -1,0 +1,385 @@
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using StartupLife.Core;
+using StartupLife.Infrastructure;
+using StartupLife.Simulation;
+
+namespace StartupLife.Integration
+{
+    public sealed class StagedEventV4LoadResult
+    {
+        public LoadStatus Status { get; }
+        public EventV4Payload? Payload { get; }
+        public GameState? CoreState { get; }
+        public string ReasonKey { get; }
+        internal StagedEventV4LoadResult(LoadStatus status, EventV4Payload? payload = null,
+            GameState? core = null, string reason = "")
+        {
+            Status = status;
+            Payload = payload;
+            CoreState = core;
+            ReasonKey = reason;
+        }
+    }
+
+    // Source-only wire/migration admission. NOT an active ISaveSerializer and not
+    // registered in GameSession/AtomicFileSaveStore until unified receipt CAS is built.
+    public sealed class StagedEventV4SaveSerializer
+    {
+        private readonly V3SaveCompatibilitySerializer v3;
+        private readonly EventCatalogArchive catalogs;
+
+        public StagedEventV4SaveSerializer(V3SaveCompatibilitySerializer v3,
+            IEnumerable<GameEventDefinition> definitions, IEnumerable<EventCategoryPolicy> policies)
+            : this(v3, new EventCatalogArchive(new EventCatalogSnapshot(definitions, policies))) { }
+
+        public StagedEventV4SaveSerializer(V3SaveCompatibilitySerializer v3,
+            EventCatalogArchive catalogs)
+        {
+            this.v3 = v3 ?? throw new ArgumentNullException(nameof(v3));
+            this.catalogs = catalogs ?? throw new ArgumentNullException(nameof(catalogs));
+        }
+
+        internal EventCatalogSnapshot CurrentCatalog => catalogs.Current;
+
+        internal EventCatalogSnapshot ResolveCatalog(EventJournalState journal) =>
+            catalogs.Resolve(journal);
+
+        // Historical migration is in-memory only; never rewrites the user's store.
+        public StagedEventV4LoadResult MigrateVerified(byte[] envelopeBytes)
+        {
+            if (envelopeBytes == null) return new StagedEventV4LoadResult(LoadStatus.Corrupt, reason: "save.invalid");
+            SaveEnvelope envelope;
+            try { envelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(envelopeBytes); }
+            catch (Exception) { return new StagedEventV4LoadResult(LoadStatus.Corrupt, reason: "save.invalid"); }
+            if (envelope.SchemaVersion > 4)
+                return new StagedEventV4LoadResult(LoadStatus.FutureVersion, reason: "save.future_version");
+            if (envelope.SchemaVersion == 4) return DeserializeVerified(envelopeBytes);
+            if (envelope.SchemaVersion < 0)
+                return new StagedEventV4LoadResult(LoadStatus.Corrupt, reason: "save.schema_mismatch");
+
+            var loaded = v3.DeserializeAndValidate(envelopeBytes);
+            if (loaded.Status != LoadStatus.Valid)
+                return new StagedEventV4LoadResult(loaded.Status, reason: loaded.Reason);
+            try
+            {
+                var verifiedV3 = envelope.SchemaVersion == 3 ?
+                    envelopeBytes : v3.Serialize(loaded.State!);
+                var payload = FromV3(verifiedV3, loaded.State!);
+                // Full cold admission before presenting a migrated state.
+                return DeserializeVerified(SerializeVerified(payload));
+            }
+            catch (ContentCompatibilityException error)
+            { return new StagedEventV4LoadResult(LoadStatus.UnsupportedContent, reason: error.ReasonKey); }
+            catch (Exception)
+            { return new StagedEventV4LoadResult(LoadStatus.Corrupt, reason: "save.migration_invalid"); }
+        }
+
+        // The V3 checkpoint advances ONLY through the existing GameSession receipt
+        // evaluator. Keep the same event journal in the single outer V4 transaction.
+        internal EventV4Payload ReplaceCore(EventV4Payload source, byte[] newV3Envelope,
+            out GameState core)
+        {
+            if (source?.Journal == null) throw new ArgumentException("Missing V4 journal.");
+            core = ReadV3Core(newV3Envelope, source.Journal);
+            if (core.RunId != source.Journal.RunId ||
+                core.EventRng != source.Journal.InitialEventRng)
+                throw new ArgumentException("V3 core and event RNG/run identity must be stable.");
+            var candidate = JsonSaveSerializer.ReadObject<EventV4Payload>(
+                JsonSaveSerializer.WriteObject(source));
+            candidate.EmbeddedV3EnvelopeBase64 = Convert.ToBase64String(newV3Envelope);
+            candidate.EmbeddedV3EnvelopeSha256 = Digest(newV3Envelope);
+            return candidate;
+        }
+
+        internal GameState ReadV3Core(byte[] envelope, EventJournalState? journal = null)
+        {
+            var result = journal == null
+                ? v3.DeserializeAndValidate(envelope)
+                : new V4ScopedCoreSerializer(v3, journal, ResolveCatalog(journal).Definitions)
+                    .DeserializeAndValidate(envelope);
+            if (result.Status != LoadStatus.Valid || result.State == null ||
+                result.State.SaveVersion != 3)
+                throw new ArgumentException("V3 command failed independent receipt replay.");
+            return result.State;
+        }
+
+        public EventV4Payload FromV3(byte[] verifiedV3Envelope, GameState core)
+        {
+            if (verifiedV3Envelope == null || core == null || core.SaveVersion != 3 ||
+                core.EventRng == 0)
+                throw new ArgumentException("Validated v3 checkpoint required for migration.");
+            var incoming = v3.DeserializeAndValidate(verifiedV3Envelope);
+            if (incoming.Status != LoadStatus.Valid || incoming.State == null ||
+                incoming.State.RunId != core.RunId ||
+                incoming.State.Revision != core.Revision ||
+                incoming.State.EventRng != core.EventRng)
+                throw new ArgumentException("Mismatched V3 migration source.");
+            var activation = incoming.State.EconomicV3?.Activation;
+            if (activation == null || string.IsNullOrWhiteSpace(activation.MigratedAtDateIso))
+                throw new ArgumentException("A verified V3 migration origin is required.");
+            var journal = EventDecisionJournal.New(core.RunId, core.EventRng);
+            journal.OriginDateIso = activation.MigratedAtDateIso;
+            journal.CatalogFingerprint = catalogs.Current.Fingerprint;
+            return new EventV4Payload
+            {
+                EmbeddedV3EnvelopeBase64 = Convert.ToBase64String(verifiedV3Envelope),
+                EmbeddedV3EnvelopeSha256 = Digest(verifiedV3Envelope),
+                Journal = journal
+            };
+        }
+
+        public byte[] SerializeVerified(EventV4Payload payload) =>
+            SerializeVerified(payload, out _);
+
+        // Reuse the already validated core projection during a candidate write.
+        // Do not force a second complete V3 + event replay just to compare DTOs.
+        internal byte[] SerializeVerified(EventV4Payload payload, out GameState core)
+        {
+            core = ValidatePayload(payload);
+            return JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(payload), 4,
+                checked(core.Revision + payload.Journal!.Revision));
+        }
+
+        public StagedEventV4LoadResult DeserializeVerified(byte[] envelopeBytes)
+        {
+            SaveEnvelope envelope;
+            try { envelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(envelopeBytes); }
+            catch (Exception) { return new StagedEventV4LoadResult(LoadStatus.Corrupt, reason: "save.invalid"); }
+            if (envelope.SchemaVersion > 4)
+                return new StagedEventV4LoadResult(LoadStatus.FutureVersion, reason: "save.future_version");
+            if (envelope.SchemaVersion != 4 || envelope.Generation < 0)
+                return new StagedEventV4LoadResult(LoadStatus.Corrupt, reason: "save.schema_mismatch");
+            try
+            {
+                var bytes = Convert.FromBase64String(envelope.PayloadBase64);
+                if (Digest(bytes) != envelope.Checksum)
+                    return new StagedEventV4LoadResult(LoadStatus.Corrupt, reason: "save.checksum");
+                var payload = JsonSaveSerializer.ReadObject<EventV4Payload>(bytes);
+                var core = ValidatePayload(payload);
+                if (checked(core.Revision + payload.Journal!.Revision) != envelope.Generation)
+                    return new StagedEventV4LoadResult(LoadStatus.Corrupt, reason: "save.generation");
+                return new StagedEventV4LoadResult(LoadStatus.Valid, payload, core);
+            }
+            catch (ContentCompatibilityException error)
+            { return new StagedEventV4LoadResult(LoadStatus.UnsupportedContent, reason: error.ReasonKey); }
+            catch (NotSupportedException)
+            { return new StagedEventV4LoadResult(LoadStatus.UnsupportedContent, reason: "save.v3_replay_unavailable"); }
+            catch (Exception)
+            { return new StagedEventV4LoadResult(LoadStatus.Corrupt, reason: "save.invalid"); }
+        }
+
+        // Called by AtomicFileSaveStore only after BOTH states passed full
+        // cold replay under the same serializer. Authorize exactly one new
+        // V3 reward receipt paired with exactly one V4 outcome. No other
+        // two-revision transaction is admissible.
+        internal bool IsAuthenticatedRewardTransition(GameState before, GameState after)
+        {
+            try
+            {
+                var oldJournal = before?.EventV4?.Journal;
+                var newJournal = after?.EventV4?.Journal;
+                var oldEconomic = before?.EconomicV3;
+                var newEconomic = after?.EconomicV3;
+                if (before == null || after == null ||
+                    before.SaveVersion != 4 || after.SaveVersion != 4 ||
+                    before.RunId != after.RunId ||
+                    oldJournal == null || newJournal == null ||
+                    oldEconomic?.Activation == null || newEconomic?.Activation == null ||
+                    before.Revision + 2L != after.Revision ||
+                    oldJournal.Revision + 1L != newJournal.Revision ||
+                    before.Receipts.Count + 1 != after.Receipts.Count ||
+                    oldJournal.PendingTicketId.Length == 0 ||
+                    newJournal.PendingTicketId.Length != 0 ||
+                    newJournal.Tickets.Count != oldJournal.Tickets.Count)
+                    return false;
+
+                // A CAS transition may not silently change the active run's
+                // pinned roster, even when both individual envelopes replay.
+                if (oldJournal.CatalogFingerprint != newJournal.CatalogFingerprint)
+                    return false;
+                var catalog = ResolveCatalog(oldJournal);
+                var resolved = newJournal.Tickets[newJournal.Tickets.Count - 1];
+                var plan = EventDecisionJournal.PlanReward(before,
+                    catalog.Definitions, catalog.Policies,
+                    resolved.ResolutionCommandId, resolved.Id, resolved.ChoiceId);
+                var plannedOutcome = EventDecisionJournal.StagePlannedRewardResolution(
+                    oldJournal, catalog.Definitions, catalog.Policies, plan);
+                if (plannedOutcome.Status != EventJournalStatus.Resolved ||
+                    plan.GlobalRevision != after.Revision ||
+                    plan.CoreRevision != after.Receipts.Count ||
+                    !JsonSaveSerializer.WriteObject(plannedOutcome.Next)
+                        .SequenceEqual(JsonSaveSerializer.WriteObject(newJournal)))
+                    return false;
+
+                for (var i = 0; i < before.Receipts.Count; i++)
+                    if (!JsonSaveSerializer.WriteObject(before.Receipts[i])
+                        .SequenceEqual(JsonSaveSerializer.WriteObject(after.Receipts[i])))
+                        return false;
+                var financialReceipt = after.Receipts[after.Receipts.Count - 1];
+                if (!plan.MatchesCoreReceipt(financialReceipt))
+                    return false;
+
+                // No change to the frozen V2 provenance or V3 activation anchor.
+                // Full V3 replay already checked the economic graph and wallet.
+                return JsonSaveSerializer.WriteObject(oldEconomic.Activation)
+                        .SequenceEqual(JsonSaveSerializer.WriteObject(newEconomic.Activation)) &&
+                    oldEconomic.OriginalV2PayloadBase64 == newEconomic.OriginalV2PayloadBase64 &&
+                    oldEconomic.OriginalV2PayloadSha256 == newEconomic.OriginalV2PayloadSha256 &&
+                    oldEconomic.OriginalV2ContentVersion == newEconomic.OriginalV2ContentVersion &&
+                    oldEconomic.OriginalV2RulesetId == newEconomic.OriginalV2RulesetId &&
+                    oldEconomic.OriginalSourceSchema == newEconomic.OriginalSourceSchema &&
+                    oldEconomic.OriginalSourcePayloadBase64 == newEconomic.OriginalSourcePayloadBase64 &&
+                    oldEconomic.OriginalSourcePayloadSha256 == newEconomic.OriginalSourcePayloadSha256;
+            }
+            catch (Exception) { return false; }
+        }
+
+        private GameState ValidatePayload(EventV4Payload payload)
+        {
+            if (payload == null || payload.WireSchema != 4 ||
+                string.IsNullOrEmpty(payload.EmbeddedV3EnvelopeBase64) ||
+                string.IsNullOrEmpty(payload.EmbeddedV3EnvelopeSha256) ||
+                payload.Journal == null)
+                throw new ArgumentException("Incomplete event v4 wire payload.");
+            // Resolve ONLY from a registered, immutable authored snapshot.
+            // The exact unpinned V4 baseline must be declared by the caller.
+            var catalog = ResolveCatalog(payload.Journal);
+            var v3Bytes = Convert.FromBase64String(payload.EmbeddedV3EnvelopeBase64);
+            // Nested checkpoint must really be schema3, not silently promoted legacy bytes.
+            var inner = JsonSaveSerializer.ReadObject<SaveEnvelope>(v3Bytes);
+            if (inner.SchemaVersion != 3)
+                throw new ArgumentException("Embedded source must be a validated schema3 checkpoint.");
+            if (Digest(v3Bytes) != payload.EmbeddedV3EnvelopeSha256)
+                throw new ArgumentException("Embedded V3 checkpoint digest mismatch.");
+            // Before reading user-provided receipts, validate journal identities,
+            // content eligibility and RNG using the existing deterministic selector.
+            EventJournalReplay.ValidateWithFinancialReceipts(payload.Journal,
+                catalog.Definitions, catalog.Policies);
+            var journal = payload.Journal;
+            var rewardProof = new EventRewardReplayProof(journal, catalog.Definitions);
+            var byFrontier = journal.Tickets.GroupBy(t => t.CoreRevisionAtOffer)
+                .ToDictionary(g => g.Key, g => g.ToArray());
+            if (byFrontier.ContainsKey(-1) || byFrontier.Keys.Any(x => x < 0))
+                throw new ArgumentException("Event tickets need authoritative V3 receipt frontiers.");
+            var visited = new HashSet<long>();
+            var checkedEmptyDates = new HashSet<string>(StringComparer.Ordinal);
+            var emptyByFrontier = journal.NoEligibleDays.GroupBy(x => x.CoreRevisionAtCheck)
+                .ToDictionary(g => g.Key, g => g.ToArray());
+            if (emptyByFrontier.Keys.Any(x => x < 0))
+                throw new ArgumentException("Empty event windows require V3 receipt frontiers.");
+            var anchoredBatches = new HashSet<string>(StringComparer.Ordinal);
+            var batchesByStart = journal.AdvanceBatches.GroupBy(x => x.CoreRevisionAtStart)
+                .ToDictionary(x => x.Key, x => x.ToArray());
+            var batchPrefixes = journal.AdvanceBatches.ToDictionary(
+                x => EventAdvanceBatchHistory.ChildPrefix(journal.RunId, x.RootCommandId),
+                x => x, StringComparer.Ordinal);
+            var core = v3.DeserializeAndValidateWithFrontiers(v3Bytes, frontier =>
+            {
+                if (batchesByStart.TryGetValue(frontier.Revision, out var batchStarts))
+                    foreach (var batch in batchStarts)
+                    {
+                        if (batch.OpenedDateIso != frontier.DateIso)
+                            throw new ArgumentException("Batch start date is not a verified V3 receipt prefix.");
+                        anchoredBatches.Add(batch.RootCommandId);
+                    }
+                if (frontier.Receipts.Count > 0)
+                {
+                    var last = frontier.Receipts[frontier.Receipts.Count - 1];
+                    if (last.CommandId.StartsWith(EventAdvanceBatchHistory.ReservedChildPrefix,
+                        StringComparison.Ordinal))
+                    {
+                        var slash = last.CommandId.LastIndexOf('/');
+                        if (slash < 0 || !batchPrefixes.TryGetValue(
+                                last.CommandId.Substring(0, slash + 1), out var owner) ||
+                            string.CompareOrdinal(frontier.DateIso, owner.TargetDateIso) > 0)
+                            throw new ArgumentException("Batch child receipt exceeded committed target.");
+                    }
+                }
+                if (emptyByFrontier.TryGetValue(frontier.Revision, out var emptyDays))
+                    foreach (var day in emptyDays)
+                    {
+                        var derived = AuthoritativeEventContext.FromCore(frontier, journal,
+                            beforeDateIso: day.DateIso);
+                        if (day.DateIso != frontier.DateIso ||
+                            day.OriginDateIso != derived.OriginDate.ToString() ||
+                            day.Stage != derived.Stage ||
+                            !day.Tags.SequenceEqual(derived.Tags))
+                            throw new ArgumentException(
+                                "Empty event window has a forged V3 receipt-frontier context.");
+                        checkedEmptyDates.Add(day.DateIso);
+                    }
+                if (!byFrontier.TryGetValue(frontier.Revision, out var tickets))
+                    return;
+                // Prior resolved outcome receipts may add event-scoped eligibility
+                // tags. Never credit a ticket with effects from itself or later.
+                foreach (var ticket in tickets)
+                {
+                    var expected = AuthoritativeEventContext.FromCore(frontier, journal,
+                        ticket.Id);
+                    if (ticket.OpenedDateIso != frontier.DateIso ||
+                        ticket.Stage != expected.Stage ||
+                        !ticket.Tags.SequenceEqual(expected.Tags))
+                        throw new ArgumentException(
+                            "Historical event context differs from its verified V3 receipt prefix.");
+                }
+                visited.Add(frontier.Revision);
+            }, rewardProof);
+            rewardProof.AssertComplete();
+
+            if (core.Status == LoadStatus.UnsupportedContent)
+                throw new ContentCompatibilityException(core.Reason, "Embedded V3 content is unavailable.");
+            if (core.Status != LoadStatus.Valid || core.State == null)
+                throw new ArgumentException("Embedded V3 checkpoint failed authoritative replay.");
+            var state = core.State;
+            // All externally committed command IDs share one namespace. The
+            // gateway checks fresh commands; cold replay must independently
+            // reject a forged V4 journal that reuses ANY verified V3 receipt ID.
+            // A single hash set keeps admission linear in receipt + journal size.
+            var coreCommandIds = new HashSet<string>(
+                state.Receipts.Select(r => r.CommandId), StringComparer.Ordinal);
+            if (journal.Tickets.Any(t =>
+                    coreCommandIds.Contains(t.OfferCommandId) ||
+                    (t.ResolutionCommandId.Length > 0 &&
+                     coreCommandIds.Contains(t.ResolutionCommandId))) ||
+                journal.NoEligibleDays.Any(d => coreCommandIds.Contains(d.CommandId)) ||
+                journal.AdvanceBatches.Any(b => coreCommandIds.Contains(b.RootCommandId)))
+                throw new ArgumentException(
+                    "V4 event identity collides with a verified V3 core receipt.");
+            var origin = state.EconomicV3?.Activation?.MigratedAtDateIso;
+            var legacyCount = state.EconomicV3?.Activation?.LegacyReceiptCount ?? -1;
+            if (string.IsNullOrWhiteSpace(origin) || origin != journal.OriginDateIso ||
+                string.CompareOrdinal(origin, state.DateIso) > 0 ||
+                journal.Tickets.Any(t => t.CoreRevisionAtOffer < legacyCount ||
+                    t.CoreRevisionAtOffer > state.Revision) ||
+                journal.NoEligibleDays.Any(d => d.CoreRevisionAtCheck < legacyCount ||
+                    d.CoreRevisionAtCheck > state.Revision ||
+                    string.CompareOrdinal(d.DateIso, state.DateIso) > 0) ||
+                checkedEmptyDates.Count != journal.NoEligibleDays.Count ||
+                visited.Count != byFrontier.Count ||
+                anchoredBatches.Count != journal.AdvanceBatches.Count)
+                throw new ArgumentException("Event history is not anchored to verified V3 receipt frontiers.");
+            if (state.RunId != payload.Journal.RunId ||
+                state.EventRng != payload.Journal.InitialEventRng ||
+                payload.Journal.Tickets.Any(t => string.CompareOrdinal(t.OpenedDateIso, state.DateIso) > 0) ||
+                (payload.Journal.PendingTicketId.Length > 0 &&
+                    payload.Journal.Tickets.Last().OpenedDateIso != state.DateIso))
+                throw new ArgumentException("Event journal and V3 time/run/RNG anchor disagree.");
+            EventAdvanceBatchHistory.Validate(journal, state);
+            // EventJournalReplay.Validate ran before V3 admission and already
+            // established the deterministic selection/RNG trace. The V3
+            // frontier observer and batch validator only read this journal;
+            // replaying the identical trace again here is redundant.
+            return state;
+        }
+
+        private static string Digest(byte[] bytes)
+        {
+            using (var sha = SHA256.Create())
+                return BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant();
+        }
+    }
+}

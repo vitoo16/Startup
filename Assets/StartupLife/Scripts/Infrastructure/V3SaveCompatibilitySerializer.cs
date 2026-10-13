@@ -38,6 +38,43 @@ namespace StartupLife.Infrastructure
             return staged.SerializeVerified(state.EconomicV3);
         }
 
+        // Source-only inner V3 candidate bytes for the enclosing V4 serializer.
+        // This method does NOT grant standalone V3 save admission: only the V4
+        // journal-proven replay validates the result before any outer CAS.
+        public byte[] PrepareEmbeddedV4Candidate(GameState state)
+        {
+            if (state?.SaveVersion != 3 || state.EconomicV3 == null ||
+                !ReferenceEquals(state.EconomicV3.Current, state))
+                throw new ArgumentException("A detached V3 receipt candidate is required.");
+            return JsonSaveSerializer.Wrap(
+                EconomicV3PayloadCodec.SerializeChecked(state.EconomicV3), 3,
+                state.Revision);
+        }
+
+        // V4-only extension: expose verified source receipt frontiers in one replay.
+        // The active V2/V3 read path still uses the original overload unchanged.
+        public LoadResult DeserializeAndValidateWithFrontiers(byte[] bytes,
+            Action<GameState> observeFrontier) =>
+            DeserializeAndValidateWithFrontiers(bytes, observeFrontier, null);
+
+        public LoadResult DeserializeAndValidateWithFrontiers(byte[] bytes,
+            Action<GameState> observeFrontier,
+            IVerifiedEventRewardReplay? rewardProof)
+        {
+            if (observeFrontier == null) throw new ArgumentNullException(nameof(observeFrontier));
+            SaveEnvelope envelope;
+            try { envelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(bytes); }
+            catch (Exception) { return new LoadResult(LoadStatus.Corrupt, reason:"save.invalid"); }
+            if (envelope.SchemaVersion != 3)
+                return new LoadResult(LoadStatus.Corrupt, reason:"save.schema_mismatch");
+            var loaded = staged.DeserializeVerified(bytes, observeFrontier, rewardProof);
+            if (loaded.Status != LoadStatus.Valid)
+                return new LoadResult(loaded.Status, reason:loaded.ReasonKey, sourceSchemaVersion:3);
+            var state = loaded.Payload!.Current!;
+            state.EconomicV3 = loaded.Payload;
+            return new LoadResult(LoadStatus.Valid, state, sourceSchemaVersion:3);
+        }
+
         public LoadResult DeserializeAndValidate(byte[] bytes)
         {
             if (bytes == null) return new LoadResult(LoadStatus.Corrupt,reason:"save.invalid");
