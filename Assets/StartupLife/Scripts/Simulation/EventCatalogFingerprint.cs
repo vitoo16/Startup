@@ -81,6 +81,14 @@ namespace StartupLife.Simulation
                             Field("v4-event-time-minutes/1");
                             Number(choice.Reward.MinutesConsumed);
                         }
+                        // Optional V4 policy is hashed only when non-default.
+                        // Old catalogs (including 36 stories) retain their exact
+                        // historical fingerprints and time-cost semantics.
+                        if (choice.Reward.TimeWindow != EventTimeWindow.AnyFreeTime)
+                        {
+                            Field("v4-event-time-window/1");
+                            Number((int)choice.Reward.TimeWindow);
+                        }
                     }
                 }
             }

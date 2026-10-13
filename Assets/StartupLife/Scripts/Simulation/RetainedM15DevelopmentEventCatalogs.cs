@@ -18,6 +18,8 @@ namespace StartupLife.Simulation
     // 29 stories: debcb79e89de3b3e572cd00e25e7c5d8b5809a29
     // 33 stories: de3d7a23650340b7df0129634349b9cea5337e22
     // 35 stories: f799802d160ffa842922de0f15f0d42baed300d9
+    // 36 stories: e90a59aee9441320a7ad022985885bbf6e75c382
+    // 35 stories: f799802d160ffa842922de0f15f0d42baed300d9
     public static class RetainedM15DevelopmentEventCatalogs
     {
         private static readonly GameEventDefinition[] AddedDefinitions =
@@ -106,7 +108,13 @@ namespace StartupLife.Simulation
                 Choice("course-question-follow-up", "organize", null,
                     "event/course-questions-organized"),
                 Choice("course-question-follow-up", "clarify", null,
-                    "event/course-question-prioritized"))
+                    "event/course-question-prioritized")),
+            Event("after-hours-colleague-support", "career", 1, 6,
+                new[] { "employed", "event/peer-coach" },
+                Choice("after-hours-colleague-support", "help",
+                    new EventChoiceReward(0, 30, 60), "event/after-hours-supported"),
+                Choice("after-hours-colleague-support", "defer", null,
+                    "event/after-hours-deferred"))
         };
 
         // Each historical event has exactly four retained Vietnamese keys:
@@ -172,17 +180,21 @@ namespace StartupLife.Simulation
             Text("course-question-follow-up", "title", "Làm rõ nội dung còn vướng"),
             Text("course-question-follow-up", "body", "Bạn xem lại danh sách câu hỏi đã chuẩn bị và có thêm thông tin để quyết định nội dung nào cần tìm hiểu tiếp."),
             Text("course-question-follow-up", "choice.organize", "Sắp xếp lại câu hỏi theo chủ đề"),
-            Text("course-question-follow-up", "choice.clarify", "Chọn một câu hỏi để trao đổi sau")
+            Text("course-question-follow-up", "choice.clarify", "Chọn một câu hỏi để trao đổi sau"),
+            Text("after-hours-colleague-support", "title", "Hỗ trợ đồng nghiệp ngoài giờ"),
+            Text("after-hours-colleague-support", "body", "Một đồng nghiệp nhờ bạn dành một giờ rảnh để cùng rà soát phần trình bày cho nhóm. Bạn có thể hỗ trợ ngoài ca hoặc hẹn dịp khác."),
+            Text("after-hours-colleague-support", "choice.help", "Dành 60 phút ngoài ca (+30 XP nghề)"),
+            Text("after-hours-colleague-support", "choice.defer", "Hẹn một buổi khác, giữ thời gian rảnh")
         };
 
         public static IReadOnlyList<EventCatalogSnapshot> Create(EventCatalogSnapshot released)
         {
             if (released == null || released.Definitions.Count != 20 ||
                 released.VietnameseText.Count != 80 ||
-                AddedDefinitions.Length != 15 || AddedVietnamese.Length != 60)
+                AddedDefinitions.Length != 16 || AddedVietnamese.Length != 64)
                 throw new ArgumentException("The frozen first-playable archive is required.");
 
-            var counts = new[] { 2, 3, 6, 9, 13, 15 };
+            var counts = new[] { 2, 3, 6, 9, 13, 15, 16 };
             var versions = new EventCatalogSnapshot[counts.Length];
             for (var i = 0; i < counts.Length; i++)
             {

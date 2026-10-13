@@ -126,8 +126,8 @@ namespace StartupLife.Tests.EditMode
                         !string.IsNullOrWhiteSpace(label), Is.True,
                         story.Id + " choice " + choice.Id);
             }
-            Assert.That(entries.Count, Is.EqualTo(144),
-                "Every one of the 36 current stories has a title, body and two choices.");
+            Assert.That(entries.Count, Is.EqualTo(148),
+                "Every one of the 37 current stories has a title, body and two choices.");
         }
 
         [Test]
@@ -234,6 +234,57 @@ namespace StartupLife.Tests.EditMode
         }
 
         [Test]
+        public void PaidOvertimeRequiresACompletedRealShiftAndHasSafeDecline()
+        {
+            var story = FirstPlayableEventContent.Definitions.Single(x =>
+                x.Id == "paid-overtime-request");
+            var accepted = story.Choices.Single(x => x.Id == "accept");
+            Assert.That(accepted.Reward, Is.Not.Null);
+            Assert.That(accepted.Reward!.CashDeltaVnd, Is.EqualTo(90_000L));
+            Assert.That(accepted.Reward.MinutesConsumed, Is.EqualTo(90));
+            Assert.That(accepted.Reward.TimeWindow,
+                Is.EqualTo(EventTimeWindow.AfterCompletedShift));
+            Assert.That(story.Choices.Single(x => x.Id == "decline").Reward, Is.Null);
+
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var career = content.Careers["developer"];
+            var state = new GameState
+            {
+                DateIso = "2026-10-14",
+                Minute = career.EndMinute,
+                Employment = new EmploymentState
+                {
+                    CareerId = career.Id,
+                    DefinitionRevision = career.Revision,
+                    FirstShiftIso = "2026-10-14",
+                    WorkDateIso = "2026-10-14",
+                    ScenesToday = career.ScenesPerShift - 1
+                }
+            };
+            Assert.That(EventDecisionJournal.RewardUnavailableReason(
+                state, accepted.Reward, content),
+                Is.EqualTo("event.choice.after_shift_required"));
+            state.Employment.ScenesToday = career.ScenesPerShift;
+            Assert.That(EventDecisionJournal.RewardUnavailableReason(
+                state, accepted.Reward, content), Is.Empty);
+            state.Minute = career.StartMinute;
+            Assert.That(EventDecisionJournal.RewardUnavailableReason(
+                state, accepted.Reward, content),
+                Is.EqualTo("event.choice.after_shift_required"));
+            state.Minute = content.Schedule.SleepMinute - 89;
+            Assert.That(EventDecisionJournal.RewardUnavailableReason(
+                state, accepted.Reward, content),
+                Is.EqualTo("event.choice.time_unavailable"));
+
+            var oldCatalog = RetainedM15DevelopmentEventCatalogs.Create(
+                ReleasedFirstPlayableEventCatalog.LegacyBaseline).Single(x =>
+                    x.Definitions.Count == 36);
+            Assert.That(oldCatalog.Definitions.Any(x =>
+                x.Id == "paid-overtime-request"), Is.False);
+            Assert.That(oldCatalog.VietnameseText.Count, Is.EqualTo(144));
+        }
+
+        [Test]
         public void NewExpenseLeavesHistoricalReleaseRostersUnchanged()
         {
             var released = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
@@ -242,7 +293,7 @@ namespace StartupLife.Tests.EditMode
             Assert.That(released.VietnameseText.Count, Is.EqualTo(80));
             Assert.That(released.Definitions.Any(x => x.Id == "local-promotion-print"),
                 Is.False);
-            Assert.That(FirstPlayableEventContent.Definitions.Count, Is.EqualTo(36));
+            Assert.That(FirstPlayableEventContent.Definitions.Count, Is.EqualTo(37));
             Assert.That(EventCatalogFingerprint.Compute(
                 FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies),
                 Is.Not.EqualTo(released.Fingerprint));

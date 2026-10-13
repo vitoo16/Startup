@@ -286,7 +286,19 @@ namespace StartupLife.Content
                 new Choice("help", "Dành 60 phút ngoài ca (+30 XP nghề)",
                     new EventChoiceReward(0, 30, 60), "event/after-hours-supported"),
                 new Choice("defer", "Hẹn một buổi khác, giữ thời gian rảnh",
-                    "event/after-hours-deferred"))
+                    "event/after-hours-deferred")),
+            // One-off, authored extra-shift stipend. This is not an implicit
+            // wage rate or salary claim: core receipts debit actual minutes and
+            // the player must have finished the normal career shift first.
+            new Story("paid-overtime-request", "career", 1, 5,
+                new[] { "employed", "event/after-hours-supported" },
+                "Ca hỗ trợ có phụ cấp",
+                "Sau khi hoàn tất ca chính, nhóm đề nghị bạn hỗ trợ thêm 90 phút để xử lý một công việc gấp. Bạn sẽ nhận khoản phụ cấp 90.000 ₫, hoặc có thể từ chối để giữ thời gian nghỉ.",
+                new Choice("accept", "Làm thêm 90 phút, nhận 90.000 ₫",
+                    new EventChoiceReward(90_000L, 0, 90,
+                        EventTimeWindow.AfterCompletedShift), "event/paid-overtime"),
+                new Choice("decline", "Từ chối, giữ thời gian nghỉ",
+                    "event/overtime-declined"))
         };
 
         private static readonly IReadOnlyList<GameEventDefinition> DefinitionsValue = BuildDefinitions();

@@ -87,6 +87,56 @@ internal static class Program
                 EventDecisionJournal.Resolve(offered.Next, defs, policies,
                     offered.Next.Revision, "resolve-tag", offered.TicketId, "decline").Status);
         });
+        Check("M15 overtime requires completed career shift and fingerprints its policy", () =>
+        {
+            var content = Catalog();
+            var career = content.Careers["developer"];
+            var reward = new EventChoiceReward(90_000, 0, 90,
+                EventTimeWindow.AfterCompletedShift);
+            var state = GameSession.NewState(content, "overtime-validation", 919UL,
+                new SimDate(2026, 10, 14));
+            state.Name = "Shift Test";
+            state.Minute = career.EndMinute;
+            state.Employment = new EmploymentState
+            {
+                CareerId = career.Id,
+                DefinitionRevision = career.Revision,
+                FirstShiftIso = state.DateIso,
+                WorkDateIso = state.DateIso,
+                ScenesToday = career.ScenesPerShift - 1
+            };
+            Equal("event.choice.after_shift_required",
+                EventDecisionJournal.RewardUnavailableReason(state, reward, content));
+            state.Employment.ScenesToday++;
+            Equal("", EventDecisionJournal.RewardUnavailableReason(state, reward, content));
+            state.Minute = career.StartMinute;
+            Equal("event.choice.after_shift_required",
+                EventDecisionJournal.RewardUnavailableReason(state, reward, content));
+            state.Minute = content.Schedule.SleepMinute - 89;
+            Equal("event.choice.time_unavailable",
+                EventDecisionJournal.RewardUnavailableReason(state, reward, content));
+            state.Minute = career.EndMinute;
+            state.Employment.WorkDateIso = "2026-10-13";
+            Equal("event.choice.after_shift_required",
+                EventDecisionJournal.RewardUnavailableReason(state, reward, content));
+            Throws(() => new EventChoiceReward(1, 0, 0,
+                EventTimeWindow.AfterCompletedShift));
+            Throws(() => new EventChoiceReward(1, 0, 90,
+                (EventTimeWindow)123));
+
+            var baseChoice = new EventChoiceDefinition("work", "event.work", "outcome.work",
+                reward: new EventChoiceReward(90_000, 0, 90));
+            var paidChoice = new EventChoiceDefinition("work", "event.work", "outcome.work",
+                reward: reward);
+            var skip = new EventChoiceDefinition("skip", "event.skip", "outcome.skip");
+            var policies = new[] { new EventCategoryPolicy("career", 0, 7, 1) };
+            GameEventDefinition Story(EventChoiceDefinition first) =>
+                new GameEventDefinition("extra-hours", "career", 2026, 0, 1, 0,
+                    1, 1, 0, Array.Empty<string>(), Array.Empty<string>(),
+                    new[] { first, skip });
+            True(EventCatalogFingerprint.Compute(new[] { Story(baseChoice) }, policies) !=
+                 EventCatalogFingerprint.Compute(new[] { Story(paidChoice) }, policies));
+        });
         Check("M15 native time-cost plans honor actual free minutes and retain legacy fingerprints", () =>
         {
             var content = Catalog();

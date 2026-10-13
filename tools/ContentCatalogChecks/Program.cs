@@ -59,7 +59,7 @@ internal static class Program
         // Live M15 authoring evolved beyond the first released V4 roster.
         // Keep an exact live count AND assert the historical snapshot rather
         // than weakening this gate to an arbitrary lower bound.
-        Equal(36, definitions.Count);
+        Equal(37, definitions.Count);
         var baseline = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
         Equal(20, baseline.Definitions.Count);
         Equal(40, baseline.Definitions.Sum(x => x.Choices.Count));

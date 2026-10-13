@@ -32,6 +32,7 @@ namespace StartupLife.Simulation
         public long CashDeltaVnd { get; }
         public long CareerXpDelta { get; }
         public int MinutesConsumed { get; }
+        public EventTimeWindow TimeWindow { get; }
 
         // This is a deterministic V3 *receipt intent*, NOT authority to post
         // cash. The V4 settlement caller must prove the canonical payload
@@ -83,6 +84,7 @@ namespace StartupLife.Simulation
             CashDeltaVnd = choice.Reward!.CashDeltaVnd;
             CareerXpDelta = choice.Reward.CareerXpDelta;
             MinutesConsumed = choice.Reward.MinutesConsumed;
+            TimeWindow = choice.Reward.TimeWindow;
         }
     }
 
@@ -278,7 +280,8 @@ namespace StartupLife.Simulation
                     rewardPlan.GlobalRevision != checked(rewardPlan.CoreRevision + source.Revision + 1L) ||
                     rewardPlan.CashDeltaVnd != selectedChoice.Reward.CashDeltaVnd ||
                     rewardPlan.CareerXpDelta != selectedChoice.Reward.CareerXpDelta ||
-                    rewardPlan.MinutesConsumed != selectedChoice.Reward.MinutesConsumed)
+                    rewardPlan.MinutesConsumed != selectedChoice.Reward.MinutesConsumed ||
+                    rewardPlan.TimeWindow != selectedChoice.Reward.TimeWindow)
                     return Reject(source, "event.reward_plan_mismatch");
             }
             else if (rewardPlan != null)
@@ -376,10 +379,15 @@ namespace StartupLife.Simulation
                 return "event.choice.reward_unavailable";
             if (reward.MinutesConsumed > 0)
             {
-                // No speculative UI clock. The exact core schedule must be
-                // available, including today's job shift and waking hours.
-                if (content == null || state.Minute < 0 ||
-                    new SimulationEngine(content).FreeMinutes(state) < reward.MinutesConsumed)
+                // No speculative UI clock. One core evaluator owns both free
+                // minutes and the completed-shift provenance for paid overtime.
+                if (content == null || state.Minute < 0)
+                    return "event.choice.time_unavailable";
+                var engine = new SimulationEngine(content);
+                if (reward.TimeWindow == EventTimeWindow.AfterCompletedShift &&
+                    !engine.HasCompletedWorkShift(state))
+                    return "event.choice.after_shift_required";
+                if (engine.FreeMinutes(state) < reward.MinutesConsumed)
                     return "event.choice.time_unavailable";
             }
             return "";

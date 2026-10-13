@@ -20,7 +20,8 @@ namespace StartupLife.Presentation
                 new KeyValuePair<string, string>("event.choice.unavailable", "Chưa thể kiểm tra dữ liệu sự kiện. Vui lòng thử lại sau."),
                 new KeyValuePair<string, string>("event.choice.insufficient_funds", "Chưa đủ tiền cho lựa chọn có chi phí. Bạn vẫn có thể chọn phương án khác."),
                 new KeyValuePair<string, string>("event.choice.reward_unavailable", "Một phương án hiện chưa khả dụng. Hãy chọn phương án khác."),
-                new KeyValuePair<string, string>("event.choice.time_unavailable", "Không còn đủ thời gian rảnh trong hôm nay cho phương án này. Bạn có thể chọn cách khác.")
+                new KeyValuePair<string, string>("event.choice.time_unavailable", "Không còn đủ thời gian rảnh trong hôm nay cho phương án này. Bạn có thể chọn cách khác."),
+                new KeyValuePair<string, string>("event.choice.after_shift_required", "Bạn cần hoàn thành ca làm việc hôm nay trước khi nhận đề nghị tăng ca.")
             }.Concat(FirstPlayableEventContent.VietnameseEntries).ToArray());
     }
 }

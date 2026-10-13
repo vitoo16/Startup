@@ -1294,9 +1294,9 @@ internal static class Program
         {
             var baseline = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
             var retained = RetainedM15DevelopmentEventCatalogs.Create(baseline);
-            var expectedCounts = new[] { 22, 23, 26, 29, 33, 35 };
+            var expectedCounts = new[] { 22, 23, 26, 29, 33, 35, 36 };
             Assert(retained.Count == expectedCounts.Length,
-                "six pinned development fingerprints must remain independently resolvable");
+                "seven pinned development fingerprints must remain independently resolvable");
             var archive = ReleasedFirstPlayableEventCatalog.CreateArchive(
                 FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
             var fingerprints = new HashSet<string>(StringComparer.Ordinal) { baseline.Fingerprint };
@@ -1322,7 +1322,7 @@ internal static class Program
                     "historical Vietnamese narrative must not use mutable live StringTables");
             }
             Assert(fingerprints.Add(archive.Current.Fingerprint),
-                "36-story current roster must have a distinct content fingerprint");
+                "37-story current roster must have a distinct content fingerprint");
             var oldCurrent = retained[1];
             var restored = new EventCatalogArchive(
                 new EventCatalogSnapshot(oldCurrent.Definitions, oldCurrent.Policies),
@@ -1359,8 +1359,8 @@ internal static class Program
             var compound = FirstPlayableEventContent.Definitions.Single(x =>
                 x.Id == "mentor-workshop-materials").Choices.Single(x =>
                 x.Id == "contribute").Reward;
-            Assert(FirstPlayableEventContent.Definitions.Count == 36 &&
-                rewarded.Length == 9 &&
+            Assert(FirstPlayableEventContent.Definitions.Count == 37 &&
+                rewarded.Length == 10 &&
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == 100000L &&
                     x.Reward.CareerXpDelta == 0) &&
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == 0 &&
@@ -1379,6 +1379,9 @@ internal static class Program
                     x.Reward.CareerXpDelta == 0) &&
                 rewarded.Any(x => x.Reward!.MinutesConsumed == 60 &&
                     x.Reward.CareerXpDelta == 30 && x.Reward.CashDeltaVnd == 0) &&
+                rewarded.Any(x => x.Reward!.MinutesConsumed == 90 &&
+                    x.Reward.CashDeltaVnd == 90_000L &&
+                    x.Reward.TimeWindow == EventTimeWindow.AfterCompletedShift) &&
                 FirstPlayableEventContent.Definitions.All(x =>
                     x.Choices.Any(choice => choice.Reward == null)),
                 "all authored financial/XP choices retain a safe tag-only exit");

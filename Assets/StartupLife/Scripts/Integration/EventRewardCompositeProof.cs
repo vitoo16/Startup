@@ -122,6 +122,7 @@ namespace StartupLife.Integration
                 claimed.CashDeltaVnd != proof.CashDeltaVnd ||
                 claimed.CareerXpDelta != proof.CareerXpDelta ||
                 claimed.MinutesConsumed != proof.MinutesConsumed ||
+                claimed.TimeWindow != proof.TimeWindow ||
                 claimed.CoreRevision != proof.CoreRevision ||
                 claimed.GlobalRevision != proof.GlobalRevision ||
                 !JsonSaveSerializer.WriteObject(candidate.Core)

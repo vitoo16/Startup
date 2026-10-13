@@ -76,6 +76,9 @@ namespace StartupLife.Simulation
                 (plan.MinutesConsumed > 0 &&
                  FreeMinutes(candidate) < plan.MinutesConsumed))
                 throw new ArgumentException("Event time cost exceeds the authoritative free-time window.");
+            if (plan.TimeWindow == EventTimeWindow.AfterCompletedShift &&
+                !HasCompletedWorkShift(candidate))
+                throw new ArgumentException("Paid overtime requires a completed work shift.");
             var nextMinute = checked(candidate.Minute + plan.MinutesConsumed);
 
             candidate.Cash = nextCash;
@@ -165,6 +168,21 @@ namespace StartupLife.Simulation
             if (state.Minute < career.EndMinute) return 0;
             return content.Schedule.SleepMinute - state.Minute;
         }
+        // A paid overtime choice may occur only after all of today's
+        // authoritative career slots have been completed, not merely after
+        // advancing the UI clock or on an unscheduled day.
+        public bool HasCompletedWorkShift(GameState state)
+        {
+            if (state == null) throw new ArgumentNullException(nameof(state));
+            var career = WorkingCareer(state);
+            var employment = state.Employment;
+            return career != null && employment != null &&
+                employment.EndedIso.Length == 0 &&
+                state.Minute >= career.EndMinute &&
+                employment.WorkDateIso == state.DateIso &&
+                employment.ScenesToday == career.ScenesPerShift;
+        }
+
         private CareerDefinition? WorkingCareer(GameState state)
         {
             var e = state.Employment;

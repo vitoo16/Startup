@@ -9,6 +9,10 @@ namespace StartupLife.Core
     // Author-controlled financial/career consequence, never an applied receipt.
     // The V4 choice gateway must refuse this specification until it can
     // atomically pair a V3 economic receipt with the selected V4 outcome.
+    // Additional requirements for consuming time on a verified V3 career day.
+    // Values are serialized only through the V4 authored catalog fingerprint.
+    public enum EventTimeWindow { AnyFreeTime = 0, AfterCompletedShift = 1 }
+
     public sealed class EventChoiceReward
     {
         public long CashDeltaVnd { get; }
@@ -16,17 +20,23 @@ namespace StartupLife.Core
         // Native simulation minutes consumed in the same V3 receipt as money/XP.
         // Zero preserves the exact historical event payout semantics.
         public int MinutesConsumed { get; }
+        public EventTimeWindow TimeWindow { get; }
 
         public EventChoiceReward(long cashDeltaVnd, long careerXpDelta,
-            int minutesConsumed = 0)
+            int minutesConsumed = 0,
+            EventTimeWindow timeWindow = EventTimeWindow.AnyFreeTime)
         {
             if ((cashDeltaVnd == 0 && careerXpDelta == 0 && minutesConsumed == 0) ||
                 cashDeltaVnd == long.MinValue || careerXpDelta < 0 ||
-                minutesConsumed < 0 || minutesConsumed >= 1440)
+                minutesConsumed < 0 || minutesConsumed >= 1440 ||
+                (timeWindow != EventTimeWindow.AnyFreeTime &&
+                 timeWindow != EventTimeWindow.AfterCompletedShift) ||
+                (timeWindow != EventTimeWindow.AnyFreeTime && minutesConsumed == 0))
                 throw new ArgumentException("Invalid authored event reward.");
             CashDeltaVnd = cashDeltaVnd;
             CareerXpDelta = careerXpDelta;
             MinutesConsumed = minutesConsumed;
+            TimeWindow = timeWindow;
         }
     }
 
