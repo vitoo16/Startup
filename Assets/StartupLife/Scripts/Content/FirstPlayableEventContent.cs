@@ -171,7 +171,14 @@ namespace StartupLife.Content
                 "Trưởng nhóm mời bạn chỉ dẫn một đồng nghiệp mới cách phối hợp trong công việc.",
                 new Choice("mentor", "Đứng ra hướng dẫn (+60 XP nghề)",
                     new EventChoiceReward(0, 60), "event/peer-coach"),
-                new Choice("observe", "Cùng theo dõi, chưa đứng ra hướng dẫn"))
+                new Choice("observe", "Cùng theo dõi, chưa đứng ra hướng dẫn")),
+            new Story("local-promotion-print", "business", 2, 6,
+                new[] { "business-active", "event/customer-listening" },
+                "Thử một bảng giới thiệu nhỏ",
+                "Một khách hàng gợi ý bạn in bảng giới thiệu gọn để mọi người dễ biết sản phẩm và cách liên hệ.",
+                new Choice("print", "Chi 40.000 ₫ để thử in bảng giới thiệu",
+                    new EventChoiceReward(-40_000L, 0), "event/promotion-material"),
+                new Choice("wait", "Để dành tiền, chưa in lúc này"))
         };
 
         private static readonly IReadOnlyList<GameEventDefinition> DefinitionsValue = BuildDefinitions();
