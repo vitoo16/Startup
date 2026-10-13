@@ -297,13 +297,53 @@ namespace StartupLife.Content
         // must have a reachable source, and no paid decision may trap a run.
         // This is a coarse dependency check: employment and business state
         // gates are deliberately left to AuthoritativeEventContext.
-        private static void ValidateAuthoredPaths(IReadOnlyList<GameEventDefinition> definitions)
+        // Public to the engine-free content checks; this validates authored
+        // dependencies, not player state or V4 journal replay.
+        public static void ValidateAuthoredPaths(IReadOnlyList<GameEventDefinition> definitions)
         {
+            if (definitions == null || definitions.Any(x => x == null))
+                throw new ArgumentException("Event authoring requires non-null definitions.");
             foreach (var entry in definitions)
                 if (entry.Choices.Any(choice => choice.Reward != null) &&
                     entry.Choices.All(choice => choice.Reward != null))
                     throw new InvalidOperationException(
                         "A financial event must offer a no-cost resolution: " + entry.Id);
+
+            // A single-occurrence story has mutually exclusive choices.
+            // A later story requiring tags granted ONLY by opposite choices of
+            // that story can never be offered, even though both tags appear in
+            // the naive fixed-point union below.
+            var producers = new Dictionary<string, HashSet<GameEventDefinition>>(
+                StringComparer.Ordinal);
+            foreach (var source in definitions)
+                foreach (var choice in source.Choices)
+                    foreach (var tag in choice.GrantedTags)
+                    {
+                        if (!producers.TryGetValue(tag, out var owners))
+                            producers.Add(tag, owners = new HashSet<GameEventDefinition>());
+                        owners.Add(source);
+                    }
+            foreach (var entry in definitions)
+            {
+                var prerequisites = entry.RequiredTags.Where(tag =>
+                    tag.StartsWith("event/", StringComparison.Ordinal)).ToArray();
+                for (var i = 0; i < prerequisites.Length; i++)
+                    for (var j = i + 1; j < prerequisites.Length; j++)
+                    {
+                        if (!producers.TryGetValue(prerequisites[i], out var left) ||
+                            !producers.TryGetValue(prerequisites[j], out var right) ||
+                            left.Count != 1 || right.Count != 1)
+                            continue;
+                        var origin = left.First();
+                        if (!right.Contains(origin) || origin.MaxOccurrences != 1)
+                            continue;
+                        if (!origin.Choices.Any(choice =>
+                            choice.GrantedTags.Contains(prerequisites[i]) &&
+                            choice.GrantedTags.Contains(prerequisites[j])))
+                            throw new InvalidOperationException(
+                                "Event requires mutually exclusive outcomes: " + entry.Id);
+                    }
+            }
 
             var availableTags = new HashSet<string>(StringComparer.Ordinal);
             var reachable = new HashSet<string>(StringComparer.Ordinal);
