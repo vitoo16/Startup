@@ -1215,6 +1215,52 @@ internal static class Program
         });
 
 
+        Check("M15 retained pinned development catalogs survive later authoring revisions", () =>
+        {
+            var baseline = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
+            var retained = RetainedM15DevelopmentEventCatalogs.Create(baseline);
+            var expectedCounts = new[] { 22, 23, 26 };
+            Assert(retained.Count == expectedCounts.Length,
+                "three known development fingerprints must remain independently resolvable");
+            var archive = ReleasedFirstPlayableEventCatalog.CreateArchive(
+                FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
+            var fingerprints = new HashSet<string>(StringComparer.Ordinal) { baseline.Fingerprint };
+            for (var i = 0; i < retained.Count; i++)
+            {
+                var version = retained[i];
+                Assert(version.Definitions.Count == expectedCounts[i] &&
+                    version.Definitions.Sum(e => e.Choices.Count) == expectedCounts[i] * 2 &&
+                    version.VietnameseText.Count == expectedCounts[i] * 4 &&
+                    fingerprints.Add(version.Fingerprint),
+                    "retained M15 snapshot must keep its original data and unique identity");
+                var pinned = EventDecisionJournal.New("retained-development", 17);
+                pinned.CatalogFingerprint = version.Fingerprint;
+                var resolved = archive.Resolve(pinned);
+                Assert(ReferenceEquals(resolved, version) == false &&
+                    resolved.Fingerprint == version.Fingerprint &&
+                    resolved.VietnameseText.Count == version.VietnameseText.Count &&
+                    resolved.Definitions.Count == expectedCounts[i],
+                    "bundled historical snapshot must resolve despite newer current roster");
+                Assert(resolved.VietnameseText.TryGetValue(
+                    "event.story.community-starter-grant.title", out var oldTitle) &&
+                    oldTitle == "Khoản hỗ trợ thử ý tưởng",
+                    "historical Vietnamese narrative must not use mutable live StringTables");
+            }
+            Assert(fingerprints.Add(archive.Current.Fingerprint),
+                "29-story current roster must have a distinct content fingerprint");
+            var oldCurrent = retained[1];
+            var restored = new EventCatalogArchive(
+                new EventCatalogSnapshot(oldCurrent.Definitions, oldCurrent.Policies),
+                new[] { baseline, oldCurrent }, legacyBaseline: baseline);
+            var journal = EventDecisionJournal.New("identical-rules-archive", 19);
+            journal.CatalogFingerprint = oldCurrent.Fingerprint;
+            Assert(ReferenceEquals(restored.Resolve(journal), oldCurrent) &&
+                restored.Resolve(journal).VietnameseText.Count == 92,
+                "a frozen roster must take precedence over mutable current texts with matching rules");
+            journal.CatalogFingerprint = "";
+            Assert(ReferenceEquals(restored.Resolve(journal), baseline),
+                "unpinned legacy V4 runs must still resolve only to their declared first release");
+        });
         Check("M15 bundled first-playable V4 roster remains immutable across catalog upgrades", () =>
         {
             var baseline = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
