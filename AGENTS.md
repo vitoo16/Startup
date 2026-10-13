@@ -12,14 +12,14 @@ Before modifying code, scenes, prefabs, ScriptableObjects or production assets:
 
 **No skill = no implementation.**
 
-## Current Technical Director directive (2026-10-11)
+## Current Technical Director directive (updated 2026-10-13)
 
 - Technical Director/implementation and asset-production owner: **GPT-6** in this project. Gemini is **not** an asset author or default implementation dependency.
 - Finish MVP implementation before the consolidated Unity runtime/visual/device QA pass. Continue using engine-free CI, deterministic economy/save tests, and static Unity contract checks on each source revision. **Never label deferred Unity execution as PASS or mark a milestone CLOSED without its required proof.**
 - Design for clean assembly boundaries and reusable components. No new gameplay-engine copy per save schema, no hidden gameplay balance values in UI, no unnecessary duplicate code, no magic IDs or undeclared coupling. Immutable historical replay implementations are a justified exception.
 - Production character motion must use **articulated cutout/skeletal rigs and genuine pose/limb animation**, reusable clip/state transitions and fitting interactions. Sliding a rigid whole-body sprite is not acceptable character-walk animation.
 - Golden asset workflow remains spec -> generated candidate -> art direction/cleanup -> layered/rig-ready source -> Unity import -> animation -> final visual/device QA. Do not treat a flattened concept render as a production rig or an imported sprite as a finished animated character.
-- Work continuously on the dedicated MVP feature branch; retain test failures and deferred gates as explicit facts. Final merge/closure still requires owner authorization.
+- Owner explicitly authorized merging M15 continuation via PR #54 on 2026-10-13 and requested subsequent implementation **directly on `main`**. Do not move work back to a feature branch without a newer owner instruction. Inspect the remote `main` HEAD before every write; use a current blob SHA/optimistic branch lease to avoid overwriting others. A merge is not a milestone closure; retain failed/deferred evidence and keep test/visual gates truthful.
 
 ## Project invariants
 - Unity 6.3 LTS.
