@@ -254,7 +254,13 @@ namespace StartupLife.Presentation
                 // Re-read V4 authority; keep the exact command ID for any
                 // still-pending matching ticket. Do not mint another command.
                 Refresh();
-                if (pending != null && pending.TicketId == selected.TicketId)
+                if (pending == null && !IsOpen)
+                {
+                    // The write may have succeeded despite the transport
+                    // exception. Reconcile all committed finance/career views.
+                    refreshCommittedState();
+                }
+                else if (pending != null && pending.TicketId == selected.TicketId)
                 {
                     status.SetKey("event.choice.retry");
                     SetButtonsEnabled(true);
