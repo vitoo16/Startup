@@ -90,3 +90,9 @@ Initial refactor `75c695652483439a296aae5a5a5e0ddd5e6d90df` reached 0 build warn
 - The choice overlay now asks its host for one authoritative complete refresh after committed/previously committed event choices; no UI-owned reward/finance estimator introduced.
 - Dynamic historical localized labels now guard against stale asynchronous localization callback delivery after switching to frozen copy. This is the current programmatic `LocalizeStringEvent` handler; existing serialized Unity listeners remain untouched.
 - QA is deferred by owner. No runtime/editor PASS implied.
+
+
+## Increment 63 — Content-based effects, not duplicate economy code
+
+- Current authoring expands from 20 to 22 events, introducing one optional 100,000 VND cash grant and one optional 60 Career XP mentor outcome. Both are declared in `Content/FirstPlayableEventContent` and can only be applied through the existing authenticated V3/V4 transaction path.
+- Historical released roster and Vietnamese copy stay frozen; the baseline/current divergence is now expected and checked in the deferred regression. Unity Localization assets are generated via the existing Editor sync rather than hand-edited YAML. This slice is untested by owner request.

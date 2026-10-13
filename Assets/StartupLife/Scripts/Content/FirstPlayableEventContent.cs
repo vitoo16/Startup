@@ -7,8 +7,8 @@ using StartupLife.Core;
 namespace StartupLife.Content
 {
     // Authored MVP narrative, independent of Unity and the save writer.
-    // Keeping localized copy beside each definition prevents UI/catalog drift;
-    // no money, XP or career claims are silently synthesized by event choices.
+    // Keeping localized copy beside each definition prevents UI/catalog drift.
+    // Authored optional rewards are settled only by the verified V3/V4 gateway.
     public static class FirstPlayableEventContent
     {
         private sealed class Choice
@@ -16,10 +16,19 @@ namespace StartupLife.Content
             public readonly string Id;
             public readonly string Text;
             public readonly string[] Tags;
+            public readonly EventChoiceReward? Reward;
 
             public Choice(string id, string text, params string[] tags)
             {
                 Id = id; Text = text; Tags = tags;
+            }
+
+            // Only authored event data supplies an effect; the V4 gateway is
+            // still solely responsible for an authenticated payout.
+            public Choice(string id, string text, EventChoiceReward reward,
+                params string[] tags) : this(id, text, tags)
+            {
+                Reward = reward ?? throw new ArgumentNullException(nameof(reward));
             }
         }
 
@@ -147,7 +156,22 @@ namespace StartupLife.Content
                 "Lời mời hỗ trợ cộng đồng",
                 "Nhóm làm việc tự do rủ bạn cùng chuẩn bị một buổi chia sẻ kinh nghiệm cho những người mới bắt đầu.",
                 new Choice("help", "Góp sức chuẩn bị chương trình", "event/community-trust"),
-                new Choice("observe", "Đến dự để học hỏi trước"))
+                new Choice("observe", "Đến dự để học hỏi trước")),
+            // New authored-release events do not alter the archived first 20.
+            new Story("community-starter-grant", "life", 1, 5,
+                new[] { "event/pitch-feedback" },
+                "Khoản hỗ trợ thử ý tưởng",
+                "Sau buổi trao đổi, một quỹ cộng đồng đề nghị hỗ trợ một khoản nhỏ để bạn thử nghiệm ý tưởng kinh doanh.",
+                new Choice("accept", "Nhận 100.000 ₫ hỗ trợ thử nghiệm",
+                    new EventChoiceReward(100_000L, 0), "event/starter-grant"),
+                new Choice("decline", "Cảm ơn và tự chuẩn bị nguồn vốn")),
+            new Story("peer-coaching", "career", 1, 6,
+                new[] { "employed", "event/teamwork" },
+                "Hướng dẫn đồng nghiệp mới",
+                "Trưởng nhóm mời bạn chỉ dẫn một đồng nghiệp mới cách phối hợp trong công việc.",
+                new Choice("mentor", "Đứng ra hướng dẫn (+60 XP nghề)",
+                    new EventChoiceReward(0, 60), "event/peer-coach"),
+                new Choice("observe", "Cùng theo dõi, chưa đứng ra hướng dẫn"))
         };
 
         private static readonly IReadOnlyList<GameEventDefinition> DefinitionsValue = BuildDefinitions();
@@ -171,7 +195,7 @@ namespace StartupLife.Content
                 x.Required, Array.Empty<string>(),
                 x.Choices.Select(choice => new EventChoiceDefinition(
                     choice.Id, ChoiceKey(x.Id, choice.Id), x.Id + "-" + choice.Id,
-                    choice.Tags)),
+                    choice.Tags, choice.Reward)),
                 TitleKey(x.Id), BodyKey(x.Id))).ToArray();
             if (definitions.Select(x => x.Id).Distinct(StringComparer.Ordinal).Count() != definitions.Length)
                 throw new InvalidOperationException("Duplicate event story IDs.");

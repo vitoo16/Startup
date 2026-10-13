@@ -1225,11 +1225,25 @@ internal static class Program
             var current = ReleasedFirstPlayableEventCatalog.CreateArchive(
                 FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
             var original = EventCatalogFingerprint.Compute(
+                baseline.Definitions, baseline.Policies);
+            var currentFingerprint = EventCatalogFingerprint.Compute(
                 FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
             Assert(baseline.Fingerprint == original &&
-                current.Current.Fingerprint == original &&
-                current.LegacyBaseline.Fingerprint == original,
-                "first-playable historical snapshot has drifted from released authored roster");
+                current.LegacyBaseline.Fingerprint == original &&
+                current.Current.Fingerprint == currentFingerprint &&
+                currentFingerprint != original,
+                "current authored content may evolve but published first-playable V4 data must not");
+            var rewarded = FirstPlayableEventContent.Definitions.SelectMany(x => x.Choices)
+                .Where(x => x.Reward != null).ToArray();
+            Assert(FirstPlayableEventContent.Definitions.Count == 22 &&
+                rewarded.Length == 2 &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == 100000L &&
+                    x.Reward.CareerXpDelta == 0) &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == 0 &&
+                    x.Reward.CareerXpDelta == 60L) &&
+                FirstPlayableEventContent.Definitions.All(x =>
+                    x.Choices.Any(choice => choice.Reward == null)),
+                "authored rewards must remain optional and tied to exactly two new current events");
             var evolved = FirstPlayableEventContent.Definitions.ToArray();
             var first = evolved[0];
             evolved[0] = new GameEventDefinition(first.Id, first.CategoryId,
