@@ -2784,6 +2784,16 @@ internal static class Program
                     "the verified 08:00 time window should admit 60 minutes");
                 var before = Cold().Read().State!;
                 var minute = before.Minute;
+                var committedSource = File.ReadAllBytes(path);
+                var tampered = EventRewardCompositeProof.Prepare(committedSource,
+                    serializer, runner, definitions, policies, "time-confirm",
+                    pending!.TicketId, "prepare");
+                tampered.Core.Receipts.Last().MinutesConsumed = 59;
+                Throws<ArgumentException>(() => EventRewardCompositeProof.Validate(
+                    committedSource, tampered, serializer, runner,
+                    definitions, policies));
+                Assert(File.ReadAllBytes(path).SequenceEqual(committedSource),
+                    "forged duration candidate must never publish any bytes");
                 var finished = Cold().Resolve(seed.RunId, "time-confirm",
                     pending!.Revision, pending.TicketId, "prepare");
                 Assert(finished.Status == EventCommitStatus.Committed,
