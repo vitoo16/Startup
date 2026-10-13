@@ -340,14 +340,16 @@ namespace StartupLife.Simulation
             if (choice?.Reward == null)
                 throw new ArgumentException("No financial effect on this authored choice.");
             var reward = choice.Reward;
+            // Preserve the planner's overflow contract (checked arithmetic
+            // throws OverflowException). The read-only UI preview below returns
+            // a localization key instead and must not change settlement errors.
+            // Neither calculation mutates the candidate or bypasses V4 CAS.
+            _ = checked(current.Cash + reward.CashDeltaVnd);
+            if (reward.CareerXpDelta > 0 && current.Employment != null)
+                _ = checked(current.Employment.Xp + reward.CareerXpDelta);
             var unavailable = RewardUnavailableReason(current, reward);
             if (unavailable.Length != 0)
                 throw new ArgumentException("Event reward is unavailable: " + unavailable);
-            // Keep checked settlement arithmetic. Only authenticated V3/V4 CAS
-            // applies the reward; this preflight never mutates the save.
-            _ = checked(current.Cash + reward.CashDeltaVnd);
-            if (reward.CareerXpDelta > 0)
-                _ = checked(current.Employment!.Xp + reward.CareerXpDelta);
             return new EventRewardSettlementPlan(current, ticket, choice, commandId,
                 checked(current.Receipts.Count + 1L), checked(current.Revision + 2L));
         }
