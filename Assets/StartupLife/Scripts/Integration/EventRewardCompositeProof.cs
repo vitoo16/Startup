@@ -52,7 +52,7 @@ namespace StartupLife.Integration
                 throw new ArgumentException("The composite source failed V4 cold replay.");
             var current = loaded.State;
             var plan = EventDecisionJournal.PlanReward(current, definitions, policies,
-                commandId, ticketId, choiceId);
+                commandId, ticketId, choiceId, coreRunner.Content);
             var staged = EventDecisionJournal.StagePlannedRewardResolution(
                 current.EventV4.Journal, definitions, policies, plan);
             if (staged.Status != EventJournalStatus.Resolved)
@@ -121,6 +121,7 @@ namespace StartupLife.Integration
                 claimed.ExpectedCareerXp != proof.ExpectedCareerXp ||
                 claimed.CashDeltaVnd != proof.CashDeltaVnd ||
                 claimed.CareerXpDelta != proof.CareerXpDelta ||
+                claimed.MinutesConsumed != proof.MinutesConsumed ||
                 claimed.CoreRevision != proof.CoreRevision ||
                 claimed.GlobalRevision != proof.GlobalRevision ||
                 !JsonSaveSerializer.WriteObject(candidate.Core)
