@@ -31,12 +31,13 @@ namespace StartupLife.Simulation
         public string CoreReceiptCommandId { get; }
         public long CashDeltaVnd { get; }
         public long CareerXpDelta { get; }
+        public int MinutesConsumed { get; }
 
         // This is a deterministic V3 *receipt intent*, NOT authority to post
         // cash. The V4 settlement caller must prove the canonical payload
         // against the pending authored choice and then publish one CAS.
         public GameCommand ToCoreCommand() =>
-            new GameCommand(CommandKind.SettleEventReward, TicketId, 0,
+            new GameCommand(CommandKind.SettleEventReward, TicketId, MinutesConsumed,
                 ChoiceId, EventId);
 
         public bool MatchesCoreCommand(GameCommand command) =>
@@ -53,7 +54,7 @@ namespace StartupLife.Simulation
             receipt.Revision == CoreRevision &&
             !string.IsNullOrWhiteSpace(receipt.OperationId) &&
             receipt.Cue == "event.resolved" &&
-            receipt.MinutesConsumed == 0 &&
+            receipt.MinutesConsumed == MinutesConsumed &&
             receipt.AdvanceTargetIso == "" &&
             receipt.ParentPayload == "";
 
@@ -81,6 +82,7 @@ namespace StartupLife.Simulation
             GlobalRevision = globalRevision;
             CashDeltaVnd = choice.Reward!.CashDeltaVnd;
             CareerXpDelta = choice.Reward.CareerXpDelta;
+            MinutesConsumed = choice.Reward.MinutesConsumed;
         }
     }
 
@@ -275,7 +277,8 @@ namespace StartupLife.Simulation
                     rewardPlan.CoreRevision <= ticket.CoreRevisionAtOffer ||
                     rewardPlan.GlobalRevision != checked(rewardPlan.CoreRevision + source.Revision + 1L) ||
                     rewardPlan.CashDeltaVnd != selectedChoice.Reward.CashDeltaVnd ||
-                    rewardPlan.CareerXpDelta != selectedChoice.Reward.CareerXpDelta)
+                    rewardPlan.CareerXpDelta != selectedChoice.Reward.CareerXpDelta ||
+                    rewardPlan.MinutesConsumed != selectedChoice.Reward.MinutesConsumed)
                     return Reject(source, "event.reward_plan_mismatch");
             }
             else if (rewardPlan != null)
@@ -307,7 +310,7 @@ namespace StartupLife.Simulation
         public static EventRewardSettlementPlan PlanReward(GameState current,
             IReadOnlyList<GameEventDefinition> definitions,
             IReadOnlyList<EventCategoryPolicy> policies, string commandId,
-            string ticketId, string choiceId)
+            string ticketId, string choiceId, ContentCatalog? content = null)
         {
             if (current?.SaveVersion != 4 || current.EventV4?.Journal == null ||
                 current.Receipts == null || definitions == null || policies == null)
@@ -347,7 +350,7 @@ namespace StartupLife.Simulation
             _ = checked(current.Cash + reward.CashDeltaVnd);
             if (reward.CareerXpDelta > 0 && current.Employment != null)
                 _ = checked(current.Employment.Xp + reward.CareerXpDelta);
-            var unavailable = RewardUnavailableReason(current, reward);
+            var unavailable = RewardUnavailableReason(current, reward, content);
             if (unavailable.Length != 0)
                 throw new ArgumentException("Event reward is unavailable: " + unavailable);
             return new EventRewardSettlementPlan(current, ticket, choice, commandId,
@@ -356,7 +359,8 @@ namespace StartupLife.Simulation
 
         // Shared read-side preview and authoritative settlement preflight.
         // Returned localization keys describe blockers; no money or XP moves.
-        public static string RewardUnavailableReason(GameState state, EventChoiceReward reward)
+        public static string RewardUnavailableReason(GameState state, EventChoiceReward reward,
+            ContentCatalog? content = null)
         {
             if (state == null || reward == null)
                 throw new ArgumentNullException("A reward preview needs state and authored data.");
@@ -370,6 +374,14 @@ namespace StartupLife.Simulation
                  state.Employment.EndedIso.Length > 0 ||
                  state.Employment.Xp > long.MaxValue - reward.CareerXpDelta))
                 return "event.choice.reward_unavailable";
+            if (reward.MinutesConsumed > 0)
+            {
+                // No speculative UI clock. The exact core schedule must be
+                // available, including today's job shift and waking hours.
+                if (content == null || state.Minute < 0 ||
+                    new SimulationEngine(content).FreeMinutes(state) < reward.MinutesConsumed)
+                    return "event.choice.time_unavailable";
+            }
             return "";
         }
 
