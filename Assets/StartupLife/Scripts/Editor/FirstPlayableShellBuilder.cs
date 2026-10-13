@@ -167,6 +167,9 @@ namespace StartupLife.Editor
             Assign(bootstrap, "workPlayback", work);
             Assign(bootstrap, "daySummary", summary);
             Assign(bootstrap, "fatalStatus", fatal);
+            // Scene regeneration must preserve the M15 production event path.
+            // This is an explicit serialized bool, not a code-only initializer.
+            Assign(bootstrap, "enableVerifiedEventV4", true);
 
             UnityEventTools.AddPersistentListener(ageMinus.onClick, character.DecreaseAge);
             UnityEventTools.AddPersistentListener(agePlus.onClick, character.IncreaseAge);
@@ -502,6 +505,17 @@ namespace StartupLife.Editor
             var property = serialized.FindProperty(propertyName);
             if (property == null) throw new InvalidOperationException(target.GetType().Name + "." + propertyName + " was not found.");
             property.objectReferenceValue = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void Assign(UnityEngine.Object target, string propertyName, bool value)
+        {
+            var serialized = new SerializedObject(target);
+            var property = serialized.FindProperty(propertyName);
+            if (property == null || property.propertyType != SerializedPropertyType.Boolean)
+                throw new InvalidOperationException(target.GetType().Name + "." + propertyName +
+                    " must be a serialized boolean.");
+            property.boolValue = value;
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
