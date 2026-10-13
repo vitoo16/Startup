@@ -45,12 +45,9 @@ namespace StartupLife.Integration
                 request.Command.Kind != CommandKind.AdvanceBoundary)
                 return request;
             var read = gateway.Read();
-            if ((read.Status != LoadStatus.Valid &&
-                 read.Status != LoadStatus.RecoveredBackup) ||
-                read.State?.SaveVersion != 4 ||
-                read.State.EventV4?.Journal == null)
+            if (!EventV4CommandGuard.Valid(read))
                 return request; // Gateway owns recovery/error classification.
-            var current = read.State;
+            var current = read.State!;
             var active = current.EventV4.Journal.AdvanceBatches.FirstOrDefault(x =>
                 string.CompareOrdinal(current.DateIso, x.TargetDateIso) < 0);
             if (active == null || active.Mode != mode || current.RunId != request.RunId)
@@ -79,11 +76,13 @@ namespace StartupLife.Integration
         private GameState Verified()
         {
             var read = gateway.Read();
-            if (read.Status != LoadStatus.Valid || read.State?.SaveVersion != 4 ||
-                read.State.EventV4?.Journal == null)
+            if (!EventV4CommandGuard.Valid(read))
                 throw new InvalidOperationException(
                     "A validated V4 checkpoint is required for gameplay projection.");
-            return read.State;
+            // A previously recovered backup is verified by exactly the same
+            // active schema validator; rejecting it only in read-only UI
+            // projections would strand an otherwise recoverable player run.
+            return read.State!;
         }
     }
 }

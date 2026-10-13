@@ -82,3 +82,11 @@ Initial refactor `75c695652483439a296aae5a5a5e0ddd5e6d90df` reached 0 build warn
 - The first-playable release now preserves its **80 exact Vietnamese title/body/choice strings** alongside the immutable authored rules. Current Unity StringTable updates are not permitted to rewrite what a historical V4 ticket displayed.
 - Historical translation data intentionally repeats old user-facing copy (versioned release contract), **not gameplay source**. The runtime UI still uses the same localized TMP components; only the authoritative source changes when displaying an archived event.
 - User-requested code-first mode: Unity and engine-free tests deferred, no PASS inferred. Technical debt to validate: historical literal→current localized label state transition, mobile overflow and future-release Vietnamese archives.
+
+
+## Increment 62 — Recovered save UI and async localization correctness
+
+- Reused the existing gateway `Valid` guard in all V4 presentation read projections; fixed mismatch that rejected `RecoveredBackup` only in `EventV4GameCommands.Verified`.
+- The choice overlay now asks its host for one authoritative complete refresh after committed/previously committed event choices; no UI-owned reward/finance estimator introduced.
+- Dynamic historical localized labels now guard against stale asynchronous localization callback delivery after switching to frozen copy. This is the current programmatic `LocalizeStringEvent` handler; existing serialized Unity listeners remain untouched.
+- QA is deferred by owner. No runtime/editor PASS implied.

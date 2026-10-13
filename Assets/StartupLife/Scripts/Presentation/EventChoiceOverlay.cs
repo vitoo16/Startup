@@ -16,6 +16,7 @@ namespace StartupLife.Presentation
         private const float MinTouchHeight = 96f;
         private EventV4CommitGateway gateway = null!;
         private ICommandIdSource commandIds = null!;
+        private Action refreshCommittedState = null!;
         private TMP_FontAsset font = null!;
         private GameObject panel = null!;
         private RectTransform choiceContent = null!;
@@ -58,6 +59,9 @@ namespace StartupLife.Presentation
             }
             overlay.gateway = gateway;
             overlay.commandIds = commandIds;
+            // Reuse the host's authoritative gameplay/finance readouts. The
+            // event overlay must not maintain a shadow cash/XP projection.
+            overlay.refreshCommittedState = host.Refresh;
             overlay.Refresh();
             return overlay;
         }
@@ -136,7 +140,10 @@ namespace StartupLife.Presentation
                     case EventCommitStatus.Committed:
                     case EventCommitStatus.AlreadyCommitted:
                         uncertainCommand = "";
-                        Refresh();
+                        // A reward may have changed the wallet, Career XP and
+                        // promotion. Refresh the whole screen after the V4 CAS,
+                        // not only the dialog that initiated the choice.
+                        refreshCommittedState();
                         break;
                     case EventCommitStatus.RecoveryRequired:
                     case EventCommitStatus.PersistenceFailed:
