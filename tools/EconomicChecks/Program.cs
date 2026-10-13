@@ -2776,7 +2776,16 @@ internal static class Program
                         "fresh", 23, "Time Proof", "base.female")));
                 Assert(created.Status == EventCommitStatus.Committed,
                     "character must commit before the time-consuming event");
-                var offered = Cold().Offer(seed.RunId, "time-offer", created.Revision);
+                // The historical new-run clock starts at midnight. Use the
+                // existing authenticated core boundary to reach waking hours
+                // before checking or offering a real time-consuming choice.
+                var wake = Cold().ExecuteCore(new CommandEnvelope(seed.RunId,
+                    "time-wake", created.Revision,
+                    new GameCommand(CommandKind.AdvanceBoundary)));
+                Assert(wake.Status == EventCommitStatus.Committed &&
+                    Cold().Read().State!.Minute == content.Schedule.WakeMinute,
+                    "one committed V3 boundary must reach the waking free-time window");
+                var offered = Cold().Offer(seed.RunId, "time-offer", wake.Revision);
                 Assert(offered.Status == EventCommitStatus.Committed,
                     "one V4 ticket must be committed");
                 var pending = Cold().ReadPendingChoice();
