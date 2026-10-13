@@ -68,10 +68,13 @@ namespace StartupLife.Presentation
                 var commandIds = new GuidCommandIdSource();
                 if (enableVerifiedEventV4)
                 {
+                    // Current authored roster is separate from the frozen V4
+                    // release baseline needed by pre-fingerprint checkpoints.
+                    var eventArchive = ReleasedFirstPlayableEventCatalog.CreateArchive(
+                        FirstPlayableEventContent.Definitions,
+                        FirstPlayableEventContent.Policies);
                     var eventSerializer = new EventV4CompatibilitySerializer(
-                        new StagedEventV4SaveSerializer(serializer,
-                            FirstPlayableEventContent.Definitions,
-                            FirstPlayableEventContent.Policies));
+                        new StagedEventV4SaveSerializer(serializer, eventArchive));
                     var eventStore = new AtomicFileSaveStore(path, eventSerializer);
                     var loaded = eventStore.Read();
                     GameState initialV4 = null;

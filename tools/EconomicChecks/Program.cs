@@ -1215,6 +1215,44 @@ internal static class Program
         });
 
 
+        Check("M15 bundled first-playable V4 roster remains immutable across catalog upgrades", () =>
+        {
+            var baseline = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
+            Assert(baseline.Definitions.Count == 20 &&
+                baseline.Definitions.Sum(x => x.Choices.Count) == 40 &&
+                baseline.Policies.Count == 4,
+                "released V4 baseline must retain all 20 historical events and 40 choices");
+            var current = ReleasedFirstPlayableEventCatalog.CreateArchive(
+                FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
+            var original = EventCatalogFingerprint.Compute(
+                FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
+            Assert(baseline.Fingerprint == original &&
+                current.Current.Fingerprint == original &&
+                current.LegacyBaseline.Fingerprint == original,
+                "first-playable historical snapshot has drifted from released authored roster");
+            var evolved = FirstPlayableEventContent.Definitions.ToArray();
+            var first = evolved[0];
+            evolved[0] = new GameEventDefinition(first.Id, first.CategoryId,
+                first.MinimumYear, first.MinimumStage, first.Weight + 1,
+                first.CooldownDays, first.MaxOccurrences, first.WindowPeriodDays,
+                first.WindowOffsetDays, first.RequiredTags, first.ForbiddenTags,
+                first.Choices, first.TitleKey, first.BodyKey);
+            var archive = ReleasedFirstPlayableEventCatalog.CreateArchive(
+                evolved, FirstPlayableEventContent.Policies);
+            Assert(archive.Current.Fingerprint != baseline.Fingerprint &&
+                archive.LegacyBaseline.Fingerprint == original,
+                "a rebalanced catalog must not mutate the archived released roster");
+            var oldPinned = EventDecisionJournal.New("first-playable-cold", 17);
+            oldPinned.CatalogFingerprint = original;
+            Assert(archive.Resolve(oldPinned).Fingerprint == original,
+                "pinned old first-playable checkpoint must resolve from frozen snapshot");
+            oldPinned.CatalogFingerprint = "";
+            Assert(archive.Resolve(oldPinned).Fingerprint == original,
+                "pre-fingerprint V4 checkpoint must resolve only declared frozen baseline");
+            oldPinned.CatalogFingerprint = archive.Current.Fingerprint;
+            Assert(archive.Resolve(oldPinned).Fingerprint == archive.Current.Fingerprint,
+                "newly pinned V4 checkpoint must resolve to current catalog");
+        });
         Check("M15 archived event catalog replays and continues pinned and legacy V4 saves", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();

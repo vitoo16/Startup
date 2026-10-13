@@ -68,3 +68,10 @@ Initial refactor `75c695652483439a296aae5a5a5e0ddd5e6d90df` reached 0 build warn
 - One immutable `EventCatalogArchive` maps verified authored SHA-256 fingerprints to historical snapshots. Serializer and V4 gateway resolve each run's catalog from the **same archive**; new runs pin current, previous runs retain old content and receipts.
 - A legacy V4 save without a fingerprint always requires the declared historical baseline when the roster evolves. No silent fallback or self-repair is allowed. Ordinary single-catalog setup remains backwards compatible.
 - Next step for shipping: bundle the actual released historical roster(s) as immutable checked assets and inject the archive into production bootstrap. A synthetic test snapshot demonstrates correctness but is not production evidence of the released roster.
+
+
+## Increment 58 — Release asset retention
+
+- Registered independent immutable first-playable event definition/policy baseline, separate from live content. Exactly 20 archived event definitions, 40 archived choices and four policies. **The intentional authored-data snapshot is not duplicate simulation code.**
+- Production V4 opt-in bootstrap injects `EventCatalogArchive` once. Standard V3 bootstrap remains unchanged. Changes to live event content no longer overwrite the archived V4 rules.
+- Separate remaining issue: released Vietnamese localization entries must be retained in immutable history too before changing those strings; fingerprint currently hashes localization keys rather than translated text.
