@@ -15,6 +15,12 @@ namespace StartupLife.Presentation
     public sealed class EventChoiceOverlay : MonoBehaviour
     {
         private const float MinTouchHeight = 96f;
+        private const float RevealDurationSeconds = 0.24f;
+        private const float InitialScale = 0.97f;
+        private CanvasGroup revealGroup = null!;
+        private RectTransform panelRect = null!;
+        private bool revealing;
+        private float revealElapsed;
         private EventV4CommitGateway gateway = null!;
         private ICommandIdSource commandIds = null!;
         private Action refreshCommittedState = null!;
@@ -81,6 +87,7 @@ namespace StartupLife.Presentation
                     displayedTicket = "";
                     uncertainCommand = "";
                     panel.SetActive(false);
+                    ResetReveal();
                     return;
                 }
 
@@ -100,6 +107,7 @@ namespace StartupLife.Presentation
                     // previous ticket's scroll offset.
                     choiceScroll.StopMovement();
                     choiceScroll.verticalNormalizedPosition = 1f;
+                    BeginReveal();
                 }
                 status.SetKey(uncertainCommand.Length > 0 &&
                     uncertainTicket == current.TicketId
@@ -112,10 +120,48 @@ namespace StartupLife.Presentation
                 Debug.LogWarning("Pending event checkpoint unavailable: " + error.Message);
                 panel.SetActive(true);
                 panel.transform.SetAsLastSibling();
+                ResetReveal();
                 pending = null;
                 status.SetKey("event.choice.unavailable");
                 SetButtonsEnabled(false);
             }
+        }
+
+        // Cosmetic reveal only: authoritative pending and CAS writes are never
+        // delayed by a scene animation. The CanvasGroup intercepts touches
+        // beneath the modal, but choices cannot be clicked until reveal ends.
+        private void BeginReveal()
+        {
+            revealing = true;
+            revealElapsed = 0f;
+            revealGroup.alpha = 0.15f;
+            revealGroup.interactable = false;
+            revealGroup.blocksRaycasts = true;
+            panelRect.localScale = Vector3.one * InitialScale;
+        }
+
+        private void LateUpdate()
+        {
+            if (!revealing || panel == null || !panel.activeInHierarchy) return;
+            revealElapsed += Time.unscaledDeltaTime;
+            var normalized = Mathf.Clamp01(revealElapsed / RevealDurationSeconds);
+            var eased = normalized * normalized * (3f - 2f * normalized);
+            revealGroup.alpha = Mathf.Lerp(0.15f, 1f, eased);
+            panelRect.localScale = Vector3.one * Mathf.Lerp(InitialScale, 1f, eased);
+            if (normalized < 1f) return;
+            revealing = false;
+            revealGroup.interactable = true;
+        }
+
+        private void ResetReveal()
+        {
+            revealing = false;
+            revealElapsed = 0f;
+            if (revealGroup == null) return;
+            revealGroup.alpha = 1f;
+            revealGroup.interactable = true;
+            revealGroup.blocksRaycasts = true;
+            if (panelRect != null) panelRect.localScale = Vector3.one;
         }
 
         private static string ChoiceGuidanceKey(EventPendingChoiceSnapshot current)
@@ -212,7 +258,10 @@ namespace StartupLife.Presentation
         private void Build()
         {
             panel = Node("EventChoiceOverlay", transform,
-                typeof(Image), typeof(VerticalLayoutGroup), typeof(LayoutElement));
+                typeof(Image), typeof(VerticalLayoutGroup), typeof(LayoutElement),
+                typeof(CanvasGroup));
+            revealGroup = panel.GetComponent<CanvasGroup>();
+            panelRect = (RectTransform)panel.transform;
             panel.GetComponent<Image>().color = new Color(0.08f, 0.12f, 0.18f, 0.98f);
             panel.GetComponent<LayoutElement>().ignoreLayout = true;
             var rect = (RectTransform)panel.transform;
@@ -248,6 +297,7 @@ namespace StartupLife.Presentation
             storyBody = LocalizedKeyLabel.EnsureFor(storyText);
 
             panel.SetActive(false);
+            ResetReveal();
         }
 
         private ChoiceButton CreateChoiceButton()
