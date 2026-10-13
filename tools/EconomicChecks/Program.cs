@@ -1238,7 +1238,7 @@ internal static class Program
             var compound = FirstPlayableEventContent.Definitions.Single(x =>
                 x.Id == "mentor-workshop-materials").Choices.Single(x =>
                 x.Id == "contribute").Reward;
-            Assert(FirstPlayableEventContent.Definitions.Count == 26 &&
+            Assert(FirstPlayableEventContent.Definitions.Count == 29 &&
                 rewarded.Length == 6 &&
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == 100000L &&
                     x.Reward.CareerXpDelta == 0) &&
