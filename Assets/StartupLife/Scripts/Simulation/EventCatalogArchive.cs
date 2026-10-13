@@ -74,12 +74,13 @@ namespace StartupLife.Simulation
                 throw new ArgumentException("An explicit pre-fingerprint V4 baseline is required.");
             LegacyBaseline = legacyBaseline ?? current;
             var versions = new Dictionary<string, EventCatalogSnapshot>(StringComparer.Ordinal);
-            // When the current authored rules still have the SAME fingerprint
-            // as an already released roster, the published snapshot takes
-            // precedence. Otherwise a text-only StringTable update would
-            // silently rewrite historical stories despite unchanged event IDs.
+            // Published and retained historical content must win over an
+            // editable current roster carrying the same rules fingerprint.
+            // Otherwise a current StringTable text edit could rewrite the
+            // historical event the player originally accepted.
             // A new localized release must carry a new authoring revision.
-            foreach (var snapshot in new[] { LegacyBaseline, Current }.Concat(older))
+            foreach (var snapshot in new[] { LegacyBaseline }.Concat(older)
+                .Concat(new[] { Current }))
             {
                 // Recompute on admission: a purported fingerprint is never an
                 // authority unless the bundled authored roster hashes to it.
