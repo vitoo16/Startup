@@ -170,7 +170,7 @@ internal static class Program
         var prepared = EventDecisionJournal.Resolve(offered.Next, stories, categories,
             offered.Next.Revision, "course-prepare", offered.TicketId, "prepare");
         Equal(EventJournalStatus.Resolved, prepared.Status);
-        True(prepared.Next.OutcomeReceipts.Single().GrantedTags
+        Equal(true, prepared.Next.OutcomeReceipts.Single().GrantedTags
             .Contains("event/course-questions-prepared"));
 
         // The course may have completed by the following week: the later
@@ -188,7 +188,7 @@ internal static class Program
         var reviewed = EventDecisionJournal.Resolve(offered.Next, stories, categories,
             offered.Next.Revision, "course-review", offered.TicketId, "review");
         Equal(EventJournalStatus.Resolved, reviewed.Status);
-        True(!reviewed.Next.OutcomeReceipts.Single().GrantedTags
+        Equal(false, reviewed.Next.OutcomeReceipts.Single().GrantedTags
             .Contains("event/course-questions-prepared"));
         var noFollowUp = EventDecisionJournal.Offer(reviewed.Next, stories, categories,
             Context(nextWeek, "character-created"),
