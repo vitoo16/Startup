@@ -75,3 +75,10 @@ Initial refactor `75c695652483439a296aae5a5a5e0ddd5e6d90df` reached 0 build warn
 - Registered independent immutable first-playable event definition/policy baseline, separate from live content. Exactly 20 archived event definitions, 40 archived choices and four policies. **The intentional authored-data snapshot is not duplicate simulation code.**
 - Production V4 opt-in bootstrap injects `EventCatalogArchive` once. Standard V3 bootstrap remains unchanged. Changes to live event content no longer overwrite the archived V4 rules.
 - Separate remaining issue: released Vietnamese localization entries must be retained in immutable history too before changing those strings; fingerprint currently hashes localization keys rather than translated text.
+
+
+## Increment 59 — Historical Vietnamese localization copy is intentional data retention
+
+- The first-playable release now preserves its **80 exact Vietnamese title/body/choice strings** alongside the immutable authored rules. Current Unity StringTable updates are not permitted to rewrite what a historical V4 ticket displayed.
+- Historical translation data intentionally repeats old user-facing copy (versioned release contract), **not gameplay source**. The runtime UI still uses the same localized TMP components; only the authoritative source changes when displaying an archived event.
+- User-requested code-first mode: Unity and engine-free tests deferred, no PASS inferred. Technical debt to validate: historical literal→current localized label state transition, mobile overflow and future-release Vietnamese archives.

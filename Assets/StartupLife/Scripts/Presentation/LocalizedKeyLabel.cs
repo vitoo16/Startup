@@ -9,6 +9,7 @@ namespace StartupLife.Presentation
         public const string Table = "FirstPlayableUI";
 
         [SerializeField] private LocalizeStringEvent localizer;
+        private TMP_Text target;
 
         internal static LocalizedKeyLabel EnsureFor(TMP_Text text)
         {
@@ -24,6 +25,7 @@ namespace StartupLife.Presentation
 
             if (!label) label = text.gameObject.AddComponent<LocalizedKeyLabel>();
             label.localizer = localizer;
+            label.target = text;
             return label;
         }
 
@@ -31,7 +33,19 @@ namespace StartupLife.Presentation
         {
             if (!localizer) throw new MissingReferenceException("LocalizedKeyLabel requires a LocalizeStringEvent.");
             localizer.StringReference.SetReference(Table, key);
+            if (!localizer.enabled) localizer.enabled = true;
             localizer.StringReference.RefreshString();
+        }
+
+        // Use only for a verified, immutable historical release snapshot.
+        // Disabling Unity's asynchronous updater prevents current StringTables
+        // from overwriting the originally published Vietnamese story text.
+        public void SetFrozenVietnamese(string value)
+        {
+            if (!localizer || !target || string.IsNullOrWhiteSpace(value))
+                throw new MissingReferenceException("Frozen event text requires a localized TMP label.");
+            localizer.enabled = false;
+            target.SetText(value);
         }
     }
 }

@@ -80,10 +80,10 @@ namespace StartupLife.Presentation
                 }
 
                 pending = current;
-                heading.SetKey(current.TitleKey.Length > 0
-                    ? current.TitleKey : "event.choice.title");
-                storyBody.SetKey(current.BodyKey.Length > 0
-                    ? current.BodyKey : "event.choice.prompt");
+                DisplayEventText(heading, current,
+                    current.TitleKey.Length > 0 ? current.TitleKey : "event.choice.title");
+                DisplayEventText(storyBody, current,
+                    current.BodyKey.Length > 0 ? current.BodyKey : "event.choice.prompt");
                 panel.SetActive(true);
                 panel.transform.SetAsLastSibling();
                 if (displayedTicket != current.TicketId)
@@ -169,10 +169,18 @@ namespace StartupLife.Presentation
                 slot.Button.gameObject.SetActive(true);
                 slot.Button.onClick.RemoveAllListeners();
                 slot.Button.onClick.AddListener(() => Resolve(id));
-                slot.Label.SetKey(choice.Choices[i].LabelKey);
+                DisplayEventText(slot.Label, choice, choice.Choices[i].LabelKey);
             }
             for (var i = choice.Choices.Count; i < buttons.Count; i++)
                 buttons[i].Button.gameObject.SetActive(false);
+        }
+
+        private static void DisplayEventText(LocalizedKeyLabel label,
+            EventPendingChoiceSnapshot choice, string key)
+        {
+            if (choice.ArchivedVietnamese.TryGetValue(key, out var original))
+                label.SetFrozenVietnamese(original);
+            else label.SetKey(key);
         }
 
         private void SetButtonsEnabled(bool enabled)

@@ -201,7 +201,7 @@ namespace StartupLife.Simulation
                 new EventCategoryPolicy("career", 3, 7, 1),
                 new EventCategoryPolicy("study", 3, 7, 1),
                 new EventCategoryPolicy("business", 3, 7, 1)
-            });
+            }, ReleasedFirstPlayableEventCopy.Vietnamese);
 
         public static EventCatalogSnapshot LegacyBaseline => BaselineValue;
 

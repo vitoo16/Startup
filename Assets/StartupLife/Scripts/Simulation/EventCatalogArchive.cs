@@ -15,9 +15,13 @@ namespace StartupLife.Simulation
         public IReadOnlyList<GameEventDefinition> Definitions { get; }
         public IReadOnlyList<EventCategoryPolicy> Policies { get; }
         public string Fingerprint { get; }
+        // Empty for the current Unity StringTable-driven roster; bundled
+        // historical releases carry immutable Vietnamese render copy.
+        public IReadOnlyDictionary<string, string> VietnameseText { get; }
 
         public EventCatalogSnapshot(IEnumerable<GameEventDefinition> definitions,
-            IEnumerable<EventCategoryPolicy> policies)
+            IEnumerable<EventCategoryPolicy> policies,
+            IEnumerable<KeyValuePair<string, string>>? archivedVietnamese = null)
         {
             if (definitions == null || policies == null)
                 throw new ArgumentNullException("An event catalog snapshot needs both rosters.");
@@ -26,6 +30,26 @@ namespace StartupLife.Simulation
             EventDecisionJournal.Validate(EventDecisionJournal.New("catalog-archive", 1),
                 Definitions, Policies);
             Fingerprint = EventCatalogFingerprint.Compute(Definitions, Policies);
+
+            var texts = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (archivedVietnamese != null)
+            {
+                foreach (var entry in archivedVietnamese)
+                    if (string.IsNullOrWhiteSpace(entry.Key) ||
+                        string.IsNullOrWhiteSpace(entry.Value) ||
+                        !texts.TryAdd(entry.Key, entry.Value))
+                        throw new ArgumentException("Duplicate or empty archived Vietnamese event text.");
+                // A partial translation bundle must never appear to be an
+                // authoritative frozen release snapshot.
+                foreach (var definition in Definitions)
+                {
+                    if (!texts.ContainsKey(definition.TitleKey) ||
+                        !texts.ContainsKey(definition.BodyKey) ||
+                        definition.Choices.Any(choice => !texts.ContainsKey(choice.LabelKey)))
+                        throw new ArgumentException("Missing archived Vietnamese event text.");
+                }
+            }
+            VietnameseText = new ReadOnlyDictionary<string, string>(texts);
         }
     }
 
