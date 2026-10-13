@@ -87,6 +87,82 @@ internal static class Program
                 EventDecisionJournal.Resolve(offered.Next, defs, policies,
                     offered.Next.Revision, "resolve-tag", offered.TicketId, "decline").Status);
         });
+        Check("M15 native time-cost plans honor actual free minutes and retain legacy fingerprints", () =>
+        {
+            var content = Catalog();
+            var origin = new SimDate(2026, 10, 1);
+            var state = GameSession.NewState(content, "time-preview-run", 10929UL, origin);
+            state.Name = "Time Contract";
+            state.SaveVersion = 4;
+            state.Minute = content.Schedule.WakeMinute;
+            var reward = new EventChoiceReward(0, 0, 60);
+            var free = new EventChoiceDefinition("defer", "event.defer", "time.defer");
+            var spend = new EventChoiceDefinition("spend", "event.spend",
+                "time.spend", reward: reward);
+            var definition = new GameEventDefinition("time-opportunity", "life",
+                2026, 0, 1, 0, 1, 1, 0, Array.Empty<string>(),
+                Array.Empty<string>(), new[] { spend, free });
+            var policies = new[] { new EventCategoryPolicy("life", 0, 7, 1) };
+            True(EventDecisionJournal.RewardUnavailableReason(state, reward, content) == "");
+            Equal("event.choice.time_unavailable",
+                EventDecisionJournal.RewardUnavailableReason(state, reward));
+            state.Minute = content.Schedule.SleepMinute - 59;
+            Equal("event.choice.time_unavailable",
+                EventDecisionJournal.RewardUnavailableReason(state, reward, content));
+            state.Minute = content.Schedule.SleepMinute - 60;
+            Equal("", EventDecisionJournal.RewardUnavailableReason(state, reward, content));
+            var offered = EventDecisionJournal.Offer(
+                EventDecisionJournal.New(state.RunId, 9127), new[] { definition },
+                policies, new GameEventContext(origin, origin, 0,
+                    Array.Empty<string>(), Array.Empty<EventOccurrence>()),
+                0, "time-offer", 0);
+            Equal(EventJournalStatus.Offered, offered.Status);
+            state.EventV4 = new EventV4Payload { Journal = offered.Next };
+            state.EventRng = offered.Next.EventRng;
+            state.Revision = offered.Next.Revision;
+            state.PendingChoiceId = offered.TicketId;
+            var plan = EventDecisionJournal.PlanReward(state, new[] { definition },
+                policies, "time-resolve", offered.TicketId, "spend", content);
+            Equal(60, plan.MinutesConsumed);
+            Equal(60, plan.ToCoreCommand().Amount);
+            var receipt = new CommandReceipt
+            {
+                CommandId = plan.CoreReceiptCommandId,
+                Payload = plan.ToCoreCommand().CanonicalPayload,
+                Revision = plan.CoreRevision,
+                OperationId = "time-proof",
+                Cue = "event.resolved",
+                MinutesConsumed = 60
+            };
+            True(plan.MatchesCoreReceipt(receipt));
+            receipt.MinutesConsumed = 0;
+            True(!plan.MatchesCoreReceipt(receipt));
+            state.Minute++;
+            Throws(() => EventDecisionJournal.PlanReward(state,
+                new[] { definition }, policies, "time-retry", offered.TicketId,
+                "spend", content));
+            var noTime = new GameEventDefinition("time-opportunity", "life",
+                2026, 0, 1, 0, 1, 1, 0, Array.Empty<string>(),
+                Array.Empty<string>(), new[]
+                {
+                    new EventChoiceDefinition("spend", "event.spend", "time.spend",
+                        reward: new EventChoiceReward(1, 0)),
+                    free
+                });
+            var oldHash = EventCatalogFingerprint.Compute(new[] { noTime }, policies);
+            var zeroHash = EventCatalogFingerprint.Compute(new[]
+            {
+                new GameEventDefinition("time-opportunity", "life", 2026,
+                    0, 1, 0, 1, 1, 0, Array.Empty<string>(),
+                    Array.Empty<string>(), new[]
+                    {
+                        new EventChoiceDefinition("spend", "event.spend", "time.spend",
+                            reward: new EventChoiceReward(1, 0, 0)), free
+                    })
+            }, policies);
+            Equal(oldHash, zeroHash);
+            True(EventCatalogFingerprint.Compute(new[] { definition }, policies) != oldHash);
+        });
         Check("M15 payout plan binds exact pending V4 ticket, authored choice, and V3 frontier", () =>
         {
             var bonus = new EventChoiceDefinition("take-bonus", "event.take",
