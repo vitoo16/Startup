@@ -205,7 +205,8 @@ namespace StartupLife.Integration
                 var resolved = newJournal.Tickets[newJournal.Tickets.Count - 1];
                 var plan = EventDecisionJournal.PlanReward(before,
                     catalog.Definitions, catalog.Policies,
-                    resolved.ResolutionCommandId, resolved.Id, resolved.ChoiceId);
+                    resolved.ResolutionCommandId, resolved.Id, resolved.ChoiceId,
+                    v3.Content);
                 var plannedOutcome = EventDecisionJournal.StagePlannedRewardResolution(
                     oldJournal, catalog.Definitions, catalog.Policies, plan);
                 if (plannedOutcome.Status != EventJournalStatus.Resolved ||
