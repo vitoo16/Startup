@@ -12,13 +12,13 @@ Before modifying code, scenes, prefabs, ScriptableObjects or production assets:
 
 **No skill = no implementation.**
 
-## Current Technical Director directive (updated 2026-10-13)
+## Current Technical Director directive (updated 2026-10-14)
 
 - Technical Director/implementation and asset-production owner: **GPT-6** in this project. Gemini is **not** an asset author or default implementation dependency.
-- Finish MVP implementation before the consolidated Unity runtime/visual/device QA pass. Continue using engine-free CI, deterministic economy/save tests, and static Unity contract checks on each source revision. **Never label deferred Unity execution as PASS or mark a milestone CLOSED without its required proof.**
+- **Production-first decision (owner, 2026-10-14):** The active execution roadmap is `docs/PRODUCTION_EXECUTION_ROADMAP.md`. Build toward a quality-gated commercial release, **not "finish MVP first"**. `MVP_PLAN.md` and `IMPLEMENTATION_PLAN_MVP.md` remain historical engineering references. Unity runtime, visual and device QA are now integrated progressive production gates (rather than one final batch). Keep engine-free CI on code revisions. **Never label missing Unity/device evidence PASS or close a milestone without proof.**
 - Design for clean assembly boundaries and reusable components. No new gameplay-engine copy per save schema, no hidden gameplay balance values in UI, no unnecessary duplicate code, no magic IDs or undeclared coupling. Immutable historical replay implementations are a justified exception.
-- Production character motion must use **articulated cutout/skeletal rigs and genuine pose/limb animation**, reusable clip/state transitions and fitting interactions. Sliding a rigid whole-body sprite is not acceptable character-walk animation.
-- Golden asset workflow remains spec -> generated candidate -> art direction/cleanup -> layered/rig-ready source -> Unity import -> animation -> final visual/device QA. Do not treat a flattened concept render as a production rig or an imported sprite as a finished animated character.
+- **New visual target: original cute pixel art** with contemporary Vietnamese identity per `docs/PRODUCTION_PIXEL_STYLE_CONTRACT.md`. Existing M13 non-pixel Unity style spec remains the active technical contract only until the explicit W03 style/validator migration succeeds. Characters require reusable articulated pixel cutout/skeletal rigs or verified joint-moving replacement-pose sprites and genuine limb motion; rigid whole-body translation is not walk animation.
+- Golden asset workflow: original brief -> provenance/right-to-use evidence -> distinct candidates -> independent originality review -> layered/rig-ready source -> Unity import -> real motion -> device BeautyCell -> art approval -> registry. Follow `docs/PRODUCTION_ASSET_IP_POLICY.md`. No generator may self-approve; no claim of absolute worldwide uniqueness is possible or accepted as proof.
 - Owner explicitly authorized merging M15 continuation via PR #54 on 2026-10-13 and requested subsequent implementation **directly on `main`**. Do not move work back to a feature branch without a newer owner instruction. Inspect the remote `main` HEAD before every write; use a current blob SHA/optimistic branch lease to avoid overwriting others. A merge is not a milestone closure; retain failed/deferred evidence and keep test/visual gates truthful.
 
 ## Project invariants
@@ -37,6 +37,7 @@ Before modifying code, scenes, prefabs, ScriptableObjects or production assets:
 - Balance values belong in data/config, never presentation code.
 - Save schema changes require migration coverage.
 - Raw generated art must never be referenced by production scenes.
+- Shipping visual/audio/fonts/UI must pass independent originality, commercial licensing and provenance clearance; documentation or static CI alone never approves an asset.
 - Vietnamese-facing visual content must load `vietnam-art-direction`.
 
 ## Required session closeout
@@ -54,14 +55,13 @@ Files changed:
 Do not mark a milestone item complete without verification evidence.
 
 ## Model ownership
-- Astra: architecture, cross-system design, escalation, milestone audit.
-- GPT-5.6 Sol: default Unity implementation owner.
-- Gemini 3.8 Flash High: high-volume content/analysis worker; no architecture authority.
-- Dedicated image-generation model: renders source imagery; does not approve production assets.
+- GPT-6: current Technical Director, architecture + implementation owner on `main` unless an owner instruction changes this.
+- Other assistants/models may review or draft under delegated tasks, but are not required authorities and may not merge or self-approve artwork.
+- Independent human artistic/IP reviewers approve shipping assets; a model used to generate imagery never approves its own output.
 
 ## Parallel editing
 Never allow two agents to modify the same Unity scene/prefab/system concurrently.
-Use separate branches/worktrees and domain ownership.
+Use non-overlapping file ownership and serializable SHA-checked writes on owner-authorized `main`; separate worktrees only when explicitly coordinated.
 
 ## Art
 Production art pipeline:
