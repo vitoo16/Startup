@@ -206,6 +206,9 @@ namespace StartupLife.Editor
             var bootstrap = UnityEngine.Object.FindAnyObjectByType<StartupLifeBootstrapper>();
             if (!bootstrap) throw new InvalidOperationException("FirstPlayable composition root is missing.");
             Assign(bootstrap, "contentAsset", content);
+            // Upgrading an existing scene must also opt into the verified V4
+            // gateway; regenerating from scratch and upgrading agree.
+            Assign(bootstrap, "enableVerifiedEventV4", true);
             foreach (var text in UnityEngine.Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
                 text.font = font;
