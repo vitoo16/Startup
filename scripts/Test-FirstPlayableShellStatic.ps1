@@ -56,7 +56,12 @@ Add-Check 'Bootstrap restores before creating a new run' ($bootstrap -match 'Gam
 Add-Check 'Bootstrap does not hardcode first playable catalog' (-not ($bootstrap -match 'FirstPlayableContentTemplate|new\s+ContentCatalog')) 'Presentation must consume Content asset'
 Add-Check 'M15 first playable event gateway is activated consistently' (
     ($bootstrap -match '\[SerializeField\]\s+private\s+bool\s+enableVerifiedEventV4\s*=\s*true\s*;') -and
-    ($firstPlayableScene -match '(?m)^\s*enableVerifiedEventV4:\s*1\s*
+    ($firstPlayableScene -match '(?m)^\s*enableVerifiedEventV4:\s*1\s*$') -and
+    (([regex]::Matches($builder, 'Assign\(bootstrap,\s*"enableVerifiedEventV4",\s*true\)')).Count -eq 2) -and
+    ($bootstrap -match 'new\s+EventV4CommitGateway') -and
+    ($bootstrap -match 'new\s+EventV4GameCommands') -and
+    ($bootstrap -match 'new\s+FirstPlayableFlow\(eventCommands,\s*commandIds\)'))
+    'Built scene, regenerated scene and bootstrap must route events through verified V4 CAS'
 
 $businessCommandNames = @('LaunchBusiness','PauseBusiness','ResumeBusiness',
     'SetBusinessPricing','ReinvestBusiness','CloseBusiness')
