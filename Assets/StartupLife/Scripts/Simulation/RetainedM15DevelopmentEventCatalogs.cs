@@ -7,7 +7,7 @@ using StartupLife.Core;
 namespace StartupLife.Simulation
 {
     // Immutable authoring deltas for pinned developer V4 checkpoints created
-    // before the current post-29-story roster. These are retained data, NOT a second event
+    // before the current post-33-story roster. These are retained data, NOT a second event
     // selector, reward executor or replay engine. Do not source old text from
     // FirstPlayableEventContent or live Unity StringTables.
     //
@@ -16,6 +16,7 @@ namespace StartupLife.Simulation
     // 23 stories: b385148dd4e62f7554fb17554b623ea1d87b1fac
     // 26 stories: 8d56ee240759d027cd35a5c8ea546117f9561703
     // 29 stories: debcb79e89de3b3e572cd00e25e7c5d8b5809a29
+    // 33 stories: de3d7a23650340b7df0129634349b9cea5337e22
     public static class RetainedM15DevelopmentEventCatalogs
     {
         private static readonly GameEventDefinition[] AddedDefinitions =
@@ -68,7 +69,31 @@ namespace StartupLife.Simulation
                 Choice("mentor-workshop-reflection", "share", null,
                     "event/workshop-notes-shared"),
                 Choice("mentor-workshop-reflection", "reflect", null,
-                    "event/workshop-self-review"))
+                    "event/workshop-self-review")),
+            Event("delivery-incident", "business", 2, 5,
+                new[] { "business-active", "event/customer-care-reviewed" },
+                Choice("delivery-incident", "support",
+                    new EventChoiceReward(-90_000L, 0), "event/delivery-support"),
+                Choice("delivery-incident", "coordinate", null,
+                    "event/delivery-recovery-contact")),
+            Event("delivery-incident-follow-up", "business", 2, 6,
+                new[] { "business-active", "event/delivery-recovery-contact" },
+                Choice("delivery-incident-follow-up", "schedule", null,
+                    "event/delivery-recovery-agreed"),
+                Choice("delivery-incident-follow-up", "review", null,
+                    "event/delivery-process-reviewed")),
+            Event("supplier-backorder", "business", 2, 5,
+                new[] { "business-active", "event/packaging-reviewed" },
+                Choice("supplier-backorder", "reserve",
+                    new EventChoiceReward(-120_000L, 0), "event/supply-alternative-reserved"),
+                Choice("supplier-backorder", "source", null,
+                    "event/supply-recovery-contact")),
+            Event("supplier-backorder-follow-up", "business", 2, 6,
+                new[] { "business-active", "event/supply-recovery-contact" },
+                Choice("supplier-backorder-follow-up", "compare", null,
+                    "event/supply-options-compared"),
+                Choice("supplier-backorder-follow-up", "defer", null,
+                    "event/supply-options-deferred"))
         };
 
         // Each historical event has exactly four retained Vietnamese keys:
@@ -110,17 +135,33 @@ namespace StartupLife.Simulation
             Text("mentor-workshop-reflection", "title", "Ứng dụng bài học tại nơi làm việc"),
             Text("mentor-workshop-reflection", "body", "Sau buổi trao đổi, bạn có dịp cùng đồng nghiệp nhìn lại một tình huống phối hợp trong dự án."),
             Text("mentor-workshop-reflection", "choice.share", "Chia sẻ ghi chú thực hành"),
-            Text("mentor-workshop-reflection", "choice.reflect", "Tự ôn lại bài học")
+            Text("mentor-workshop-reflection", "choice.reflect", "Tự ôn lại bài học"),
+            Text("delivery-incident", "title", "Đơn hàng bị giao chậm"),
+            Text("delivery-incident", "body", "Một đơn hàng đến tay khách trễ hơn dự kiến. Khách muốn biết cách cơ sở xử lý để họ có thể tiếp tục yên tâm đặt hàng."),
+            Text("delivery-incident", "choice.support", "Chi 90.000 ₫ hỗ trợ giao lại"),
+            Text("delivery-incident", "choice.coordinate", "Gọi khách và hẹn phương án xử lý"),
+            Text("delivery-incident-follow-up", "title", "Xác nhận phương án giao hàng"),
+            Text("delivery-incident-follow-up", "body", "Sau cuộc gọi, bạn có thể phối hợp lại lịch giao với khách hoặc rà soát bước nhận đơn để hạn chế trễ hẹn."),
+            Text("delivery-incident-follow-up", "choice.schedule", "Thống nhất lại thời điểm giao"),
+            Text("delivery-incident-follow-up", "choice.review", "Rà soát cách nhận và chuyển đơn"),
+            Text("supplier-backorder", "title", "Lô hàng đóng gói đến muộn"),
+            Text("supplier-backorder", "body", "Nhà cung cấp báo thiếu một số mẫu đóng gói đã chọn. Bạn cân nhắc đặt bộ thay thế hoặc tìm nguồn khác để tránh phụ thuộc vào một đối tác."),
+            Text("supplier-backorder", "choice.reserve", "Chi 120.000 ₫ đặt bộ mẫu thay thế"),
+            Text("supplier-backorder", "choice.source", "Trao đổi với nguồn hàng khác, chưa đặt tiền"),
+            Text("supplier-backorder-follow-up", "title", "Tìm phương án nguồn hàng dự phòng"),
+            Text("supplier-backorder-follow-up", "body", "Một đơn vị khác gửi thông tin về quy cách và lịch giao. Bạn có thể so sánh trước khi quyết định có đặt hàng hay không."),
+            Text("supplier-backorder-follow-up", "choice.compare", "So sánh quy cách và điều kiện giao"),
+            Text("supplier-backorder-follow-up", "choice.defer", "Theo dõi thêm, không cam kết mua")
         };
 
         public static IReadOnlyList<EventCatalogSnapshot> Create(EventCatalogSnapshot released)
         {
             if (released == null || released.Definitions.Count != 20 ||
                 released.VietnameseText.Count != 80 ||
-                AddedDefinitions.Length != 9 || AddedVietnamese.Length != 36)
+                AddedDefinitions.Length != 13 || AddedVietnamese.Length != 52)
                 throw new ArgumentException("The frozen first-playable archive is required.");
 
-            var counts = new[] { 2, 3, 6, 9 };
+            var counts = new[] { 2, 3, 6, 9, 13 };
             var versions = new EventCatalogSnapshot[counts.Length];
             for (var i = 0; i < counts.Length; i++)
             {
