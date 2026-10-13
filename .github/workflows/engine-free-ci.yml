@@ -71,6 +71,11 @@ jobs:
       - name: Validate M13 Golden art contracts (no Unity runtime)
         run: python3 scripts/Validate-GoldenArt.py
 
+      - name: Validate asset provenance and approval join (no legal clearance implied)
+        run: |
+          python3 scripts/Validate-AssetProvenance.py
+          python3 -m unittest discover -s tools/AssetProvenanceChecks -p 'test_*.py' -v
+
       - name: Run engine-free simulation regression suite
         shell: pwsh
         run: |
