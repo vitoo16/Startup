@@ -92,7 +92,7 @@ namespace StartupLife.Tests.EditMode
             Assert.That(released.VietnameseText.Count, Is.EqualTo(80));
             Assert.That(released.Definitions.Any(x => x.Id == "local-promotion-print"),
                 Is.False);
-            Assert.That(FirstPlayableEventContent.Definitions.Count, Is.EqualTo(26));
+            Assert.That(FirstPlayableEventContent.Definitions.Count, Is.EqualTo(29));
             Assert.That(EventCatalogFingerprint.Compute(
                 FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies),
                 Is.Not.EqualTo(released.Fingerprint));
