@@ -1215,6 +1215,142 @@ internal static class Program
         });
 
 
+        Check("M15 archived event catalog replays and continues pinned and legacy V4 saves", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var history = new BundledHistoricalV2ContentResolver();
+            var coreReplay = new VersionedReceiptReplay();
+            var v3 = new V3SaveCompatibilitySerializer(content, GameSession.CreateRestoreValidator(),
+                new V2ToV3Migration(history, coreReplay),
+                new StagedV3SaveSerializer(history, coreReplay));
+            var policy = new[] { new EventCategoryPolicy("life", 0, 7, 3) };
+            var oldDefinitions = new[] { new GameEventDefinition("archived-story", "life",
+                2026, 0, 1, 0, 4, 7, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("accept", "event.old.accept", "outcome.accept") },
+                "event.old.title", "event.old.body") };
+            var currentDefinitions = new[] { new GameEventDefinition("archived-story", "life",
+                2026, 0, 3, 0, 4, 7, 0, Array.Empty<string>(), Array.Empty<string>(),
+                new[] { new EventChoiceDefinition("accept", "event.new.accept", "outcome.accept") },
+                "event.new.title", "event.new.body") };
+            var old = new EventCatalogSnapshot(oldDefinitions, policy);
+            var currentCatalog = new EventCatalogSnapshot(currentDefinitions, policy);
+            Assert(old.Fingerprint != currentCatalog.Fingerprint,
+                "a different event weight or narrative must change the catalog identity");
+            Throws<ArgumentException>(() => new EventCatalogArchive(currentCatalog,
+                new[] { old }), "explicit unpinned baseline required");
+            var archive = new EventCatalogArchive(currentCatalog, new[] { old },
+                legacyBaseline: old);
+            var stage = new StagedEventV4SaveSerializer(v3, archive);
+            var active = new EventV4CompatibilitySerializer(stage);
+            var oldStage = new StagedEventV4SaveSerializer(v3, oldDefinitions, policy);
+            var initial = GameSession.NewState(content, "m15-archive-run", 314159UL,
+                new SimDate(2026, 10, 1));
+            var v2Bytes = JsonSaveSerializer.Wrap(JsonSaveSerializer.WriteObject(initial), 2, 0);
+            var oldMigrated = oldStage.MigrateVerified(v2Bytes);
+            Assert(oldMigrated.Status == LoadStatus.Valid && oldMigrated.Payload?.Journal != null,
+                "old V3-to-V4 migration is required");
+            var offer = EventDecisionJournal.Offer(oldMigrated.Payload!.Journal!,
+                oldDefinitions, policy,
+                new GameEventContext(initial.Date, initial.Date, 0,
+                    Array.Empty<string>(), Array.Empty<EventOccurrence>()),
+                0, "archive-offer", oldMigrated.CoreState!.Revision);
+            Assert(offer.Status == EventJournalStatus.Offered,
+                "old roster should have created a pending event");
+            oldMigrated.Payload.Journal = offer.Next;
+            var oldWire = oldStage.SerializeVerified(oldMigrated.Payload);
+            Assert(stage.DeserializeVerified(oldWire).Status == LoadStatus.Valid &&
+                new StagedEventV4SaveSerializer(v3, currentDefinitions, policy)
+                    .DeserializeVerified(oldWire).Status == LoadStatus.UnsupportedContent,
+                "archived catalog must restore a run refused by current content alone");
+
+            var folder = Path.Combine(Path.GetTempPath(),
+                "m15-event-archive-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            var path = Path.Combine(folder, "game.save");
+            try
+            {
+                File.WriteAllBytes(path, oldWire);
+                EventV4CommitGateway Cold() => new EventV4CommitGateway(active,
+                    new AtomicFileSaveStore(path, active), currentDefinitions, policy);
+                var pending = Cold().ReadPendingChoice();
+                Assert(pending != null && pending.TitleKey == "event.old.title" &&
+                    pending.BodyKey == "event.old.body" &&
+                    pending.Choices.Single().LabelKey == "event.old.accept",
+                    "archived UI choice must not present newly authored option text");
+                var bytes = File.ReadAllBytes(path);
+                Assert(Cold().Read().Status == LoadStatus.Valid &&
+                    File.ReadAllBytes(path).SequenceEqual(bytes),
+                    "cold restore of pinned historical checkpoint must remain read-only");
+                var result = Cold().Resolve(initial.RunId, "archive-resolve",
+                    pending!.Revision, pending.TicketId, "accept");
+                Assert(result.Status == EventCommitStatus.Committed &&
+                    Cold().Read().Status == LoadStatus.Valid &&
+                    Cold().Read().State!.EventV4!.Journal!.CatalogFingerprint == old.Fingerprint,
+                    "historical resolution must commit with old catalog and retain its fingerprint");
+                var committed = File.ReadAllBytes(path);
+                Assert(Cold().Resolve(initial.RunId, "archive-resolve",
+                    pending.Revision, pending.TicketId, "accept").Status ==
+                    EventCommitStatus.AlreadyCommitted &&
+                    committed.SequenceEqual(File.ReadAllBytes(path)),
+                    "historical resolution retry may not rewrite the checkpoint");
+
+                // Explicit legacy baseline applies ONLY to earlier V4 wires that
+                // contain no fingerprint. Never guess based on saved event IDs.
+                var envelope = JsonSaveSerializer.ReadObject<SaveEnvelope>(oldWire);
+                using var document = JsonDocument.Parse(
+                    Convert.FromBase64String(envelope.PayloadBase64));
+                using var stream = new MemoryStream();
+                using (var writer = new Utf8JsonWriter(stream))
+                {
+                    writer.WriteStartObject();
+                    foreach (var field in document.RootElement.EnumerateObject())
+                    {
+                        if (field.Name != "Journal") { field.WriteTo(writer); continue; }
+                        writer.WritePropertyName(field.Name);
+                        writer.WriteStartObject();
+                        foreach (var member in field.Value.EnumerateObject())
+                            if (member.Name != "CatalogFingerprint") member.WriteTo(writer);
+                        writer.WriteEndObject();
+                    }
+                    writer.WriteEndObject();
+                }
+                var legacyWire = JsonSaveSerializer.Wrap(stream.ToArray(), 4,
+                    envelope.Generation);
+                File.WriteAllBytes(path, legacyWire);
+                Assert(Cold().Read().Status == LoadStatus.Valid &&
+                    Cold().Read().State!.EventV4!.Journal!.CatalogFingerprint == "" &&
+                    File.ReadAllBytes(path).SequenceEqual(legacyWire),
+                    "explicit baseline restores unpinned V4 without rewriting source");
+                var legacyPending = Cold().ReadPendingChoice();
+                Assert(legacyPending != null &&
+                    legacyPending.TitleKey == "event.old.title",
+                    "unpinned legacy choice must use declared historical baseline");
+                var legacyResolved = Cold().Resolve(initial.RunId, "archive-legacy-resolve",
+                    legacyPending!.Revision, legacyPending.TicketId, "accept");
+                Assert(legacyResolved.Status == EventCommitStatus.Committed &&
+                    Cold().Read().State!.EventV4!.Journal!.CatalogFingerprint == "",
+                    "legacy CAS continuation must retain the unpinned roster designation");
+                var promotedLegacy = File.ReadAllBytes(path);
+                Assert(Cold().Resolve(initial.RunId, "archive-legacy-resolve",
+                    legacyPending.Revision, legacyPending.TicketId, "accept").Status ==
+                    EventCommitStatus.AlreadyCommitted &&
+                    promotedLegacy.SequenceEqual(File.ReadAllBytes(path)),
+                    "legacy retry must not change original outcome");
+
+                // A brand-new run always pins CURRENT, never the archival baseline.
+                var newMigration = stage.MigrateVerified(v2Bytes);
+                Assert(newMigration.Status == LoadStatus.Valid &&
+                    newMigration.Payload?.Journal?.CatalogFingerprint ==
+                    currentCatalog.Fingerprint,
+                    "new V4 runs must use current authored roster");
+            }
+            finally
+            {
+                try { Directory.Delete(folder, true); }
+                catch (IOException) { }
+            }
+        });
+
         Check("M15 authored Vietnamese event stories survive verified V4 CAS and cold replay", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();

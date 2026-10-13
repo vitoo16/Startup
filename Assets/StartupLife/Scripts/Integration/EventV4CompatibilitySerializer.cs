@@ -53,6 +53,11 @@ namespace StartupLife.Integration
             return validatedWire;
         }
 
+        internal EventCatalogSnapshot CurrentCatalog => staged.CurrentCatalog;
+
+        internal EventCatalogSnapshot ResolveCatalog(EventJournalState journal) =>
+            staged.ResolveCatalog(journal);
+
         public bool IsAuthenticatedRewardTransition(GameState previous, GameState candidate) =>
             staged.IsAuthenticatedRewardTransition(previous, candidate);
 

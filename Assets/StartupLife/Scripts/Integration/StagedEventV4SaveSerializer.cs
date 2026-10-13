@@ -30,22 +30,23 @@ namespace StartupLife.Integration
     public sealed class StagedEventV4SaveSerializer
     {
         private readonly V3SaveCompatibilitySerializer v3;
-        private readonly IReadOnlyList<GameEventDefinition> definitions;
-        private readonly IReadOnlyList<EventCategoryPolicy> policies;
-        private readonly string catalogFingerprint;
+        private readonly EventCatalogArchive catalogs;
 
         public StagedEventV4SaveSerializer(V3SaveCompatibilitySerializer v3,
             IEnumerable<GameEventDefinition> definitions, IEnumerable<EventCategoryPolicy> policies)
+            : this(v3, new EventCatalogArchive(new EventCatalogSnapshot(definitions, policies))) { }
+
+        public StagedEventV4SaveSerializer(V3SaveCompatibilitySerializer v3,
+            EventCatalogArchive catalogs)
         {
             this.v3 = v3 ?? throw new ArgumentNullException(nameof(v3));
-            if (definitions == null || policies == null) throw new ArgumentNullException("event catalog");
-            this.definitions = Array.AsReadOnly(definitions.ToArray());
-            this.policies = Array.AsReadOnly(policies.ToArray());
-            // Validate the authoring roster before accepting any persisted checkpoint.
-            EventDecisionJournal.Validate(EventDecisionJournal.New("catalog-validation", 1),
-                this.definitions, this.policies);
-            catalogFingerprint = EventCatalogFingerprint.Compute(this.definitions, this.policies);
+            this.catalogs = catalogs ?? throw new ArgumentNullException(nameof(catalogs));
         }
+
+        internal EventCatalogSnapshot CurrentCatalog => catalogs.Current;
+
+        internal EventCatalogSnapshot ResolveCatalog(EventJournalState journal) =>
+            catalogs.Resolve(journal);
 
         // Historical migration is in-memory only; never rewrites the user's store.
         public StagedEventV4LoadResult MigrateVerified(byte[] envelopeBytes)
@@ -98,7 +99,7 @@ namespace StartupLife.Integration
         {
             var result = journal == null
                 ? v3.DeserializeAndValidate(envelope)
-                : new V4ScopedCoreSerializer(v3, journal, definitions)
+                : new V4ScopedCoreSerializer(v3, journal, ResolveCatalog(journal).Definitions)
                     .DeserializeAndValidate(envelope);
             if (result.Status != LoadStatus.Valid || result.State == null ||
                 result.State.SaveVersion != 3)
@@ -122,7 +123,7 @@ namespace StartupLife.Integration
                 throw new ArgumentException("A verified V3 migration origin is required.");
             var journal = EventDecisionJournal.New(core.RunId, core.EventRng);
             journal.OriginDateIso = activation.MigratedAtDateIso;
-            journal.CatalogFingerprint = catalogFingerprint;
+            journal.CatalogFingerprint = catalogs.Current.Fingerprint;
             return new EventV4Payload
             {
                 EmbeddedV3EnvelopeBase64 = Convert.ToBase64String(verifiedV3Envelope),
@@ -196,11 +197,17 @@ namespace StartupLife.Integration
                     newJournal.Tickets.Count != oldJournal.Tickets.Count)
                     return false;
 
+                // A CAS transition may not silently change the active run's
+                // pinned roster, even when both individual envelopes replay.
+                if (oldJournal.CatalogFingerprint != newJournal.CatalogFingerprint)
+                    return false;
+                var catalog = ResolveCatalog(oldJournal);
                 var resolved = newJournal.Tickets[newJournal.Tickets.Count - 1];
-                var plan = EventDecisionJournal.PlanReward(before, definitions, policies,
+                var plan = EventDecisionJournal.PlanReward(before,
+                    catalog.Definitions, catalog.Policies,
                     resolved.ResolutionCommandId, resolved.Id, resolved.ChoiceId);
                 var plannedOutcome = EventDecisionJournal.StagePlannedRewardResolution(
-                    oldJournal, definitions, policies, plan);
+                    oldJournal, catalog.Definitions, catalog.Policies, plan);
                 if (plannedOutcome.Status != EventJournalStatus.Resolved ||
                     plan.GlobalRevision != after.Revision ||
                     plan.CoreRevision != after.Receipts.Count ||
@@ -238,17 +245,9 @@ namespace StartupLife.Integration
                 string.IsNullOrEmpty(payload.EmbeddedV3EnvelopeSha256) ||
                 payload.Journal == null)
                 throw new ArgumentException("Incomplete event v4 wire payload.");
-            // Reject pinned-but-missing historical authored content as an
-            // availability problem, never a corrupted save or a fresh RNG roll.
-            // Legacy pre-fingerprint V4 journals are left untouched; they still
-            // require their original roster for reliable historical replay.
-            if (payload.Journal.CatalogFingerprint == null)
-                throw new ArgumentException("Null V4 event catalog identity.");
-            if (payload.Journal.CatalogFingerprint.Length > 0 &&
-                (!EventCatalogFingerprint.IsWellFormed(payload.Journal.CatalogFingerprint) ||
-                 payload.Journal.CatalogFingerprint != catalogFingerprint))
-                throw new ContentCompatibilityException("save.event_catalog_unavailable",
-                    "Pinned V4 event catalog is not available for deterministic replay.");
+            // Resolve ONLY from a registered, immutable authored snapshot.
+            // The exact unpinned V4 baseline must be declared by the caller.
+            var catalog = ResolveCatalog(payload.Journal);
             var v3Bytes = Convert.FromBase64String(payload.EmbeddedV3EnvelopeBase64);
             // Nested checkpoint must really be schema3, not silently promoted legacy bytes.
             var inner = JsonSaveSerializer.ReadObject<SaveEnvelope>(v3Bytes);
@@ -258,9 +257,10 @@ namespace StartupLife.Integration
                 throw new ArgumentException("Embedded V3 checkpoint digest mismatch.");
             // Before reading user-provided receipts, validate journal identities,
             // content eligibility and RNG using the existing deterministic selector.
-            EventJournalReplay.ValidateWithFinancialReceipts(payload.Journal, definitions, policies);
+            EventJournalReplay.ValidateWithFinancialReceipts(payload.Journal,
+                catalog.Definitions, catalog.Policies);
             var journal = payload.Journal;
-            var rewardProof = new EventRewardReplayProof(journal, definitions);
+            var rewardProof = new EventRewardReplayProof(journal, catalog.Definitions);
             var byFrontier = journal.Tickets.GroupBy(t => t.CoreRevisionAtOffer)
                 .ToDictionary(g => g.Key, g => g.ToArray());
             if (byFrontier.ContainsKey(-1) || byFrontier.Keys.Any(x => x < 0))

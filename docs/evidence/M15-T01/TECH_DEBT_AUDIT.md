@@ -61,3 +61,10 @@ Initial refactor `75c695652483439a296aae5a5a5e0ddd5e6d90df` reached 0 build warn
 - V4 migration now stamps one deterministic SHA-256 fingerprint for **all selection and authored outcome inputs**, not a handwritten version label that can drift. Serializer rejects mismatched pinned content as `UnsupportedContent`.
 - Untagged older V4 checkpoint compatibility is preserved (missing field means legacy, no invented fingerprint). Never introduce changed event content in production without an explicit archived-baseline roster and resolver: a missing field does not prove which authoring version selected past events.
 - Next debt slice: supply immutable archived catalogs and an explicit policy for old untagged V4 runs, and route both read replay and future event commands through the resolved run-specific catalog.
+
+
+## Increment 57 — P1 archive resolver without duplicate replay engine
+
+- One immutable `EventCatalogArchive` maps verified authored SHA-256 fingerprints to historical snapshots. Serializer and V4 gateway resolve each run's catalog from the **same archive**; new runs pin current, previous runs retain old content and receipts.
+- A legacy V4 save without a fingerprint always requires the declared historical baseline when the roster evolves. No silent fallback or self-repair is allowed. Ordinary single-catalog setup remains backwards compatible.
+- Next step for shipping: bundle the actual released historical roster(s) as immutable checked assets and inject the archive into production bootstrap. A synthetic test snapshot demonstrates correctness but is not production evidence of the released roster.

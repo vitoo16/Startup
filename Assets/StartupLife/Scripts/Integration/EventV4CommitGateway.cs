@@ -62,8 +62,8 @@ namespace StartupLife.Integration
     {
         private readonly EventV4CompatibilitySerializer serializer;
         private readonly ISaveStore store;
-        private readonly IReadOnlyList<GameEventDefinition> definitions;
-        private readonly IReadOnlyList<EventCategoryPolicy> policies;
+        // All run-specific catalog decisions come from the SAME validated
+        // serializer archive; no second active roster is kept in the gateway.
         private readonly EventV4CoreCommandRunner? coreRunner;
         private readonly bool automaticDailyChecks;
         // Validated in-memory genesis; never persisted or trusted after a file exists.
@@ -80,10 +80,11 @@ namespace StartupLife.Integration
             this.automaticDailyChecks = automaticDailyChecks;
             if (definitions == null || policies == null)
                 throw new ArgumentNullException("event catalog");
-            this.definitions = Array.AsReadOnly(definitions.ToArray());
-            this.policies = Array.AsReadOnly(policies.ToArray());
-            EventDecisionJournal.Validate(EventDecisionJournal.New("catalog-admission", 1),
-                this.definitions, this.policies);
+            // Reject a gateway/serializer catalog mismatch before touching a
+            // save. Historical snapshots are chosen per verified run below.
+            var provided = new EventCatalogSnapshot(definitions, policies);
+            if (provided.Fingerprint != serializer.CurrentCatalog.Fingerprint)
+                throw new ArgumentException("Gateway and serializer current event catalogs differ.");
             if (initialState != null)
             {
                 var journal = initialState.EventV4?.Journal;
@@ -126,7 +127,8 @@ namespace StartupLife.Integration
             var journal = state.EventV4!.Journal!;
             if (journal.PendingTicketId.Length == 0) return null;
             var ticket = journal.Tickets.Single(x => x.Id == journal.PendingTicketId);
-            var definition = definitions.Single(x => x.Id == ticket.EventId);
+            var definition = serializer.ResolveCatalog(journal).Definitions
+                .Single(x => x.Id == ticket.EventId);
             return new EventPendingChoiceSnapshot(state.RunId, state.Revision,
                 ticket.Id, definition.Id, definition.Choices, definition.TitleKey,
                 definition.BodyKey);
@@ -207,10 +209,11 @@ namespace StartupLife.Integration
             if (current.Revision != expectedRevision)
                 return Reject(current, "event.stale_revision");
             var innerRevision = checked(current.Revision - journal.Revision);
+            var catalog = serializer.ResolveCatalog(journal);
             var result = persistEmpty
-                ? EventDecisionJournal.CheckDay(journal, definitions, policies,
+                ? EventDecisionJournal.CheckDay(journal, catalog.Definitions, catalog.Policies,
                     context, journal.Revision, commandId, innerRevision)
-                : EventDecisionJournal.Offer(journal, definitions, policies,
+                : EventDecisionJournal.Offer(journal, catalog.Definitions, catalog.Policies,
                     context, journal.Revision, commandId, innerRevision);
             if (result.Status == EventJournalStatus.NoEligibleEvent && persistEmpty)
             {
@@ -238,7 +241,9 @@ namespace StartupLife.Integration
                     StringComparison.Ordinal))
                 return Reject(current, "event.command_id_conflict");
             var payload = current.EventV4!;
-            var result = EventDecisionJournal.Resolve(payload.Journal!, definitions, policies,
+            var catalog = serializer.ResolveCatalog(payload.Journal!);
+            var result = EventDecisionJournal.Resolve(payload.Journal!,
+                catalog.Definitions, catalog.Policies,
                 payload.Journal!.Revision, commandId, ticketId, choiceId);
             if (result.Status == EventJournalStatus.AlreadyCommitted)
                 return FromPlanner(result, current.Revision);
@@ -264,10 +269,12 @@ namespace StartupLife.Integration
             try
             {
                 var sourceBytes = serializer.Serialize(current);
+                var catalog = serializer.ResolveCatalog(current.EventV4!.Journal!);
                 var staged = EventRewardCompositeProof.Prepare(sourceBytes, serializer,
-                    coreRunner!, definitions, policies, commandId, ticketId, choiceId);
+                    coreRunner!, catalog.Definitions, catalog.Policies,
+                    commandId, ticketId, choiceId);
                 EventRewardCompositeProof.Validate(sourceBytes, staged, serializer,
-                    coreRunner!, definitions, policies);
+                    coreRunner!, catalog.Definitions, catalog.Policies);
                 var payload = EventRewardCompositeProof.CreatePayload(staged, coreRunner!);
                 return CommitCandidate(current, staged.Core, payload,
                     staged.Plan.TicketId, staged.Plan.OutcomeId, revisionDelta: 2);
@@ -398,8 +405,9 @@ namespace StartupLife.Integration
             try
             {
                 var oldV3 = Convert.FromBase64String(current.EventV4.EmbeddedV3EnvelopeBase64);
+                var catalog = serializer.ResolveCatalog(journal);
                 var outcome = coreRunner.Evaluate(oldV3, command, out var nextV3,
-                    current.EventV4.Journal, definitions);
+                    journal, catalog.Definitions);
                 if (outcome.Status != CommandStatus.Committed || nextV3 == null)
                     return new EventCommitResult(MapCoreStatus(outcome.Status),
                         outcome.ReasonKey, current.Revision,
