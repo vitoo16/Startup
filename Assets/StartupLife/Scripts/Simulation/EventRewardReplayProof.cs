@@ -23,7 +23,7 @@ namespace StartupLife.Simulation
             this.definitions = definitions.ToDictionary(x => x.Id, StringComparer.Ordinal);
         }
 
-        public void Apply(EconomicV3Payload candidate, CommandReceipt receipt,
+        public int Apply(EconomicV3Payload candidate, CommandReceipt receipt,
             string operationId, ContentCatalog content)
         {
             var core = candidate?.Current;
@@ -67,9 +67,14 @@ namespace StartupLife.Simulation
                 ticket.ResolutionCommandId, checked(core.Revision + 1L), 0);
             if (!plan.MatchesCoreReceipt(receipt))
                 throw new ArgumentException("Financial receipt does not match V4 choice provenance.");
-            applied.Add(ticket.Id);
+            // Only immutable authored data supplies a nonzero time cost.
+            // Reject forged payload/receipt minutes before applying the effect.
+            if (plan.MinutesConsumed != command.Amount)
+                throw new ArgumentException("Time cost differs from the authored event choice.");
             new SimulationEngine(content, candidate.EconomicRecords)
                 .ApplyPlannedEventReward(core, plan, operationId);
+            applied.Add(ticket.Id);
+            return plan.MinutesConsumed;
         }
 
         public void AssertComplete()
