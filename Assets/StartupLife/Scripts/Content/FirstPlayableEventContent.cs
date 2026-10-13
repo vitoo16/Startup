@@ -278,7 +278,15 @@ namespace StartupLife.Content
                 new Choice("organize", "Sắp xếp lại câu hỏi theo chủ đề",
                     "event/course-questions-organized"),
                 new Choice("clarify", "Chọn một câu hỏi để trao đổi sau",
-                    "event/course-question-prioritized"))
+                    "event/course-question-prioritized")),
+            new Story("after-hours-colleague-support", "career", 1, 6,
+                new[] { "employed", "event/peer-coach" },
+                "Hỗ trợ đồng nghiệp ngoài giờ",
+                "Một đồng nghiệp nhờ bạn dành một giờ rảnh để cùng rà soát phần trình bày cho nhóm. Bạn có thể hỗ trợ ngoài ca hoặc hẹn dịp khác.",
+                new Choice("help", "Dành 60 phút ngoài ca (+30 XP nghề)",
+                    new EventChoiceReward(0, 30, 60), "event/after-hours-supported"),
+                new Choice("defer", "Hẹn một buổi khác, giữ thời gian rảnh",
+                    "event/after-hours-deferred"))
         };
 
         private static readonly IReadOnlyList<GameEventDefinition> DefinitionsValue = BuildDefinitions();
