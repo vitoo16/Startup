@@ -23,6 +23,7 @@ $coordinator = Read-Text 'Assets/StartupLife/Scripts/Presentation/FirstPlayableF
 $bootstrap = Read-Text 'Assets/StartupLife/Scripts/Presentation/StartupLifeBootstrapper.cs'
 $businessView = Read-Text 'Assets/StartupLife/Scripts/Presentation/LifeScreenViewController.cs'
 $businessOverlay = Read-Text 'Assets/StartupLife/Scripts/Presentation/BusinessManagementOverlay.cs'
+$eventChoiceOverlay = Read-Text 'Assets/StartupLife/Scripts/Presentation/EventChoiceOverlay.cs'
 $work = Read-Text 'Assets/StartupLife/Scripts/Presentation/WorkShiftPlaybackController.cs'
 $lifecycle = Read-Text 'Assets/StartupLife/Scripts/Presentation/FirstPlayableLifecycle.cs'
 $builder = Read-Text 'Assets/StartupLife/Scripts/Editor/FirstPlayableShellBuilder.cs'
@@ -68,6 +69,17 @@ $businessCommandNames = @('LaunchBusiness','PauseBusiness','ResumeBusiness',
 $missingBusinessUnwraps = @($businessCommandNames | Where-Object {
     -not ($businessView -match ('flow\.' + $_ + '\s*\([^;]*?\)\.Command'))
 })
+Add-Check 'M15 event dialog reveal is animated without bypassing pending choice authority' (
+    ($eventChoiceOverlay -match 'typeof\(CanvasGroup\)') -and
+    ($eventChoiceOverlay -match 'Time\.unscaledDeltaTime') -and
+    ($eventChoiceOverlay -match 'revealGroup\.interactable\s*=\s*false') -and
+    ($eventChoiceOverlay -match 'revealGroup\.blocksRaycasts\s*=\s*true') -and
+    ($eventChoiceOverlay -match 'panelRect\.localScale') -and
+    ($eventChoiceOverlay -match 'displayedTicket\s*!=\s*current\.TicketId') -and
+    ($eventChoiceOverlay -match 'pending\.UnavailableChoiceReasons\.ContainsKey\(choiceId\)') -and
+    ($eventChoiceOverlay -match 'gateway\.Resolve\(selected\.RunId'))
+    'Visual motion must be unscaled, block unintended clicks and retain verified V4 command dispatch'
+
 Add-Check 'M9 business Unity actions unwrap to CommandResult' ($missingBusinessUnwraps.Count -eq 0) ($missingBusinessUnwraps -join ', ')
 Add-Check 'M9 Unity scene runtime business panel wiring' (
     ($bootstrap -match 'lifeScreen\.EnsureBusinessManagementUi\(\)') -and
