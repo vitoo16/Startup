@@ -2735,6 +2735,87 @@ internal static class Program
                 catch (IOException) { }
             }
         });
+        Check("M15 time-consuming event commits one verified V3 minute receipt and V4 choice", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var rules = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(rules, content);
+            var v3 = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var options = new[]
+            {
+                new EventChoiceDefinition("prepare", "event.prepare", "outcome.prepare",
+                    reward: new EventChoiceReward(0, 0, 60)),
+                new EventChoiceDefinition("decline", "event.decline", "outcome.decline")
+            };
+            var definitions = new[] { new GameEventDefinition("evening-preparation", "life",
+                2026, 0, 1, 0, 1, 1, 0, Array.Empty<string>(),
+                Array.Empty<string>(), options) };
+            var policies = new[] { new EventCategoryPolicy("life", 0, 7, 1) };
+            var serializer = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, definitions, policies));
+            var runner = new EventV4CoreCommandRunner(content, v3, rules, archives);
+            var seed = GameSession.NewState(content, "event-time-cas", 66219UL,
+                new SimDate(2026, 10, 1));
+            var dir = Path.Combine(Path.GetTempPath(), "m15-event-time-" +
+                Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            var path = Path.Combine(dir, "game.save");
+            try
+            {
+                File.WriteAllBytes(path, JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(seed), 2, 0));
+                EventV4CommitGateway Cold() => new EventV4CommitGateway(serializer,
+                    new AtomicFileSaveStore(path, serializer), definitions, policies, runner);
+                var created = Cold().ExecuteCore(new CommandEnvelope(seed.RunId,
+                    "time-create", 0, new GameCommand(CommandKind.CreateCharacter,
+                        "fresh", 23, "Time Proof", "base.female")));
+                Assert(created.Status == EventCommitStatus.Committed,
+                    "character must commit before the time-consuming event");
+                var offered = Cold().Offer(seed.RunId, "time-offer", created.Revision);
+                Assert(offered.Status == EventCommitStatus.Committed,
+                    "one V4 ticket must be committed");
+                var pending = Cold().ReadPendingChoice();
+                Assert(pending != null && pending.UnavailableChoiceReasons.Count == 0,
+                    "the verified 08:00 time window should admit 60 minutes");
+                var before = Cold().Read().State!;
+                var minute = before.Minute;
+                var finished = Cold().Resolve(seed.RunId, "time-confirm",
+                    pending!.Revision, pending.TicketId, "prepare");
+                Assert(finished.Status == EventCommitStatus.Committed,
+                    "the time event must use one atomic composite CAS");
+                var afterRead = Cold().Read();
+                Assert(afterRead.Status == LoadStatus.Valid && afterRead.State != null,
+                    "the time receipt and event outcome must cold-replay");
+                var after = afterRead.State!;
+                Assert(after.Minute == minute + 60 &&
+                    after.Cash == before.Cash &&
+                    after.Receipts.Count == before.Receipts.Count + 1 &&
+                    after.Receipts.Last().MinutesConsumed == 60 &&
+                    after.PendingChoiceId.Length == 0 &&
+                    after.EventV4!.Journal!.PendingTicketId.Length == 0,
+                    "the V3 clock and receipt must advance once without cash mutation");
+                var savedBytes = File.ReadAllBytes(path);
+                var retry = Cold().Resolve(seed.RunId, "time-confirm",
+                    pending.Revision, pending.TicketId, "prepare");
+                Assert(retry.Status == EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(path).SequenceEqual(savedBytes),
+                    "cold retry cannot consume another minute or rewrite the checkpoint");
+
+                // Independent V3 replay must still reject the inner receipt:
+                // V4 outcome provenance is required to authorize any time debit.
+                var inner = Convert.FromBase64String(after.EventV4.EmbeddedV3EnvelopeBase64);
+                Assert(v3.DeserializeAndValidate(inner).Status != LoadStatus.Valid,
+                    "time debit cannot be replayed in an unpaired V3 save");
+            }
+            finally
+            {
+                try { Directory.Delete(dir, true); }
+                catch (IOException) { }
+            }
+        });
         Check("M15 reward settlement plan derives from cold-verified V3/V4 CAS state", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();
