@@ -1235,15 +1235,17 @@ internal static class Program
                 "current authored content may evolve but published first-playable V4 data must not");
             var rewarded = FirstPlayableEventContent.Definitions.SelectMany(x => x.Choices)
                 .Where(x => x.Reward != null).ToArray();
-            Assert(FirstPlayableEventContent.Definitions.Count == 22 &&
-                rewarded.Length == 2 &&
+            Assert(FirstPlayableEventContent.Definitions.Count == 23 &&
+                rewarded.Length == 3 &&
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == 100000L &&
                     x.Reward.CareerXpDelta == 0) &&
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == 0 &&
                     x.Reward.CareerXpDelta == 60L) &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == -40000L &&
+                    x.Reward.CareerXpDelta == 0) &&
                 FirstPlayableEventContent.Definitions.All(x =>
                     x.Choices.Any(choice => choice.Reward == null)),
-                "authored rewards must remain optional and tied to exactly two new current events");
+                "all authored financial/XP choices retain a safe tag-only exit");
             var evolved = FirstPlayableEventContent.Definitions.ToArray();
             var first = evolved[0];
             evolved[0] = new GameEventDefinition(first.Id, first.CategoryId,
