@@ -126,8 +126,8 @@ namespace StartupLife.Tests.EditMode
                         !string.IsNullOrWhiteSpace(label), Is.True,
                         story.Id + " choice " + choice.Id);
             }
-            Assert.That(entries.Count, Is.EqualTo(132),
-                "Every one of the 33 current stories has a title, body and two choices.");
+            Assert.That(entries.Count, Is.EqualTo(140),
+                "Every one of the 35 current stories has a title, body and two choices.");
         }
 
         [Test]
@@ -150,6 +150,42 @@ namespace StartupLife.Tests.EditMode
         }
 
         [Test]
+        public void RetainedThirtyThreeStoryVersionPreservesPreviousBusinessChallenges()
+        {
+            var historical = RetainedM15DevelopmentEventCatalogs.Create(
+                ReleasedFirstPlayableEventCatalog.LegacyBaseline);
+            var frozen = historical.Single(x => x.Definitions.Count == 33);
+            Assert.That(frozen.Definitions.Sum(x => x.Choices.Count), Is.EqualTo(66));
+            Assert.That(frozen.VietnameseText.Count, Is.EqualTo(132));
+            Assert.That(frozen.Definitions.Any(x => x.Id == "delivery-incident"), Is.True);
+            Assert.That(frozen.Definitions.Any(x => x.Id == "course-study-questions"), Is.False);
+            var archive = ReleasedFirstPlayableEventCatalog.CreateArchive(
+                FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
+            var pinned = EventDecisionJournal.New("retained-33", 41);
+            pinned.CatalogFingerprint = frozen.Fingerprint;
+            Assert.That(archive.Resolve(pinned).Fingerprint, Is.EqualTo(frozen.Fingerprint));
+            Assert.That(archive.Resolve(pinned).VietnameseText.Count, Is.EqualTo(132));
+        }
+
+        [Test]
+        public void CourseQuestionFollowUpOnlyUsesCommittedEventTag()
+        {
+            var initial = FirstPlayableEventContent.Definitions.Single(x =>
+                x.Id == "course-study-questions");
+            var followUp = FirstPlayableEventContent.Definitions.Single(x =>
+                x.Id == "course-question-follow-up");
+            Assert.That(initial.RequiredTags, Does.Contain("course-active"));
+            Assert.That(initial.Choices.Single(x => x.Id == "prepare").GrantedTags,
+                Does.Contain("event/course-questions-prepared"));
+            Assert.That(initial.Choices.Single(x => x.Id == "review").GrantedTags,
+                Does.Not.Contain("event/course-questions-prepared"));
+            Assert.That(followUp.RequiredTags,
+                Does.Contain("event/course-questions-prepared"));
+            Assert.That(followUp.Choices.All(x => x.Reward == null), Is.True);
+            Assert.That(initial.Choices.All(x => x.Reward == null), Is.True);
+        }
+
+        [Test]
         public void NewExpenseLeavesHistoricalReleaseRostersUnchanged()
         {
             var released = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
@@ -158,7 +194,7 @@ namespace StartupLife.Tests.EditMode
             Assert.That(released.VietnameseText.Count, Is.EqualTo(80));
             Assert.That(released.Definitions.Any(x => x.Id == "local-promotion-print"),
                 Is.False);
-            Assert.That(FirstPlayableEventContent.Definitions.Count, Is.EqualTo(33));
+            Assert.That(FirstPlayableEventContent.Definitions.Count, Is.EqualTo(35));
             Assert.That(EventCatalogFingerprint.Compute(
                 FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies),
                 Is.Not.EqualTo(released.Fingerprint));
