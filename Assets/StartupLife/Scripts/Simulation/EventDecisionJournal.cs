@@ -340,17 +340,35 @@ namespace StartupLife.Simulation
             if (choice?.Reward == null)
                 throw new ArgumentException("No financial effect on this authored choice.");
             var reward = choice.Reward;
-            var afterCash = checked(current.Cash + reward.CashDeltaVnd);
-            if (afterCash < 0)
-                throw new ArgumentException("Event cost exceeds available cash.");
+            var unavailable = RewardUnavailableReason(current, reward);
+            if (unavailable.Length != 0)
+                throw new ArgumentException("Event reward is unavailable: " + unavailable);
+            // Keep checked settlement arithmetic. Only authenticated V3/V4 CAS
+            // applies the reward; this preflight never mutates the save.
+            _ = checked(current.Cash + reward.CashDeltaVnd);
             if (reward.CareerXpDelta > 0)
-            {
-                if (current.Employment == null || current.Employment.EndedIso.Length > 0)
-                    throw new ArgumentException("Career XP requires active employment.");
-                _ = checked(current.Employment.Xp + reward.CareerXpDelta);
-            }
+                _ = checked(current.Employment!.Xp + reward.CareerXpDelta);
             return new EventRewardSettlementPlan(current, ticket, choice, commandId,
                 checked(current.Receipts.Count + 1L), checked(current.Revision + 2L));
+        }
+
+        // Shared read-side preview and authoritative settlement preflight.
+        // Returned localization keys describe blockers; no money or XP moves.
+        public static string RewardUnavailableReason(GameState state, EventChoiceReward reward)
+        {
+            if (state == null || reward == null)
+                throw new ArgumentNullException("A reward preview needs state and authored data.");
+            if (reward.CashDeltaVnd < 0 && state.Cash < -reward.CashDeltaVnd)
+                return "event.choice.insufficient_funds";
+            if (reward.CashDeltaVnd > 0 &&
+                state.Cash > long.MaxValue - reward.CashDeltaVnd)
+                return "event.choice.reward_unavailable";
+            if (reward.CareerXpDelta > 0 &&
+                (state.Employment == null ||
+                 state.Employment.EndedIso.Length > 0 ||
+                 state.Employment.Xp > long.MaxValue - reward.CareerXpDelta))
+                return "event.choice.reward_unavailable";
+            return "";
         }
 
         // Structural and content validation for prospective cold restoration.
