@@ -48,7 +48,14 @@ namespace StartupLife.Integration
             if (!EventV4CommandGuard.Valid(read))
                 return request; // Gateway owns recovery/error classification.
             var current = read.State!;
-            var active = current.EventV4.Journal.AdvanceBatches.FirstOrDefault(x =>
+            // Valid() checks the nested journal at this checkpoint, but the
+            // compiler does not propagate nullability through that method.
+            // A missing journal must remain a recovery case for the gateway,
+            // never a UI-side NullReferenceException.
+            var journal = current.EventV4?.Journal;
+            if (journal == null)
+                return request;
+            var active = journal.AdvanceBatches.FirstOrDefault(x =>
                 string.CompareOrdinal(current.DateIso, x.TargetDateIso) < 0);
             if (active == null || active.Mode != mode || current.RunId != request.RunId)
                 return request;
