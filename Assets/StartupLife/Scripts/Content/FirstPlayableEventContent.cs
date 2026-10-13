@@ -200,7 +200,33 @@ namespace StartupLife.Content
                 new Choice("compensate", "Chi 55.000 ₫ hỗ trợ đổi trả",
                     new EventChoiceReward(-55_000L, 0), "event/customer-care-complete"),
                 new Choice("follow-up", "Liên hệ để tìm giải pháp không tốn phí",
-                    "event/customer-care-followup"))
+                    "event/customer-care-followup")),
+            // A free recovery path must lead somewhere; it may not silently
+            // turn the player's customer-service choice into a dead end.
+            new Story("customer-care-follow-up", "business", 2, 7,
+                new[] { "business-active", "event/customer-care-followup" },
+                "Cuộc hẹn giải quyết phản hồi",
+                "Sau khi bạn liên hệ, khách hàng đồng ý trao đổi rõ hơn về khâu giao nhận. Cả hai có cơ hội thống nhất cách xử lý phù hợp.",
+                new Choice("agree", "Thống nhất cách giao nhận lần sau",
+                    "event/customer-care-agreed"),
+                new Choice("review", "Ghi lại góp ý để điều chỉnh quy trình",
+                    "event/customer-care-reviewed")),
+            new Story("supplier-sample-review", "business", 2, 6,
+                new[] { "business-active", "event/packaging-sample" },
+                "Đánh giá bộ mẫu đóng gói",
+                "Bạn xem lại bộ mẫu đã đặt và nhận thấy có vài lựa chọn phù hợp với cách giao hàng hiện tại.",
+                new Choice("select", "Ghi nhận kiểu đóng gói phù hợp",
+                    "event/packaging-reviewed"),
+                new Choice("revise", "Nhờ nhà cung cấp điều chỉnh thêm",
+                    "event/packaging-revision")),
+            new Story("mentor-workshop-reflection", "career", 1, 6,
+                new[] { "employed", "event/mentor-workshop" },
+                "Ứng dụng bài học tại nơi làm việc",
+                "Sau buổi trao đổi, bạn có dịp cùng đồng nghiệp nhìn lại một tình huống phối hợp trong dự án.",
+                new Choice("share", "Chia sẻ ghi chú thực hành",
+                    "event/workshop-notes-shared"),
+                new Choice("reflect", "Tự ôn lại bài học",
+                    "event/workshop-self-review"))
         };
 
         private static readonly IReadOnlyList<GameEventDefinition> DefinitionsValue = BuildDefinitions();
@@ -228,7 +254,56 @@ namespace StartupLife.Content
                 TitleKey(x.Id), BodyKey(x.Id))).ToArray();
             if (definitions.Select(x => x.Id).Distinct(StringComparer.Ordinal).Count() != definitions.Length)
                 throw new InvalidOperationException("Duplicate event story IDs.");
+            ValidateAuthoredPaths(definitions);
             return Array.AsReadOnly(definitions);
+        }
+
+        // Authoring-only integrity check. Runtime eligibility still belongs
+        // exclusively to the receipt-verified V4 journal/selector. A tag chain
+        // must have a reachable source, and no paid decision may trap a run.
+        // This is a coarse dependency check: employment and business state
+        // gates are deliberately left to AuthoritativeEventContext.
+        private static void ValidateAuthoredPaths(IReadOnlyList<GameEventDefinition> definitions)
+        {
+            var produced = new HashSet<string>(StringComparer.Ordinal);
+            var reachable = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var entry in definitions)
+            {
+                if (entry.Choices.Any(choice => choice.Reward != null) &&
+                    entry.Choices.All(choice => choice.Reward != null))
+                    throw new InvalidOperationException(
+                        "A financial event must offer a no-cost resolution: " + entry.Id);
+                foreach (var choice in entry.Choices)
+                    foreach (var tag in choice.GrantedTags)
+                        produced.Add(tag);
+            }
+
+            // A monotone fixed point handles long chains without depending on
+            // source order; cycles with no valid entry point remain unreachable.
+            var changed = true;
+            while (changed)
+            {
+                changed = false;
+                foreach (var entry in definitions)
+                {
+                    if (reachable.Contains(entry.Id) ||
+                        entry.RequiredTags.Any(tag => tag.StartsWith("event/",
+                            StringComparison.Ordinal) && !produced.Contains(tag)))
+                        continue;
+                    if (entry.RequiredTags.Any(tag => tag.StartsWith("event/",
+                            StringComparison.Ordinal) && !reachable.Any(id =>
+                                definitions.First(candidate => candidate.Id == id)
+                                    .Choices.Any(choice => choice.GrantedTags.Contains(tag)))))
+                        continue;
+                    reachable.Add(entry.Id);
+                    changed = true;
+                }
+            }
+            var inaccessible = definitions.Where(entry => !reachable.Contains(entry.Id))
+                .Select(entry => entry.Id).ToArray();
+            if (inaccessible.Length != 0)
+                throw new InvalidOperationException("Unreachable event authoring path: " +
+                    string.Join(", ", inaccessible));
         }
 
         private static IReadOnlyList<KeyValuePair<string, string>> BuildVietnamese()
