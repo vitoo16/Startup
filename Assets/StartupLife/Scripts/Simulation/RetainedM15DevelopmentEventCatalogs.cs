@@ -17,6 +17,7 @@ namespace StartupLife.Simulation
     // 26 stories: 8d56ee240759d027cd35a5c8ea546117f9561703
     // 29 stories: debcb79e89de3b3e572cd00e25e7c5d8b5809a29
     // 33 stories: de3d7a23650340b7df0129634349b9cea5337e22
+    // 35 stories: f799802d160ffa842922de0f15f0d42baed300d9
     public static class RetainedM15DevelopmentEventCatalogs
     {
         private static readonly GameEventDefinition[] AddedDefinitions =
@@ -93,7 +94,19 @@ namespace StartupLife.Simulation
                 Choice("supplier-backorder-follow-up", "compare", null,
                     "event/supply-options-compared"),
                 Choice("supplier-backorder-follow-up", "defer", null,
-                    "event/supply-options-deferred"))
+                    "event/supply-options-deferred")),
+            Event("course-study-questions", "study", 1, 7,
+                new[] { "course-active" },
+                Choice("course-study-questions", "prepare", null,
+                    "event/course-questions-prepared"),
+                Choice("course-study-questions", "review", null,
+                    "event/course-goals-reviewed")),
+            Event("course-question-follow-up", "study", 1, 6,
+                new[] { "event/course-questions-prepared" },
+                Choice("course-question-follow-up", "organize", null,
+                    "event/course-questions-organized"),
+                Choice("course-question-follow-up", "clarify", null,
+                    "event/course-question-prioritized"))
         };
 
         // Each historical event has exactly four retained Vietnamese keys:
@@ -151,17 +164,25 @@ namespace StartupLife.Simulation
             Text("supplier-backorder-follow-up", "title", "Tìm phương án nguồn hàng dự phòng"),
             Text("supplier-backorder-follow-up", "body", "Một đơn vị khác gửi thông tin về quy cách và lịch giao. Bạn có thể so sánh trước khi quyết định có đặt hàng hay không."),
             Text("supplier-backorder-follow-up", "choice.compare", "So sánh quy cách và điều kiện giao"),
-            Text("supplier-backorder-follow-up", "choice.defer", "Theo dõi thêm, không cam kết mua")
+            Text("supplier-backorder-follow-up", "choice.defer", "Theo dõi thêm, không cam kết mua"),
+            Text("course-study-questions", "title", "Ghi chú khi theo học"),
+            Text("course-study-questions", "body", "Trong lúc theo khóa học, bạn nhận ra vài nội dung cần tìm hiểu kỹ hơn. Bạn có thể chuẩn bị câu hỏi cho lần trao đổi tiếp theo."),
+            Text("course-study-questions", "choice.prepare", "Ghi lại câu hỏi cần được giải đáp"),
+            Text("course-study-questions", "choice.review", "Đọc lại mục tiêu khóa học"),
+            Text("course-question-follow-up", "title", "Làm rõ nội dung còn vướng"),
+            Text("course-question-follow-up", "body", "Bạn xem lại danh sách câu hỏi đã chuẩn bị và có thêm thông tin để quyết định nội dung nào cần tìm hiểu tiếp."),
+            Text("course-question-follow-up", "choice.organize", "Sắp xếp lại câu hỏi theo chủ đề"),
+            Text("course-question-follow-up", "choice.clarify", "Chọn một câu hỏi để trao đổi sau")
         };
 
         public static IReadOnlyList<EventCatalogSnapshot> Create(EventCatalogSnapshot released)
         {
             if (released == null || released.Definitions.Count != 20 ||
                 released.VietnameseText.Count != 80 ||
-                AddedDefinitions.Length != 13 || AddedVietnamese.Length != 52)
+                AddedDefinitions.Length != 15 || AddedVietnamese.Length != 60)
                 throw new ArgumentException("The frozen first-playable archive is required.");
 
-            var counts = new[] { 2, 3, 6, 9, 13 };
+            var counts = new[] { 2, 3, 6, 9, 13, 15 };
             var versions = new EventCatalogSnapshot[counts.Length];
             for (var i = 0; i < counts.Length; i++)
             {
