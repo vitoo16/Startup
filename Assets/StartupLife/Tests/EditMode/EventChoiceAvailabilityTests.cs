@@ -127,7 +127,7 @@ namespace StartupLife.Tests.EditMode
                         story.Id + " choice " + choice.Id);
             }
             Assert.That(entries.Count, Is.EqualTo(144),
-                "Every one of the 35 current stories has a title, body and two choices.");
+                "Every one of the 36 current stories has a title, body and two choices.");
         }
 
         [Test]
@@ -183,6 +183,54 @@ namespace StartupLife.Tests.EditMode
                 Does.Contain("event/course-questions-prepared"));
             Assert.That(followUp.Choices.All(x => x.Reward == null), Is.True);
             Assert.That(initial.Choices.All(x => x.Reward == null), Is.True);
+        }
+
+        [Test]
+        public void TimeCostChoiceUsesTheSameCoreFreeMinuteWindowAsStudy()
+        {
+            var story = FirstPlayableEventContent.Definitions.Single(x =>
+                x.Id == "after-hours-colleague-support");
+            var paid = story.Choices.Single(x => x.Id == "help");
+            Assert.That(paid.Reward, Is.Not.Null);
+            Assert.That(paid.Reward!.MinutesConsumed, Is.EqualTo(60));
+            Assert.That(paid.Reward.CareerXpDelta, Is.EqualTo(30));
+            Assert.That(story.Choices.Single(x => x.Id == "defer").Reward, Is.Null);
+
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var state = new GameState
+            {
+                DateIso = "2026-10-14",
+                Minute = content.Schedule.SleepMinute - 59
+            };
+            Assert.That(EventDecisionJournal.RewardUnavailableReason(
+                state, paid.Reward, content),
+                Is.EqualTo("event.choice.reward_unavailable"),
+                "Career XP cannot be earned without active employment.");
+
+            state.Employment = new EmploymentState
+            {
+                CareerId = "developer",
+                FirstShiftIso = "2026-10-14",
+                Xp = 0
+            };
+            Assert.That(EventDecisionJournal.RewardUnavailableReason(
+                state, paid.Reward, content),
+                Is.EqualTo("event.choice.time_unavailable"),
+                "Only verified after-work free minutes may be debited.");
+            state.Minute = content.Schedule.SleepMinute - 60;
+            Assert.That(EventDecisionJournal.RewardUnavailableReason(
+                state, paid.Reward, content), Is.Empty);
+            state.Minute = content.Careers["developer"].StartMinute;
+            Assert.That(EventDecisionJournal.RewardUnavailableReason(
+                state, paid.Reward, content),
+                Is.EqualTo("event.choice.time_unavailable"),
+                "An event may not consume an employed shift.");
+            var oldCatalog = RetainedM15DevelopmentEventCatalogs.Create(
+                ReleasedFirstPlayableEventCatalog.LegacyBaseline).Single(x =>
+                    x.Definitions.Count == 35);
+            Assert.That(oldCatalog.Definitions.Any(x =>
+                x.Id == "after-hours-colleague-support"), Is.False);
+            Assert.That(oldCatalog.VietnameseText.Count, Is.EqualTo(140));
         }
 
         [Test]
