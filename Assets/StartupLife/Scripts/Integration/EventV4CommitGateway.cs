@@ -44,14 +44,27 @@ namespace StartupLife.Integration
         public string TitleKey { get; }
         public string BodyKey { get; }
         public IReadOnlyList<EventChoiceDefinition> Choices { get; }
+        public IReadOnlyDictionary<string, string> ArchivedVietnamese { get; }
+        // Per-choice blockers are projected from the verified save and authored
+        // rewards, never estimated from an uncommitted client-side wallet.
+        public IReadOnlyDictionary<string, string> UnavailableChoiceReasons { get; }
 
         public EventPendingChoiceSnapshot(string runId, long revision, string ticketId,
             string eventId, IEnumerable<EventChoiceDefinition> choices,
-            string titleKey = "", string bodyKey = "")
+            string titleKey = "", string bodyKey = "",
+            IReadOnlyDictionary<string, string>? archivedVietnamese = null,
+            IEnumerable<KeyValuePair<string, string>>? unavailableChoiceReasons = null)
         {
             RunId = runId; Revision = revision; TicketId = ticketId; EventId = eventId;
             TitleKey = titleKey; BodyKey = bodyKey;
             Choices = Array.AsReadOnly(choices.ToArray());
+            ArchivedVietnamese = archivedVietnamese ??
+                new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(
+                    new Dictionary<string, string>(StringComparer.Ordinal));
+            UnavailableChoiceReasons =
+                new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(
+                    (unavailableChoiceReasons ?? Array.Empty<KeyValuePair<string, string>>())
+                        .ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal));
         }
     }
 
@@ -127,11 +140,18 @@ namespace StartupLife.Integration
             var journal = state.EventV4!.Journal!;
             if (journal.PendingTicketId.Length == 0) return null;
             var ticket = journal.Tickets.Single(x => x.Id == journal.PendingTicketId);
-            var definition = serializer.ResolveCatalog(journal).Definitions
-                .Single(x => x.Id == ticket.EventId);
+            var catalog = serializer.ResolveCatalog(journal);
+            var definition = catalog.Definitions.Single(x => x.Id == ticket.EventId);
+            var unavailable = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var option in definition.Choices)
+            {
+                if (option.Reward == null) continue;
+                var reason = EventDecisionJournal.RewardUnavailableReason(state, option.Reward);
+                if (reason.Length != 0) unavailable.Add(option.Id, reason);
+            }
             return new EventPendingChoiceSnapshot(state.RunId, state.Revision,
                 ticket.Id, definition.Id, definition.Choices, definition.TitleKey,
-                definition.BodyKey);
+                definition.BodyKey, catalog.VietnameseText, unavailable);
         }
 
         // Persist a negative event-day check with the existing V4 CAS writer.

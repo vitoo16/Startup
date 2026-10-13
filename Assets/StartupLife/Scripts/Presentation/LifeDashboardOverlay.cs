@@ -461,7 +461,7 @@ namespace StartupLife.Presentation
             originalFontSizes.Add(label, size);
             label.fontSize = size * textScale;
             label.color = color;
-            label.enableWordWrapping = true;
+            label.textWrappingMode = TextWrappingModes.Normal;
             label.overflowMode = TextOverflowModes.Overflow;
             label.raycastTarget = false;
             ApplyStaticTranslation(label, value);

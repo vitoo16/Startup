@@ -9,6 +9,11 @@ namespace StartupLife.Presentation
         public const string Table = "FirstPlayableUI";
 
         [SerializeField] private LocalizeStringEvent localizer;
+        private TMP_Text target;
+        // Localization StringTables can resolve asynchronously. A queued
+        // result must never overwrite the published copy of a historical V4
+        // ticket after its source has switched to immutable release text.
+        private bool usesFrozenVietnamese;
 
         internal static LocalizedKeyLabel EnsureFor(TMP_Text text)
         {
@@ -17,21 +22,47 @@ namespace StartupLife.Presentation
             var localizer = text.GetComponent<LocalizeStringEvent>();
             var label = text.GetComponent<LocalizedKeyLabel>();
             if (!localizer)
-            {
                 localizer = text.gameObject.AddComponent<LocalizeStringEvent>();
-                localizer.OnUpdateString.AddListener(value => text.SetText(value));
-            }
 
             if (!label) label = text.gameObject.AddComponent<LocalizedKeyLabel>();
+            // A pre-existing LocalizeStringEvent may be supplied by a prefab.
+            // Rebind the single runtime handler even when EnsureFor is called
+            // repeatedly, so frozen copy cannot be overwritten by late updates.
+            if (label.localizer && label.localizer != localizer)
+                label.localizer.OnUpdateString.RemoveListener(label.ApplyLocalizedValue);
+            localizer.OnUpdateString.RemoveListener(label.ApplyLocalizedValue);
             label.localizer = localizer;
+            label.target = text;
+            localizer.OnUpdateString.AddListener(label.ApplyLocalizedValue);
             return label;
+        }
+
+        private void ApplyLocalizedValue(string value)
+        {
+            if (!usesFrozenVietnamese && target)
+                target.SetText(value);
         }
 
         public void SetKey(string key)
         {
             if (!localizer) throw new MissingReferenceException("LocalizedKeyLabel requires a LocalizeStringEvent.");
+            // Clear the frozen mode before enabling Unity's updater again.
+            usesFrozenVietnamese = false;
             localizer.StringReference.SetReference(Table, key);
+            if (!localizer.enabled) localizer.enabled = true;
             localizer.StringReference.RefreshString();
+        }
+
+        // Use only for a verified, immutable historical release snapshot.
+        // Disabling Unity's asynchronous updater prevents current StringTables
+        // from overwriting the originally published Vietnamese story text.
+        public void SetFrozenVietnamese(string value)
+        {
+            if (!localizer || !target || string.IsNullOrWhiteSpace(value))
+                throw new MissingReferenceException("Frozen event text requires a localized TMP label.");
+            usesFrozenVietnamese = true;
+            localizer.enabled = false;
+            target.SetText(value);
         }
     }
 }

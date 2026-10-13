@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using StartupLife.Integration;
 using UnityEngine;
@@ -16,6 +17,7 @@ namespace StartupLife.Presentation
         private const float MinTouchHeight = 96f;
         private EventV4CommitGateway gateway = null!;
         private ICommandIdSource commandIds = null!;
+        private Action refreshCommittedState = null!;
         private TMP_FontAsset font = null!;
         private GameObject panel = null!;
         private RectTransform choiceContent = null!;
@@ -58,6 +60,9 @@ namespace StartupLife.Presentation
             }
             overlay.gateway = gateway;
             overlay.commandIds = commandIds;
+            // Reuse the host's authoritative gameplay/finance readouts. The
+            // event overlay must not maintain a shadow cash/XP projection.
+            overlay.refreshCommittedState = host.Refresh;
             overlay.Refresh();
             return overlay;
         }
@@ -80,10 +85,10 @@ namespace StartupLife.Presentation
                 }
 
                 pending = current;
-                heading.SetKey(current.TitleKey.Length > 0
-                    ? current.TitleKey : "event.choice.title");
-                storyBody.SetKey(current.BodyKey.Length > 0
-                    ? current.BodyKey : "event.choice.prompt");
+                DisplayEventText(heading, current,
+                    current.TitleKey.Length > 0 ? current.TitleKey : "event.choice.title");
+                DisplayEventText(storyBody, current,
+                    current.BodyKey.Length > 0 ? current.BodyKey : "event.choice.prompt");
                 panel.SetActive(true);
                 panel.transform.SetAsLastSibling();
                 if (displayedTicket != current.TicketId)
@@ -98,7 +103,7 @@ namespace StartupLife.Presentation
                 }
                 status.SetKey(uncertainCommand.Length > 0 &&
                     uncertainTicket == current.TicketId
-                        ? "event.choice.retry" : "event.choice.prompt");
+                        ? "event.choice.retry" : ChoiceGuidanceKey(current));
                 SetButtonsEnabled(true);
             }
             catch (Exception error)
@@ -113,9 +118,18 @@ namespace StartupLife.Presentation
             }
         }
 
+        private static string ChoiceGuidanceKey(EventPendingChoiceSnapshot current)
+        {
+            if (current.UnavailableChoiceReasons.Values.Contains("event.choice.insufficient_funds"))
+                return "event.choice.insufficient_funds";
+            return current.UnavailableChoiceReasons.Count > 0
+                ? "event.choice.reward_unavailable" : "event.choice.prompt";
+        }
+
         private void Resolve(string choiceId)
         {
-            if (pending == null) return;
+            if (pending == null || pending.UnavailableChoiceReasons.ContainsKey(choiceId))
+                return;
             var selected = pending;
             var sameUncertain = uncertainCommand.Length != 0 &&
                 uncertainTicket == selected.TicketId && uncertainChoice == choiceId;
@@ -136,7 +150,10 @@ namespace StartupLife.Presentation
                     case EventCommitStatus.Committed:
                     case EventCommitStatus.AlreadyCommitted:
                         uncertainCommand = "";
-                        Refresh();
+                        // A reward may have changed the wallet, Career XP and
+                        // promotion. Refresh the whole screen after the V4 CAS,
+                        // not only the dialog that initiated the choice.
+                        refreshCommittedState();
                         break;
                     case EventCommitStatus.RecoveryRequired:
                     case EventCommitStatus.PersistenceFailed:
@@ -169,10 +186,18 @@ namespace StartupLife.Presentation
                 slot.Button.gameObject.SetActive(true);
                 slot.Button.onClick.RemoveAllListeners();
                 slot.Button.onClick.AddListener(() => Resolve(id));
-                slot.Label.SetKey(choice.Choices[i].LabelKey);
+                DisplayEventText(slot.Label, choice, choice.Choices[i].LabelKey);
             }
             for (var i = choice.Choices.Count; i < buttons.Count; i++)
                 buttons[i].Button.gameObject.SetActive(false);
+        }
+
+        private static void DisplayEventText(LocalizedKeyLabel label,
+            EventPendingChoiceSnapshot choice, string key)
+        {
+            if (choice.ArchivedVietnamese.TryGetValue(key, out var original))
+                label.SetFrozenVietnamese(original);
+            else label.SetKey(key);
         }
 
         private void SetButtonsEnabled(bool enabled)
@@ -180,6 +205,7 @@ namespace StartupLife.Presentation
             foreach (var button in buttons)
                 if (button.Button.gameObject.activeSelf)
                     button.Button.interactable = enabled &&
+                        (pending == null || !pending.UnavailableChoiceReasons.ContainsKey(button.ChoiceId)) &&
                         (uncertainCommand.Length == 0 || button.ChoiceId == uncertainChoice);
         }
 

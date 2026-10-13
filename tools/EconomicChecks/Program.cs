@@ -1215,6 +1215,52 @@ internal static class Program
         });
 
 
+        Check("M15 retained pinned development catalogs survive later authoring revisions", () =>
+        {
+            var baseline = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
+            var retained = RetainedM15DevelopmentEventCatalogs.Create(baseline);
+            var expectedCounts = new[] { 22, 23, 26, 29 };
+            Assert(retained.Count == expectedCounts.Length,
+                "four known development fingerprints must remain independently resolvable");
+            var archive = ReleasedFirstPlayableEventCatalog.CreateArchive(
+                FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
+            var fingerprints = new HashSet<string>(StringComparer.Ordinal) { baseline.Fingerprint };
+            for (var i = 0; i < retained.Count; i++)
+            {
+                var version = retained[i];
+                Assert(version.Definitions.Count == expectedCounts[i] &&
+                    version.Definitions.Sum(e => e.Choices.Count) == expectedCounts[i] * 2 &&
+                    version.VietnameseText.Count == expectedCounts[i] * 4 &&
+                    fingerprints.Add(version.Fingerprint),
+                    "retained M15 snapshot must keep its original data and unique identity");
+                var pinned = EventDecisionJournal.New("retained-development", 17);
+                pinned.CatalogFingerprint = version.Fingerprint;
+                var resolved = archive.Resolve(pinned);
+                Assert(ReferenceEquals(resolved, version) == false &&
+                    resolved.Fingerprint == version.Fingerprint &&
+                    resolved.VietnameseText.Count == version.VietnameseText.Count &&
+                    resolved.Definitions.Count == expectedCounts[i],
+                    "bundled historical snapshot must resolve despite newer current roster");
+                Assert(resolved.VietnameseText.TryGetValue(
+                    "event.story.community-starter-grant.title", out var oldTitle) &&
+                    oldTitle == "Khoản hỗ trợ thử ý tưởng",
+                    "historical Vietnamese narrative must not use mutable live StringTables");
+            }
+            Assert(fingerprints.Add(archive.Current.Fingerprint),
+                "33-story current roster must have a distinct content fingerprint");
+            var oldCurrent = retained[1];
+            var restored = new EventCatalogArchive(
+                new EventCatalogSnapshot(oldCurrent.Definitions, oldCurrent.Policies),
+                new[] { baseline, oldCurrent }, legacyBaseline: baseline);
+            var journal = EventDecisionJournal.New("identical-rules-archive", 19);
+            journal.CatalogFingerprint = oldCurrent.Fingerprint;
+            Assert(ReferenceEquals(restored.Resolve(journal), oldCurrent) &&
+                restored.Resolve(journal).VietnameseText.Count == 92,
+                "a frozen roster must take precedence over mutable current texts with matching rules");
+            journal.CatalogFingerprint = "";
+            Assert(ReferenceEquals(restored.Resolve(journal), baseline),
+                "unpinned legacy V4 runs must still resolve only to their declared first release");
+        });
         Check("M15 bundled first-playable V4 roster remains immutable across catalog upgrades", () =>
         {
             var baseline = ReleasedFirstPlayableEventCatalog.LegacyBaseline;
@@ -1225,11 +1271,40 @@ internal static class Program
             var current = ReleasedFirstPlayableEventCatalog.CreateArchive(
                 FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
             var original = EventCatalogFingerprint.Compute(
+                baseline.Definitions, baseline.Policies);
+            var currentFingerprint = EventCatalogFingerprint.Compute(
                 FirstPlayableEventContent.Definitions, FirstPlayableEventContent.Policies);
             Assert(baseline.Fingerprint == original &&
-                current.Current.Fingerprint == original &&
-                current.LegacyBaseline.Fingerprint == original,
-                "first-playable historical snapshot has drifted from released authored roster");
+                current.LegacyBaseline.Fingerprint == original &&
+                current.Current.Fingerprint == currentFingerprint &&
+                currentFingerprint != original,
+                "current authored content may evolve but published first-playable V4 data must not");
+            var rewarded = FirstPlayableEventContent.Definitions.SelectMany(x => x.Choices)
+                .Where(x => x.Reward != null).ToArray();
+            var compound = FirstPlayableEventContent.Definitions.Single(x =>
+                x.Id == "mentor-workshop-materials").Choices.Single(x =>
+                x.Id == "contribute").Reward;
+            Assert(FirstPlayableEventContent.Definitions.Count == 33 &&
+                rewarded.Length == 8 &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == 100000L &&
+                    x.Reward.CareerXpDelta == 0) &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == 0 &&
+                    x.Reward.CareerXpDelta == 60L) &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == -40000L &&
+                    x.Reward.CareerXpDelta == 0) &&
+                compound != null && compound.CashDeltaVnd == -25000L &&
+                compound.CareerXpDelta == 45 &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == -70000L &&
+                    x.Reward.CareerXpDelta == 0) &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == -55000L &&
+                    x.Reward.CareerXpDelta == 0) &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == -90000L &&
+                    x.Reward.CareerXpDelta == 0) &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == -120000L &&
+                    x.Reward.CareerXpDelta == 0) &&
+                FirstPlayableEventContent.Definitions.All(x =>
+                    x.Choices.Any(choice => choice.Reward == null)),
+                "all authored financial/XP choices retain a safe tag-only exit");
             var evolved = FirstPlayableEventContent.Definitions.ToArray();
             var first = evolved[0];
             evolved[0] = new GameEventDefinition(first.Id, first.CategoryId,
