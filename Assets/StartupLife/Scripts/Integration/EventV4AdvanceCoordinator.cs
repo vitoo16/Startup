@@ -15,6 +15,8 @@ namespace StartupLife.Integration
     {
         LoadResult Read();
         EventCommitResult CheckCurrentDay(string runId, long expectedRevision);
+        // Read-only scheduling gate. No CAS, time or RNG mutation.
+        bool ShouldCheckCurrentDay(GameState state);
         EventCommitResult CommitBatchIntent(GameState current, EventV4Payload payload);
         EventCommitResult ExecuteBatchChild(CommandEnvelope command);
     }
@@ -86,7 +88,8 @@ namespace StartupLife.Integration
                 if (guard > 10000) return BatchStop(results, state, "InvalidState");
                 if (journal.PendingTicketId.Length > 0)
                     return BatchStop(results, state, "PlayerChoice");
-                if (automaticDailyChecks && !HasCheckedDay(journal, state.DateIso))
+                if (automaticDailyChecks && !HasCheckedDay(journal, state.DateIso) &&
+                    port.ShouldCheckCurrentDay(state))
                 {
                     // Every date, even an empty one, is a real V4 CAS frontier.
                     // Re-read after promotion before taking a V3 time step.

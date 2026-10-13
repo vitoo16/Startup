@@ -2607,6 +2607,113 @@ internal static class Program
                 catch (IOException) { }
             }
         });
+        Check("M15 completed-shift overtime is offered after work, with one replayable daily window", () =>
+        {
+            var content = FirstPlayableContentTemplate.BuildCatalog();
+            var economics = M9T02FunctionalEconomy.Create();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economics, content);
+            var v3 = new V3SaveCompatibilitySerializer(content,
+                GameSession.CreateRestoreValidator(), new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay));
+            var definitions = new[] { new GameEventDefinition(
+                "post-shift-pay", "career", 2026, 1, 1, 0, 1, 1, 0,
+                new[] { "employed" }, Array.Empty<string>(),
+                new[]
+                {
+                    new EventChoiceDefinition("accept", "event.accept", "outcome.accept",
+                        reward: new EventChoiceReward(90_000L, 0, 90,
+                            EventTimeWindow.AfterCompletedShift)),
+                    new EventChoiceDefinition("decline", "event.decline", "outcome.decline")
+                }) };
+            var policies = new[] { new EventCategoryPolicy("career", 0, 7, 1) };
+            var serializer = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, definitions, policies));
+            var runner = new EventV4CoreCommandRunner(content, v3, economics, archives);
+            var initial = GameSession.NewState(content, "m15-postshift", 74019UL,
+                new SimDate(2026, 10, 1));
+            var folder = Path.Combine(Path.GetTempPath(),
+                "m15-postshift-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            var file = Path.Combine(folder, "game.save");
+            try
+            {
+                File.WriteAllBytes(file, JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(initial), 2, 0));
+                EventV4CommitGateway Cold() => new EventV4CommitGateway(
+                    serializer, new AtomicFileSaveStore(file, serializer),
+                    definitions, policies, runner, automaticDailyChecks: true);
+                var created = Cold().ExecuteCore(new CommandEnvelope(initial.RunId,
+                    "create-postshift", 0, new GameCommand(CommandKind.CreateCharacter,
+                        "fresh", 25, "Postshift Tester", "base.female")));
+                Assert(created.Status == EventCommitStatus.Committed,
+                    "verified character must exist before the first workday");
+                var hired = Cold().ExecuteCore(new CommandEnvelope(initial.RunId,
+                    "hire-postshift", created.Revision, new GameCommand(
+                        CommandKind.AcceptJob, "developer")));
+                Assert(hired.Status == EventCommitStatus.Committed,
+                    "a verified employed shift must precede overtime");
+                var first = Cold().Read().State!;
+                var engine = new SimulationEngine(content);
+                Assert(!Cold().ShouldCheckCurrentDay(first) &&
+                    Cold().CheckCurrentDay(initial.RunId, first.Revision).ReasonKey ==
+                        "event.shift_not_completed",
+                    "an early explicit check must not strand the later overtime offer");
+                var date = first.DateIso;
+                for (var i = 0; i < 32; i++)
+                {
+                    var current = Cold().Read().State!;
+                    if (engine.HasCompletedWorkShift(current)) break;
+                    var step = Cold().ExecuteCore(new CommandEnvelope(initial.RunId,
+                        "work-to-shift-end-" + i, current.Revision,
+                        new GameCommand(CommandKind.AdvanceBoundary)));
+                    var afterStep = Cold().Read().State!;
+                    Assert(step.Status == EventCommitStatus.Committed &&
+                        afterStep.DateIso == date &&
+                        afterStep.EventV4!.Journal!.Tickets.Count == 0 &&
+                        afterStep.EventV4.Journal.NoEligibleDays.Count == 0,
+                        "morning/work transitions must not prematurely commit the daily ticket");
+                }
+                var atShift = Cold().Read().State!;
+                Assert(engine.HasCompletedWorkShift(atShift) &&
+                    Cold().ShouldCheckCurrentDay(atShift),
+                    "the same actual V3 shift evaluator opens the evening event frontier");
+                var blocked = Cold().ExecuteCore(new CommandEnvelope(initial.RunId,
+                    "post-shift-boundary", atShift.Revision,
+                    new GameCommand(CommandKind.AdvanceBoundary)));
+                var pending = Cold().ReadPendingChoice() ??
+                    throw new InvalidOperationException("post-shift ticket was not persisted");
+                var afterOffer = Cold().Read().State!;
+                Assert(blocked.Status == EventCommitStatus.Rejected &&
+                    blocked.ReasonKey == "event.choice_required" &&
+                    pending.EventId == "post-shift-pay" &&
+                    !pending.UnavailableChoiceReasons.ContainsKey("accept") &&
+                    afterOffer.Receipts.Count == atShift.Receipts.Count &&
+                    afterOffer.Minute == atShift.Minute &&
+                    afterOffer.EventV4!.Journal!.Tickets.Count == 1,
+                    "first post-shift boundary must offer a viable reward before advancing time");
+                var paid = Cold().Resolve(initial.RunId, "accept-post-shift",
+                    afterOffer.Revision, pending.TicketId, "accept");
+                var committed = Cold().Read().State!;
+                Assert(paid.Status == EventCommitStatus.Committed &&
+                    committed.Cash == atShift.Cash + 90_000L &&
+                    committed.Minute == atShift.Minute + 90 &&
+                    committed.EventV4!.Journal!.Tickets.Count == 1 &&
+                    committed.EventV4.Journal.NoEligibleDays.Count == 0,
+                    "overtime payout and time debit must share the existing V4 CAS receipt");
+                var bytes = File.ReadAllBytes(file);
+                Assert(Cold().Resolve(initial.RunId, "accept-post-shift",
+                    afterOffer.Revision, pending.TicketId, "accept").Status ==
+                        EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(file).SequenceEqual(bytes),
+                    "cold retry cannot replay overtime salary or time debit");
+            }
+            finally
+            {
+                try { Directory.Delete(folder, true); }
+                catch (IOException) { }
+            }
+        });
         Check("M15 opt-in daily event trigger stops batch and resumes after cold choice", () =>
         {
             var content = FirstPlayableContentTemplate.BuildCatalog();

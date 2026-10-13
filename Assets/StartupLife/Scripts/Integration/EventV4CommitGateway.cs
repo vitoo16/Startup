@@ -155,6 +155,40 @@ namespace StartupLife.Integration
                 definition.BodyKey, catalog.VietnameseText, unavailable);
         }
 
+        // Single daily selection remains authoritative. When an eligible
+        // story can offer a reward requiring a *completed* career shift,
+        // postpone the day's one check to the first post-shift boundary.
+        // Without this, the blocking choice modal could offer overtime only
+        // before work, making acceptance permanently unreachable.
+        public bool ShouldCheckCurrentDay(GameState current)
+        {
+            if (current == null) throw new ArgumentNullException(nameof(current));
+            var journal = current.EventV4?.Journal;
+            if (journal == null || coreRunner == null ||
+                HasCheckedDay(journal, current.DateIso))
+                return true;
+
+            var employed = current.Employment;
+            if (employed == null || employed.EndedIso.Length != 0 ||
+                string.CompareOrdinal(current.DateIso, employed.FirstShiftIso) < 0 ||
+                !coreRunner.Content.Careers.TryGetValue(employed.CareerId, out var career) ||
+                !career.WorksOn(current.Date))
+                return true;
+            var engine = new SimulationEngine(coreRunner.Content);
+            if (engine.HasCompletedWorkShift(current))
+                return true;
+
+            var catalog = serializer.ResolveCatalog(journal);
+            var context = AuthoritativeEventContext.FromCore(current, journal);
+            // This conservative readiness probe draws no event RNG, grants no
+            // outcome, and never creates a second daily window. Historical
+            // journals retain the same one-check-per-date identity.
+            return !catalog.Definitions.Any(story =>
+                story.Choices.Any(choice => choice.Reward?.TimeWindow ==
+                    EventTimeWindow.AfterCompletedShift) &&
+                GameEventSelector.IsEligible(story, context));
+        }
+
         // Persist a negative event-day check with the existing V4 CAS writer.
         public EventCommitResult CheckCurrentDay(string runId, long expectedRevision)
         {
@@ -163,6 +197,8 @@ namespace StartupLife.Integration
             var current = read.State!;
             if (current.RunId != runId || string.IsNullOrEmpty(current.Name))
                 return Reject(current, "event.character_required");
+            if (!ShouldCheckCurrentDay(current))
+                return Reject(current, "event.shift_not_completed");
             return OfferInternal(runId,
                 EventDecisionJournal.DailyCommandId(current.DateIso),
                 expectedRevision, null, persistEmpty: true);
@@ -398,7 +434,8 @@ namespace StartupLife.Integration
                 return Reject(current, "save.v4_core_evaluator_unavailable");
             if (automaticDailyChecks && !batchChild &&
                 command.Command.Kind == CommandKind.AdvanceBoundary &&
-                !HasCheckedDay(journal, current.DateIso))
+                !HasCheckedDay(journal, current.DateIso) &&
+                ShouldCheckCurrentDay(current))
             {
                 // WorkShiftPlaybackController legitimately drives one boundary
                 // at a time, unlike the durable Day/Month batch. It must use

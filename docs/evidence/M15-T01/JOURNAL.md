@@ -984,3 +984,16 @@ Only `FirstPlayableEventContent.Choice` has a new optional authored `EventChoice
 - **Tests:** added engine-free shell static-contract assertions; NOT RUN in code-first mode. **Unity EditMode/PlayMode/visual/device proof:** NOT RUN; asset localization table sync and portrait touch QA still required.
 - **Save impact:** none; existing V4 command IDs/reward CAS, V2/V3 saves, immutable historical catalogs and economic receipts remain unchanged. The new `event.choice.reload` key is current UI copy, not an archived narrative key.
 - **Files changed:** `Presentation/EventChoiceOverlay.cs`; `Presentation/EventLocalizationCatalog.cs`; `scripts/Test-FirstPlayableShellStatic.ps1`; this journal.
+
+
+## Increment 78 — Post-shift daily offer frontier for time-gated overtime
+
+**Owner:** GPT-6 Technical Director; **branch:** `main`; **M15:** PARTIAL.
+
+- Fixed the unreachable paid-overtime option: V4 previously performed its single automatic daily selection before any work transition, while the required `AfterCompletedShift` receipt could not settle until *after* that very shift. Pending modal prevented advancing the shift; the only available action was decline.
+- The existing gateway now delays exactly one daily offer/negative-check until after the authoritative V3 career shift if an authored, context-eligible event carries `AfterCompletedShift` minutes. Otherwise the existing morning trigger remains unchanged. This is a read-only scheduling predicate shared by the one-step work controller and the durable day/month coordinator; **no second event RNG, selection engine, daily window, writer, or state field**. The public daily check also refuses early invocation for such days.
+- Replay correctness: the same pre-existing V4 daily command identity, archived run-specific catalog, verified V3 shift completion, event selector and CAS writer remain authoritative. Existing checked days retain their recorded timing. No V2/V3/V4 wire changes or archived content updates.
+- Added engine-free real-save regression for a working Thursday: career shift progresses without early check; first post-shift boundary commits a pending payable ticket; 90-minute/90k VND choice is jointly settled and exact command cold retry does not replay effects.
+- **Skills used:** startup-life-session-orchestrator; startup-life-gameplay-guardian; unity-game-director; unity-gameplay-systems; unity-game-economy; unity-mcp-bridge; unity-qa-release; unity-debug-profiler; vietnam-art-direction.
+- **Tests:** economic regression authored; exact-head CI result must be checked separately. Unity Editor/EditMode/PlayMode/device QA deferred; NOT RUN. **Visual evidence:** NOT RUN. **Save impact:** none; existing run-specific catalog hashes and frozen historical fixtures unchanged. **Known limitations:** conditional evening event scheduling requires compiled CI confirmation and eventual Unity runtime playthrough; M15 not CLOSED.
+- **Files changed:** `Integration/EventV4AdvanceCoordinator.cs`, `Integration/EventV4CommitGateway.cs`, `tools/EconomicChecks/Program.cs`, this journal.
