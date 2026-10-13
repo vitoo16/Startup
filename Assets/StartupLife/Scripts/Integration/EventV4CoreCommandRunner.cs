@@ -18,6 +18,7 @@ namespace StartupLife.Integration
         private readonly V3SaveCompatibilitySerializer serializer;
         private readonly BusinessEconomicCatalog economics;
         private readonly IHistoricalEconomicRulesResolver archives;
+        public ContentCatalog Content => content;
 
         public EventV4CoreCommandRunner(ContentCatalog content,
             V3SaveCompatibilitySerializer serializer, BusinessEconomicCatalog economics,
@@ -91,7 +92,7 @@ namespace StartupLife.Integration
             var processor = new V3EconomicReceiptProcessor(content, economics,
                 candidate.EconomicV3.Activation.ToAnchor());
             ReceiptCandidateFinalizer.Append(candidate, plan.ToCoreCommand(),
-                plan.CoreReceiptCommandId, operationId, 0, processor);
+                plan.CoreReceiptCommandId, operationId, plan.MinutesConsumed, processor);
             candidate.EconomicV3.EconomicRecords.Validate();
             return candidate;
         }
