@@ -786,3 +786,16 @@ Design and implement a **single authoritative GameSession/receipt/CAS unit of wo
 Only `FirstPlayableEventContent.Choice` has a new optional authored `EventChoiceReward`; `BuildDefinitions` passes it to the pre-existing immutable event definition. The V4 journal/V3 receipt/CAS remain the **only** economic authority. No balance values in UI, duplicate payment path, new save schema or frozen fixture edits. Updated the existing **unexecuted** regression to assert the current/old fingerprints differ, historical data is preserved and exactly two rewarded choices have safe opt-outs. Unity Editor sync will add the new Vietnamese StringTable keys at consolidated integration.
 
 **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, localization, vietnam-art-direction, unity-gameplay-systems, unity-game-economy. **Acceptance:** gameplay gains first real authored cash/XP event choices, old catalog remains replayable, no forced monetary choice. **Tests/compile/visual:** NOT RUN per owner's code-first request. **Save impact:** changed content fingerprint for *new* V4 runs, old archive unchanged. **Known limitations:** needs full cross-ledger economy regression and Unity localization sync/visual QA later; expense events await affordability UX. **Files:** Content/FirstPlayableEventContent.cs, tools/EconomicChecks/Program.cs, JOURNAL.md, TECH_DEBT_AUDIT.md.
+
+
+## Increment 64 — Guard existing localized labels against late StringTable updates
+
+**Owner:** GPT-6 Technical Director. **Branch:** feat/m15-implementation-continuation. **Status:** code-first, M15-T01 PARTIAL.
+
+- `LocalizedKeyLabel.EnsureFor` now installs its guarded `OnUpdateString` listener whether the `LocalizeStringEvent` is newly created or already exists on an authored TMP object. It removes its own earlier listener before re-adding it, and disconnects from an older localizer instance when rebinding.
+- No alternative localization resolver, V4 save writer, event roster, reward amount, data migration, or historic catalog copy added. The guard only governs the label's own callback; externally authored listeners are outside this change.
+- **Skills used:** startup-life-session-orchestrator, startup-life-gameplay-guardian, localization, ui, ui-ugui, vietnam-art-direction.
+- **Acceptance:** existing and newly constructed runtime labels use the same guarded updater without duplicate registration on repeated `EnsureFor`.
+- **Tests/compile:** NOT RUN per code-first user instruction. **Visual evidence:** NOT RUN. **Save impact:** none.
+- **Known limitations:** external persistent `OnUpdateString` listeners on a pre-existing localizer are not rewritten; Unity editor/portrait callback-order QA remains deferred.
+- **Files changed:** Presentation/LocalizedKeyLabel.cs; this journal.
