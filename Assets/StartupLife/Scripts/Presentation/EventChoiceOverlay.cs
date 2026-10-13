@@ -26,6 +26,8 @@ namespace StartupLife.Presentation
         private Action refreshCommittedState = null!;
         private TMP_FontAsset font = null!;
         private GameObject panel = null!;
+        private GameObject scrim = null!;
+        private Image scrimImage = null!;
         private RectTransform choiceContent = null!;
         private ScrollRect choiceScroll = null!;
         private LocalizedKeyLabel status = null!;
@@ -87,6 +89,7 @@ namespace StartupLife.Presentation
                     displayedTicket = "";
                     uncertainCommand = "";
                     panel.SetActive(false);
+                    scrim.SetActive(false);
                     ResetReveal();
                     return;
                 }
@@ -96,6 +99,8 @@ namespace StartupLife.Presentation
                     current.TitleKey.Length > 0 ? current.TitleKey : "event.choice.title");
                 DisplayEventText(storyBody, current,
                     current.BodyKey.Length > 0 ? current.BodyKey : "event.choice.prompt");
+                scrim.SetActive(true);
+                scrim.transform.SetAsLastSibling();
                 panel.SetActive(true);
                 panel.transform.SetAsLastSibling();
                 if (displayedTicket != current.TicketId)
@@ -118,6 +123,8 @@ namespace StartupLife.Presentation
             {
                 // An unverified checkpoint never silently dismisses a choice.
                 Debug.LogWarning("Pending event checkpoint unavailable: " + error.Message);
+                scrim.SetActive(true);
+                scrim.transform.SetAsLastSibling();
                 panel.SetActive(true);
                 panel.transform.SetAsLastSibling();
                 ResetReveal();
@@ -135,6 +142,7 @@ namespace StartupLife.Presentation
             revealing = true;
             revealElapsed = 0f;
             revealGroup.alpha = 0.15f;
+            scrimImage.color = new Color(0.01f, 0.02f, 0.05f, 0f);
             revealGroup.interactable = false;
             revealGroup.blocksRaycasts = true;
             panelRect.localScale = Vector3.one * InitialScale;
@@ -147,6 +155,7 @@ namespace StartupLife.Presentation
             var normalized = Mathf.Clamp01(revealElapsed / RevealDurationSeconds);
             var eased = normalized * normalized * (3f - 2f * normalized);
             revealGroup.alpha = Mathf.Lerp(0.15f, 1f, eased);
+            scrimImage.color = new Color(0.01f, 0.02f, 0.05f, 0.72f * eased);
             panelRect.localScale = Vector3.one * Mathf.Lerp(InitialScale, 1f, eased);
             if (normalized < 1f) return;
             revealing = false;
@@ -159,6 +168,8 @@ namespace StartupLife.Presentation
             revealElapsed = 0f;
             if (revealGroup == null) return;
             revealGroup.alpha = 1f;
+            if (scrimImage != null)
+                scrimImage.color = new Color(0.01f, 0.02f, 0.05f, 0.72f);
             revealGroup.interactable = true;
             revealGroup.blocksRaycasts = true;
             if (panelRect != null) panelRect.localScale = Vector3.one;
@@ -257,6 +268,18 @@ namespace StartupLife.Presentation
 
         private void Build()
         {
+            // Full-screen raycast scrim prevents touch-through at the inset
+            // edges. It has no close action: V4 still requires real resolution.
+            scrim = Node("EventChoiceModalScrim", transform,
+                typeof(Image), typeof(LayoutElement));
+            scrimImage = scrim.GetComponent<Image>();
+            scrimImage.raycastTarget = true;
+            scrim.GetComponent<LayoutElement>().ignoreLayout = true;
+            var scrimRect = (RectTransform)scrim.transform;
+            scrimRect.anchorMin = Vector2.zero;
+            scrimRect.anchorMax = Vector2.one;
+            scrimRect.offsetMin = scrimRect.offsetMax = Vector2.zero;
+
             panel = Node("EventChoiceOverlay", transform,
                 typeof(Image), typeof(VerticalLayoutGroup), typeof(LayoutElement),
                 typeof(CanvasGroup));
@@ -297,6 +320,7 @@ namespace StartupLife.Presentation
             storyBody = LocalizedKeyLabel.EnsureFor(storyText);
 
             panel.SetActive(false);
+            scrim.SetActive(false);
             ResetReveal();
         }
 
