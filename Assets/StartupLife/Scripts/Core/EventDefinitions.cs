@@ -13,14 +13,20 @@ namespace StartupLife.Core
     {
         public long CashDeltaVnd { get; }
         public long CareerXpDelta { get; }
+        // Native simulation minutes consumed in the same V3 receipt as money/XP.
+        // Zero preserves the exact historical event payout semantics.
+        public int MinutesConsumed { get; }
 
-        public EventChoiceReward(long cashDeltaVnd, long careerXpDelta)
+        public EventChoiceReward(long cashDeltaVnd, long careerXpDelta,
+            int minutesConsumed = 0)
         {
-            if ((cashDeltaVnd == 0 && careerXpDelta == 0) ||
-                cashDeltaVnd == long.MinValue || careerXpDelta < 0)
+            if ((cashDeltaVnd == 0 && careerXpDelta == 0 && minutesConsumed == 0) ||
+                cashDeltaVnd == long.MinValue || careerXpDelta < 0 ||
+                minutesConsumed < 0 || minutesConsumed >= 1440)
                 throw new ArgumentException("Invalid authored event reward.");
             CashDeltaVnd = cashDeltaVnd;
             CareerXpDelta = careerXpDelta;
+            MinutesConsumed = minutesConsumed;
         }
     }
 
