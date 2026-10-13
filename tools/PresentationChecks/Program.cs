@@ -49,7 +49,12 @@ internal static class Program
     private static void EventChoiceTranslations()
     {
         var entries = EventLocalizationCatalog.Entries;
-        Equal(5 + FirstPlayableEventContent.VietnameseEntries.Count, entries.Count);
+        // The two affordability/reward-unavailable labels introduced by M15
+        // are required localized UI copy, not optional test exceptions.
+        var sharedKeys = new[] { "title", "prompt", "retry", "changed", "unavailable",
+            "insufficient_funds", "reward_unavailable" };
+        Equal(sharedKeys.Length + FirstPlayableEventContent.VietnameseEntries.Count,
+            entries.Count);
         Equal(entries.Count, entries.Select(x => x.Key)
             .Distinct(StringComparer.Ordinal).Count());
         True(entries.All(x => x.Key.StartsWith("event.", StringComparison.Ordinal)
@@ -61,7 +66,7 @@ internal static class Program
             True(keys.Contains(story.BodyKey));
             True(story.Choices.All(x => keys.Contains(x.LabelKey)));
         }
-        foreach (var key in new[] { "title", "prompt", "retry", "changed", "unavailable" })
+        foreach (var key in sharedKeys)
             True(entries.Any(x => x.Key == "event.choice." + key));
         ThrowsNotSupported(() =>
             ((IList<KeyValuePair<string,string>>)entries).Clear());
