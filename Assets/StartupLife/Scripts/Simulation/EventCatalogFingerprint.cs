@@ -73,6 +73,14 @@ namespace StartupLife.Simulation
                     {
                         Number(choice.Reward.CashDeltaVnd);
                         Number(choice.Reward.CareerXpDelta);
+                        // Preserve byte-identical historical fingerprints for
+                        // pre-time-cost catalogs. New time effects are part of
+                        // the canonical identity and cannot be silently edited.
+                        if (choice.Reward.MinutesConsumed > 0)
+                        {
+                            Field("v4-event-time-minutes/1");
+                            Number(choice.Reward.MinutesConsumed);
+                        }
                     }
                 }
             }
