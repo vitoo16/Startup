@@ -83,6 +83,49 @@ namespace StartupLife.Tests.EditMode
             }
         }
 
+        [TestCase("customer-trust-repair", "follow-up", "customer-care-follow-up")]
+        [TestCase("supplier-quality-sample", "sample", "supplier-sample-review")]
+        [TestCase("mentor-workshop-materials", "contribute", "mentor-workshop-reflection")]
+        public void NewConsequencesLeadToReachableFollowUpStories(
+            string sourceId, string selectedChoiceId, string continuationId)
+        {
+            var source = FirstPlayableEventContent.Definitions.Single(x => x.Id == sourceId);
+            var selection = source.Choices.Single(x => x.Id == selectedChoiceId);
+            var continuation = FirstPlayableEventContent.Definitions.Single(
+                x => x.Id == continuationId);
+            Assert.That(continuation.RequiredTags.Where(tag =>
+                tag.StartsWith("event/", StringComparison.Ordinal)).Any(
+                    tag => selection.GrantedTags.Contains(tag)), Is.True,
+                "A follow-up must require a tag from the exact selected outcome.");
+            Assert.That(continuation.Choices.Count, Is.GreaterThanOrEqualTo(2));
+            Assert.That(continuation.Choices.All(x => x.Reward == null), Is.True,
+                "A recovery/reflection step must not require another payment.");
+        }
+
+        [Test]
+        public void AllCurrentStoriesProvideCompleteVietnameseNarrativeAndChoices()
+        {
+            var entries = FirstPlayableEventContent.VietnameseEntries;
+            var definitions = FirstPlayableEventContent.Definitions;
+            var copy = entries.ToDictionary(x => x.Key, x => x.Value,
+                StringComparer.Ordinal);
+            Assert.That(copy.Count, Is.EqualTo(entries.Count),
+                "Duplicate localized keys must fail authoring.");
+            foreach (var story in definitions)
+            {
+                Assert.That(copy.TryGetValue(story.TitleKey, out var title) &&
+                    !string.IsNullOrWhiteSpace(title), Is.True, story.Id + " title");
+                Assert.That(copy.TryGetValue(story.BodyKey, out var body) &&
+                    !string.IsNullOrWhiteSpace(body), Is.True, story.Id + " body");
+                foreach (var choice in story.Choices)
+                    Assert.That(copy.TryGetValue(choice.LabelKey, out var label) &&
+                        !string.IsNullOrWhiteSpace(label), Is.True,
+                        story.Id + " choice " + choice.Id);
+            }
+            Assert.That(entries.Count, Is.EqualTo(116),
+                "Every one of the 29 current stories has a title, body and two choices.");
+        }
+
         [Test]
         public void NewExpenseLeavesHistoricalReleaseRostersUnchanged()
         {
