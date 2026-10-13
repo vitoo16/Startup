@@ -36,7 +36,7 @@ namespace StartupLife.Simulation
                 throw new ArgumentException("Invalid V3 financial reward receipt frontier.");
 
             var command = GameCommand.ParseCanonicalPayload(receipt.Payload);
-            if (command.Kind != CommandKind.SettleEventReward || command.Amount != 0 ||
+            if (command.Kind != CommandKind.SettleEventReward ||
                 !journal.Tickets.Any(x => x.Id == command.ContentId))
                 throw new ArgumentException("Unknown financial event receipt.");
             var ticket = journal.Tickets.Single(x => x.Id == command.ContentId);
