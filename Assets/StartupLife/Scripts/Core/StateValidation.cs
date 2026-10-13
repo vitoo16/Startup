@@ -269,7 +269,17 @@ namespace StartupLife.Core
                         if (receipt.MinutesConsumed <= 0 || receipt.MinutesConsumed > command.Amount)
                             throw new ArgumentException("Invalid committed study duration.");
                     }
-                    else if (receipt.MinutesConsumed != 0) throw new ArgumentException("Non-time command advanced the timeline.");
+                    else if (command.Kind == CommandKind.SettleEventReward)
+                    {
+                        // Only the V4 joint replay may authorize this internal
+                        // command. Structurally, receipt time must match its
+                        // canonical intent; the pinned choice proves the value.
+                        if (command.Amount < 0 || command.Amount >= 1440 ||
+                            receipt.MinutesConsumed != command.Amount)
+                            throw new ArgumentException("Invalid committed event duration.");
+                    }
+                    else if (receipt.MinutesConsumed != 0)
+                        throw new ArgumentException("Non-time command advanced the timeline.");
                     if (command.Kind != CommandKind.AcknowledgePlayback) currentActivity = receipt.OperationId;
                 }
                 var nextMinute = checked(minute + receipt.MinutesConsumed);
