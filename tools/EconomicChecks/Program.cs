@@ -1235,13 +1235,22 @@ internal static class Program
                 "current authored content may evolve but published first-playable V4 data must not");
             var rewarded = FirstPlayableEventContent.Definitions.SelectMany(x => x.Choices)
                 .Where(x => x.Reward != null).ToArray();
-            Assert(FirstPlayableEventContent.Definitions.Count == 23 &&
-                rewarded.Length == 3 &&
+            var compound = FirstPlayableEventContent.Definitions.Single(x =>
+                x.Id == "mentor-workshop-materials").Choices.Single(x =>
+                x.Id == "contribute").Reward;
+            Assert(FirstPlayableEventContent.Definitions.Count == 26 &&
+                rewarded.Length == 6 &&
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == 100000L &&
                     x.Reward.CareerXpDelta == 0) &&
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == 0 &&
                     x.Reward.CareerXpDelta == 60L) &&
                 rewarded.Any(x => x.Reward!.CashDeltaVnd == -40000L &&
+                    x.Reward.CareerXpDelta == 0) &&
+                compound != null && compound.CashDeltaVnd == -25000L &&
+                compound.CareerXpDelta == 45 &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == -70000L &&
+                    x.Reward.CareerXpDelta == 0) &&
+                rewarded.Any(x => x.Reward!.CashDeltaVnd == -55000L &&
                     x.Reward.CareerXpDelta == 0) &&
                 FirstPlayableEventContent.Definitions.All(x =>
                     x.Choices.Any(choice => choice.Reward == null)),
