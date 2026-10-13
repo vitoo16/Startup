@@ -39,6 +39,7 @@ namespace StartupLife.Presentation
         private string uncertainTicket = "";
         private string uncertainChoice = "";
         private readonly List<ChoiceButton> buttons = new List<ChoiceButton>();
+        private ChoiceButton reloadButton = null!;
 
         private sealed class ChoiceButton
         {
@@ -88,6 +89,9 @@ namespace StartupLife.Presentation
                     pending = null;
                     displayedTicket = "";
                     uncertainCommand = "";
+                    uncertainTicket = "";
+                    uncertainChoice = "";
+                    reloadButton.Button.gameObject.SetActive(false);
                     panel.SetActive(false);
                     scrim.SetActive(false);
                     ResetReveal();
@@ -95,6 +99,7 @@ namespace StartupLife.Presentation
                 }
 
                 pending = current;
+                reloadButton.Button.gameObject.SetActive(false);
                 DisplayEventText(heading, current,
                     current.TitleKey.Length > 0 ? current.TitleKey : "event.choice.title");
                 DisplayEventText(storyBody, current,
@@ -106,7 +111,10 @@ namespace StartupLife.Presentation
                 if (displayedTicket != current.TicketId)
                 {
                     displayedTicket = current.TicketId;
-                    uncertainCommand = "";
+                    // A transient failed read must not discard an ambiguous
+                    // resolution ID for the very same pending ticket.
+                    if (uncertainTicket != current.TicketId)
+                        uncertainCommand = "";
                     BindChoices(current);
                     // A newly offered story must begin at its heading, not at the
                     // previous ticket's scroll offset.
@@ -129,6 +137,16 @@ namespace StartupLife.Presentation
                 panel.transform.SetAsLastSibling();
                 ResetReveal();
                 pending = null;
+                displayedTicket = "";
+                // Do not expose stale authored copy or choices from a previous
+                // ticket when the authoritative V4 checkpoint is unavailable.
+                heading.SetKey("event.choice.title");
+                storyBody.SetKey("event.choice.prompt");
+                foreach (var button in buttons)
+                    button.Button.gameObject.SetActive(false);
+                reloadButton.Button.gameObject.SetActive(true);
+                choiceScroll.StopMovement();
+                choiceScroll.verticalNormalizedPosition = 1f;
                 status.SetKey("event.choice.unavailable");
                 SetButtonsEnabled(false);
             }
@@ -177,8 +195,13 @@ namespace StartupLife.Presentation
 
         private static string ChoiceGuidanceKey(EventPendingChoiceSnapshot current)
         {
-            if (current.UnavailableChoiceReasons.Values.Contains("event.choice.insufficient_funds"))
+            var reasons = current.UnavailableChoiceReasons.Values;
+            if (reasons.Contains("event.choice.insufficient_funds"))
                 return "event.choice.insufficient_funds";
+            if (reasons.Contains("event.choice.after_shift_required"))
+                return "event.choice.after_shift_required";
+            if (reasons.Contains("event.choice.time_unavailable"))
+                return "event.choice.time_unavailable";
             return current.UnavailableChoiceReasons.Count > 0
                 ? "event.choice.reward_unavailable" : "event.choice.prompt";
         }
@@ -227,8 +250,15 @@ namespace StartupLife.Presentation
             catch (Exception error)
             {
                 Debug.LogWarning("Pending event resolution unavailable: " + error.Message);
-                status.SetKey("event.choice.unavailable");
-                SetButtonsEnabled(false);
+                // The CAS may have committed before an exception surfaced.
+                // Re-read V4 authority; keep the exact command ID for any
+                // still-pending matching ticket. Do not mint another command.
+                Refresh();
+                if (pending != null && pending.TicketId == selected.TicketId)
+                {
+                    status.SetKey("event.choice.retry");
+                    SetButtonsEnabled(true);
+                }
             }
         }
 
@@ -318,6 +348,14 @@ namespace StartupLife.Presentation
             storyText.overflowMode = TextOverflowModes.Overflow;
             storyText.GetComponent<LayoutElement>().preferredHeight = -1;
             storyBody = LocalizedKeyLabel.EnsureFor(storyText);
+
+            // Reload is read-only and never dismisses a required decision.
+            // It remains reachable when the verified checkpoint cannot load.
+            reloadButton = CreateChoiceButton();
+            reloadButton.Button.gameObject.name = "EventChoiceReload";
+            reloadButton.Label.SetKey("event.choice.reload");
+            reloadButton.Button.onClick.AddListener(Refresh);
+            reloadButton.Button.gameObject.SetActive(false);
 
             panel.SetActive(false);
             scrim.SetActive(false);

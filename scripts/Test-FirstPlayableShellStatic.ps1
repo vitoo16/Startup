@@ -83,6 +83,15 @@ Add-Check 'M15 event dialog reveal is animated without bypassing pending choice 
     ($eventChoiceOverlay -match 'gateway\.Resolve\(selected\.RunId'))
     'Visual motion must be unscaled, block unintended clicks and retain verified V4 command dispatch'
 
+Add-Check 'M15 unavailable event re-read never silently dismisses or reissues a choice' (
+    ($eventChoiceOverlay -match 'EventChoiceReload') -and
+    ($eventChoiceOverlay -match 'reloadButton\.Button\.onClick\.AddListener\(Refresh\)') -and
+    ($eventChoiceOverlay -match 'uncertainTicket != current\.TicketId') -and
+    ($eventChoiceOverlay -match 'if \(pending != null && pending\.TicketId == selected\.TicketId\)') -and
+    ($eventChoiceOverlay -match 'button\.Button\.gameObject\.SetActive\(false\)') -and
+    ($eventChoiceOverlay -match 'event\.choice\.after_shift_required') -and
+    ($eventChoiceOverlay -match 'event\.choice\.time_unavailable')) 'Read-only recovery, exact command retry and useful time blockers'
+
 Add-Check 'M9 business Unity actions unwrap to CommandResult' ($missingBusinessUnwraps.Count -eq 0) ($missingBusinessUnwraps -join ', ')
 Add-Check 'M9 Unity scene runtime business panel wiring' (
     ($bootstrap -match 'lifeScreen\.EnsureBusinessManagementUi\(\)') -and
