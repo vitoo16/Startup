@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using StartupLife.Integration;
 using UnityEngine;
@@ -102,7 +103,7 @@ namespace StartupLife.Presentation
                 }
                 status.SetKey(uncertainCommand.Length > 0 &&
                     uncertainTicket == current.TicketId
-                        ? "event.choice.retry" : "event.choice.prompt");
+                        ? "event.choice.retry" : ChoiceGuidanceKey(current));
                 SetButtonsEnabled(true);
             }
             catch (Exception error)
@@ -117,9 +118,18 @@ namespace StartupLife.Presentation
             }
         }
 
+        private static string ChoiceGuidanceKey(EventPendingChoiceSnapshot current)
+        {
+            if (current.UnavailableChoiceReasons.Values.Contains("event.choice.insufficient_funds"))
+                return "event.choice.insufficient_funds";
+            return current.UnavailableChoiceReasons.Count > 0
+                ? "event.choice.reward_unavailable" : "event.choice.prompt";
+        }
+
         private void Resolve(string choiceId)
         {
-            if (pending == null) return;
+            if (pending == null || pending.UnavailableChoiceReasons.ContainsKey(choiceId))
+                return;
             var selected = pending;
             var sameUncertain = uncertainCommand.Length != 0 &&
                 uncertainTicket == selected.TicketId && uncertainChoice == choiceId;
@@ -195,6 +205,7 @@ namespace StartupLife.Presentation
             foreach (var button in buttons)
                 if (button.Button.gameObject.activeSelf)
                     button.Button.interactable = enabled &&
+                        (pending == null || !pending.UnavailableChoiceReasons.ContainsKey(button.ChoiceId)) &&
                         (uncertainCommand.Length == 0 || button.ChoiceId == uncertainChoice);
         }
 
