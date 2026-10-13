@@ -260,7 +260,25 @@ namespace StartupLife.Content
                 new Choice("compare", "So sánh quy cách và điều kiện giao",
                     "event/supply-options-compared"),
                 new Choice("defer", "Theo dõi thêm, không cam kết mua",
-                    "event/supply-options-deferred"))
+                    "event/supply-options-deferred")),
+            // Study offers use verified V3 course eligibility. Narrative tags
+            // never mint course progress or consume unreceipted study minutes.
+            new Story("course-study-questions", "study", 1, 7,
+                new[] { "course-active" },
+                "Ghi chú khi theo học",
+                "Trong lúc theo khóa học, bạn nhận ra vài nội dung cần tìm hiểu kỹ hơn. Bạn có thể chuẩn bị câu hỏi cho lần trao đổi tiếp theo.",
+                new Choice("prepare", "Ghi lại câu hỏi cần được giải đáp",
+                    "event/course-questions-prepared"),
+                new Choice("review", "Đọc lại mục tiêu khóa học",
+                    "event/course-goals-reviewed")),
+            new Story("course-question-follow-up", "study", 1, 6,
+                new[] { "event/course-questions-prepared" },
+                "Làm rõ nội dung còn vướng",
+                "Bạn xem lại danh sách câu hỏi đã chuẩn bị và có thêm thông tin để quyết định nội dung nào cần tìm hiểu tiếp.",
+                new Choice("organize", "Sắp xếp lại câu hỏi theo chủ đề",
+                    "event/course-questions-organized"),
+                new Choice("clarify", "Chọn một câu hỏi để trao đổi sau",
+                    "event/course-question-prioritized"))
         };
 
         private static readonly IReadOnlyList<GameEventDefinition> DefinitionsValue = BuildDefinitions();
