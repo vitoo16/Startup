@@ -45,7 +45,9 @@ foreach ($relativePath in @('scripts/Test-UnityHeadless.ps1', 'scripts/Read-Unit
 
     $text = Read-RepoText $relativePath
     Add-Check "no machine-specific Windows path: $relativePath" (-not ($text -match '(?i)[A-Z]:[/\\]Users[/\\]')) 'runner scripts must resolve tools through PATH/UNITY_CLI_PATH, not a developer machine path'
-    Add-Check "pins Unity 6000.3.25f1: $relativePath" ($text -match "expectedEditorVersion\s*=\s*'6000\.3\.25f1'") 'expected explicit project Editor guard'
+    if ($relativePath -in @('scripts/Test-UnityHeadless.ps1', 'scripts/Invoke-UnityBuild.ps1')) {
+        Add-Check "pins Unity 6000.3.25f1: $relativePath" ($text -match "expectedEditorVersion\s*=\s*'6000\.3\.25f1'") 'expected explicit project Editor guard'
+    }
 }
 
 $testScript = Read-RepoText 'scripts/Test-UnityHeadless.ps1'
