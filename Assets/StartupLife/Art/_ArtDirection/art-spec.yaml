@@ -43,14 +43,15 @@
     "crop_frame": "Windowbox_prototype"
   },
   "characters": {
-    "chibi_total_heads": 2.6,
-    "head_height_fraction": 0.385,
+    "chibi_total_heads": 2.3,
+    "head_height_fraction": 0.435,
     "reference_world_height_units": 5,
     "silhouette_readability_screen_px": 160,
     "view_angles": [
       "front",
       "three_quarter_left",
-      "side"
+      "side",
+      "back"
     ],
     "character_variants": [
       "base.female",
@@ -92,7 +93,18 @@
       "transition"
     ],
     "rigid_sprite_translation_does_not_count_as_walk": true,
-    "rig_requires_independent_joint_motion": true
+    "rig_requires_independent_joint_motion": true,
+    "chibi_head_ratio_range": [
+      2.2,
+      2.4
+    ],
+    "ratio_status": "design_target_unverified_phone",
+    "inclusive_visual_rules": [
+      "short_rounded_adult_not_child_coded",
+      "no_skin_gender_age_body_disability_region_stereotypes_or_competence_inference",
+      "original_non_derivative_hair_outfit_accessory_silhouette",
+      "shared_articulated_rig_across_all_presentations_and_professions"
+    ]
   },
   "shape_language": {
     "large": "square-round actor forms and subtle original asymmetries",
@@ -161,7 +173,10 @@
     "hd_chibi_or_pixel_mix",
     "bilinear_pixel_sprites",
     "sprite_mipmaps_in_world",
-    "third_party_pixel_tracing"
+    "third_party_pixel_tracing",
+    "photo_to_pixel_background",
+    "derivative_character_silhouette",
+    "discriminatory_character_or_region_caricature"
   ],
   "acceptance": {
     "golden_min_score": 15,
@@ -184,5 +199,12 @@
     "Assets/StartupLife/Art/_ArtDirection/composition.yaml",
     "Assets/StartupLife/Art/_ArtDirection/golden-targets.json"
   ],
-  "notes": "32 PPU, 32px tiles, 128x160 sprite and 360x640 world are unified prototype candidates. No Unity import, mobile beautycell or IP signoff yet. M13 preserved in Git history."
+  "notes": "32 PPU, 32px tiles, 128x160 sprite and 360x640 world are unified prototype candidates. No Unity import, mobile beautycell or IP signoff yet. M13 preserved in Git history. New Art Director direction 2026-10-15: nominal 2.3 heads adult chibi; current C01 draft is NOT approved; see docs/ART_DIRECTION_PRODUCTION_BIBLE.md.",
+  "environment_art_rules": [
+    "original_native_pixel_clusters_not_photo_pixel_filter",
+    "original_geometry_no_third_party_sprites_or_traced_screens",
+    "scene_specific_contemporary_vietnam_locality_sheet_2_to_4_anchors",
+    "blank_signage_with_correct_vietnamese_TMP_text",
+    "no_regional_or_socioeconomic_caricature"
+  ]
 }
