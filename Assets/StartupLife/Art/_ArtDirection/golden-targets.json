@@ -31,13 +31,16 @@
       "source_type": "to_be_generated",
       "source_path": null,
       "unity_path": null,
-      "reference": "front/3-4/side turnaround and expressions; male/female appearance consistency; original pixel brief only, not from any external game screenshot",
+      "reference": "First-party original rounded ADULT chibi target 2.2-2.4 heads, four consistent views (front/3-4/side/back), true joint animation, no internet sprite/tracing",
       "requirements": [
-        "2.6-head original pixel ratio at candidate 128x160 sprite",
+        "2.2-2.4 heads; nominal 2.3 at prototype 128x160 source, real device approval still required",
         "independent cutout joint layers with stable IDs",
         "neutral idle/typing/talking",
         "distinct limb animation rather than sliding sprite",
-        "point-filter 32 PPU logical family; no mipmaps, no rigid slide-as-walk"
+        "point-filter 32 PPU logical family; no mipmaps, no rigid slide-as-walk",
+        "four-view identity with clean rig layer naming and readable hands/feet",
+        "diverse respectful character variants with no appearance-derived skill, career, gender or earnings",
+        "source must be original; C01 old-proportion draft must be redesigned/reviewed before approval"
       ],
       "local_anchors": [
         "urban daily outfit",
@@ -60,7 +63,8 @@
         "clear character focal area",
         "camera geometry matches Golden office",
         "separate blank sign/poster layers",
-        "point-filter 32 PPU logical family; no mipmaps, no rigid slide-as-walk"
+        "point-filter 32 PPU logical family; no mipmaps, no rigid slide-as-walk",
+        "original native pixel clusters, never online photo/sprite pixel filters; contemporary Vietnam locality contract with 2-4 plausible anchors; culturally respectful"
       ],
       "local_anchors": [
         "wall fan",
@@ -84,7 +88,8 @@
         "clean silhouettes at 360x640",
         "room for typing animation",
         "no fake readable text",
-        "point-filter 32 PPU logical family; no mipmaps, no rigid slide-as-walk"
+        "point-filter 32 PPU logical family; no mipmaps, no rigid slide-as-walk",
+        "original native pixel clusters, never online photo/sprite pixel filters; contemporary Vietnam locality contract with 2-4 plausible anchors; culturally respectful"
       ],
       "local_anchors": [
         "water dispenser",
@@ -108,7 +113,8 @@
         "stainless prep counter",
         "separate signage text layer",
         "character and prop pivots align",
-        "point-filter 32 PPU logical family; no mipmaps, no rigid slide-as-walk"
+        "point-filter 32 PPU logical family; no mipmaps, no rigid slide-as-walk",
+        "original native pixel clusters, never online photo/sprite pixel filters; contemporary Vietnam locality contract with 2-4 plausible anchors; culturally respectful"
       ],
       "local_anchors": [
         "QR stand",
@@ -132,7 +138,8 @@
         "96 reference-pixel touch targets",
         "NotoSansVietnamese font coverage",
         "reuse art-spec color roles and Unity Localization",
-        "native-resolution TMP + crisp scalable 9-slice pixel UI"
+        "native-resolution TMP + crisp scalable 9-slice pixel UI",
+        "original responsive five-tab Life/Career/Skill/Business/Profile UI with loading/empty/disabled/error/no-funds/no-time states, native Vietnamese TMP"
       ],
       "local_anchors": [
         "VND format",
@@ -152,5 +159,5 @@
     "independent_IP_and_style_review",
     "point_sampling_import_and_phone_capture"
   ],
-  "comments": "Pixel style migration does not approve any Golden sprite/rig, Unity import, animation or screenshot."
+  "comments": "Pixel style migration does not approve any Golden sprite/rig, Unity import, animation or screenshot. 2026-10-15 short-round 2.3-head art direction and native Vietnamese pixel environments, briefs only; no approval."
 }
