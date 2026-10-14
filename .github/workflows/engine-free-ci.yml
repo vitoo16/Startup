@@ -87,6 +87,11 @@ jobs:
           python3 scripts/Validate-PixelUi.py
           python3 -m unittest discover -s tools/PixelUiChecks -p 'test_*.py' -v
 
+      - name: Render quarantined Golden C01 preview and silhouette contact sheet
+        run: |
+          python3 scripts/Render-GoldenCharacterPreview.py --output "${RUNNER_TEMP}/startup-life/c01-front-draft.png"
+          python3 -m unittest discover -s tools/GoldenCharacterPreviewChecks -p 'test_*.py' -v
+
       - name: Validate asset provenance and approval join (no legal clearance implied)
         run: |
           python3 scripts/Validate-AssetProvenance.py
@@ -111,6 +116,8 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: engine-free-foundation-reports
-          path: ${{ runner.temp }}/startup-life/*.json
+          path: |
+            ${{ runner.temp }}/startup-life/*.json
+            ${{ runner.temp }}/startup-life/*.png
           if-no-files-found: warn
           retention-days: 14
