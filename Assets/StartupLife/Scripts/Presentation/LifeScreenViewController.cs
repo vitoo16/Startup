@@ -29,6 +29,32 @@ namespace StartupLife.Presentation
         [SerializeField] private UnityEngine.UI.Button buyCourseButton;
         [SerializeField] private UnityEngine.UI.Button studyButton;
         [SerializeField] private UnityEngine.UI.Button resignButton;
+        [SerializeField] private MobileTheme uiTheme;
+
+        // Older serialized scenes may not have the new theme reference yet.
+        // One temporary fallback uses the same MobileTheme C# defaults guarded
+        // by Validate-GoldenArt, never a second legacy HD palette.
+        private MobileTheme fallbackUiTheme;
+        public MobileTheme UiTheme
+        {
+            get
+            {
+                if (uiTheme != null) return uiTheme;
+                if (fallbackUiTheme == null)
+                {
+                    fallbackUiTheme = ScriptableObject.CreateInstance<MobileTheme>();
+                    fallbackUiTheme.hideFlags = HideFlags.DontSave;
+                    Debug.LogWarning("Pixel UI theme is not serialized in this scene; " +
+                        "run FirstPlayableShellBuilder.RepairGeneratedAssetReferences in Unity.");
+                }
+                return fallbackUiTheme;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (fallbackUiTheme != null) Destroy(fallbackUiTheme);
+        }
 
         private FirstPlayableFlow flow;
         private ContentCatalog content;

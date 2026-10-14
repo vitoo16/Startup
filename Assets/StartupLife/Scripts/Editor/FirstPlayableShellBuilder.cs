@@ -141,6 +141,7 @@ namespace StartupLife.Editor
             Assign(character, "status", characterStatus);
 
             Assign(life, "root", lifePanel);
+            Assign(life, "uiTheme", theme);
             Assign(life, "nameValue", nameValue);
             Assign(life, "dateValue", dateValue);
             Assign(life, "timeValue", timeValue);
@@ -215,6 +216,10 @@ namespace StartupLife.Editor
                 EditorUtility.SetDirty(text);
             }
             var theme = AssetDatabase.LoadAssetAtPath<MobileTheme>(Root + "/Data/MobileTheme.asset");
+            if (!theme) throw new InvalidOperationException("Missing authoritative pixel UI theme.");
+            var life = UnityEngine.Object.FindAnyObjectByType<LifeScreenViewController>();
+            if (!life) throw new InvalidOperationException("Missing life screen for UI theme migration.");
+            Assign(life, "uiTheme", theme);
             foreach (var layout in UnityEngine.Object.FindObjectsByType<UnityEngine.UI.VerticalLayoutGroup>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
                 layout.spacing = theme.gap / 2f;

@@ -25,6 +25,7 @@ namespace StartupLife.Presentation
         private ICommandIdSource commandIds = null!;
         private Action refreshCommittedState = null!;
         private TMP_FontAsset font = null!;
+        private MobileTheme theme = null!;
         private GameObject panel = null!;
         private GameObject scrim = null!;
         private Image scrimImage = null!;
@@ -65,6 +66,7 @@ namespace StartupLife.Presentation
             if (overlay.panel == null)
             {
                 overlay.font = fontSource.font;
+                overlay.theme = host.UiTheme;
                 overlay.Build();
             }
             overlay.gateway = gateway;
@@ -160,7 +162,7 @@ namespace StartupLife.Presentation
             revealing = true;
             revealElapsed = 0f;
             revealGroup.alpha = 0.15f;
-            scrimImage.color = new Color(0.01f, 0.02f, 0.05f, 0f);
+            scrimImage.color = new Color(theme.ink.r, theme.ink.g, theme.ink.b, 0f);
             revealGroup.interactable = false;
             revealGroup.blocksRaycasts = true;
             panelRect.localScale = Vector3.one * InitialScale;
@@ -173,7 +175,7 @@ namespace StartupLife.Presentation
             var normalized = Mathf.Clamp01(revealElapsed / RevealDurationSeconds);
             var eased = normalized * normalized * (3f - 2f * normalized);
             revealGroup.alpha = Mathf.Lerp(0.15f, 1f, eased);
-            scrimImage.color = new Color(0.01f, 0.02f, 0.05f, 0.72f * eased);
+            scrimImage.color = new Color(theme.ink.r, theme.ink.g, theme.ink.b, 0.72f * eased);
             panelRect.localScale = Vector3.one * Mathf.Lerp(InitialScale, 1f, eased);
             if (normalized < 1f) return;
             revealing = false;
@@ -187,7 +189,7 @@ namespace StartupLife.Presentation
             if (revealGroup == null) return;
             revealGroup.alpha = 1f;
             if (scrimImage != null)
-                scrimImage.color = new Color(0.01f, 0.02f, 0.05f, 0.72f);
+                scrimImage.color = new Color(theme.ink.r, theme.ink.g, theme.ink.b, 0.72f);
             revealGroup.interactable = true;
             revealGroup.blocksRaycasts = true;
             if (panelRect != null) panelRect.localScale = Vector3.one;
@@ -321,7 +323,7 @@ namespace StartupLife.Presentation
                 typeof(CanvasGroup));
             revealGroup = panel.GetComponent<CanvasGroup>();
             panelRect = (RectTransform)panel.transform;
-            panel.GetComponent<Image>().color = new Color(0.08f, 0.12f, 0.18f, 0.98f);
+            panel.GetComponent<Image>().color = theme.panel;
             panel.GetComponent<LayoutElement>().ignoreLayout = true;
             var rect = (RectTransform)panel.transform;
             rect.anchorMin = new Vector2(0.03f, 0.03f);
@@ -342,7 +344,7 @@ namespace StartupLife.Presentation
                 TextNode("ChoiceStatus", panel.transform, 28, 110));
 
             var eventScroll = MobileScrollViewFactory.Create(panel.transform,
-                "EventChoiceScroll", new Color(0.12f, 0.18f, 0.25f, 0.95f),
+                "EventChoiceScroll", theme.background,
                 new RectOffset(12, 12, 14, 14), 14f, TextAnchor.UpperCenter, 35f);
             choiceContent = (RectTransform)eventScroll.Content.transform;
             choiceScroll = eventScroll.Scroll;
@@ -372,13 +374,13 @@ namespace StartupLife.Presentation
         {
             var go = Node("EventChoiceButton", choiceContent,
                 typeof(Image), typeof(Button), typeof(LayoutElement));
-            go.GetComponent<Image>().color = new Color(0.16f, 0.45f, 0.50f);
+            go.GetComponent<Image>().color = theme.accent;
             var size = go.GetComponent<LayoutElement>();
             size.minHeight = MinTouchHeight;
             size.preferredHeight = 120;
             var button = go.GetComponent<Button>();
             button.targetGraphic = go.GetComponent<Image>();
-            var label = TextNode("ChoiceLabel", go.transform, 30, 120);
+            var label = TextNode("ChoiceLabel", go.transform, 30, 120, Color.white);
             label.alignment = TextAlignmentOptions.Center;
             label.textWrappingMode = TextWrappingModes.Normal;
             var rect = (RectTransform)label.transform;
@@ -390,13 +392,14 @@ namespace StartupLife.Presentation
             return new ChoiceButton(button, LocalizedKeyLabel.EnsureFor(label));
         }
 
-        private TMP_Text TextNode(string name, Transform parent, float size, float height)
+        private TMP_Text TextNode(string name, Transform parent, float size, float height,
+            Color? ink = null)
         {
             var go = Node(name, parent, typeof(TextMeshProUGUI), typeof(LayoutElement));
             var text = go.GetComponent<TextMeshProUGUI>();
             text.font = font;
             text.fontSize = size;
-            text.color = Color.white;
+            text.color = ink ?? theme.ink;
             text.raycastTarget = false;
             text.overflowMode = TextOverflowModes.Ellipsis;
             go.GetComponent<LayoutElement>().preferredHeight = height;

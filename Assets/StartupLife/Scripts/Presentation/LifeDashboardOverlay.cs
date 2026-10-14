@@ -27,11 +27,14 @@ namespace StartupLife.Presentation
             { "Nghề nghiệp", "Kỹ năng", "Tài chính", "Kinh doanh", "Hồ sơ" };
         private static readonly string[] ShortTitles =
             { "Nghề", "Kỹ năng", "Tiền", "Cửa hàng", "Hồ sơ" };
-        private static readonly Color Background = new Color32(244, 239, 226, 255);
-        private static readonly Color Surface = new Color32(255, 251, 242, 255);
-        private static readonly Color Ink = new Color32(45, 61, 57, 255);
-        private static readonly Color Accent = new Color32(58, 108, 88, 255);
-        private static readonly Color Muted = new Color32(98, 112, 106, 255);
+        // UI color roles come from the same serialized theme as the scene.
+        // All text roles use opaque ink or high-contrast white, not faded alpha.
+        private MobileTheme theme = null!;
+        private Color Background => theme.background;
+        private Color Surface => theme.panel;
+        private Color Ink => theme.ink;
+        private Color Accent => theme.accent;
+        private Color Muted => theme.ink;
 
         private LifeScreenViewController host = null!;
         private Func<LifeDashboardSnapshot> reader = null!;
@@ -79,6 +82,7 @@ namespace StartupLife.Presentation
             overlay.host = view;
             overlay.reader = read;
             overlay.font = fontSource.font;
+            overlay.theme = view.UiTheme;
             overlay.Build();
             return overlay;
         }

@@ -21,6 +21,7 @@ namespace StartupLife.Presentation
         private LifeScreenViewController host = null!;
         private Func<BusinessOperationsSnapshot> readOperations = null!;
         private TMP_FontAsset font = null!;
+        private MobileTheme theme = null!;
         private GameObject panel = null!;
         private TMP_Text selectedValue = null!;
         private TMP_Text closeCaption = null!;
@@ -57,6 +58,7 @@ namespace StartupLife.Presentation
             component.host = view;
             component.readOperations = operations;
             component.font = existingFontSource.font;
+            component.theme = view.UiTheme;
             component.Build();
             component.Refresh();
             return component;
@@ -97,7 +99,7 @@ namespace StartupLife.Presentation
             bounds.anchorMin = new Vector2(0.03f, 0.03f);
             bounds.anchorMax = new Vector2(0.97f, 0.97f);
             bounds.offsetMin = bounds.offsetMax = Vector2.zero;
-            panel.GetComponent<Image>().color = new Color(0.08f, 0.12f, 0.18f, 0.98f);
+            panel.GetComponent<Image>().color = theme.panel;
             var layout = panel.GetComponent<VerticalLayoutGroup>();
             layout.padding = new RectOffset(22, 22, 22, 22);
             layout.spacing = 12;
@@ -117,7 +119,7 @@ namespace StartupLife.Presentation
             host.AttachBusinessReadouts(finance, portfolio);
 
             var businessScroll = MobileScrollViewFactory.Create(panel.transform,
-                "BusinessManagementScroll", new Color(0.12f, 0.18f, 0.25f, 0.95f),
+                "BusinessManagementScroll", theme.background,
                 new RectOffset(12, 12, 14, 14), 11f, TextAnchor.UpperCenter, 35f);
             var content = businessScroll.Content;
 
@@ -287,8 +289,8 @@ namespace StartupLife.Presentation
                     "\n" + minutes + "  ·  " + DisplayPricing(owned.EffectivePricing);
                 card.GetComponent<Image>().color =
                     owned.InstanceId == selectedId
-                        ? new Color(0.09f, 0.36f, 0.41f, 1f)
-                        : new Color(0.16f, 0.45f, 0.50f, 1f);
+                        ? theme.ink
+                        : theme.accent;
             }
             foreach (var item in launchButtons)
             {
@@ -367,14 +369,14 @@ namespace StartupLife.Presentation
             Action clicked, float height)
         {
             var go = Node(name, parent, typeof(Image), typeof(Button), typeof(LayoutElement));
-            go.GetComponent<Image>().color = new Color(0.16f, 0.45f, 0.50f, 1f);
+            go.GetComponent<Image>().color = theme.accent;
             var layout = go.GetComponent<LayoutElement>();
             layout.preferredHeight = height;
             layout.minHeight = height;
             var button = go.GetComponent<Button>();
             button.targetGraphic = go.GetComponent<Image>();
             button.onClick.AddListener(() => clicked());
-            var label = Label("Label", caption, go.transform, 29, height);
+            var label = Label("Label", caption, go.transform, 29, height, Color.white);
             label.alignment = TextAlignmentOptions.Center;
             var rect = (RectTransform)label.transform;
             rect.anchorMin = Vector2.zero;
@@ -386,13 +388,13 @@ namespace StartupLife.Presentation
         }
 
         private TMP_Text Label(string name, string message, Transform parent,
-            float fontSize, float height)
+            float fontSize, float height, Color? ink = null)
         {
             var go = Node(name, parent, typeof(TextMeshProUGUI), typeof(LayoutElement));
             var text = go.GetComponent<TextMeshProUGUI>();
             text.font = font;
             text.fontSize = fontSize;
-            text.color = Color.white;
+            text.color = ink ?? theme.ink;
             text.raycastTarget = false;
             text.overflowMode = TextOverflowModes.Ellipsis;
             text.text = message;
