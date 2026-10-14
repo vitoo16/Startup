@@ -88,6 +88,30 @@ def verify(root=ROOT):
             cam["msaa"] is False and cam["dynamic_resolution"] is False,
             "pixel import sampling drift")
     actor = spec["characters"]
+    require(actor["chibi_head_ratio_range"] == [2.2, 2.4] and
+            abs(actor["chibi_total_heads"] - 2.3) < 0.001 and
+            abs(actor["head_height_fraction"] -
+                1.0 / actor["chibi_total_heads"]) < 0.01,
+            "short-round chibi ratio mismatch")
+    require({"front", "three_quarter_left", "side", "back"} <=
+            set(actor["view_angles"]) and
+            len(actor["inclusive_visual_rules"]) >= 4 and
+            len(spec["environment_art_rules"]) >= 5,
+            "original inclusive character or Vietnam world brief drift")
+    require(comp["framing"]["character_head_ratio_range"] ==
+            actor["chibi_head_ratio_range"] and
+            abs(comp["framing"]["character_head_ratio_nominal"] -
+                actor["chibi_total_heads"]) < 0.001 and
+            bool(comp["art_direction"]["native_pixel_source"]),
+            "art composition ratio/native-pixel drift")
+    golden_character = next(t for t in briefs["targets"]
+                            if t["id"] == "golden-character")
+    require(any("2.2-2.4 heads" in x for x in golden_character["requirements"]) and
+            any("four-view identity" in x for x in golden_character["requirements"]),
+            "Golden short-round character handoff missing")
+    require({"photo_to_pixel_background", "derivative_character_silhouette",
+             "discriminatory_character_or_region_caricature"} <=
+            set(spec["rejection"]), "art/IP rejection contract loosened")
     require(actor["rig_requires_independent_joint_motion"] is True and
             actor["rigid_sprite_translation_does_not_count_as_walk"] is True and
             {"walk", "idle", "talk", "type", "study", "carry", "kiosk_serve", "transition"}
