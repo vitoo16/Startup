@@ -33,7 +33,12 @@
       33
     ],
     "negative_space_for_ui_pct_min": 22,
-    "foreground_occlusion_of_actor_pct_max": 8
+    "foreground_occlusion_of_actor_pct_max": 8,
+    "character_head_ratio_range": [
+      2.2,
+      2.4
+    ],
+    "character_head_ratio_nominal": 2.3
   },
   "shape_rhythm": {
     "big": 2,
@@ -187,5 +192,12 @@
     "safe_area_required": true,
     "touch_target_reference_px": 96,
     "pixel_art_ui_nine_slice": true
+  },
+  "art_direction": {
+    "status": "design_only_device_unverified",
+    "native_pixel_source": "original tiled/clusters no pixel-filter photo/game screenshot",
+    "locality": "2 to 4 plausible anchors; scene-specific Vietnamese daily-life layout",
+    "representation": "adult short-round chibi; no discriminatory character/cultural tropes",
+    "ui": "native resolution TMP, safe-area five tabs"
   }
 }
