@@ -1,7 +1,7 @@
 # Startup Life — M13 Golden Art Bible v1
 
-**Status:** Production-direction contract drafted, not an approved Golden Asset or completed Unity scene.  
-**Source of truth:** `Assets/StartupLife/Art/_ArtDirection/art-spec.yaml`, `composition.yaml`, and `golden-targets.json`. The `.yaml` files use YAML 1.2's JSON subset so their schema can be validated using the stock Python 3 runtime. Never edit a separate competing palette.
+**Status:** HISTORICAL M13 non-pixel art direction, superseded by active P02 pixel technical contract. M13 Golden never approved.  
+**Historic source of truth:** The exact old YAML/registry/theme files at Git commit `9d1a3d3bde27d045e9757be7f41de6ba993f77f7`; do not use the currently active art spec to reinterpret this record.
 
 ## Visual identity and scale
 

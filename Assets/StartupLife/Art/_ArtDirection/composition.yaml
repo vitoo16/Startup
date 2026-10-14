@@ -1,16 +1,18 @@
 {
-  "schema": "startup-life.composition.v1",
-  "style_id": "vietnam_cozy_chibi_cutout_v1",
-  "status": "unverified_until_unity_beautycell",
+  "schema": "startup-life.composition.v2",
+  "style_id": "vn_everyday_pixel_v1",
+  "status": "pixel_layout_contract_unverified_on_device",
   "camera": {
     "projection": "orthographic",
-    "ortho_size": 5,
+    "ortho_size": 10,
     "reference_resolution": [
-      1080,
-      1920
+      360,
+      640
     ],
     "target_aspect": "9:16",
-    "pixels_per_unit": 100
+    "pixels_per_unit": 32,
+    "pixel_perfect_component": "UnityEngine.Rendering.Universal.PixelPerfectCamera",
+    "native_ui_overlay": true
   },
   "layers": [
     "background",
@@ -37,14 +39,14 @@
     "big": 2,
     "medium": 5,
     "small_max": 11,
-    "rule": "readable at 360x640; decorative elements subordinate to avatar"
+    "rule": "reference 360x640; all critical text rendered by native uGUI/TMP overlay"
   },
   "color_zones": {
     "gameplay_highest_contrast": true,
     "background_low_saturation": true,
-    "ui_panel": "#FFFBF2",
-    "ui_ink": "#2D3D39",
-    "ui_accent": "#3A6C58"
+    "ui_panel": "#FFF6E4",
+    "ui_ink": "#27483C",
+    "ui_accent": "#B85C38"
   },
   "shadow_and_contact": {
     "key_light_direction": "upper_left_soft",
@@ -55,7 +57,7 @@
     {
       "id": "golden-character",
       "role": "avatar",
-      "camera_profile": "ortho_portrait",
+      "camera_profile": "urp_pixel_orthographic_portrait",
       "locality": {
         "purpose": "personal avatar across work and founder scenes",
         "socioeconomic_context": "urban young adult",
@@ -70,12 +72,13 @@
         ],
         "text_strategy": "no baked text"
       },
-      "visual_density": "low"
+      "visual_density": "low",
+      "pixel_grammar": "original tile-aligned clusters and enough room for articulated actor"
     },
     {
       "id": "golden-home",
       "role": "night-home-desk",
-      "camera_profile": "ortho_portrait",
+      "camera_profile": "urp_pixel_orthographic_portrait",
       "locality": {
         "purpose": "evening study/startup routine",
         "socioeconomic_context": "modest urban rental or family room",
@@ -91,12 +94,13 @@
         ],
         "text_strategy": "no baked signage, TMP for any interface text"
       },
-      "visual_density": "medium"
+      "visual_density": "medium",
+      "pixel_grammar": "original tile-aligned clusters and enough room for articulated actor"
     },
     {
       "id": "golden-office",
       "role": "developer-career",
-      "camera_profile": "ortho_portrait",
+      "camera_profile": "urp_pixel_orthographic_portrait",
       "locality": {
         "purpose": "work shifts and profession scenes",
         "socioeconomic_context": "modern urban office",
@@ -112,12 +116,13 @@
         ],
         "text_strategy": "no baked posters with readable text"
       },
-      "visual_density": "medium"
+      "visual_density": "medium",
+      "pixel_grammar": "original tile-aligned clusters and enough room for articulated actor"
     },
     {
       "id": "golden-business",
       "role": "coffee-kiosk",
-      "camera_profile": "ortho_portrait",
+      "camera_profile": "urp_pixel_orthographic_portrait",
       "locality": {
         "purpose": "daytime founder-operated kiosk with one fixed helper",
         "socioeconomic_context": "small urban sidewalk service stall",
@@ -134,12 +139,13 @@
         ],
         "text_strategy": "signboard left blank; overlay localized text in TMP"
       },
-      "visual_density": "medium"
+      "visual_density": "medium",
+      "pixel_grammar": "original tile-aligned clusters and enough room for articulated actor"
     },
     {
       "id": "golden-life-ui",
       "role": "gameplay-overlay",
-      "camera_profile": "ortho_portrait",
+      "camera_profile": "urp_pixel_orthographic_portrait",
       "locality": {
         "purpose": "five-tab profile, skills, finances, business and career decisions",
         "socioeconomic_context": "Vietnam local currency and daily life",
@@ -154,7 +160,8 @@
         ],
         "text_strategy": "NotoSansVietnamese TMP and FirstPlayableUI String Table; no baked glyphs"
       },
-      "visual_density": "low"
+      "visual_density": "low",
+      "pixel_grammar": "unique crisp receipt notch UI with native TMP"
     }
   ],
   "qa_screens": [
@@ -173,5 +180,12 @@
     "must_capture_golden_beautycell": true,
     "character_rig_proof_required": true,
     "unverified": true
+  },
+  "ui_policy": {
+    "native_resolution_tmp": true,
+    "screen_space_overlay": true,
+    "safe_area_required": true,
+    "touch_target_reference_px": 96,
+    "pixel_art_ui_nine_slice": true
   }
 }

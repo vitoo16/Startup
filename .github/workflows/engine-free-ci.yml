@@ -72,8 +72,10 @@ jobs:
           $reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/repository-security-report.json'
           ./scripts/Test-RepositorySecurityStatic.ps1 -ReportPath $reportPath
 
-      - name: Validate M13 Golden art contracts (no Unity runtime)
-        run: python3 scripts/Validate-GoldenArt.py
+      - name: Validate pixel Golden contract (no Unity runtime)
+        run: |
+          python3 scripts/Validate-GoldenArt.py
+          python3 -m unittest discover -s tools/GoldenArtChecks -p 'test_*.py' -v
 
       - name: Validate asset provenance and approval join (no legal clearance implied)
         run: |

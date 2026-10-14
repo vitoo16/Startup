@@ -1,14 +1,14 @@
 # Startup Life — Original Cute Pixel Production Style Contract
 
-**Status:** Art-direction proposal for production lock; NOT YET migrated into Unity; NOT an approved or licensed asset. **Effective planning:** 2026-10-14. **Owner:** GPT-6 Technical Director, subject to independent artistic originality/clearance review.
+**Status:** Active *technical* pixel contract after P02-01 migration. Unity sprite render, rig, mobile and independent IP/visual approval remain NOT RUN. **Effective planning:** 2026-10-14. **Owner:** GPT-6 Technical Director, subject to independent artistic originality/clearance review.
 
 ## 1. Visual promise
 
 An **original, soft and playful pixel-art depiction of everyday contemporary Vietnam**: warm human micro-stories, confident readable UI, delightful subtle movements, and a character who actually works, studies, meets people, and operates a small business. The game's visual recognition should come from its own shapes, architecture, interaction rhythm and type hierarchy, **not a borrowed game's palette, border, avatars, logo, icons or screen composition**.
 
-`docs/ART_BIBLE_M13.md` and `Assets/StartupLife/Art/_ArtDirection/*` currently describe non-pixel HD 2D chibi under style ID `vietnam_cozy_chibi_cutout_v1`. This new contract **supersedes their artistic intent only once W03 migration replaces and validates the active art spec**. The prior M13 contract and any frozen technical expectations remain historical evidence; do not accidentally claim the active Unity scene now renders pixel graphics.
+`docs/ART_BIBLE_M13.md` and `Assets/StartupLife/Art/_ArtDirection/*` formerly described non-pixel HD 2D chibi under style ID `vietnam_cozy_chibi_cutout_v1`. The P02-01 technical spec migration has occurred, but does **not** certify live Unity gameplay as pixel art. The prior M13 contract and any frozen technical expectations remain historical evidence; do not accidentally claim the active Unity scene now renders pixel graphics.
 
-**Proposed new style ID:** `vn_everyday_pixel_v1` (internal identifier, not a market-tested trademark). Brand names, icons and mascots require separate trademark clearance.
+**Active technical style ID (not visual approval):** `vn_everyday_pixel_v1` (internal identifier, not a market-tested trademark). Brand names, icons and mascots require separate trademark clearance.
 
 ## 2. Distinctive graphic grammar — original-first
 
@@ -75,3 +75,7 @@ Each Golden category requires three independent design explorations that do **no
 A final asset needs: license/provenance `CLEAR`; independent visual review; style score **>=15/16** and no zero criterion; clean importer/atlas; relevant motion; tested Vietnamese typography; a real Unity/mobile BeautyCell; approved registry entry. Studio production may reuse a custom-made component/shape within this game, but cannot appropriate third-party expression.
 
 **No one can guarantee global uniqueness against every app/game in existence.** The feasible promise is original creation, meaningful independent review, transparent evidence and documented replacement/remediation for suspected infringement.
+
+### P02-01 synchronized technical migration
+
+Canonical specs and empty approval registry now use `vn_everyday_pixel_v1`, with provisional 32 PPU / 32px tiles / 128×160 character / 360×640 world and screen-space native TMP. The new authored UI palette is synchronized to `MobileTheme.asset` and its C# builder defaults. Actual URP PixelPerfectCamera/texture import, human originality approval and physical device visual proof remain separate mandatory production tasks. Historical M13 source is available at commit `9d1a3d3`.

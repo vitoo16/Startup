@@ -1,6 +1,6 @@
 {
-  "schema": "startup-life.golden-targets.v1",
-  "style_id": "vietnam_cozy_chibi_cutout_v1",
+  "schema": "startup-life.golden-targets.v2",
+  "style_id": "vn_everyday_pixel_v1",
   "art_spec": "Assets/StartupLife/Art/_ArtDirection/art-spec.yaml",
   "composition": "Assets/StartupLife/Art/_ArtDirection/composition.yaml",
   "source_root": "Assets/StartupLife/Art/Source",
@@ -31,12 +31,13 @@
       "source_type": "to_be_generated",
       "source_path": null,
       "unity_path": null,
-      "reference": "front/3-4/side turnaround and expressions; male/female appearance consistency",
+      "reference": "front/3-4/side turnaround and expressions; male/female appearance consistency; original pixel brief only, not from any external game screenshot",
       "requirements": [
-        "2.6-head chibi ratio",
+        "2.6-head original pixel ratio at candidate 128x160 sprite",
         "independent cutout joint layers with stable IDs",
         "neutral idle/typing/talking",
-        "distinct limb animation rather than sliding sprite"
+        "distinct limb animation rather than sliding sprite",
+        "point-filter 32 PPU logical family; no mipmaps, no rigid slide-as-walk"
       ],
       "local_anchors": [
         "urban daily outfit",
@@ -53,12 +54,13 @@
       "source_type": "to_be_generated",
       "source_path": null,
       "unity_path": null,
-      "reference": "evening study and startup corner",
+      "reference": "evening study and startup corner; original pixel brief only, not from any external game screenshot",
       "requirements": [
         "warm desk lamp",
         "clear character focal area",
         "camera geometry matches Golden office",
-        "separate blank sign/poster layers"
+        "separate blank sign/poster layers",
+        "point-filter 32 PPU logical family; no mipmaps, no rigid slide-as-walk"
       ],
       "local_anchors": [
         "wall fan",
@@ -76,12 +78,13 @@
       "source_type": "to_be_generated",
       "source_path": null,
       "unity_path": null,
-      "reference": "software developer office workday",
+      "reference": "software developer office workday; original pixel brief only, not from any external game screenshot",
       "requirements": [
         "same sprite perspective",
         "clean silhouettes at 360x640",
         "room for typing animation",
-        "no fake readable text"
+        "no fake readable text",
+        "point-filter 32 PPU logical family; no mipmaps, no rigid slide-as-walk"
       ],
       "local_anchors": [
         "water dispenser",
@@ -99,12 +102,13 @@
       "source_type": "to_be_generated",
       "source_path": null,
       "unity_path": null,
-      "reference": "coffee kiosk with helper",
+      "reference": "coffee kiosk with helper; original pixel brief only, not from any external game screenshot",
       "requirements": [
         "two-character action space",
         "stainless prep counter",
         "separate signage text layer",
-        "character and prop pivots align"
+        "character and prop pivots align",
+        "point-filter 32 PPU logical family; no mipmaps, no rigid slide-as-walk"
       ],
       "local_anchors": [
         "QR stand",
@@ -122,12 +126,13 @@
       "source_type": "to_be_authored",
       "source_path": null,
       "unity_path": null,
-      "reference": "portrait five-tab Life dashboard",
+      "reference": "portrait five-tab Life dashboard; original pixel brief only, not from any external game screenshot",
       "requirements": [
         "safe-area portrait",
         "96 reference-pixel touch targets",
         "NotoSansVietnamese font coverage",
-        "reuse art-spec color roles and Unity Localization"
+        "reuse art-spec color roles and Unity Localization",
+        "native-resolution TMP + crisp scalable 9-slice pixel UI"
       ],
       "local_anchors": [
         "VND format",
@@ -143,7 +148,9 @@
     "rig_pose_or_scene_import_report",
     "phone_beautycell_screenshot",
     "scorecard_8_dimensions",
-    "separate_art_approval"
+    "separate_art_approval",
+    "independent_IP_and_style_review",
+    "point_sampling_import_and_phone_capture"
   ],
-  "comments": "Provisional art direction and briefs are not human-approved assets and must not be placed into runtime scenes."
+  "comments": "Pixel style migration does not approve any Golden sprite/rig, Unity import, animation or screenshot."
 }

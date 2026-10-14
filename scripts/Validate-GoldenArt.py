@@ -1,94 +1,152 @@
 #!/usr/bin/env python3
-"""Engine-free validation for Startup Life Golden art direction and asset gates.
-
-The two *.yaml source files intentionally use the JSON subset of YAML 1.2,
-enabling strict standard-library validation without runner dependencies.
-No output files are written; Unity import and visual quality are separate.
-"""
+"""Strict, engine-free pixel Golden contract validator; never substitutes Unity/IP approval."""
 import json
 import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-ART = ROOT / "Assets/StartupLife/Art/_ArtDirection"
-STYLE = "vietnam_cozy_chibi_cutout_v1"
+ART = Path("Assets/StartupLife/Art/_ArtDirection")
+REG = Path("Assets/StartupLife/Art/Approved/registry.json")
+STYLE = "vn_everyday_pixel_v1"
 CATEGORIES = {"golden-character", "golden-home", "golden-office",
               "golden-business", "golden-life-ui"}
+CRITERIA = {"style_match", "silhouette", "palette", "anatomy_perspective",
+            "vietnam_context", "technical_cleanliness", "mobile_readability",
+            "reusability"}
 
-def require(condition, message):
-    if not condition:
-        raise AssertionError(message)
 
-def read_json(path):
+def require(value, reason):
+    if not value:
+        raise AssertionError(reason)
+
+
+def load(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
-def theme_color(text, name):
-    pat = r"(?m)^\s*" + re.escape(name) + (
-        r": \{r: ([0-9.]+), g: ([0-9.]+), b: ([0-9.]+), a: ([0-9.]+)\}")
-    found = re.search(pat, text)
-    require(found is not None, "Theme role missing: " + name)
-    channels = [int(round(float(s) * 255)) for s in found.groups()[:3]]
-    return "#" + "".join(f"{v:02X}" for v in channels)
 
-def verify():
-    spec = read_json(ART / "art-spec.yaml")
-    composition = read_json(ART / "composition.yaml")
-    briefs = read_json(ART / "golden-targets.json")
-    registry = read_json(ROOT / "Assets/StartupLife/Art/Approved/registry.json")
-    require(spec["style_id"] == composition["style_id"] ==
-            briefs["style_id"] == registry["style_id"] == STYLE, "style drift")
-    require(briefs["art_spec"] == "Assets/StartupLife/Art/_ArtDirection/art-spec.yaml",
-            "wrong canonical art source")
-    theme = (ROOT / spec["palette"]["master_source"]).read_text(encoding="utf-8")
-    for color in ("background", "panel", "ink", "accent"):
-        require(spec["palette"]["roles"][color] == theme_color(theme, color),
-                "MobileTheme/art-spec palette mismatch: " + color)
-    require(spec["craft"]["pixels_per_unit"] == composition["camera"]["pixels_per_unit"] == 100,
-            "pixel density mismatch")
-    require(spec["camera"]["ortho_size"] == composition["camera"]["ortho_size"] == 5,
-            "camera mismatch")
-    require(spec["craft"]["light_direction"] ==
-            composition["shadow_and_contact"]["key_light_direction"], "light drift")
-    require(spec["camera"]["reference_resolution"] ==
-            composition["camera"]["reference_resolution"] == [1080,1920], "portrait source mismatch")
-    require(spec["characters"]["rig_must_deform"] and
-            spec["characters"]["rigid_sprite_translation_does_not_count_as_walk"],
-            "rigged animation requirement missing")
-    require(spec["characters"]["chibi_total_heads"] > 2 and
-            spec["characters"]["chibi_total_heads"] < 3.1, "chibi silhouette drift")
-    require(spec["mobile_budget"]["ui_touch_target_reference_px"] >= 96,
-            "undersized touch contract")
-    scenes = composition["scenes"]
-    targets = briefs["targets"]
-    require({s["id"] for s in scenes} == CATEGORIES, "missing composition Golden scenes")
-    require({t["id"] for t in targets} == CATEGORIES, "missing asset Golden target")
-    for s in scenes:
-        anchors = s["locality"]["local_anchors"]
-        require(2 <= len(anchors) <= 4, "locality anchor count " + s["id"])
-        require(s["locality"]["text_strategy"], "missing sign text policy")
-        require(s["camera_profile"] == "ortho_portrait", "camera contract drift")
-    required = briefs["approval_policy"]
-    require(required["golden_threshold"] >= 15 and required["total_max"] == 16 and
-            required["no_zero"] and required["requires_human_or_separate_art_director_review"],
-            "approval weakened")
-    require(len(required["criteria"]) == 8, "expected 8 scorecard dimensions")
+def theme_color(data, role):
+    pattern = (r"(?m)^\s*" + re.escape(role) +
+               r": \{r: ([0-9.]+), g: ([0-9.]+), b: ([0-9.]+), a: ([0-9.]+)\}$")
+    m = re.search(pattern, data)
+    require(m is not None, "theme role missing: " + role)
+    require(float(m[4]) == 1.0, "theme alpha: " + role)
+    return tuple(round(float(v) * 255) for v in m.groups()[:3])
+
+
+def csharp_color(data, role):
+    m = re.search(r"public Color " + re.escape(role) +
+                  r" = new Color32\((\d+),\s*(\d+),\s*(\d+),\s*(\d+)\);", data)
+    require(m is not None and m[4] == "255", "builder fallback missing: " + role)
+    return tuple(int(x) for x in m.groups()[:3])
+
+
+def verify(root=ROOT):
+    root = Path(root)
+    spec = load(root / ART / "art-spec.yaml")
+    comp = load(root / ART / "composition.yaml")
+    briefs = load(root / ART / "golden-targets.json")
+    reg = load(root / REG)
+    require(spec["style_id"] == comp["style_id"] == briefs["style_id"] ==
+            reg["style_id"] == STYLE, "style drift or hybrid HD/pixel")
+    require((spec["schema"], comp["schema"], briefs["schema"], reg["schema"]) ==
+            ("startup-life.art-direction.v2", "startup-life.composition.v2",
+             "startup-life.golden-targets.v2", "startup-life.approved-assets.v2"),
+            "style schema drift")
+    require(briefs["art_spec"] == (ART / "art-spec.yaml").as_posix() and
+            briefs["composition"] == (ART / "composition.yaml").as_posix() and
+            briefs["approved_registry"] == REG.as_posix(), "art authority drift")
+    require(spec["status"] == "pixel_technical_contract_not_asset_or_scene_approval" and
+            reg["approved_entries"] == [] and
+            spec["conditioning"]["approved_golden_ids"] == [] and
+            spec["conditioning"]["style_anchor_images"] == [],
+            "unverified art approved or registered")
+    c = spec["craft"]
+    cam = spec["camera"]
+    cc = comp["camera"]
+    require(c["pixels_per_unit"] == cc["pixels_per_unit"] == 32 and
+            c["tile_size_px"] == [32, 32] and
+            c["native_character_size_px"] == [128, 160], "pixel family drift")
+    require(cam["reference_resolution"] == cc["reference_resolution"] == [360, 640] and
+            cam["target_aspect"] == cc["target_aspect"] == "9:16" and
+            cam["ortho_size"] == cc["ortho_size"] ==
+            cam["reference_resolution"][1] / (2 * c["pixels_per_unit"]),
+            "pixel camera framing drift")
+    require(cam["render_pipeline"] == "URP_2D" and
+            cam["pixel_perfect_component"] == cc["pixel_perfect_component"] ==
+            "UnityEngine.Rendering.Universal.PixelPerfectCamera",
+            "non URP pixel camera")
+    require(cam["ui_rendering"] == "screen_space_overlay_native_resolution_TMP" and
+            cc["native_ui_overlay"] is True and
+            comp["ui_policy"]["native_resolution_tmp"] is True and
+            comp["ui_policy"]["safe_area_required"] is True and
+            comp["ui_policy"]["screen_space_overlay"] is True,
+            "low res UI/TMP")
+    require(c["filter_mode"] == "Point" and c["mip_maps"] is False and
+            c["texture_compression"].startswith("Uncompressed") and
+            c["atlas_padding_px"] >= 4 and c["atlas_tight_packing"] is False and
+            cam["msaa"] is False and cam["dynamic_resolution"] is False,
+            "pixel import sampling drift")
+    actor = spec["characters"]
+    require(actor["rig_requires_independent_joint_motion"] is True and
+            actor["rigid_sprite_translation_does_not_count_as_walk"] is True and
+            {"walk", "idle", "talk", "type", "study", "carry", "kiosk_serve", "transition"}
+            <= set(actor["allowed_motions"]), "fake joint animation")
+    low, high = comp["framing"]["character_vertical_screen_share_pct"]
+    require(low <= 100 * c["native_character_size_px"][1] /
+            cam["reference_resolution"][1] <= high, "character not readable at pixel scale")
+    require(spec["mobile_budget"]["ui_touch_target_reference_px"] >= 96 and
+            comp["ui_policy"]["touch_target_reference_px"] >= 96, "touch gate weakened")
+    require(c["light_direction"] == comp["shadow_and_contact"]["key_light_direction"],
+            "lighting drift")
+    theme = (root / spec["palette"]["master_source"]).read_text(encoding="utf-8")
+    defaults = (root / "Assets/StartupLife/Scripts/Presentation/MobileTheme.cs").read_text(
+        encoding="utf-8")
+    for role in ("background", "panel", "ink", "accent"):
+        value = spec["palette"]["roles"][role]
+        require(re.fullmatch(r"#[0-9A-Fa-f]{6}", value) is not None,
+                "malformed semantic color")
+        reference = tuple(int(value[i:i + 2], 16) for i in (1, 3, 5))
+        require(reference == theme_color(theme, role) == csharp_color(defaults, role),
+                "palette drift: " + role)
+    for role, alias in (("panel", "ui_panel"), ("ink", "ui_ink"),
+                        ("accent", "ui_accent")):
+        require(comp["color_zones"][alias] == spec["palette"]["roles"][role],
+                "composition palette drift")
+    scenes, targets = comp["scenes"], briefs["targets"]
+    require(len(scenes) == len(targets) == len(CATEGORIES) and
+            {x["id"] for x in scenes} == {x["id"] for x in targets} ==
+            CATEGORIES, "Golden targets missing or duplicate")
+    for scene in scenes:
+        loc = scene["locality"]
+        require(scene["camera_profile"] == "urp_pixel_orthographic_portrait" and
+                bool(scene["pixel_grammar"]) and
+                2 <= len(loc["local_anchors"]) <= 4 and
+                bool(loc["text_strategy"]) and bool(loc["prohibited_stereotypes"]),
+                "scene/locality drift: " + scene["id"])
+    policy = briefs["approval_policy"]
+    require(policy["golden_threshold"] >= 15 and policy["total_max"] == 16 and
+            policy["no_zero"] is True and
+            policy["requires_human_or_separate_art_director_review"] is True and
+            len(policy["criteria"]) == 8 and set(policy["criteria"]) == CRITERIA,
+            "Golden threshold weakened")
     for target in targets:
-        require(target["asset_state"] == "brief" and target["approved"] is False,
-                "unverified Golden art falsely approved: " + target["id"])
-        require(target["source_path"] is None and target["unity_path"] is None,
-                "unimported Golden asset has a runtime reference")
-        require(target["min_candidates"] >= 8, "best-of-N gate weakened")
-        require(2 <= len(target["local_anchors"]) <= 4, "brief locality count")
-        require(target["scene"] == target["id"], "brief/scene mismatch")
-    require(not registry["approved_entries"], "registry contains unverified art")
-    require("text_baked_into_background" in spec["rejection"], "Vietnamese sign policy missing")
-    print("PASS M13 Golden art contracts: 5 targets, palette/scale/camera, "
-          "locality, and empty asset registry (no Unity visual acceptance claimed).")
+        require(target["asset_state"] == "brief" and target["approved"] is False and
+                target["source_path"] is None and target["unity_path"] is None and
+                target["scene"] == target["id"] and target["min_candidates"] >= 8 and
+                2 <= len(target["local_anchors"]) <= 4,
+                "unverified Golden asset: " + target["id"])
+    require("hd_chibi_or_pixel_mix" in spec["rejection"] and
+            "text_baked_into_background" in spec["rejection"],
+            "old/new art or fake text rejection disabled")
+    return len(targets)
+
 
 if __name__ == "__main__":
     try:
-        verify()
-    except (OSError, KeyError, ValueError, AssertionError) as exc:
-        print("FAIL M13 Golden art contract: " + str(exc), file=sys.stderr)
+        count = verify()
+        print(f"PASS pixel Golden technical contract: {count} empty briefs; "
+              "no Unity screenshot, rig or IP clearance implied.")
+    except (OSError, KeyError, TypeError, ValueError, AssertionError) as err:
+        print("FAIL pixel Golden contract: " + str(err), file=sys.stderr)
         sys.exit(1)

@@ -1,6 +1,6 @@
 {
-  "schema": "startup-life.approved-assets.v1",
-  "style_id": "vietnam_cozy_chibi_cutout_v1",
+  "schema": "startup-life.approved-assets.v2",
+  "style_id": "vn_everyday_pixel_v1",
   "approved_entries": [],
   "rules": [
     "only validated imported Unity prefab/sprite references",
@@ -8,5 +8,5 @@
     "source must survive rig/import/beautycell and separate approval",
     "raw-generated source can never be a runtime dependency"
   ],
-  "note": "Intentionally empty until source and Unity evidence pass."
+  "note": "Registry remains empty pending original asset provenance, independent review, actual Unity import and device BeautyCell."
 }
