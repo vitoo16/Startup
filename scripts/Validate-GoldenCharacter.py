@@ -123,8 +123,9 @@ def validate(root=ROOT):
         "AssetDatabase.ImportAsset", "TextureImporter", "FilterMode.Point",
         "TextureImporterCompression.Uncompressed", "mipmapEnabled = false",
         "AnimationUtility.SetEditorCurve", "localEulerAnglesRaw.z",
-        "upper_leg_l", "lower_leg_l", "upper_leg_r", "lower_leg_r",
-        "forearm_l", "forearm_r", "PrefabUtility.SaveAsPrefabAsset",
+        "foreach (var track in motion.joints)", "track.part",
+        "track.angles", "motion.duration_seconds",
+        "PrefabUtility.SaveAsPrefabAsset",
         "CreateAnimatorControllerAtPath", "Assets/StartupLife/Art/Source/Characters"
     ):
         require(required_piece in code, "draft builder implementation missing: " + required_piece)
