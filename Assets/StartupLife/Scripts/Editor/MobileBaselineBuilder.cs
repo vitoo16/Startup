@@ -111,7 +111,7 @@ namespace StartupLife.Editor
             var camera = new GameObject("MainCamera", typeof(Camera)).GetComponent<Camera>();
             camera.tag = "MainCamera";
             camera.orthographic = true;
-            camera.orthographicSize = 5;
+            PixelWorldCameraSetup.Configure(camera);
             camera.transform.position = new Vector3(0, 0, -10);
             camera.backgroundColor = theme.background;
             camera.clearFlags = CameraClearFlags.SolidColor;

@@ -99,6 +99,25 @@ def verify(root=ROOT):
             comp["ui_policy"]["touch_target_reference_px"] >= 96, "touch gate weakened")
     require(c["light_direction"] == comp["shadow_and_contact"]["key_light_direction"],
             "lighting drift")
+    setup = (root / "Assets/StartupLife/Scripts/Editor/PixelWorldCameraSetup.cs").read_text(
+        encoding="utf-8")
+    for prop, value in (("AssetsPpu", c["pixels_per_unit"]),
+                        ("ReferenceWidth", cam["reference_resolution"][0]),
+                        ("ReferenceHeight", cam["reference_resolution"][1])):
+        require(re.search(r"internal const int " + prop + r" = " + str(value) + r";",
+                          setup) is not None, "pixel camera C# contract drift: " + prop)
+    require("UnityEngine.Rendering.Universal" in setup and
+            "PixelPerfectCamera.GridSnapping.PixelSnapping" in setup and
+            "PixelPerfectCamera.CropFrame.Windowbox" in setup and
+            "camera.allowMSAA = false" in setup and
+            "camera.GetUniversalAdditionalCameraData().renderPostProcessing = false" in setup,
+            "pixel camera URP implementation drift")
+    for builder in ("MobileBaselineBuilder.cs", "FirstPlayableShellBuilder.cs"):
+        source = (root / "Assets/StartupLife/Scripts/Editor" / builder).read_text(
+            encoding="utf-8")
+        require("PixelWorldCameraSetup.Configure(camera);" in source and
+                "orthographicSize = 5" not in source,
+                "scene builder reintroduced HD camera: " + builder)
     theme = (root / spec["palette"]["master_source"]).read_text(encoding="utf-8")
     defaults = (root / "Assets/StartupLife/Scripts/Presentation/MobileTheme.cs").read_text(
         encoding="utf-8")

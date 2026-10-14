@@ -79,3 +79,7 @@ A final asset needs: license/provenance `CLEAR`; independent visual review; styl
 ### P02-01 synchronized technical migration
 
 Canonical specs and empty approval registry now use `vn_everyday_pixel_v1`, with provisional 32 PPU / 32px tiles / 128×160 character / 360×640 world and screen-space native TMP. The new authored UI palette is synchronized to `MobileTheme.asset` and its C# builder defaults. Actual URP PixelPerfectCamera/texture import, human originality approval and physical device visual proof remain separate mandatory production tasks. Historical M13 source is available at commit `9d1a3d3`.
+
+### P02-02 scene-builder code follow-up
+
+Both Editor scene builders now delegate pixel camera configuration to a single `PixelWorldCameraSetup` (URP-only `PixelPerfectCamera`, 32 PPU, 360×640, pixel snapping, Windowbox; MSAA/HDR/dynamic resolution disabled). C# numerics are cross-checked against the active pixel art spec by the Golden validator. These scripts affect *future Editor-generated scenes only*; already committed `.unity` scenes are not automatically patched. An actual Unity Editor must inspect, migrate, save and capture them. No Unity/runtime PASS implied.

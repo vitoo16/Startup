@@ -16,7 +16,10 @@ REG = "Assets/StartupLife/Art/Approved/registry.json"
 THEME = "Assets/StartupLife/Data/MobileTheme.asset"
 CS = "Assets/StartupLife/Scripts/Presentation/MobileTheme.cs"
 INPUTS = [ART + "art-spec.yaml", ART + "composition.yaml",
-          ART + "golden-targets.json", REG, THEME, CS]
+          ART + "golden-targets.json", REG, THEME, CS,
+          "Assets/StartupLife/Scripts/Editor/PixelWorldCameraSetup.cs",
+          "Assets/StartupLife/Scripts/Editor/MobileBaselineBuilder.cs",
+          "Assets/StartupLife/Scripts/Editor/FirstPlayableShellBuilder.cs"]
 
 
 class PixelContractCases(unittest.TestCase):
@@ -97,6 +100,19 @@ class PixelContractCases(unittest.TestCase):
         self.change(ART + "composition.yaml", lambda j: j["ui_policy"].update(
             native_resolution_tmp=False))
         self.rejected("low res")
+
+    def test_reject_camera_cpp_ppu_drift(self):
+        path = self.root / "Assets/StartupLife/Scripts/Editor/PixelWorldCameraSetup.cs"
+        path.write_text(path.read_text(encoding="utf-8").replace(
+            "AssetsPpu = 32", "AssetsPpu = 100"), encoding="utf-8")
+        self.rejected("pixel camera C# contract drift")
+
+    def test_reject_scene_builder_hd_camera(self):
+        path = self.root / "Assets/StartupLife/Scripts/Editor/MobileBaselineBuilder.cs"
+        path.write_text(path.read_text(encoding="utf-8").replace(
+            "PixelWorldCameraSetup.Configure(camera);",
+            "camera.orthographicSize = 5;"), encoding="utf-8")
+        self.rejected("scene builder reintroduced HD camera")
 
     def test_reject_slide_as_walk(self):
         self.change(ART + "art-spec.yaml", lambda j: j["characters"].update(
