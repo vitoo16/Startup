@@ -10,11 +10,21 @@ An **original, soft and playful pixel-art depiction of everyday contemporary Vie
 
 **Active technical style ID (not visual approval):** `vn_everyday_pixel_v1` (internal identifier, not a market-tested trademark). Brand names, icons and mascots require separate trademark clearance.
 
+## Owner Art Director decision — 2026-10-15
+
+**ACTIVE DESIGN TARGET:** Short, softly rounded, expressive **adult** chibi at **2.2–2.4 total heads, nominal 2.3**. This supersedes the previous 2.5–2.8 direction. Keep provisional source canvas, PPU and camera constants unchanged until rig/phone tests. Existing C01 first-party front-facing pixel draft was authored for the earlier proportions; it remains **DRAFT_NOT_APPROVED** and must be redesigned/verified. No automatic retroactive acceptance.
+
+Native contemporary Vietnamese environments must be composed as **original pixel clusters and tile geometry**, not photo pixelization of online photographs, re-colored stock/game sprites, traced screenshots or derivative branded shop facades. Write a locality sheet for each location with a purpose, socioeconomic context, 2–4 plausible anchors, excluded stereotypes, blank signage/TMP text and gameplay action zones. Architectural details, scooter helmets, compact shops, practical QR stands and apartment routines convey locality more authentically than a tourism-symbol collage.
+
+**Anti-discrimination:** Do not encode salary, competence, intelligence, profession, virtue or comic inferiority by skin tone, gender presentation, age, body size, disability, class or region. Chibi size is a visual treatment of adults, not a representation of children. Ensure appearance variants, NPC job depictions and marketing are reviewed respectfully by an independent human reviewer.
+
+The detailed design handoff lives in [ART_DIRECTION_PRODUCTION_BIBLE.md](ART_DIRECTION_PRODUCTION_BIBLE.md); the existing independent legal/IP approval and real Unity/phone Golden gates remain intact.
+
 ## 2. Distinctive graphic grammar — original-first
 
 | Dimension | Proposal to prototype and lock | Rejection trigger |
 | --- | --- | --- |
-| Silhouette | Chibi actor proportions around 2.5–2.8 heads, expressive square-rounded hair masses, distinctive asymmetrical bag/jacket/shoe accessories drawn from original sketches | Generic character clones, near-identical costumes or trademarked props |
+| Silhouette | Chibi actor proportions around 2.2–2.4 heads (nominal 2.3; pending real Unity/device verification), expressive square-rounded hair masses, distinctive asymmetrical bag/jacket/shoe accessories drawn from original sketches | Generic character clones, near-identical costumes or trademarked props |
 | Faces | Sparse readable pixel clusters; emotional change through brows/eyes/body pose; identity survives mirrored/equipment variants | Same face/hair outline as known market character |
 | Environment | Three original room silhouettes: compact shared apartment desk, workplace workstation cluster, practical sidewalk kiosk. Two-to-four locally plausible anchors/room | Reproducing a recognisable screenshot/interior from a commercial title |
 | UI | Unique "receipt-slip + notebook-edge" inspired modular shapes: short corner notches, deliberate off-center tabs, stitched-like 1px dividers and simple grid icons | Copying any app's full tab bar, mascot iconography or panel hierarchy |
