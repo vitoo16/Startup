@@ -71,3 +71,12 @@ art spec → Golden Asset → best-of-N → QA → cleanup/layers → asset cont
 Do not use "generic Asian" art as a substitute for Vietnamese context.
 Do not bake AI-generated Vietnamese text into final art.
 Use real localized text in Unity/TMP or controlled texture authoring.
+
+## Mandatory audio direction and owner listening approval (2026-10-15)
+
+- Audio authority: `docs/SOUND_DIRECTION_PRODUCTION_PLAN.md`. This covers all music, sound effects, vocalizations, ambience, audio mix changes and audio used in videos/store media; IP policy remains binding.
+- **Silence is NOT consent.** No owner reply means `AWAITING_OWNER_REVIEW` or `NOT_STARTED`, NEVER `APPROVED`. The generating/implementing AI may not self-approve; a green CI check or written plan is not listening proof.
+- At each Golden cue, representative audio family, significant audible revision, integrated gameplay mix and release candidate, **notify owner explicitly in user-facing conversation** with verified playable audio and in-game context, version/ID, rights information and a clear `APPROVE / REVISE / REJECT` decision request. A repository TODO/issue alone is not sufficient proof of notification; never claim a notification was delivered without evidence.
+- If audio cannot actually be rendered/auditioned, report `BLOCKED_NO_PREVIEW` or `NOT_TESTED` with reason. Do not fake a sample or approval. Owner feedback on one asset/version does not approve other assets or changed versions.
+- Never ship audio without owner sign-off **and** independent rights/provenance clearance and device/audio QA. Keep pending asset/mix work visibly open; implement unrelated tasks if feasible.
+- Extend audio session closeout with: `Audio assets produced:`, `Preview evidence:`, `Owner notified:`, `Owner review state:`, `Audio QA / device evidence:`, `Audio rights clearance:`.
