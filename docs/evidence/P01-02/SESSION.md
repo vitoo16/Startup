@@ -21,3 +21,8 @@ The strict shared reader `scripts/Read-UnityTestVerdict.ps1` reads the two outpu
 - **Known limitations:** Runner provisioning, Unity compilation, mobile Build Profiles, Android/iOS export, signed packages and physical devices still need real hardware/Editor gates. This does not change the Android-first/iOS-deferred ADR.
 - **Files changed:** `scripts/Test-UnityHeadless.ps1`, `scripts/Read-UnityTestVerdict.ps1`, `tools/UnityReportChecks.ps1`, `scripts/Test-UnityRunnerContractStatic.ps1`, `.github/workflows/engine-free-ci.yml`, `docs/ci/UNITY_RUNNER_CONTRACT.md`, `docs/evidence/P01-02/SESSION.md`.
 - **Commit:** Refer to commit containing this record.
+
+
+## Follow-up: build artifact freshness
+
+The same stale-output failure class was present in the build wrapper: it formerly accepted an existing output path and any existing provenance file following a zero CLI exit code. Hardened `Invoke-UnityBuild.ps1` to fail closed on preexisting paths, empty output, and non-JSON provenance. Avoid deleting user output paths implicitly. Updated the static runner contract accordingly. This is **code only** until an actual licensed Unity runner produces a fresh build artifact.

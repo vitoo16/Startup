@@ -106,7 +106,7 @@ A successful script run is real Unity test evidence. Merely having the script in
 ./scripts/Invoke-UnityBuild.ps1 -Profile <profile-name-or-asset> -OutputPath <path> -EvidenceDirectory <evidence-dir>
 ```
 
-The wrapper uses official `unity build --profile`, requires the output and a CLI provenance manifest, and fails when either is absent.
+The wrapper uses official `unity build --profile`; it refuses pre-existing output/provenance paths, checks a newly produced nonempty artifact (directory for iOS) and parses a new CLI provenance JSON object. A zero exit code with stale, empty, or malformed artifacts is never release evidence. It fails when any requirement is unmet.
 
 Mobile targets deliberately require a **Unity 6 Build Profile** or a reviewed custom build method. The repository does not currently contain an accepted Android/iOS Build Profile. A live Unity session must create/import the profiles so Unity owns their serialized data and `.meta` identities; this connector session will not hand-author them.
 

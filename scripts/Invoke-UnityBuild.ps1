@@ -44,6 +44,11 @@ if ($editorVersion -ne $expectedEditorVersion) {
 
 $cli = Resolve-UnityCli $UnityCliPath
 $resolvedOutput = [IO.Path]::GetFullPath($OutputPath)
+# Refuse to mistake a previous build for a newly produced artifact. Do not
+# delete or overwrite developer output silently; choose a clean unique path.
+if (Test-Path -LiteralPath $resolvedOutput) {
+    throw "Build output already exists; use a clean output path: $resolvedOutput"
+}
 $outputParent = Split-Path -Parent $resolvedOutput
 if ($outputParent) { New-Item -ItemType Directory -Force -Path $outputParent | Out-Null }
 if (-not $EvidenceDirectory) {
@@ -53,6 +58,9 @@ $EvidenceDirectory = [IO.Path]::GetFullPath($EvidenceDirectory)
 New-Item -ItemType Directory -Force -Path $EvidenceDirectory | Out-Null
 $provenancePath = Join-Path $EvidenceDirectory 'build-provenance.json'
 $logPath = Join-Path $EvidenceDirectory 'unity-build.log'
+if (Test-Path -LiteralPath $provenancePath) {
+    throw "Build provenance already exists; use a clean evidence directory: $EvidenceDirectory"
+}
 
 $arguments = [System.Collections.Generic.List[string]]::new()
 foreach ($value in @(
@@ -71,6 +79,23 @@ Write-Output "Building Unity profile '$Profile' with Editor $editorVersion..."
 $exitCode = $LASTEXITCODE
 $outputExists = Test-Path -LiteralPath $resolvedOutput
 $provenanceExists = Test-Path -LiteralPath $provenancePath -PathType Leaf
+$outputIsNonempty = $false
+if ($outputExists) {
+    $outputItem = Get-Item -LiteralPath $resolvedOutput
+    if ($outputItem.PSIsContainer) {
+        $outputIsNonempty = [IO.Directory]::EnumerateFileSystemEntries($resolvedOutput).GetEnumerator().MoveNext()
+    }
+    else { $outputIsNonempty = $outputItem.Length -gt 0 }
+}
+$provenanceIsJson = $false
+if ($provenanceExists) {
+    try {
+        $parsedProvenance = Get-Content -LiteralPath $provenancePath -Raw | ConvertFrom-Json -ErrorAction Stop
+        $provenanceIsJson = $null -ne $parsedProvenance -and
+            $parsedProvenance -is [pscustomobject]
+    }
+    catch { $provenanceIsJson = $false }
+}
 
 $summaryPath = Join-Path $EvidenceDirectory 'unity-build-summary.json'
 [ordered]@{
@@ -80,15 +105,19 @@ $summaryPath = Join-Path $EvidenceDirectory 'unity-build-summary.json'
     outputPath = $resolvedOutput
     exitCode = $exitCode
     outputExists = $outputExists
+    outputIsNonempty = $outputIsNonempty
     provenance = $provenancePath
     provenanceExists = $provenanceExists
+    provenanceIsJson = $provenanceIsJson
     log = $logPath
-    success = ($exitCode -eq 0 -and $outputExists -and $provenanceExists)
+    success = ($exitCode -eq 0 -and $outputIsNonempty -and $provenanceIsJson)
     note = 'For iOS, Unity output is an Xcode project folder. Signing, archive, IPA, TestFlight and physical-device QA remain separate macOS/device gates.'
 } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $summaryPath -Encoding utf8
 
 Write-Output "Summary: $summaryPath"
 if ($exitCode -ne 0) { throw "Unity build failed with exit code $exitCode. See $logPath" }
 if (-not $outputExists) { throw "Unity build exited successfully but output is missing: $resolvedOutput" }
+if (-not $outputIsNonempty) { throw "Unity build returned an empty output: $resolvedOutput" }
 if (-not $provenanceExists) { throw "Unity build output exists but provenance was not retained: $provenancePath" }
+if (-not $provenanceIsJson) { throw "Unity build provenance is not a valid JSON object: $provenancePath" }
 Write-Output "Unity build profile completed: $resolvedOutput"
