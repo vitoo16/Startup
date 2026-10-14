@@ -1,0 +1,784 @@
+{
+  "schema": "startup-life.pixel-character-draft.v1",
+  "style_id": "vn_everyday_pixel_v1",
+  "asset_id": "sl-character-golden-c01",
+  "status": "DRAFT_NOT_APPROVED",
+  "source_origin": "author_created_pixel_rectangles_no_external_sprite_input",
+  "character": "A contemporary Vietnamese urban worker with original offset fringe and messenger-strap detail",
+  "views_completed": [
+    "front"
+  ],
+  "views_pending": [
+    "side",
+    "three_quarter_left"
+  ],
+  "ppu": 32,
+  "canvas": [
+    128,
+    160
+  ],
+  "root_pivot": [
+    64,
+    0
+  ],
+  "palette": [
+    {
+      "id": "hair",
+      "hex": "#43372F"
+    },
+    {
+      "id": "hair_light",
+      "hex": "#65513B"
+    },
+    {
+      "id": "skin",
+      "hex": "#DDA980"
+    },
+    {
+      "id": "skin_light",
+      "hex": "#F3CA9F"
+    },
+    {
+      "id": "shirt",
+      "hex": "#839B86"
+    },
+    {
+      "id": "shirt_shadow",
+      "hex": "#597E6E"
+    },
+    {
+      "id": "trousers",
+      "hex": "#667F8D"
+    },
+    {
+      "id": "trousers_shadow",
+      "hex": "#455E70"
+    },
+    {
+      "id": "shoes",
+      "hex": "#534B42"
+    },
+    {
+      "id": "bag",
+      "hex": "#B85C38"
+    },
+    {
+      "id": "ink",
+      "hex": "#27483C"
+    },
+    {
+      "id": "cheek",
+      "hex": "#C9807D"
+    },
+    {
+      "id": "strap",
+      "hex": "#F0BC68"
+    }
+  ],
+  "parts": [
+    {
+      "id": "torso",
+      "parent": "root",
+      "joint_px": [
+        64,
+        66
+      ],
+      "sorting_order": 6,
+      "rects": [
+        {
+          "color": "shirt",
+          "box": [
+            47,
+            55,
+            34,
+            45
+          ]
+        },
+        {
+          "color": "shirt_shadow",
+          "box": [
+            47,
+            55,
+            4,
+            36
+          ]
+        },
+        {
+          "color": "shirt_shadow",
+          "box": [
+            77,
+            56,
+            4,
+            39
+          ]
+        },
+        {
+          "color": "skin",
+          "box": [
+            60,
+            98,
+            8,
+            6
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pelvis",
+      "parent": "torso",
+      "joint_px": [
+        64,
+        57
+      ],
+      "sorting_order": 7,
+      "rects": [
+        {
+          "color": "trousers",
+          "box": [
+            48,
+            46,
+            33,
+            17
+          ]
+        },
+        {
+          "color": "trousers_shadow",
+          "box": [
+            49,
+            47,
+            32,
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "id": "upper_leg_l",
+      "parent": "pelvis",
+      "joint_px": [
+        55,
+        53
+      ],
+      "sorting_order": 3,
+      "rects": [
+        {
+          "color": "trousers",
+          "box": [
+            47,
+            26,
+            17,
+            32
+          ]
+        },
+        {
+          "color": "trousers_shadow",
+          "box": [
+            47,
+            27,
+            4,
+            26
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lower_leg_l",
+      "parent": "upper_leg_l",
+      "joint_px": [
+        55,
+        29
+      ],
+      "sorting_order": 4,
+      "rects": [
+        {
+          "color": "trousers",
+          "box": [
+            48,
+            9,
+            16,
+            25
+          ]
+        },
+        {
+          "color": "trousers_shadow",
+          "box": [
+            48,
+            9,
+            4,
+            19
+          ]
+        }
+      ]
+    },
+    {
+      "id": "foot_l",
+      "parent": "lower_leg_l",
+      "joint_px": [
+        55,
+        12
+      ],
+      "sorting_order": 5,
+      "rects": [
+        {
+          "color": "shoes",
+          "box": [
+            43,
+            5,
+            23,
+            13
+          ]
+        },
+        {
+          "color": "ink",
+          "box": [
+            43,
+            5,
+            23,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "id": "upper_leg_r",
+      "parent": "pelvis",
+      "joint_px": [
+        73,
+        53
+      ],
+      "sorting_order": 3,
+      "rects": [
+        {
+          "color": "trousers",
+          "box": [
+            65,
+            27,
+            18,
+            31
+          ]
+        },
+        {
+          "color": "trousers_shadow",
+          "box": [
+            78,
+            28,
+            5,
+            26
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lower_leg_r",
+      "parent": "upper_leg_r",
+      "joint_px": [
+        73,
+        29
+      ],
+      "sorting_order": 4,
+      "rects": [
+        {
+          "color": "trousers",
+          "box": [
+            66,
+            10,
+            17,
+            24
+          ]
+        },
+        {
+          "color": "trousers_shadow",
+          "box": [
+            78,
+            10,
+            5,
+            22
+          ]
+        }
+      ]
+    },
+    {
+      "id": "foot_r",
+      "parent": "lower_leg_r",
+      "joint_px": [
+        73,
+        12
+      ],
+      "sorting_order": 5,
+      "rects": [
+        {
+          "color": "shoes",
+          "box": [
+            64,
+            5,
+            25,
+            13
+          ]
+        },
+        {
+          "color": "ink",
+          "box": [
+            64,
+            5,
+            25,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "id": "upper_arm_l",
+      "parent": "torso",
+      "joint_px": [
+        49,
+        90
+      ],
+      "sorting_order": 8,
+      "rects": [
+        {
+          "color": "shirt",
+          "box": [
+            37,
+            65,
+            15,
+            29
+          ]
+        },
+        {
+          "color": "shirt_shadow",
+          "box": [
+            37,
+            65,
+            4,
+            25
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forearm_l",
+      "parent": "upper_arm_l",
+      "joint_px": [
+        44,
+        70
+      ],
+      "sorting_order": 9,
+      "rects": [
+        {
+          "color": "skin",
+          "box": [
+            35,
+            46,
+            15,
+            28
+          ]
+        },
+        {
+          "color": "skin_light",
+          "box": [
+            35,
+            47,
+            4,
+            21
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hand_l",
+      "parent": "forearm_l",
+      "joint_px": [
+        43,
+        51
+      ],
+      "sorting_order": 10,
+      "rects": [
+        {
+          "color": "skin",
+          "box": [
+            36,
+            43,
+            13,
+            14
+          ]
+        },
+        {
+          "color": "skin_light",
+          "box": [
+            38,
+            51,
+            7,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "upper_arm_r",
+      "parent": "torso",
+      "joint_px": [
+        79,
+        90
+      ],
+      "sorting_order": 8,
+      "rects": [
+        {
+          "color": "shirt",
+          "box": [
+            77,
+            65,
+            15,
+            29
+          ]
+        },
+        {
+          "color": "shirt_shadow",
+          "box": [
+            87,
+            65,
+            5,
+            25
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forearm_r",
+      "parent": "upper_arm_r",
+      "joint_px": [
+        85,
+        70
+      ],
+      "sorting_order": 9,
+      "rects": [
+        {
+          "color": "skin",
+          "box": [
+            82,
+            46,
+            14,
+            28
+          ]
+        },
+        {
+          "color": "skin_light",
+          "box": [
+            91,
+            47,
+            5,
+            23
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hand_r",
+      "parent": "forearm_r",
+      "joint_px": [
+        89,
+        51
+      ],
+      "sorting_order": 10,
+      "rects": [
+        {
+          "color": "skin",
+          "box": [
+            83,
+            43,
+            14,
+            14
+          ]
+        },
+        {
+          "color": "skin_light",
+          "box": [
+            87,
+            50,
+            8,
+            6
+          ]
+        }
+      ]
+    },
+    {
+      "id": "head",
+      "parent": "torso",
+      "joint_px": [
+        64,
+        99
+      ],
+      "sorting_order": 12,
+      "rects": [
+        {
+          "color": "skin",
+          "box": [
+            42,
+            97,
+            44,
+            48
+          ]
+        },
+        {
+          "color": "skin_light",
+          "box": [
+            47,
+            115,
+            33,
+            24
+          ]
+        },
+        {
+          "color": "skin",
+          "box": [
+            50,
+            96,
+            28,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hair_back",
+      "parent": "head",
+      "joint_px": [
+        64,
+        126
+      ],
+      "sorting_order": 11,
+      "rects": [
+        {
+          "color": "hair",
+          "box": [
+            41,
+            123,
+            47,
+            30
+          ]
+        },
+        {
+          "color": "hair_light",
+          "box": [
+            45,
+            149,
+            30,
+            5
+          ]
+        },
+        {
+          "color": "hair",
+          "box": [
+            44,
+            113,
+            6,
+            16
+          ]
+        }
+      ]
+    },
+    {
+      "id": "face",
+      "parent": "head",
+      "joint_px": [
+        64,
+        122
+      ],
+      "sorting_order": 13,
+      "rects": [
+        {
+          "color": "ink",
+          "box": [
+            53,
+            123,
+            4,
+            5
+          ]
+        },
+        {
+          "color": "ink",
+          "box": [
+            71,
+            123,
+            4,
+            5
+          ]
+        },
+        {
+          "color": "ink",
+          "box": [
+            52,
+            131,
+            6,
+            2
+          ]
+        },
+        {
+          "color": "ink",
+          "box": [
+            70,
+            131,
+            6,
+            2
+          ]
+        },
+        {
+          "color": "cheek",
+          "box": [
+            47,
+            115,
+            6,
+            3
+          ]
+        },
+        {
+          "color": "cheek",
+          "box": [
+            75,
+            115,
+            6,
+            3
+          ]
+        },
+        {
+          "color": "ink",
+          "box": [
+            61,
+            111,
+            6,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hair_front",
+      "parent": "head",
+      "joint_px": [
+        64,
+        143
+      ],
+      "sorting_order": 14,
+      "rects": [
+        {
+          "color": "hair",
+          "box": [
+            41,
+            137,
+            47,
+            20
+          ]
+        },
+        {
+          "color": "hair_light",
+          "box": [
+            43,
+            150,
+            25,
+            4
+          ]
+        },
+        {
+          "color": "hair",
+          "box": [
+            43,
+            132,
+            17,
+            11
+          ]
+        },
+        {
+          "color": "hair",
+          "box": [
+            70,
+            134,
+            12,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "outfit_torso",
+      "parent": "torso",
+      "joint_px": [
+        64,
+        79
+      ],
+      "sorting_order": 15,
+      "rects": [
+        {
+          "color": "bag",
+          "box": [
+            71,
+            65,
+            6,
+            35
+          ]
+        },
+        {
+          "color": "strap",
+          "box": [
+            69,
+            75,
+            3,
+            21
+          ]
+        },
+        {
+          "color": "bag",
+          "box": [
+            48,
+            70,
+            13,
+            10
+          ]
+        },
+        {
+          "color": "ink",
+          "box": [
+            51,
+            72,
+            7,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "outfit_legs",
+      "parent": "pelvis",
+      "joint_px": [
+        64,
+        54
+      ],
+      "sorting_order": 16,
+      "rects": [
+        {
+          "color": "shirt_shadow",
+          "box": [
+            49,
+            55,
+            31,
+            4
+          ]
+        },
+        {
+          "color": "strap",
+          "box": [
+            61,
+            55,
+            6,
+            4
+          ]
+        }
+      ]
+    }
+  ],
+  "motion_contract": [
+    "idle",
+    "walk",
+    "type",
+    "talk"
+  ],
+  "note": "Authored prototype only; independently review originality, source evidence, phone readability and actual Unity render before Golden approval."
+}

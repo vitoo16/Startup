@@ -22,7 +22,8 @@
     "atlas_padding_px": 4,
     "atlas_tight_packing": false,
     "light_direction": "upper_left_soft",
-    "alpha_edges": "pixel_clusters_no_resampling"
+    "alpha_edges": "pixel_clusters_no_resampling",
+    "prototype_actor_source": "Assets/StartupLife/Art/Source/Characters/golden-character-c01/layers.json"
   },
   "camera": {
     "projection": "orthographic",

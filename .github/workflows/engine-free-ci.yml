@@ -77,6 +77,11 @@ jobs:
           python3 scripts/Validate-GoldenArt.py
           python3 -m unittest discover -s tools/GoldenArtChecks -p 'test_*.py' -v
 
+      - name: Validate quarantined Golden C01 source (no Unity or IP approval)
+        run: |
+          python3 scripts/Validate-GoldenCharacter.py
+          python3 -m unittest discover -s tools/GoldenCharacterChecks -p 'test_*.py' -v
+
       - name: Validate asset provenance and approval join (no legal clearance implied)
         run: |
           python3 scripts/Validate-AssetProvenance.py

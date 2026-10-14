@@ -1,6 +1,33 @@
 {
   "schema": "startup-life.asset-provenance.v1",
   "proposed_style_id": "vn_everyday_pixel_v1",
-  "assets": [],
-  "note": "Empty preflight manifest; no approved shipping assets. M13 art remains active until atomic W03 migration."
+  "assets": [
+    {
+      "asset_id": "sl-character-golden-c01",
+      "type": "character",
+      "style_id": "vn_everyday_pixel_v1",
+      "status": "DRAFT",
+      "creator_type": "ai_assisted",
+      "creator_or_licensor_ref": "author:openai-gpt6-asset-draft",
+      "created_utc": "2026-10-14T00:00:00Z",
+      "source_files": [
+        "Assets/StartupLife/Art/Source/Characters/golden-character-c01/layers.json"
+      ],
+      "output_files": [],
+      "process_reference": "repo:Assets/StartupLife/Art/Source/Characters/golden-character-c01/layers.json",
+      "model_tool_and_terms_ref": null,
+      "input_reference_rights": [],
+      "third_party_dependencies": [],
+      "license_scope": null,
+      "license_evidence_ref": null,
+      "similarity_review_ref": null,
+      "technical_import_review_ref": null,
+      "visual_beautycell_ref": null,
+      "independent_reviewer": null,
+      "approval_date_utc": null,
+      "unity_path": null,
+      "scorecard": null
+    }
+  ],
+  "note": "Pixel technical style migrated; one AI-assisted unapproved front-view candidate source is tracked. No shipping assets or independent legal/art clearance."
 }
