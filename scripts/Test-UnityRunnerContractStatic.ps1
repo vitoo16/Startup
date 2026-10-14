@@ -27,6 +27,8 @@ function Read-RepoText {
 
 $required = @(
     'scripts/Test-UnityHeadless.ps1',
+    'scripts/Read-UnityTestVerdict.ps1',
+    'tools/UnityReportChecks.ps1',
     'scripts/Invoke-UnityBuild.ps1',
     '.github/workflows/unity-runtime-smoke.yml',
     'docs/ci/UNITY_RUNNER_CONTRACT.md'
@@ -34,7 +36,7 @@ $required = @(
 $missing = @($required | Where-Object { -not (Test-Path -LiteralPath (Join-Path $repositoryRoot $_) -PathType Leaf) })
 Add-Check 'runner contract files exist' ($missing.Count -eq 0) ($(if ($missing.Count -eq 0) { "$($required.Count) files present" } else { "missing: $($missing -join ', ')" }))
 
-foreach ($relativePath in @('scripts/Test-UnityHeadless.ps1', 'scripts/Invoke-UnityBuild.ps1')) {
+foreach ($relativePath in @('scripts/Test-UnityHeadless.ps1', 'scripts/Read-UnityTestVerdict.ps1', 'tools/UnityReportChecks.ps1', 'scripts/Invoke-UnityBuild.ps1')) {
     $tokens = $null
     $parseErrors = $null
     [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $repositoryRoot $relativePath), [ref]$tokens, [ref]$parseErrors) | Out-Null
@@ -52,6 +54,11 @@ Add-Check 'headless tests require both EditMode and PlayMode in All mode' ($test
 Add-Check 'headless tests retain NUnit and JUnit' (($testScript.Contains("'nunit,junit'")) -and ($testScript.Contains("'--junit-output'"))) 'both report formats must be retained'
 Add-Check 'headless tests distinguish test failure exit code' ($testScript.Contains("8 { 'Unity tests completed with one or more test failures.' }")) 'exit 8 must remain an explicit test-failure result'
 Add-Check 'headless tests distinguish infrastructure exit code' ($testScript.Contains("6 { 'Unity did not produce a valid test verdict")) 'exit 6 must remain an explicit infrastructure/no-verdict result'
+Add-Check 'headless tests clear stale XML before each invocation' ($testScript.Contains('Remove-Item -LiteralPath $stalePath -Force')) 'a previous CI report must never qualify as current Editor evidence'
+Add-Check 'headless tests validate XML outcome counts' ($testScript.Contains("Read-UnityTestVerdict.ps1")) 'headless results must use the shared strict NUnit/JUnit verdict reader'
+$verdictScript = Read-RepoText 'scripts/Read-UnityTestVerdict.ps1'
+Add-Check 'NUnit reader checks complete pass and no skips' (($verdictScript.Contains("'test-run'")) -and ($verdictScript.Contains("'inconclusive'")) -and ($verdictScript.Contains("'skipped'"))) 'empty, failed and incomplete results are not PASS'
+Add-Check 'JUnit reader compares actual testcase count' ($verdictScript.Contains("SelectNodes('//testcase')")) 'JUnit counters and testcase roster must agree'
 
 $buildScript = Read-RepoText 'scripts/Invoke-UnityBuild.ps1'
 Add-Check 'build wrapper uses Unity 6 Build Profile' ($buildScript.Contains("'--profile', `$Profile")) 'mobile build wrapper must not guess a non-desktop target build path'

@@ -69,6 +69,13 @@ foreach ($testMode in $modes) {
     $junitPath = Join-Path $OutputDirectory "$slug-results.junit.xml"
     $logPath = Join-Path $OutputDirectory "$slug-unity-cli.log"
 
+    # Never count files from an earlier CI attempt as current Editor proof.
+    foreach ($stalePath in @($nunitPath, $junitPath, $logPath)) {
+        if (Test-Path -LiteralPath $stalePath -PathType Leaf) {
+            Remove-Item -LiteralPath $stalePath -Force
+        }
+    }
+
     $arguments = [System.Collections.Generic.List[string]]::new()
     foreach ($value in @(
         'test', $repositoryRoot,
@@ -100,8 +107,20 @@ foreach ($testMode in $modes) {
         junitExists = $junitExists
         log = $logPath
     }
+    if ($exitCode -eq 0 -and $nunitExists -and $junitExists) {
+        try {
+            $verdict = & (Join-Path $PSScriptRoot 'Read-UnityTestVerdict.ps1') `
+                -NUnitPath $nunitPath -JUnitPath $junitPath
+            $result.verdict = $verdict
+        }
+        catch {
+            $result.reportError = $_.Exception.Message
+            $failure = "$testMode report validation failed: $($_.Exception.Message) See $logPath"
+        }
+    }
     $results.Add($result)
 
+    if ($null -ne $failure) { break }
     if ($exitCode -ne 0 -or -not $nunitExists -or -not $junitExists) {
         $meaning = switch ($exitCode) {
             8 { 'Unity tests completed with one or more test failures.' }

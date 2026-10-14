@@ -62,6 +62,10 @@ jobs:
           $reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/unity-runner-contract-report.json'
           ./scripts/Test-UnityRunnerContractStatic.ps1 -ReportPath $reportPath
 
+      - name: Validate Unity result report parser with offline fixtures
+        shell: pwsh
+        run: ./tools/UnityReportChecks.ps1
+
       - name: Validate repository security and release hygiene
         shell: pwsh
         run: |

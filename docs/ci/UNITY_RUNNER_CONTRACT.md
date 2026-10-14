@@ -91,7 +91,7 @@ Under [ADR-010](../adr/ADR-010-windows-android-first-ios-acceptance-deferral.md)
 ./scripts/Test-UnityHeadless.ps1 -Mode All -OutputDirectory <evidence-dir>
 ```
 
-The script uses official `unity test` against the pinned Editor and runs `StartupLife` EditMode then PlayMode tests. It requires NUnit and JUnit reports to exist. Exit semantics are retained:
+The script uses official `unity test` against the pinned Editor and runs `StartupLife` EditMode then PlayMode tests. Before each mode it removes old report files and requires fresh, valid NUnit 3 and JUnit XML with **at least one executed test**, zero failed/skipped/inconclusive, matching counters and testcase records. A zero exit code and stale/empty XML files are not a passing verdict. Engine-free fixture checks of this report reader run in normal CI. Exit semantics are retained:
 
 - `0`: Unity produced passing test reports;
 - `8`: tests ran and at least one failed;
