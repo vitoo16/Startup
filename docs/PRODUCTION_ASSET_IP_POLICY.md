@@ -22,6 +22,13 @@ No finite search, image model or similarity checker can prove 100% global origin
 
 These prohibitions cover **AI and human creators equally**.
 
+## 2A. Owner restrictions — original character and Vietnam pixel environments (2026-10-15)
+
+- Characters, NPCs, props, environment backdrops and signature UI motifs must be originally authored from first-party creative briefs. Do not use online sprites, game screenshots, commercial art, photographs or other people's silhouettes as trace/recolor/pixel-filter production inputs. Independent observations or textual locality research may check factual accuracy; never recreate a distinctive copyrighted photo/frame, design or recognizable shop facade.
+- All stages retain source/project evidence and independently conceived design alternatives. AI-generated files are candidates, not automatically rights-cleared or uniquely protectable products. Do not claim zero worldwide resemblance.
+- **Human dignity and non-discrimination review:** Character body height/shape, skin color, gender expression, age, disability, ethnicity, economic class and regional identity must never be visual shorthand for low ability, dishonesty, worth, pay or laughable incompetence. Jobs and clothes depict actual work functions. Adult career protagonists stay adult-coded even with cartoon proportions. A cultural reviewer must assess sensitive NPC/location depiction.
+- If similarities or rights are uncertain, quarantine and redesign from an independently authored brief. Do not treat a modified derivative as remediation. Independent artistic/legal review remains mandatory before shipping.
+
 ## 3. Approved source categories
 
 | Source route | Minimum required evidence | Extra gate |
