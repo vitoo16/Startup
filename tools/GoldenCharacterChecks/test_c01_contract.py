@@ -75,6 +75,26 @@ class GoldenC01Tests(unittest.TestCase):
             status="APPROVED"))
         self.rejected("candidate provenance")
 
+    def test_reject_missing_motion_track(self):
+        self.change(gate.SOURCE, lambda d: d["motions"][1].update(
+            joints=d["motions"][1]["joints"][:2]))
+        self.rejected("walk requires independently animated knees")
+
+    def test_reject_same_phase_leg_walk(self):
+        self.change(gate.SOURCE, lambda d: d["motions"][1]["joints"][1].update(
+            angles=[0, 22, 0, -22, 0]))
+        self.rejected("walk requires independently animated knees")
+
+    def test_reject_motion_track_outside_rig(self):
+        self.change(gate.SOURCE, lambda d: d["motions"][0]["joints"][0].update(
+            part="unknown"))
+        self.rejected("motion targets missing")
+
+    def test_reject_unbounded_joint_angles(self):
+        self.change(gate.SOURCE, lambda d: d["motions"][1]["joints"][0].update(
+            angles=[0, 90, 0, -90, 0]))
+        self.rejected("invalid motion keyframe")
+
     def test_reject_unreviewed_motion_claim(self):
         self.change(gate.SOURCE, lambda d: d.update(
             motion_contract=["idle", "walk"]))

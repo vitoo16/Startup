@@ -90,8 +90,34 @@ def validate(root=ROOT):
     done = set()
     for name in names:
         visit(name, set(), done)
-    require({"idle", "walk", "type", "talk"} <= set(data["motion_contract"]),
+    require(data["motion_contract"] == ["idle", "walk", "type", "talk"],
             "missing functional animation contract")
+    motions = data["motions"]
+    require([m["id"] for m in motions] == data["motion_contract"],
+            "authored animation clips do not match motion contract")
+    for clip in motions:
+        require(0.25 <= clip["duration_seconds"] <= 2.0 and
+                1 <= len(clip["joints"]) <= len(parts),
+                "invalid motion duration or layer count")
+        targets = {track["part"] for track in clip["joints"]}
+        require(len(targets) == len(clip["joints"]) and targets <= names,
+                "motion targets missing or duplicate")
+        for track in clip["joints"]:
+            angles = track["angles"]
+            require(len(angles) == 5 and angles[0] == angles[-1] and
+                    all(type(a) in (float, int) and abs(a) <= 45 for a in angles),
+                    "invalid motion keyframe")
+    walk = {t["part"]: t["angles"] for t in motions[1]["joints"]}
+    require({"upper_leg_l", "upper_leg_r", "lower_leg_l", "lower_leg_r"}
+            <= set(walk) and
+            all(any(a != 0 for a in walk[name]) for name in (
+                "upper_leg_l", "upper_leg_r", "lower_leg_l", "lower_leg_r")) and
+            walk["upper_leg_l"][1] * walk["upper_leg_r"][1] < 0,
+            "walk requires independently animated knees and opposing legs")
+    typing = {t["part"]: t["angles"] for t in motions[2]["joints"]}
+    require({"forearm_l", "forearm_r"} <= set(typing) and
+            all(any(a != 0 for a in typing[name]) for name in (
+                "forearm_l", "forearm_r")), "type requires independently animated forearms")
     code = (root / BUILDER).read_text(encoding="utf-8")
     for required_piece in (
         "AssetDatabase.ImportAsset", "TextureImporter", "FilterMode.Point",

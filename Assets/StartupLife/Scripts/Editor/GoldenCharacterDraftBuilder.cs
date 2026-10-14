@@ -16,7 +16,6 @@ namespace StartupLife.Editor
         private const string Generated =
             "Assets/StartupLife/Art/Source/Characters/golden-character-c01/Generated";
         private const string CharacterRoot = "SL_Golden_C01_Quarantined";
-        private static readonly float[] Times = { 0f, .25f, .5f, .75f, 1f };
 
         [Serializable] private sealed class Swatch
         {
@@ -39,6 +38,19 @@ namespace StartupLife.Editor
             public RectLayer[] rects = Array.Empty<RectLayer>();
         }
 
+        [Serializable] private sealed class JointTrack
+        {
+            public string part = "";
+            public float[] angles = Array.Empty<float>();
+        }
+
+        [Serializable] private sealed class Motion
+        {
+            public string id = "";
+            public float duration_seconds;
+            public JointTrack[] joints = Array.Empty<JointTrack>();
+        }
+
         [Serializable] private sealed class Draft
         {
             public string schema = "";
@@ -49,6 +61,7 @@ namespace StartupLife.Editor
             public int[] root_pivot = Array.Empty<int>();
             public Swatch[] palette = Array.Empty<Swatch>();
             public Part[] parts = Array.Empty<Part>();
+            public Motion[] motions = Array.Empty<Motion>();
         }
 
         [MenuItem("Startup Life/Art/Build quarantined Golden character C01")]
@@ -133,12 +146,16 @@ namespace StartupLife.Editor
                     Generated + "/c01-proof.controller");
                 controller.AddParameter("Motion", AnimatorControllerParameterType.Int);
                 var machine = controller.layers[0].stateMachine;
-                var movements = new[] { "idle", "walk", "type", "talk" };
-                for (var mode = 0; mode < movements.Length; mode++)
+                if (draft.motions.Length != 4 ||
+                    draft.motions[0].id != "idle" || draft.motions[1].id != "walk" ||
+                    draft.motions[2].id != "type" || draft.motions[3].id != "talk")
+                    throw new InvalidOperationException("Expected four authored C01 motion states.");
+                for (var mode = 0; mode < draft.motions.Length; mode++)
                 {
-                    var clip = CreateClip(movements[mode], root.transform, transforms);
-                    AssetDatabase.CreateAsset(clip, Generated + "/c01-" + movements[mode] + ".anim");
-                    var state = machine.AddState(movements[mode]);
+                    var motion = draft.motions[mode];
+                    var clip = CreateClip(motion, root.transform, transforms);
+                    AssetDatabase.CreateAsset(clip, Generated + "/c01-" + motion.id + ".anim");
+                    var state = machine.AddState(motion.id);
                     state.motion = clip;
                     if (mode == 0) machine.defaultState = state;
                     var transition = machine.AddAnyStateTransition(state);
@@ -216,55 +233,38 @@ namespace StartupLife.Editor
             finally { UnityEngine.Object.DestroyImmediate(texture); }
         }
 
-        private static AnimationClip CreateClip(string mode, Transform root,
+        private static AnimationClip CreateClip(Motion motion, Transform root,
             IReadOnlyDictionary<string, Transform> bones)
         {
-            var clip = new AnimationClip { name = "C01_" + mode, frameRate = 12f };
-            if (mode == "idle")
+            if (motion.joints == null || motion.joints.Length == 0 ||
+                motion.duration_seconds <= 0f || float.IsNaN(motion.duration_seconds) ||
+                float.IsInfinity(motion.duration_seconds))
+                throw new InvalidOperationException("Invalid animation duration or joint roster.");
+            var clip = new AnimationClip { name = "C01_" + motion.id, frameRate = 12f };
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var track in motion.joints)
             {
-                Rotate(clip, root, bones["torso"], 1.5f);
-                Rotate(clip, root, bones["head"], -2f);
-            }
-            else if (mode == "walk")
-            {
-                Rotate(clip, root, bones["upper_leg_l"], 21f);
-                Rotate(clip, root, bones["upper_leg_r"], -21f);
-                Rotate(clip, root, bones["lower_leg_l"], -18f);
-                Rotate(clip, root, bones["lower_leg_r"], 18f);
-                Rotate(clip, root, bones["upper_arm_l"], -14f);
-                Rotate(clip, root, bones["upper_arm_r"], 14f);
-            }
-            else if (mode == "type")
-            {
-                Rotate(clip, root, bones["forearm_l"], 12f);
-                Rotate(clip, root, bones["forearm_r"], -12f);
-                Rotate(clip, root, bones["hand_l"], 8f);
-                Rotate(clip, root, bones["hand_r"], -8f);
-            }
-            else if (mode == "talk")
-            {
-                Rotate(clip, root, bones["head"], 3f);
-                Rotate(clip, root, bones["upper_arm_r"], -18f);
-                Rotate(clip, root, bones["forearm_r"], -26f);
+                if (!bones.TryGetValue(track.part, out var bone) ||
+                    !seen.Add(track.part) || track.angles == null ||
+                    track.angles.Length != 5 || track.angles[0] != track.angles[4])
+                    throw new InvalidOperationException(
+                        "Invalid or duplicate C01 motion curve: " + track.part);
+                var keys = new Keyframe[track.angles.Length];
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    if (float.IsNaN(track.angles[i]) || float.IsInfinity(track.angles[i]) ||
+                        Mathf.Abs(track.angles[i]) > 45f)
+                        throw new InvalidOperationException("Unbounded C01 motion angle.");
+                    keys[i] = new Keyframe(
+                        motion.duration_seconds * i / (keys.Length - 1), track.angles[i]);
+                }
+                var relativePath = AnimationUtility.CalculateTransformPath(bone, root);
+                AnimationUtility.SetEditorCurve(clip, EditorCurveBinding.FloatCurve(
+                    relativePath, typeof(Transform), "localEulerAnglesRaw.z"),
+                    new AnimationCurve(keys));
             }
             clip.wrapMode = WrapMode.Loop;
             return clip;
-        }
-
-        private static void Rotate(AnimationClip clip, Transform root, Transform bone,
-            float amplitude)
-        {
-            var path = AnimationUtility.CalculateTransformPath(bone, root);
-            var keys = new Keyframe[Times.Length];
-            for (var i = 0; i < keys.Length; i++)
-            {
-                var factor = i == 1 ? 1f : i == 3 ? -1f : 0f;
-                keys[i] = new Keyframe(Times[i], amplitude * factor);
-            }
-            var curve = new AnimationCurve(keys);
-            AnimationUtility.SetEditorCurve(clip,
-                EditorCurveBinding.FloatCurve(path, typeof(Transform), "localEulerAnglesRaw.z"),
-                curve);
         }
     }
 }

@@ -21,3 +21,7 @@
 - **Known limitations:** Prototype rig curves are authored but not verified at runtime, no Unity-generated assets committed, no side/3/4 turnaround, no lip/face expression animation, no final IP chain-of-title approval. Complete 8–12 actual distinct Golden candidates and independent scorecards before production registry approval.
 - **Files changed:** C01 source JSON/.meta + folder .meta, art-spec prototype source ref, unapproved provenance draft, Editor builder and .meta, character validator/fixture suite, CI and this record.
 - **Commit:** See Git commit containing this session record.
+
+## Follow-up — Data-driven joint animation
+
+The prototype initially encoded per-motion joint amplitudes in the Editor script. This was replaced within the same P03-01 slice by four authored motion clip definitions in `layers.json`, each with editable duration and five-angle joint tracks. The generic Unity clip generator has no hand-coded walk/typing angles and uses one reusable motion path. Static validator refuses clipped curves, duplicate/unknown bones, >45-degree amplitudes, walking without independent knees/opposing legs, and typing without moving forearms. Added four regression mutations. This is static authoring evidence only; actual Unity playback remains unverified.

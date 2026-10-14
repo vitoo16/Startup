@@ -780,5 +780,181 @@
     "type",
     "talk"
   ],
-  "note": "Authored prototype only; independently review originality, source evidence, phone readability and actual Unity render before Golden approval."
+  "note": "Authored prototype only; independently review originality, source evidence, phone readability and actual Unity render before Golden approval.",
+  "motions": [
+    {
+      "id": "idle",
+      "duration_seconds": 1.2,
+      "joints": [
+        {
+          "part": "torso",
+          "angles": [
+            0,
+            1,
+            0,
+            -1,
+            0
+          ]
+        },
+        {
+          "part": "head",
+          "angles": [
+            0,
+            -2,
+            0,
+            2,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "walk",
+      "duration_seconds": 0.8,
+      "joints": [
+        {
+          "part": "upper_leg_l",
+          "angles": [
+            0,
+            22,
+            0,
+            -22,
+            0
+          ]
+        },
+        {
+          "part": "upper_leg_r",
+          "angles": [
+            0,
+            -22,
+            0,
+            22,
+            0
+          ]
+        },
+        {
+          "part": "lower_leg_l",
+          "angles": [
+            0,
+            -18,
+            0,
+            18,
+            0
+          ]
+        },
+        {
+          "part": "lower_leg_r",
+          "angles": [
+            0,
+            18,
+            0,
+            -18,
+            0
+          ]
+        },
+        {
+          "part": "upper_arm_l",
+          "angles": [
+            0,
+            -14,
+            0,
+            14,
+            0
+          ]
+        },
+        {
+          "part": "upper_arm_r",
+          "angles": [
+            0,
+            14,
+            0,
+            -14,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "type",
+      "duration_seconds": 0.65,
+      "joints": [
+        {
+          "part": "forearm_l",
+          "angles": [
+            0,
+            12,
+            0,
+            -12,
+            0
+          ]
+        },
+        {
+          "part": "forearm_r",
+          "angles": [
+            0,
+            -12,
+            0,
+            12,
+            0
+          ]
+        },
+        {
+          "part": "hand_l",
+          "angles": [
+            0,
+            8,
+            0,
+            -8,
+            0
+          ]
+        },
+        {
+          "part": "hand_r",
+          "angles": [
+            0,
+            -8,
+            0,
+            8,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "talk",
+      "duration_seconds": 0.95,
+      "joints": [
+        {
+          "part": "head",
+          "angles": [
+            0,
+            3,
+            0,
+            -3,
+            0
+          ]
+        },
+        {
+          "part": "upper_arm_r",
+          "angles": [
+            0,
+            -18,
+            0,
+            18,
+            0
+          ]
+        },
+        {
+          "part": "forearm_r",
+          "angles": [
+            0,
+            -26,
+            0,
+            26,
+            0
+          ]
+        }
+      ]
+    }
+  ]
 }
