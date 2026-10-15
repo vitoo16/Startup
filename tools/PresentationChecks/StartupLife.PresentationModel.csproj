@@ -11,6 +11,7 @@
     <ProjectReference Include="../SimulationChecks/StartupLife.Core.csproj" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/FirstPlayableFlow.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCustomizationModel.cs" />
+    <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreatorDraftSession.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterVisualComposition.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/EventLocalizationCatalog.cs" />

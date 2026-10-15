@@ -1,0 +1,155 @@
+{
+  "schema": "startup-life.character-creator.draft.v1",
+  "status": "DRAFT_COSMETIC_OPTIONS_NO_APPROVED_SPRITES",
+  "options": [
+    {
+      "slot": "Appearance",
+      "id": "base.female",
+      "labelKey": "character.option.base.female",
+      "label": "Nữ"
+    },
+    {
+      "slot": "Appearance",
+      "id": "base.male",
+      "labelKey": "character.option.base.male",
+      "label": "Nam"
+    },
+    {
+      "slot": "Face",
+      "id": "face.soft",
+      "labelKey": "character.option.face.soft",
+      "label": "Mặt mềm mại"
+    },
+    {
+      "slot": "Face",
+      "id": "face.round",
+      "labelKey": "character.option.face.round",
+      "label": "Mặt tròn"
+    },
+    {
+      "slot": "Hair",
+      "id": "hair.short",
+      "labelKey": "character.option.hair.short",
+      "label": "Tóc ngắn"
+    },
+    {
+      "slot": "Hair",
+      "id": "hair.wave",
+      "labelKey": "character.option.hair.wave",
+      "label": "Tóc gợn"
+    },
+    {
+      "slot": "HairColor",
+      "id": "haircolor.ink",
+      "labelKey": "character.option.haircolor.ink",
+      "label": "Đen tự nhiên"
+    },
+    {
+      "slot": "HairColor",
+      "id": "haircolor.chestnut",
+      "labelKey": "character.option.haircolor.chestnut",
+      "label": "Nâu hạt dẻ"
+    },
+    {
+      "slot": "SkinTone",
+      "id": "skin.warm",
+      "labelKey": "character.option.skin.warm",
+      "label": "Da ấm"
+    },
+    {
+      "slot": "SkinTone",
+      "id": "skin.gold",
+      "labelKey": "character.option.skin.gold",
+      "label": "Da vàng ấm"
+    },
+    {
+      "slot": "Accessory",
+      "id": "accessory.none",
+      "labelKey": "character.option.accessory.none",
+      "label": "Không phụ kiện"
+    },
+    {
+      "slot": "Accessory",
+      "id": "accessory.glasses",
+      "labelKey": "character.option.accessory.glasses",
+      "label": "Kính"
+    },
+    {
+      "slot": "Outfit",
+      "id": "outfit.casual",
+      "labelKey": "character.option.outfit.casual",
+      "label": "Đồ thường ngày"
+    },
+    {
+      "slot": "Outfit",
+      "id": "outfit.office",
+      "labelKey": "character.option.outfit.office",
+      "label": "Trang phục văn phòng"
+    },
+    {
+      "slot": "Outfit",
+      "id": "outfit.apron",
+      "labelKey": "character.option.outfit.apron",
+      "label": "Tạp dề nghề nghiệp"
+    },
+    {
+      "slot": "Trait",
+      "id": "trait.balanced",
+      "labelKey": "character.option.trait.balanced",
+      "label": "Cân bằng"
+    },
+    {
+      "slot": "Trait",
+      "id": "trait.careful",
+      "labelKey": "character.option.trait.careful",
+      "label": "Chu đáo"
+    },
+    {
+      "slot": "Trait",
+      "id": "trait.friendly",
+      "labelKey": "character.option.trait.friendly",
+      "label": "Thân thiện"
+    },
+    {
+      "slot": "Trait",
+      "id": "trait.energetic",
+      "labelKey": "character.option.trait.energetic",
+      "label": "Năng động"
+    }
+  ],
+  "defaults": [
+    {
+      "slot": "Appearance",
+      "id": "base.female"
+    },
+    {
+      "slot": "Face",
+      "id": "face.soft"
+    },
+    {
+      "slot": "Hair",
+      "id": "hair.short"
+    },
+    {
+      "slot": "HairColor",
+      "id": "haircolor.ink"
+    },
+    {
+      "slot": "SkinTone",
+      "id": "skin.warm"
+    },
+    {
+      "slot": "Accessory",
+      "id": "accessory.none"
+    },
+    {
+      "slot": "Outfit",
+      "id": "outfit.casual"
+    },
+    {
+      "slot": "Trait",
+      "id": "trait.balanced"
+    }
+  ],
+  "notes": "Text-only choices. No art approval, economy modifiers or cosmetic save persistence."
+}

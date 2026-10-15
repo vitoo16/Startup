@@ -100,6 +100,9 @@ jobs:
       - name: Compile and exercise Unity assembler logic against engine-free API stubs
         run: dotnet run --project tools/CharacterAssemblerCompileChecks/CharacterAssemblerCompileChecks.csproj --configuration Release --nologo
 
+      - name: Validate data-only Character Creator options
+        run: python3 scripts/Validate-CharacterCreatorCatalog.py
+
       - name: Validate asset provenance and approval join (no legal clearance implied)
         run: |
           python3 scripts/Validate-AssetProvenance.py

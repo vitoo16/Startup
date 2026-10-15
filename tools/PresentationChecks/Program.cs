@@ -24,6 +24,8 @@ internal static class Program
         Check("sprite must have independent approval and catalog registration", VisualComposerRejectsUnapproved);
         Check("duplicate rig parts and malformed catalog entries rejected", VisualComposerRejectsConflicts);
         Check("trait changes cannot mutate sprite composition", VisualComposerIgnoresTrait);
+        Check("four-step character draft navigation stays bounded", CharacterCreatorNavigation);
+        Check("creator traits and appearance remain independent", CharacterCreatorIndependence);
         Check("cosmetic catalog rejects duplicate and invalid IDs", CosmeticCatalogRejectsInvalid);
         Check("Nam/Nu changes only appearance, not trait/hair/face/outfit", AppearanceSwitchIsCosmetic);
         Check("cosmetic choices preserve independent personal traits", CosmeticIndependence);
@@ -213,6 +215,55 @@ internal static class Program
         Equal(basePlan.Layers.Count, otherPlan.Layers.Count);
         for (int i = 0; i < basePlan.Layers.Count; i++)
             True(object.ReferenceEquals(basePlan.Layers[i], otherPlan.Layers[i]));
+    }
+
+    private static CharacterCreatorDraftSession CharacterCreatorFixture()
+    {
+        var map = CharacterCatalog();
+        var items = new[] {
+            new CharacterCreatorChoice(CharacterVisualSlot.Appearance,"base.female","character.option.appearance.female"),
+            new CharacterCreatorChoice(CharacterVisualSlot.Appearance,"base.male","character.option.appearance.male"),
+            new CharacterCreatorChoice(CharacterVisualSlot.Face,"face.soft","character.option.face.soft"),
+            new CharacterCreatorChoice(CharacterVisualSlot.Hair,"hair.short","character.option.hair.short"),
+            new CharacterCreatorChoice(CharacterVisualSlot.Hair,"hair.long","character.option.hair.long"),
+            new CharacterCreatorChoice(CharacterVisualSlot.HairColor,"haircolor.ink","character.option.haircolor.ink"),
+            new CharacterCreatorChoice(CharacterVisualSlot.SkinTone,"skin.warm","character.option.skin.warm"),
+            new CharacterCreatorChoice(CharacterVisualSlot.Accessory,"accessory.none","character.option.accessory.none"),
+            new CharacterCreatorChoice(CharacterVisualSlot.Outfit,"outfit.casual","character.option.outfit.casual"),
+            new CharacterCreatorChoice(CharacterVisualSlot.Trait,"trait.balanced","character.option.trait.balanced"),
+            new CharacterCreatorChoice(CharacterVisualSlot.Trait,"trait.careful","character.option.trait.careful")
+        };
+        return new CharacterCreatorDraftSession(map,items);
+    }
+
+    private static void CharacterCreatorNavigation()
+    {
+        var draft = CharacterCreatorFixture();
+        Equal(CharacterCreatorPage.Identity,draft.Page);
+        draft.Previous();
+        Equal(CharacterCreatorPage.Identity,draft.Page);
+        draft.Next();Equal(CharacterCreatorPage.Look,draft.Page);
+        draft.Next();Equal(CharacterCreatorPage.Wardrobe,draft.Page);
+        draft.Next();Equal(CharacterCreatorPage.Traits,draft.Page);
+        draft.Next();Equal(CharacterCreatorPage.Traits,draft.Page);
+        draft.Previous();Equal(CharacterCreatorPage.Wardrobe,draft.Page);
+    }
+
+    private static void CharacterCreatorIndependence()
+    {
+        var draft = CharacterCreatorFixture();
+        draft.Select(CharacterVisualSlot.Trait,"trait.careful");
+        draft.Cycle(CharacterVisualSlot.Appearance,1);
+        draft.Cycle(CharacterVisualSlot.Hair,1);
+        Equal("base.male",draft.Draft.AppearanceId);
+        Equal("trait.careful",draft.Draft.TraitId);
+        Equal("hair.long",draft.Draft.HairId);
+        draft.Cycle(CharacterVisualSlot.Appearance,-1);
+        Equal("base.female",draft.Draft.AppearanceId);
+        Equal("trait.careful",draft.Draft.TraitId);
+        Equal("character.option.trait.careful",draft.LabelKey(CharacterVisualSlot.Trait));
+        ThrowsArgument(() => draft.Select(CharacterVisualSlot.Face,"missing"));
+        ThrowsArgument(() => draft.Cycle(CharacterVisualSlot.Face,0));
     }
 
     private static CharacterLookCatalog CharacterCatalog()
