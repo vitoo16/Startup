@@ -27,7 +27,33 @@
       "approval_date_utc": null,
       "unity_path": null,
       "scorecard": null
+    },
+    {
+      "asset_id": "sl-character-golden-c02",
+      "type": "character",
+      "style_id": "vn_everyday_pixel_v1",
+      "status": "DRAFT",
+      "creator_type": "ai_assisted",
+      "creator_or_licensor_ref": "author:openai-gpt6-art-source",
+      "created_utc": "2026-10-15T00:00:00Z",
+      "source_files": [
+        "Assets/StartupLife/Art/Source/Characters/golden-character-c02/explorations.json"
+      ],
+      "output_files": [],
+      "process_reference": "repo:scripts/Render-GoldenCharacterC02.py",
+      "model_tool_and_terms_ref": "repo:docs/evidence/P03-CHAR-04B/SESSION.md",
+      "input_reference_rights": [],
+      "third_party_dependencies": [],
+      "license_scope": null,
+      "license_evidence_ref": null,
+      "similarity_review_ref": null,
+      "technical_import_review_ref": null,
+      "visual_beautycell_ref": null,
+      "independent_reviewer": null,
+      "approval_date_utc": null,
+      "unity_path": null,
+      "scorecard": null
     }
   ],
-  "note": "Pixel technical style migrated; one AI-assisted unapproved front-view candidate source is tracked. No shipping assets or independent legal/art clearance."
+  "note": "Pixel technical style migrated. C01 draft archived and C02 nine-source explorations recorded. Both DRAFT, no shipping sprites, independent IP/art/Unity device clearance pending."
 }

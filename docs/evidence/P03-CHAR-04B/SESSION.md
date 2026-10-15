@@ -30,3 +30,6 @@ Neutral adult workplace proportions and clothes, not child-coded and not assigni
 **Known limitations:** concepts may require manual silhouette/angle/anatomy correction, no fully authored animation frames yet; no independent art/IP approval.  
 **Files changed:** new C02 data/source renderer/validator/tests, shared PNG writer refactor, old C01 source preview renderer refactor, workflow artifact, this evidence document.  
 **Commit:** see Git history.
+
+## Source preflight correction
+The C02 record has now been added to the canonical provenance manifest as **DRAFT** (no fake rights or approval dates). The C02 validator checks the six boolean approval flags explicitly, rather than mistakenly treating the nonempty path of the approval registry as an approval. The RGBA rasterizer validates bounds even on externally mutated layer clusters, preventing clipping/silent data loss. This closes the source gate and retains all previous independent review restrictions.

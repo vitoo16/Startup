@@ -22,7 +22,7 @@ def validate(root=ROOT):
     assert data["schema"]=="startup-life.pixel-character-explorations.v1"
     assert data["style_id"]==spec["style_id"]==registry["style_id"]=="vn_everyday_pixel_v1"
     assert data["status"]=="DRAFT_NOT_APPROVED"
-    assert data["ppu"] if "ppu" in data else data["art_direction"]["ppu"]==32
+    assert data["art_direction"]["ppu"] == 32
     art=data["art_direction"]
     assert art["native_canvas_px"]==[128,160]
     assert art["adult_coded"] and art["gender_independent"] and art["career_independent"]
@@ -64,7 +64,17 @@ def validate(root=ROOT):
             assert len(code)==7 and code[0]=="#"
             bytes.fromhex(code[1:])
     assert registry["approved_entries"]==[]
-    assert not any(data["approval"].values()),"No automated approval or QA pass may be claimed"
+    assert data["approval"]["approved_registry"]==REGISTRY.as_posix()
+    assert all(data["approval"][key] is False for key in (
+        "approved","independent_art_review","ip_review",
+        "unity_import","physical_device_beautycell","animator_verified")), (
+        "No automated approval or QA pass may be claimed")
+    provenance=json.loads((root/"Assets/StartupLife/Art/_ArtDirection/provenance/manifest.json")
+                          .read_text(encoding="utf8"))
+    records=[a for a in provenance["assets"] if a["asset_id"]=="sl-character-golden-c02"]
+    assert len(records)==1 and records[0]["status"]=="DRAFT"
+    assert SOURCE.as_posix() in records[0]["source_files"]
+    assert records[0]["unity_path"] is None and records[0]["approval_date_utc"] is None
     # Ensure artwork is a valid layered RGBA raster, not just a manifest.
     spec_obj=importlib.util.spec_from_file_location("golden_c02",root/RENDER)
     module=importlib.util.module_from_spec(spec_obj)

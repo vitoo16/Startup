@@ -12,7 +12,8 @@ spec=importlib.util.spec_from_file_location("c02_gate",ROOT/"scripts/Validate-Go
 gate=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(gate)
 FILES=(gate.SOURCE,gate.REGISTRY,gate.ART_SPEC,gate.RENDER,
-       Path("scripts/PixelPng.py"))
+       Path("scripts/PixelPng.py"),
+       Path("Assets/StartupLife/Art/_ArtDirection/provenance/manifest.json"))
 
 
 class GoldenC02Checks(unittest.TestCase):
