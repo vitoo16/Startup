@@ -48,6 +48,9 @@ def verify(root=ROOT):
     assert view.count("creatorScroll.verticalNormalizedPosition = 1f;") == 1
     assert "ResetCreatorScroll();" in view
     assert "lastOptionLabelKeys[index] == key" in view
+    assert "panel.AddComponent<CharacterCreatorTouchSizer>()" in build
+    assert 'Assign(touchSizer, "uiTheme", theme);' in build
+    assert "creatorPanel.GetComponent<CharacterCreatorTouchSizer>()" in gate
     assert "page.activeSelf != visible" in view
     assert "ageValue.text != ageLabel" in view
     for option in data["options"]:

@@ -24,6 +24,8 @@ internal static class Program
         Check("sprite must have independent approval and catalog registration", VisualComposerRejectsUnapproved);
         Check("duplicate rig parts and malformed catalog entries rejected", VisualComposerRejectsConflicts);
         Check("trait changes cannot mutate sprite composition", VisualComposerIgnoresTrait);
+        Check("creator touch geometry scales for low and high dpi", CreatorTouchResponsive);
+        Check("creator touch geometry rejects invalid screen values", CreatorTouchInvalid);
         Check("four-step character draft navigation stays bounded", CharacterCreatorNavigation);
         Check("creator traits and appearance remain independent", CharacterCreatorIndependence);
         Check("cosmetic catalog rejects duplicate and invalid IDs", CosmeticCatalogRejectsInvalid);
@@ -215,6 +217,28 @@ internal static class Program
         Equal(basePlan.Layers.Count, otherPlan.Layers.Count);
         for (int i = 0; i < basePlan.Layers.Count; i++)
             True(object.ReferenceEquals(basePlan.Layers[i], otherPlan.Layers[i]));
+    }
+
+    private static void CreatorTouchResponsive()
+    {
+        Equal(144f, CharacterCreatorTouchPolicy.MinimumCanvasUnits(
+            1f / 3f, 0f, 360, 96f));
+        Equal(132f, CharacterCreatorTouchPolicy.MinimumCanvasUnits(
+            1f, 440f, 1080, 96f));
+        Equal(96f, CharacterCreatorTouchPolicy.MinimumCanvasUnits(
+            .5f, 160f, 360, 96f));
+        Equal(144f, CharacterCreatorTouchPolicy.MinimumCanvasUnits(
+            1f, 0f, 1080, 96f));
+    }
+
+    private static void CreatorTouchInvalid()
+    {
+        ThrowsArgument(() => CharacterCreatorTouchPolicy.MinimumCanvasUnits(
+            0f, 160f, 360, 96f));
+        ThrowsArgument(() => CharacterCreatorTouchPolicy.MinimumCanvasUnits(
+            1f, 160f, 0, 96f));
+        ThrowsArgument(() => CharacterCreatorTouchPolicy.MinimumCanvasUnits(
+            1f, 160f, 360, 0f));
     }
 
     private static CharacterCreatorDraftSession CharacterCreatorFixture()

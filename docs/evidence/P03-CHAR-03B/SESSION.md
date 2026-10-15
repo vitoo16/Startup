@@ -21,3 +21,9 @@ The creator controller avoids rewriting unchanged TMP age labels, repeated local
 **Known limitations:** current `.unity` still has old hierarchy pending Unity Editor migration; physical DPI, 200% fonts, keyboard/IME and device performance require Unity runner/device.
 **Files changed:** FirstPlayableShellBuilder.cs, FirstPlayableRuntimeGate.cs, CharacterCreationViewController.cs, Validate-CharacterCreatorUi.py, CharacterCreatorUiChecks/test_ui.py, this session evidence.
 **Commit:** See Git SHA.
+
+## Responsive touch height support (P03-RESP bridge)
+
+Added a pure `CharacterCreatorTouchPolicy` with 48 Android dp-class minimum target estimation, CanvasScaler conversion, conservative pixel-width fallback when DPI is missing and validation for invalid size/scale. The runtime `CharacterCreatorTouchSizer` caches authored button/age/Nam-Nữ/selector/navigation/input row `LayoutElement` references on enable, adjusts min/preferred heights on canvas resize (not per-frame), and never creates controls or writes save. Both Create and Repair attach the same component once, serializing the authoritative `MobileTheme`. The reopened-scene gate checks that theme binding. Exact implementation is compiled via the existing Unity-API-stub harness; pure calculations are covered by engine-free PresentationChecks and Unity EditMode test definitions.
+
+**Physical-device caveat:** `Screen.dpi` can be inaccurate, and Android dp/iOS pt differ. This is a conservative baseline, **not proof of >=48dp/44pt measured on every device**. Text 200% reflow, portrait safe-area/IME overlap, Unity screen capture, frame time and device acceptance remain BLOCKED until real Unity tests.

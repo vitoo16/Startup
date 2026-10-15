@@ -298,6 +298,10 @@ namespace StartupLife.Editor
             var asset = AssetDatabase.LoadAssetAtPath<TextAsset>(CreatorOptionsPath);
             if (!asset) throw new InvalidOperationException("Character Creator catalog missing.");
             Assign(character, "draftCatalog", asset);
+            // Attach once even when the rest of the scene has already migrated.
+            var touchSizer = panel.GetComponent<CharacterCreatorTouchSizer>();
+            if (!touchSizer) touchSizer = panel.AddComponent<CharacterCreatorTouchSizer>();
+            Assign(touchSizer, "uiTheme", theme);
             if (panel.transform.Find("CharacterCreatorScroll") != null) return;
 
             var scroll = MobileScrollViewFactory.Create(panel.transform,

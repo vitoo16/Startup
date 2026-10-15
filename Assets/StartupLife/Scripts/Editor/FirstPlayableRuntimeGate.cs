@@ -54,6 +54,11 @@ namespace StartupLife.Editor
                 "Assets/StartupLife/Data/CharacterCreatorDraftCatalog.json"),
                 "Character Creator must use the canonical draft option catalog.");
             var creatorPanel = objects.Single(obj => obj.name == "CharacterCreationPanel").transform;
+            var touchSizer = creatorPanel.GetComponent<CharacterCreatorTouchSizer>();
+            Require(touchSizer && new SerializedObject(touchSizer)
+                .FindProperty("uiTheme").objectReferenceValue ==
+                AssetDatabase.LoadAssetAtPath<MobileTheme>("Assets/StartupLife/Data/MobileTheme.asset"),
+                "Character Creator touch policy must use the serialized pixel theme.");
             var creatorScroll = objects.Single(obj => obj.name == "CharacterCreatorScroll")
                 .GetComponent<UnityEngine.UI.ScrollRect>();
             Require(creatorScroll && creatorScroll.vertical && !creatorScroll.horizontal &&

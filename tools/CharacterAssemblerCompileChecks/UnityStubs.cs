@@ -41,9 +41,23 @@ namespace UnityEngine
     {
         public Transform transform { get; set; } = new Transform();
         public GameObject gameObject { get; set; } = new GameObject();
+        public T? GetComponent<T>() where T : Component => null;
+        public T? GetComponentInParent<T>() where T : Component => null;
+        public T[] GetComponentsInChildren<T>(bool includeInactive) where T : Component =>
+            Array.Empty<T>();
     }
 
-    public class MonoBehaviour : Component { }
+    public class MonoBehaviour : Component
+    {
+        public bool isActiveAndEnabled { get; set; } = true;
+    }
+
+    public sealed class Canvas : Component { public float scaleFactor = 1f; }
+    public static class Screen
+    {
+        public static int width = 360;
+        public static float dpi = 160f;
+    }
 
     public static class JsonUtility
     {
@@ -88,6 +102,11 @@ namespace TMPro
 
 namespace UnityEngine.UI
 {
+    public sealed class LayoutElement : UnityEngine.Component
+    {
+        public float minHeight, preferredHeight;
+    }
+    public sealed class HorizontalLayoutGroup : UnityEngine.Component { }
     public sealed class Button : UnityEngine.Component { public bool interactable = true; }
     public sealed class ScrollRect : UnityEngine.Component { public float verticalNormalizedPosition = 1f; }
 }
@@ -99,5 +118,13 @@ namespace StartupLife.Presentation
     {
         public static LocalizedKeyLabel EnsureFor(TMPro.TMP_Text target) => new LocalizedKeyLabel();
         public void SetKey(string key) { }
+    }
+}
+
+namespace StartupLife.Presentation
+{
+    public sealed class MobileTheme : UnityEngine.Object
+    {
+        public int touchTarget = 96;
     }
 }
