@@ -1,0 +1,82 @@
+{
+  "schema": "startup-life.pixel-character-c03-native-draft.v1",
+  "style_id": "vn_everyday_pixel_v1",
+  "status": "DRAFT_NOT_APPROVED",
+  "source_type": "first_party_procedural_native_pixels",
+  "intent": "native clean pixels, daily-life youthful Vietnamese adult proportions, no AI gloss",
+  "native_canvas_px": [
+    64,
+    80
+  ],
+  "export_scale_for_review": 4,
+  "baseline_art_ppu": 32,
+  "source": "scripts/Render-GoldenCharacterC03.py",
+  "silhouettes": [
+    {
+      "id": "sang_ngo_nho",
+      "label": "Sáng Ngõ Nhỏ",
+      "outfit": "airy collared shirt",
+      "accessory": "sling bag",
+      "hair": "uneven cropped fringe"
+    },
+    {
+      "id": "tan_ca",
+      "label": "Tan Ca",
+      "outfit": "cardigan and loose trousers",
+      "accessory": "canvas tote",
+      "hair": "side sweep and long back mass"
+    },
+    {
+      "id": "quan_dau_pho",
+      "label": "Quán Đầu Phố",
+      "outfit": "boxy overshirt",
+      "accessory": "compact backpack",
+      "hair": "curly clustered top"
+    }
+  ],
+  "candidate_variants": 9,
+  "views": [
+    "front",
+    "three_quarter_left",
+    "side",
+    "back"
+  ],
+  "expressions": [
+    "neutral",
+    "soft_smile",
+    "focused",
+    "delighted"
+  ],
+  "rig_parts": [
+    "hair_back",
+    "accessory_back",
+    "foot_l",
+    "foot_r",
+    "lower_leg_l",
+    "lower_leg_r",
+    "upper_leg_l",
+    "upper_leg_r",
+    "pelvis",
+    "torso",
+    "upper_arm_l",
+    "upper_arm_r",
+    "forearm_l",
+    "forearm_r",
+    "hand_l",
+    "hand_r",
+    "outfit_torso",
+    "head",
+    "face",
+    "hair_front",
+    "accessory_front"
+  ],
+  "native_image_asset_status": "NO_APPROVED_SOURCE_OR_UNITY_PREFAB",
+  "visual_gates": {
+    "technical_source_validated": false,
+    "owner_approval": false,
+    "ip_similarity_review": false,
+    "unity_rig_animation": false,
+    "device_beautycell": false
+  },
+  "notes": "Technical source draft. The target style art-spec native canvas is 128x160; this 64x80 first pixel pass must be approved or redesigned and converted with correct PPU/pivots before Unity import. Nine previews include palette/expression variations rather than nine independently reviewed personalities."
+}
