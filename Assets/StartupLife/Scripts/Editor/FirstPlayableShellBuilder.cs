@@ -219,7 +219,9 @@ namespace StartupLife.Editor
             }
             var theme = AssetDatabase.LoadAssetAtPath<MobileTheme>(Root + "/Data/MobileTheme.asset");
             if (!theme) throw new InvalidOperationException("Missing authoritative pixel UI theme.");
-            var life = UnityEngine.Object.FindAnyObjectByType<LifeScreenViewController>();
+            // LifePanel starts inactive; default FindAnyObjectByType skipped it.
+            var life = UnityEngine.Object.FindAnyObjectByType<LifeScreenViewController>(
+                FindObjectsInactive.Include);
             if (!life) throw new InvalidOperationException("Missing life screen for UI theme migration.");
             Assign(life, "uiTheme", theme);
             var character = UnityEngine.Object.FindAnyObjectByType<CharacterCreationViewController>(

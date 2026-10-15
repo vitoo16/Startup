@@ -16,7 +16,7 @@ class CreatorUiCases(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name)
-        for name in (gate.VIEW,gate.BUILDER,gate.DATA):
+        for name in (gate.VIEW,gate.BUILDER,gate.GATE,gate.DATA):
             dest=self.root/name;dest.parent.mkdir(parents=True,exist_ok=True)
             shutil.copyfile(ROOT/name,dest)
     def test_valid_wiring(self):
@@ -26,6 +26,23 @@ class CreatorUiCases(unittest.TestCase):
         p.write_text(p.read_text().replace(
             "UpgradeCharacterCreator(character.gameObject, character, font, theme);",
             "// removed"),encoding="utf-8")
+        with self.assertRaises(AssertionError):gate.verify(self.root)
+    def test_missing_migration_is_rejected(self):
+        p=self.root/gate.GATE
+        p.write_text(p.read_text().replace(
+            "FirstPlayableShellBuilder.RepairGeneratedAssetReferences();",
+            "// migration removed"),encoding="utf-8")
+        with self.assertRaises(AssertionError):gate.verify(self.root)
+    def test_inactive_life_lookup_required(self):
+        p=self.root/gate.BUILDER
+        p.write_text(p.read_text().replace(
+            "FindObjectsInactive.Include);",
+            "FindObjectsInactive.Exclude);"),encoding="utf-8")
+        with self.assertRaises(AssertionError):gate.verify(self.root)
+    def test_no_extra_localization_updates(self):
+        p=self.root/gate.VIEW
+        p.write_text(p.read_text().replace(
+            "lastOptionLabelKeys[index] == key", "false"),encoding="utf-8")
         with self.assertRaises(AssertionError):gate.verify(self.root)
     def test_missing_control_rejected(self):
         p=self.root/gate.VIEW

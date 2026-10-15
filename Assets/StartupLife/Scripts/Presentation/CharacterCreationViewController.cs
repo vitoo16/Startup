@@ -55,6 +55,10 @@ namespace StartupLife.Presentation
         private LocalizedKeyLabel appearanceLabel;
         private int age = 25;
         private string appearanceId = "base.female";
+        // UI label diff cache only; not gameplay state or a replacement for localization.
+        private readonly string[] lastOptionLabelKeys =
+            new string[Enum.GetValues(typeof(CharacterVisualSlot)).Length];
+        private string lastAppearanceLabelKey;
 
         public void Bind(FirstPlayableFlow coordinator, Action created)
         {
@@ -192,25 +196,37 @@ namespace StartupLife.Presentation
 
         private void ShowPage(GameObject page, CharacterCreatorPage current)
         {
-            if (page && draft != null)
-                page.SetActive(draft.Page == current);
+            if (!page || draft == null) return;
+            var visible = draft.Page == current;
+            if (page.activeSelf != visible) page.SetActive(visible);
         }
 
-        private static void Label(LocalizedKeyLabel target, CharacterCreatorDraftSession state,
+        private void Label(LocalizedKeyLabel target, CharacterCreatorDraftSession state,
             CharacterVisualSlot slot)
         {
-            if (target) target.SetKey(state.LabelKey(slot));
+            if (!target) return;
+            var key = state.LabelKey(slot);
+            var index = (int)slot;
+            if (lastOptionLabelKeys[index] == key) return;
+            target.SetKey(key);
+            lastOptionLabelKeys[index] = key;
         }
 
         private void RenderSelection()
         {
-            if (ageValue) ageValue.text = age.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var ageLabel = age.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (ageValue && ageValue.text != ageLabel) ageValue.text = ageLabel;
             var selectedAppearance = draft != null ? draft.Draft.AppearanceId : appearanceId;
             if (appearanceValue)
             {
                 if (!appearanceLabel) appearanceLabel = LocalizedKeyLabel.EnsureFor(appearanceValue);
-                appearanceLabel.SetKey(selectedAppearance == "base.female"
-                    ? "character.appearance.female" : "character.appearance.male");
+                var key = selectedAppearance == "base.female"
+                    ? "character.appearance.female" : "character.appearance.male";
+                if (lastAppearanceLabelKey != key)
+                {
+                    appearanceLabel.SetKey(key);
+                    lastAppearanceLabelKey = key;
+                }
             }
             if (draft == null) return;
 

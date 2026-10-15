@@ -8,12 +8,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 VIEW = Path("Assets/StartupLife/Scripts/Presentation/CharacterCreationViewController.cs")
 BUILDER = Path("Assets/StartupLife/Scripts/Editor/FirstPlayableShellBuilder.cs")
+GATE = Path("Assets/StartupLife/Scripts/Editor/FirstPlayableRuntimeGate.cs")
 DATA = Path("Assets/StartupLife/Data/CharacterCreatorDraftCatalog.json")
 
 def verify(root=ROOT):
     root = Path(root)
     view = (root / VIEW).read_text(encoding="utf-8")
     build = (root / BUILDER).read_text(encoding="utf-8")
+    gate = (root / GATE).read_text(encoding="utf-8")
     data = json.loads((root / DATA).read_text(encoding="utf-8"))
     for token in ("ParseDraft(draftCatalog)", "CharacterCreatorDraftSession",
                   "creatorScroll", "identityPage", "lookPage", "wardrobePage",
@@ -30,12 +32,21 @@ def verify(root=ROOT):
     assert "CreatorUnsavedNote" in build and "character.cosmetic.unsaved" in build
     assert 'row.name.StartsWith("Creator", StringComparison.Ordinal)' in build
     assert 'Repair assets and Character Creator' in build
+    assert "FindObjectsInactive.Include" in build
+    assert "FirstPlayableShellBuilder.RepairGeneratedAssetReferences();" in gate
+    assert "CharacterCreatorDraftCatalog.json" in gate
+    assert "CreatorNextPageButton" in gate and "CreatorTraitNextButton" in gate
+    assert "creatorScroll.transform.parent == creatorPanel" in gate
+    assert "!submit.transform.IsChildOf(creatorScroll.content)" in gate
     assert "UnityEventTools.AddPersistentListener(create.onClick, character.Submit)" in build
     assert 'var selectedAppearance = draft != null ? draft.Draft.AppearanceId : appearanceId;' in view
     assert "flow.CreateCharacter" in view and "GameSession" not in view
     assert "GameCommand" not in view and "File.Write" not in view
     assert view.count("creatorScroll.verticalNormalizedPosition = 1f;") == 1
     assert "ResetCreatorScroll();" in view
+    assert "lastOptionLabelKeys[index] == key" in view
+    assert "page.activeSelf != visible" in view
+    assert "ageValue.text != ageLabel" in view
     for option in data["options"]:
         assert option["labelKey"] == "character.option."+option["id"]
     assert 'Add(table, option.labelKey, option.label);' in build

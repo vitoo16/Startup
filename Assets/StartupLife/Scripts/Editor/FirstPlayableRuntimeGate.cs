@@ -23,8 +23,10 @@ namespace StartupLife.Editor
             if (!File.Exists(FirstPlayableShellBuilder.ScenePath)) FirstPlayableShellBuilder.Create();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            VerifyScene();
-            Debug.Log("[StartupLifeM7] Builders and reopened serialized scene verification PASS.");
+            // Existing scenes predate multi-page Character Creator. The repair
+            // routine is idempotent and verifies the reopened serialized scene.
+            FirstPlayableShellBuilder.RepairGeneratedAssetReferences();
+            Debug.Log("[StartupLifeM7] Repaired and verified first playable Character Creator.");
         }
 
         public static void VerifyScene()
@@ -40,8 +42,53 @@ namespace StartupLife.Editor
             CheckReferences(bootstrap, "contentAsset", "characterCreation", "lifeScreen", "workPlayback", "daySummary", "fatalStatus");
             var authored = new SerializedObject(bootstrap).FindProperty("contentAsset").objectReferenceValue;
             Require(authored == AssetDatabase.LoadAssetAtPath<StartupLifeContentCatalogAsset>(FirstPlayableContentBuilder.AssetPath), "Wrong Content asset assigned.");
-            CheckReferences(objects.Select(obj => obj.GetComponent<CharacterCreationViewController>()).Single(value => value),
-                "root", "nameInput", "ageValue", "appearanceValue", "status");
+            var creator = objects.Select(obj => obj.GetComponent<CharacterCreationViewController>())
+                .Single(value => value);
+            CheckReferences(creator, "root", "nameInput", "ageValue", "appearanceValue",
+                "status", "draftCatalog", "identityPage", "lookPage", "wardrobePage",
+                "traitsPage", "creatorScroll", "creatorBackButton", "creatorNextButton",
+                "faceValue", "hairValue", "hairColorValue", "skinToneValue",
+                "accessoryValue", "outfitValue", "traitValue");
+            var draft = new SerializedObject(creator).FindProperty("draftCatalog").objectReferenceValue;
+            Require(draft == AssetDatabase.LoadAssetAtPath<TextAsset>(
+                "Assets/StartupLife/Data/CharacterCreatorDraftCatalog.json"),
+                "Character Creator must use the canonical draft option catalog.");
+            var creatorPanel = objects.Single(obj => obj.name == "CharacterCreationPanel").transform;
+            var creatorScroll = objects.Single(obj => obj.name == "CharacterCreatorScroll")
+                .GetComponent<UnityEngine.UI.ScrollRect>();
+            Require(creatorScroll && creatorScroll.vertical && !creatorScroll.horizontal &&
+                creatorScroll.content && creatorScroll.viewport &&
+                creatorScroll.transform.parent == creatorPanel,
+                "Character Creator requires a valid vertical scroll inside the panel.");
+            var paging = objects.Single(obj => obj.name == "CreatorPageNavigation");
+            var submit = objects.Single(obj => obj.name == "CreateCharacterButton");
+            Require(paging.transform.parent == creatorPanel &&
+                submit.transform.parent == creatorPanel &&
+                !paging.transform.IsChildOf(creatorScroll.content) &&
+                !submit.transform.IsChildOf(creatorScroll.content),
+                "Navigation/submit buttons must remain outside the scroll viewport.");
+            Require(objects.Single(obj => obj.name == "CreatorIdentityPage").activeSelf &&
+                !objects.Single(obj => obj.name == "CreatorLookPage").activeSelf &&
+                !objects.Single(obj => obj.name == "CreatorWardrobePage").activeSelf &&
+                !objects.Single(obj => obj.name == "CreatorTraitsPage").activeSelf,
+                "Identity must be the only initially active creator page.");
+            foreach (var name in new[] {
+                "CreatorPreviousPageButton", "CreatorNextPageButton",
+                "CreatorFacePreviousButton", "CreatorFaceNextButton",
+                "CreatorHairPreviousButton", "CreatorHairNextButton",
+                "CreatorHairColorPreviousButton", "CreatorHairColorNextButton",
+                "CreatorSkinTonePreviousButton", "CreatorSkinToneNextButton",
+                "CreatorAccessoryPreviousButton", "CreatorAccessoryNextButton",
+                "CreatorOutfitPreviousButton", "CreatorOutfitNextButton",
+                "CreatorTraitPreviousButton", "CreatorTraitNextButton"
+            })
+            {
+                var button = objects.Single(obj => obj.name == name)
+                    .GetComponent<UnityEngine.UI.Button>();
+                Require(button && button.onClick.GetPersistentEventCount() == 1 &&
+                    button.onClick.GetPersistentTarget(0) == creator,
+                    name + " missing exactly one creator action.");
+            }
             CheckReferences(objects.Select(obj => obj.GetComponent<LifeScreenViewController>()).Single(value => value),
                 "root", "nameValue", "dateValue", "timeValue", "cashValue", "rankValue", "courseProgressValue", "careerValue", "courseNameValue", "status",
                 "acceptJobButton", "workButton", "buyCourseButton", "studyButton", "resignButton");
