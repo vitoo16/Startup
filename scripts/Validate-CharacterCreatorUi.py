@@ -32,7 +32,10 @@ def verify(root=ROOT):
     assert "CreatorUnsavedNote" in build and "character.cosmetic.unsaved" in build
     assert 'row.name.StartsWith("Creator", StringComparison.Ordinal)' in build
     assert 'Repair assets and Character Creator' in build
-    assert "FindObjectsInactive.Include" in build
+    assert "var life = UnityEngine.Object.FindAnyObjectByType<LifeScreenViewController>(" in build
+    assert "FindObjectsInactive.Include);" in build.split(
+        "var life = UnityEngine.Object.FindAnyObjectByType<LifeScreenViewController>(", 1
+    )[1].split(";", 1)[0], "Inactive LifeScreen migration regression"
     assert "FirstPlayableShellBuilder.RepairGeneratedAssetReferences();" in gate
     assert "CharacterCreatorDraftCatalog.json" in gate
     assert "CreatorNextPageButton" in gate and "CreatorTraitNextButton" in gate
