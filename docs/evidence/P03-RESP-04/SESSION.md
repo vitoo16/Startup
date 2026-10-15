@@ -19,3 +19,7 @@
 **Known limitations:** Unity compilation, 실제 screen rendering, notch/IME on real OS, physical dp/pt and FPS remain unverified. Native device acceptance and independent art clearance still blocked.  
 **Files changed:** PlayMode responsive matrix C#/.meta, first playable Editor runtime gate, source validator, mutation tests, engine-free CI workflow and this evidence document.  
 **Commit:** see Git history.  
+
+## Standalone PlayMode save isolation (follow-up)
+
+The matrix now safeguards `startup-life.json*` bytes in `Application.persistentDataPath` before any scene load and starts with a cold empty save. On success OR failure it destroys the active bootstrap, deletes newly written test saves and restores every original file byte-for-byte, then restores the original screen resolution. Added a negative source mutation asserting save restoration cannot silently disappear. **No verified Unity execution yet.**

@@ -31,6 +31,9 @@ def verify(root=ROOT):
         "STARTUP_LIFE_CREATOR_RESPONSIVE_EVIDENCE",
         "ScreenCapture.CaptureScreenshotAsTexture()",
         "Screen.SetResolution(originalWidth, originalHeight, originalFullscreen)",
+        'Directory.GetFiles(saveDirectory, "startup-life.json*")',
+        "File.WriteAllBytes(pair.Key, pair.Value)",
+        "DestroyImmediate(bootstrap.gameObject)",
     )
     for token in required:
         if token not in content:

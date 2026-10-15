@@ -29,6 +29,12 @@ class ResponsiveMatrixChecks(unittest.TestCase):
             "new Vector2Int(800, 1200)"),encoding="utf-8")
         with self.assertRaises(AssertionError):gate.verify(self.root)
 
+    def test_dropping_save_restoration_fails(self):
+        p=self.root/gate.MATRIX
+        p.write_text(p.read_text().replace("File.WriteAllBytes(pair.Key, pair.Value)",
+            "// restore omitted"),encoding="utf-8")
+        with self.assertRaises(AssertionError):gate.verify(self.root)
+
     def test_disabling_scaler_fails(self):
         p=self.root/gate.MATRIX
         p.write_text(p.read_text()+

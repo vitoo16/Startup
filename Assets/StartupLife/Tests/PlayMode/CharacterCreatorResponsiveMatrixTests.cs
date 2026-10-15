@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -38,6 +39,17 @@ namespace StartupLife.Tests.PlayMode
             var originalWidth = Screen.width;
             var originalHeight = Screen.height;
             var originalFullscreen = Screen.fullScreen;
+            // The test must not consume a real save or replace backups. Mirror
+            // FirstPlayableFlowTests' save isolation for standalone PlayMode.
+            var saveDirectory = UnityEngine.Application.persistentDataPath;
+            var originals = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+            Directory.CreateDirectory(saveDirectory);
+            if (Directory.Exists(saveDirectory))
+                foreach (var save in Directory.GetFiles(saveDirectory, "startup-life.json*"))
+                {
+                    originals.Add(save, File.ReadAllBytes(save));
+                    File.Delete(save);
+                }
             var output = Environment.GetEnvironmentVariable("STARTUP_LIFE_CREATOR_RESPONSIVE_EVIDENCE");
             var saveRequested = !string.IsNullOrWhiteSpace(output);
 
@@ -125,6 +137,15 @@ namespace StartupLife.Tests.PlayMode
             }
             finally
             {
+                // Destroy active bootstrap to stop potential end-of-frame
+                // checkpoint writes before restoring each byte-identical save.
+                foreach (var bootstrap in UnityEngine.Object.FindObjectsByType<StartupLifeBootstrapper>(
+                    FindObjectsSortMode.None))
+                    UnityEngine.Object.DestroyImmediate(bootstrap.gameObject);
+                foreach (var save in Directory.GetFiles(saveDirectory, "startup-life.json*"))
+                    File.Delete(save);
+                foreach (var pair in originals)
+                    File.WriteAllBytes(pair.Key, pair.Value);
                 Screen.SetResolution(originalWidth, originalHeight, originalFullscreen);
             }
         }
