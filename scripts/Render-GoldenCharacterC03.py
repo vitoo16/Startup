@@ -140,7 +140,7 @@ def draw(style,view,tone=0,expression='soft_smile'):
         s.rect('hair_front',hc+rx-6,61,4,9,'hair')
         s.rect('hair_front',hc-10,67,5,4,'hair_light')
     else:
-        for bx,by in [(-13,69),(-9,74),(-4,76),(3,75),(9,74),(14,69)]:
+        for bx,by in [(-13,69),(-9,74),(-4,75),(3,75),(9,74),(14,69)]:
             s.oval('hair_back',hc+bx,by,5,4,'hair')
         s.rect('hair_front',hc-rx+2,66,rx*2-3,5,'hair')
         s.oval('hair_front',hc-10,64,5,5,'hair')
