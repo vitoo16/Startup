@@ -114,3 +114,13 @@ replay and old C02 frozen evidence. Use the existing 21 semantic joint
 names and `CharacterVisualComposer` and `CharacterVisualAssembler`
 instead of a competing character renderer. No copy/paste external
 sprites, no brand/logo, no new economy effects.
+
+## Native-resolution C03 handoff (2026-10-16)
+
+The first-party renderer supports paired inspection outputs without touching the approved registry:
+
+```bash
+python scripts/Render-GoldenCharacterC03.py --output artifacts/C03-turnaround-4x.png --native-output artifacts/C03-turnaround-1x.png --fronts artifacts/C03-front-variants-4x.png --report artifacts/C03-report.json
+```
+
+The `--native-output` sheet contains the same twelve 64×80 native canvases at **exactly 1×**, surrounded only by sheet gutters. Compare it against the default integer nearest-neighbor 4× sheet; review each character's hair silhouette, adult proportions and distinct outfit geometry at 1×. Rendering, source generation or static validation alone **does not imply visual approval**. Ask owner `APPROVE / REVISE / REJECT` only with actual visible PNG previews. The production registry remains untouched until independent IP review, rig animation and device BeautyCell gates are met.
