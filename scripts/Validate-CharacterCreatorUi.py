@@ -33,7 +33,7 @@ def verify(root=ROOT):
     assert 'row.name.StartsWith("Creator", StringComparison.Ordinal)' in build
     assert 'Repair assets and Character Creator' in build
     assert "var life = UnityEngine.Object.FindAnyObjectByType<LifeScreenViewController>(" in build
-    assert "FindObjectsInactive.Include);" in build.split(
+    assert "FindObjectsInactive.Include)" in build.split(
         "var life = UnityEngine.Object.FindAnyObjectByType<LifeScreenViewController>(", 1
     )[1].split(";", 1)[0], "Inactive LifeScreen migration regression"
     assert "FirstPlayableShellBuilder.RepairGeneratedAssetReferences();" in gate
