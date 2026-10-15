@@ -237,3 +237,22 @@ for concept provenance and the native-source acceptance checklist.
 **Current gate:** `CONCEPT_ONLY_AWAITING_NATIVE_PIXEL_REAUTHORING`.
 R1–R3 history preserved. No R4 front sprite source, approved-registry entry,
 Unity/device evidence or independent IP clearance yet.
+
+## Native C03-R4 front polish ready for owner review — 2026-10-16
+
+**Update, superseding the earlier "concept-only" status above:** C03-R4 now
+has one independently authored native **64×80 RGBA front** sprite source at
+`Assets/StartupLife/Art/Source/Characters/golden-character-c03/r4-front-draft.json`
+and a deterministic script `scripts/Render-GoldenCharacterC03R4.py` to
+export exact 1×/8× previews, silhouette, R2/R3/R4 comparison and all 21 parts.
+
+Technical local validation: **PASS** for actual height 72px, head 32px,
+2.25 heads total, binary alpha, 21 nonempty layers, exact NN 8×;
+older R3 front-face/hair authoring remains unchanged. Details and hashes:
+`docs/evidence/production-art/C03-R4-review.md` and
+`C03-R4-technical-evidence.json`.
+
+**Owner direction** was approved for a final-polish *exploration only*.
+**Actual R4 sprite status:** `DRAFT_AWAITING_OWNER_REVIEW`, not `APPROVED`.
+Do not promote, bind Unity runtime, create additional views, start animation
+or call IP rights cleared without explicit independent/owner gates.
