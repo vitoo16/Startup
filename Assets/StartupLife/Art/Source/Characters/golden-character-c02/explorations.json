@@ -1,0 +1,435 @@
+{
+  "schema": "startup-life.pixel-character-explorations.v1",
+  "style_id": "vn_everyday_pixel_v1",
+  "status": "DRAFT_NOT_APPROVED",
+  "source_origin": "first_party_code_authored_pixel_rectangles_no_external_sprite_or_photo_inputs",
+  "tool": "scripts/Render-GoldenCharacterC02.py",
+  "source_family": "sl-golden-character-c02",
+  "copyright_note": "New authored geometry; independent global similarity/IP/cultural review is still required before any use.",
+  "art_direction": {
+    "adult_coded": true,
+    "gender_independent": true,
+    "career_independent": true,
+    "native_canvas_px": [
+      128,
+      160
+    ],
+    "ppu": 32,
+    "figure_vertical_span_px": [
+      5,
+      157
+    ],
+    "head_vertical_span_px": [
+      91,
+      157
+    ],
+    "total_heads_target": [
+      2.2,
+      2.4
+    ],
+    "actual_nominal_heads": 2.303,
+    "prototype_only": true,
+    "view_turnaround": "Four separately authored projection recipes, not mirrored sprites"
+  },
+  "locality": {
+    "setting": "daily urban life, contemporary Vietnam",
+    "anchors": [
+      "practical daily clothing",
+      "small crossbody/tote/backpack suitable for commuting"
+    ],
+    "excluded": [
+      "uniform stereotypes",
+      "branded bags/shirts",
+      "ethnic costume shorthand",
+      "gender-coded competence"
+    ],
+    "text_strategy": "no glyphs, marks or faux Vietnamese signage on skin/clothes"
+  },
+  "palette": {
+    "ink": "#27483C",
+    "skin_light": "#F2C69C",
+    "skin_base": "#DCA680",
+    "skin_deep": "#BE8165",
+    "hair_shadow": "#322E30",
+    "hair_base": "#554238",
+    "hair_light": "#78604D",
+    "shirt_shadow": "#466C63",
+    "shirt_base": "#73978A",
+    "shirt_light": "#A8BA9B",
+    "pants": "#536F7C",
+    "pants_shadow": "#38535C",
+    "shoe": "#403F41",
+    "accent": "#D19A5D",
+    "cheek": "#BC7B70"
+  },
+  "rig": [
+    {
+      "id": "pelvis",
+      "parent": "root",
+      "pivot_px": [
+        64,
+        57
+      ]
+    },
+    {
+      "id": "upper_leg_l",
+      "parent": "pelvis",
+      "pivot_px": [
+        55,
+        51
+      ]
+    },
+    {
+      "id": "upper_leg_r",
+      "parent": "pelvis",
+      "pivot_px": [
+        73,
+        51
+      ]
+    },
+    {
+      "id": "lower_leg_l",
+      "parent": "upper_leg_l",
+      "pivot_px": [
+        55,
+        30
+      ]
+    },
+    {
+      "id": "lower_leg_r",
+      "parent": "upper_leg_r",
+      "pivot_px": [
+        73,
+        30
+      ]
+    },
+    {
+      "id": "foot_l",
+      "parent": "lower_leg_l",
+      "pivot_px": [
+        55,
+        10
+      ]
+    },
+    {
+      "id": "foot_r",
+      "parent": "lower_leg_r",
+      "pivot_px": [
+        73,
+        10
+      ]
+    },
+    {
+      "id": "torso",
+      "parent": "pelvis",
+      "pivot_px": [
+        64,
+        91
+      ]
+    },
+    {
+      "id": "outfit_torso",
+      "parent": "torso",
+      "pivot_px": [
+        64,
+        79
+      ]
+    },
+    {
+      "id": "upper_arm_l",
+      "parent": "torso",
+      "pivot_px": [
+        47,
+        88
+      ]
+    },
+    {
+      "id": "upper_arm_r",
+      "parent": "torso",
+      "pivot_px": [
+        81,
+        88
+      ]
+    },
+    {
+      "id": "forearm_l",
+      "parent": "upper_arm_l",
+      "pivot_px": [
+        41,
+        68
+      ]
+    },
+    {
+      "id": "forearm_r",
+      "parent": "upper_arm_r",
+      "pivot_px": [
+        87,
+        68
+      ]
+    },
+    {
+      "id": "hand_l",
+      "parent": "forearm_l",
+      "pivot_px": [
+        40,
+        53
+      ]
+    },
+    {
+      "id": "hand_r",
+      "parent": "forearm_r",
+      "pivot_px": [
+        88,
+        53
+      ]
+    },
+    {
+      "id": "hair_back",
+      "parent": "head",
+      "pivot_px": [
+        64,
+        140
+      ]
+    },
+    {
+      "id": "head",
+      "parent": "torso",
+      "pivot_px": [
+        64,
+        92
+      ]
+    },
+    {
+      "id": "face",
+      "parent": "head",
+      "pivot_px": [
+        64,
+        126
+      ]
+    },
+    {
+      "id": "hair_front",
+      "parent": "head",
+      "pivot_px": [
+        64,
+        149
+      ]
+    },
+    {
+      "id": "accessory_back",
+      "parent": "torso",
+      "pivot_px": [
+        64,
+        83
+      ]
+    },
+    {
+      "id": "accessory_front",
+      "parent": "torso",
+      "pivot_px": [
+        64,
+        71
+      ]
+    }
+  ],
+  "concepts": [
+    {
+      "id": "nep-gap",
+      "name": "Nếp Gấp",
+      "hair": "angled_fringe",
+      "outerwear": "soft_cardigan",
+      "carry": "diagonal_satchel",
+      "shoulder_width": 34,
+      "description": "Tóc mái cắt xéo rời cụm pixel, cardigan cổ mở, túi chéo dẹt đeo lệch; dáng làm việc trưởng thành, không gắn giới tính."
+    },
+    {
+      "id": "suong-som",
+      "name": "Sương Sớm",
+      "hair": "looped_curl",
+      "outerwear": "rolled_sleeve",
+      "carry": "canvas_tote",
+      "shoulder_width": 38,
+      "description": "Mái xoăn gợn cụm lớn, tay áo xắn gọn, túi vải ngắn một bên; khác silhouette Nếp Gấp ở vòng tóc và bờ vai."
+    },
+    {
+      "id": "goc-pho",
+      "name": "Góc Phố",
+      "hair": "raised_quiff",
+      "outerwear": "short_zip",
+      "carry": "compact_backpack",
+      "shoulder_width": 40,
+      "description": "Tóc vuốt cao kiểu khối, áo khoác ngắn có khóa trống logo, balô gọn một bên; dáng vai chắc, không phóng đại nghề/giới."
+    }
+  ],
+  "views": [
+    {
+      "id": "front",
+      "cx": 64,
+      "head_dx": 0,
+      "head_w": 56,
+      "depth": 0,
+      "description": "Hai mắt rõ, hai chân tách, quai túi trước."
+    },
+    {
+      "id": "three_quarter_left",
+      "cx": 63,
+      "head_dx": -3,
+      "head_w": 54,
+      "depth": 1,
+      "description": "Hình khối và quai có dịch hướng, mắt gần lớn hơn mắt xa."
+    },
+    {
+      "id": "side",
+      "cx": 64,
+      "head_dx": -5,
+      "head_w": 46,
+      "depth": 2,
+      "description": "Một mắt, mũi và profile riêng; hai chân không lật từ front."
+    },
+    {
+      "id": "back",
+      "cx": 64,
+      "head_dx": 0,
+      "head_w": 55,
+      "depth": 3,
+      "description": "Không vẽ mắt, tóc và túi nhìn từ phía sau; áo có đường gấp lưng."
+    }
+  ],
+  "variants": [
+    {
+      "id": "nep-gap-01",
+      "concept": "nep-gap",
+      "iteration": 1,
+      "tones": {
+        "skin_base": "#DCA680",
+        "skin_light": "#F2C69C",
+        "skin_deep": "#BE8165",
+        "hair_base": "#554238",
+        "hair_light": "#78604D",
+        "shirt_base": "#73978A"
+      },
+      "expression": "gentle-focus"
+    },
+    {
+      "id": "nep-gap-02",
+      "concept": "nep-gap",
+      "iteration": 2,
+      "tones": {
+        "skin_base": "#B98162",
+        "skin_light": "#DDA281",
+        "skin_deep": "#925D4A",
+        "hair_base": "#2E343A",
+        "hair_light": "#47525B",
+        "shirt_base": "#B88267"
+      },
+      "expression": "small-smile"
+    },
+    {
+      "id": "nep-gap-03",
+      "concept": "nep-gap",
+      "iteration": 3,
+      "tones": {
+        "skin_base": "#E8B998",
+        "skin_light": "#FFD5B0",
+        "skin_deep": "#C89579",
+        "hair_base": "#6C4A31",
+        "hair_light": "#986B44",
+        "shirt_base": "#678F9D"
+      },
+      "expression": "calm-ready"
+    },
+    {
+      "id": "suong-som-01",
+      "concept": "suong-som",
+      "iteration": 1,
+      "tones": {
+        "skin_base": "#DCA680",
+        "skin_light": "#F2C69C",
+        "skin_deep": "#BE8165",
+        "hair_base": "#554238",
+        "hair_light": "#78604D",
+        "shirt_base": "#73978A"
+      },
+      "expression": "gentle-focus"
+    },
+    {
+      "id": "suong-som-02",
+      "concept": "suong-som",
+      "iteration": 2,
+      "tones": {
+        "skin_base": "#B98162",
+        "skin_light": "#DDA281",
+        "skin_deep": "#925D4A",
+        "hair_base": "#2E343A",
+        "hair_light": "#47525B",
+        "shirt_base": "#B88267"
+      },
+      "expression": "small-smile"
+    },
+    {
+      "id": "suong-som-03",
+      "concept": "suong-som",
+      "iteration": 3,
+      "tones": {
+        "skin_base": "#E8B998",
+        "skin_light": "#FFD5B0",
+        "skin_deep": "#C89579",
+        "hair_base": "#6C4A31",
+        "hair_light": "#986B44",
+        "shirt_base": "#678F9D"
+      },
+      "expression": "calm-ready"
+    },
+    {
+      "id": "goc-pho-01",
+      "concept": "goc-pho",
+      "iteration": 1,
+      "tones": {
+        "skin_base": "#DCA680",
+        "skin_light": "#F2C69C",
+        "skin_deep": "#BE8165",
+        "hair_base": "#554238",
+        "hair_light": "#78604D",
+        "shirt_base": "#73978A"
+      },
+      "expression": "gentle-focus"
+    },
+    {
+      "id": "goc-pho-02",
+      "concept": "goc-pho",
+      "iteration": 2,
+      "tones": {
+        "skin_base": "#B98162",
+        "skin_light": "#DDA281",
+        "skin_deep": "#925D4A",
+        "hair_base": "#2E343A",
+        "hair_light": "#47525B",
+        "shirt_base": "#B88267"
+      },
+      "expression": "small-smile"
+    },
+    {
+      "id": "goc-pho-03",
+      "concept": "goc-pho",
+      "iteration": 3,
+      "tones": {
+        "skin_base": "#E8B998",
+        "skin_light": "#FFD5B0",
+        "skin_deep": "#C89579",
+        "hair_base": "#6C4A31",
+        "hair_light": "#986B44",
+        "shirt_base": "#678F9D"
+      },
+      "expression": "calm-ready"
+    }
+  ],
+  "approval": {
+    "approved": false,
+    "approved_registry": "Assets/StartupLife/Art/Approved/registry.json",
+    "independent_art_review": false,
+    "ip_review": false,
+    "unity_import": false,
+    "physical_device_beautycell": false,
+    "animator_verified": false
+  }
+}

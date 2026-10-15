@@ -92,6 +92,12 @@ jobs:
           python3 scripts/Render-GoldenCharacterPreview.py --output "${RUNNER_TEMP}/startup-life/c01-front-draft.png"
           python3 -m unittest discover -s tools/GoldenCharacterPreviewChecks -p 'test_*.py' -v
 
+      - name: Author and inspect quarantined Golden C02 four-view source sheet
+        run: |
+          python3 scripts/Validate-GoldenCharacterC02.py
+          python3 -m unittest discover -s tools/GoldenCharacterC02Checks -p 'test_*.py' -v
+          python3 scripts/Render-GoldenCharacterC02.py --output "${RUNNER_TEMP}/startup-life/c02-nine-candidates-4views-DRAFT.png" --report "${RUNNER_TEMP}/startup-life/c02-source-report.json"
+
       - name: Validate Unity character assembler source and quarantine (no Editor)
         run: |
           python3 scripts/Validate-CharacterVisualAssembler.py

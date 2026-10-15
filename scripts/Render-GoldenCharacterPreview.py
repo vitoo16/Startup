@@ -6,9 +6,11 @@ The second panel is a black-ink silhouette check, at integer magnification.
 """
 import argparse
 import json
-import struct
-import zlib
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from PixelPng import png_rgba
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = Path("Assets/StartupLife/Art/Source/Characters/golden-character-c01/layers.json")
@@ -55,17 +57,6 @@ def coverage(draft, pixels):
     return {"opaque": len(coords),
             "fraction": round(len(coords) / (width * height), 4),
             "bbox": [min(xs), min(ys), max(xs), max(ys)]}
-
-
-def png_rgba(width, height, rows):
-    def chunk(kind, payload):
-        return (struct.pack("!I", len(payload)) + kind + payload +
-                struct.pack("!I", zlib.crc32(kind + payload) & 0xffffffff))
-    data = b"".join(b"\x00" + row for row in rows)
-    return (b"\x89PNG\r\n\x1a\n" +
-            chunk(b"IHDR", struct.pack("!2I5B", width, height, 8, 6, 0, 0, 0)) +
-            chunk(b"IDAT", zlib.compress(data, 9)) +
-            chunk(b"IEND", b""))
 
 
 def render(root=ROOT):
