@@ -1,0 +1,36 @@
+{
+  "status": "DRAFT_AWAITING_OWNER_REVIEW",
+  "style_id": "vn_everyday_pixel_v1",
+  "source": "r4-front-draft.json",
+  "single_view": "front",
+  "native_grid": [
+    64,
+    80
+  ],
+  "opaque_bbox_exclusive": [
+    15,
+    7,
+    53,
+    79
+  ],
+  "occupied_height_px": 72,
+  "head_landmarks_inclusive": [
+    7,
+    38
+  ],
+  "head_height_px": 32,
+  "actual_heads_tall": 2.25,
+  "head_percent_of_actual_height": 44.44,
+  "semantic_layer_count": 21,
+  "authored_pixel_commands": 87,
+  "provenance": "R3 base edited with first-party native pixel commands; no concept filter",
+  "art_approval": "AWAITING_OWNER_REVIEW",
+  "independent_IP": "NOT_RUN",
+  "unity_animation_device": "NOT_RUN",
+  "files_sha256": {
+    "C03-R4-native-1x.png": "23a164f1aa5c302bb66f5d4b66f9fe504f34d202e8e43d13744e007e5eeb08e8",
+    "C03-R4-review-8x.png": "034032acf4d28a1b0202f4f87976384994e62843d0c2a3cf83084486177ea95f",
+    "C03-R4-silhouette.png": "286cceffba4b6e72216d6c991503cf34fe47e99706f87fc2aa507b69e0facf1e",
+    "C03-R4-comparison-R2-R3-R4.png": "5588a05031a8353e3ca4143b844ff83b05e067bfc64dee11ca251c54fbe223f7"
+  }
+}
