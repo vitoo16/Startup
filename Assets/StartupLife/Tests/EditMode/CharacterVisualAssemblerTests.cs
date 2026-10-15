@@ -13,8 +13,16 @@ namespace StartupLife.Tests.EditMode
         {
             private readonly Dictionary<string, Sprite> sprites;
             public FakeApprovedSprites(Dictionary<string, Sprite> sprites) { this.sprites = sprites; }
-            public bool TryResolveApprovedSprite(string id, out Sprite sprite) =>
-                sprites.TryGetValue(id, out sprite!);
+            public bool TryResolveApprovedSprite(string id, out Sprite sprite)
+            {
+                if (sprites.TryGetValue(id, out var found))
+                {
+                    sprite = found;
+                    return true;
+                }
+                sprite = null!;
+                return false;
+            }
         }
 
         private static readonly CharacterVisualSlot[] Slots =

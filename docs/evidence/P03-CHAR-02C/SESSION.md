@@ -19,3 +19,7 @@ Added Unity EditMode cases for no cloned renderers, scene-context outfit switchi
 - **Save impact:** NONE. Cosmetic draft remains unpersisted and existing legacy `AppearanceId` unchanged.
 - **Known limitations:** No approved sprite ID → Unity assembler cannot yet be used in shipping scenes. A separately audited approved-sprite resolver, visual catalog bindings and creator UI/actual SpriteAtlas will come after Art Director approval. The rig C01 remains unapproved and not 2.3-head compliant.
 - **Files changed:** new runtime C# + .meta, new EditMode tests + .meta, engine-free source validator and mutation suite, engine-free CI workflow, this session.
+
+## Follow-up — actual C# compile/behaviour preflight
+
+Static source matching alone cannot catch C# syntax errors in Unity-only scripts. Added an engine-free `.NET 8` harness compiling the **exact runtime assembler .cs file** against minimal named Unity API stubs plus the **actual compiled** `CharacterCustomizationModel` / `CharacterVisualComposition` project. The harness executes five cases for renderer reuse, work/home state, atomic failed sprite lookups, invalid pixel import and rig binding rejection. This does not claim Unity Engine semantic parity or render/audio/device test success. Also replaced interface enumeration in `Apply` with indexed `IReadOnlyList` access to avoid per-preview enumerator allocations, and made the Unity EditMode fake resolver out parameter compile conservatively without `out sprite!` syntax.

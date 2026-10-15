@@ -104,8 +104,9 @@ namespace StartupLife.Presentation
             stagedParts.Clear();
 
             // Resolve all layers first, with no visible updates on failure.
-            foreach (var layer in plan.Layers)
+            for (var layerIndex = 0; layerIndex < plan.Layers.Count; layerIndex++)
             {
+                var layer = plan.Layers[layerIndex];
                 if (layer == null || !index.TryGetValue(layer.PartId, out var position) ||
                     !stagedParts.Add(position))
                     throw new InvalidOperationException("Unknown or duplicate rig part in visual plan.");

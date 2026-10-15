@@ -97,6 +97,9 @@ jobs:
           python3 scripts/Validate-CharacterVisualAssembler.py
           python3 -m unittest discover -s tools/CharacterAssemblerChecks -p 'test_*.py' -v
 
+      - name: Compile and exercise Unity assembler logic against engine-free API stubs
+        run: dotnet run --project tools/CharacterAssemblerCompileChecks/CharacterAssemblerCompileChecks.csproj --configuration Release --nologo
+
       - name: Validate asset provenance and approval join (no legal clearance implied)
         run: |
           python3 scripts/Validate-AssetProvenance.py
