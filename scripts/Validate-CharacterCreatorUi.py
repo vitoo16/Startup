@@ -34,6 +34,8 @@ def verify(root=ROOT):
     assert 'var selectedAppearance = draft != null ? draft.Draft.AppearanceId : appearanceId;' in view
     assert "flow.CreateCharacter" in view and "GameSession" not in view
     assert "GameCommand" not in view and "File.Write" not in view
+    assert view.count("creatorScroll.verticalNormalizedPosition = 1f;") == 1
+    assert "ResetCreatorScroll();" in view
     for option in data["options"]:
         assert option["labelKey"] == "character.option."+option["id"]
     assert 'Add(table, option.labelKey, option.label);' in build

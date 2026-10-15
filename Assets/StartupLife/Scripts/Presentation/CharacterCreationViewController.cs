@@ -117,8 +117,26 @@ namespace StartupLife.Presentation
             status?.SetKey("reason." + result.ReasonKey);
         }
 
-        public void NextCreatorPage() { if (draft == null) return; draft.Next(); RenderSelection(); }
-        public void PreviousCreatorPage() { if (draft == null) return; draft.Previous(); RenderSelection(); }
+        public void NextCreatorPage()
+        {
+            if (draft == null || !draft.CanGoNext) return;
+            draft.Next();
+            RenderSelection();
+            ResetCreatorScroll();
+        }
+
+        public void PreviousCreatorPage()
+        {
+            if (draft == null || !draft.CanGoBack) return;
+            draft.Previous();
+            RenderSelection();
+            ResetCreatorScroll();
+        }
+
+        private void ResetCreatorScroll()
+        {
+            if (creatorScroll) creatorScroll.verticalNormalizedPosition = 1f;
+        }
 
         public void PreviousFace() => Cycle(CharacterVisualSlot.Face, -1);
         public void NextFace() => Cycle(CharacterVisualSlot.Face, 1);
@@ -209,8 +227,7 @@ namespace StartupLife.Presentation
             Label(accessoryValue, draft, CharacterVisualSlot.Accessory);
             Label(outfitValue, draft, CharacterVisualSlot.Outfit);
             Label(traitValue, draft, CharacterVisualSlot.Trait);
-            // Reset only on explicit paging. No Canvas rebuild each frame.
-            if (creatorScroll) creatorScroll.verticalNormalizedPosition = 1f;
+            // Cosmetic changes preserve the current scroll position.
         }
     }
 }

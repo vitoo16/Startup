@@ -23,3 +23,6 @@ The explicit Unity Editor menu `Startup Life/First Playable/Repair assets and Ch
 ## Compile guard follow-up
 
 The existing engine-free .NET Unity-API-stub harness now compiles the **actual** `CharacterCreationViewController.cs` alongside the real assembler and the .NET presentation model. This catches C# signature/typing mistakes in the new creator flow that regex-based validation cannot. Stubs intentionally cover only fields/methods used by the linked file; they do NOT validate UI layout, Unity JsonUtility reflection semantics, localization async updates, scene serialization or Pixel Perfect output. The legacy Unity UI controller source was tagged `#nullable disable` to match its serialized MonoBehaviour reference conventions, while null-safe pure model remains nullable enabled.
+
+## UX scroll correction
+Explicit valid Back/Next paging now resets the creator scroll to its top. A tap cycling face, hair, skin, outfit or trait preserves its scroll position. A static assertion prevents duplicated reset sites. Unity/device visual QA still pending.
