@@ -17,6 +17,13 @@ internal static class Program
 
     private static int Main(string[] args)
     {
+        Check("visual composer yields stable rig layering and palette tokens", VisualComposerLayers);
+        Check("visual composer maps work uniform without overwriting personal outfit", VisualComposerUniform);
+        Check("occluded hair disappears only for headwear option", VisualComposerOcclusion);
+        Check("missing independently authored side/back is rejected", VisualComposerRejectsMissingViews);
+        Check("sprite must have independent approval and catalog registration", VisualComposerRejectsUnapproved);
+        Check("duplicate rig parts and malformed catalog entries rejected", VisualComposerRejectsConflicts);
+        Check("trait changes cannot mutate sprite composition", VisualComposerIgnoresTrait);
         Check("cosmetic catalog rejects duplicate and invalid IDs", CosmeticCatalogRejectsInvalid);
         Check("Nam/Nu changes only appearance, not trait/hair/face/outfit", AppearanceSwitchIsCosmetic);
         Check("cosmetic choices preserve independent personal traits", CosmeticIndependence);
@@ -52,6 +59,160 @@ internal static class Program
         foreach (var failure in failures) Console.Error.WriteLine(failure);
         Console.WriteLine($"{passed}/{passed + failures.Count} passed." + (args.Length > 0 ? " Report: " + Path.GetFullPath(args[0]) : ""));
         return failures.Count == 0 ? 0 : 1;
+    }
+
+    private static CharacterVisualComposer FixtureVisualComposer(bool allViews = true,
+        bool headwear = true)
+    {
+        var catalog = CharacterCatalog();
+        var wardrobe = new CharacterWardrobeResolver(catalog, new[]
+        {
+            new CharacterWardrobeRule("developer", CharacterSceneContext.Work, "outfit.office")
+        });
+        var views = allViews
+            ? new[] { CharacterRigView.Front, CharacterRigView.ThreeQuarterLeft,
+                CharacterRigView.Side, CharacterRigView.Back }
+            : new[] { CharacterRigView.Front };
+        var parts = new List<CharacterVisualLayer>();
+        foreach (var view in views)
+        {
+            // Pure mock catalog: these are NOT real/registered production sprites.
+            parts.Add(new CharacterVisualLayer(CharacterVisualSlot.Face, "face.soft",
+                view, "face", "fixture.face", 13));
+            parts.Add(new CharacterVisualLayer(CharacterVisualSlot.Face, "face.angular",
+                view, "face", "fixture.face.alt", 13));
+            parts.Add(new CharacterVisualLayer(CharacterVisualSlot.Hair, "hair.short",
+                view, "hair_front", "fixture.hair", 14));
+            parts.Add(new CharacterVisualLayer(CharacterVisualSlot.Hair, "hair.long",
+                view, "hair_back", "fixture.hair.back", 11));
+            parts.Add(new CharacterVisualLayer(CharacterVisualSlot.Hair, "hair.long",
+                view, "hair_front", "fixture.hair", 14));
+            parts.Add(new CharacterVisualLayer(CharacterVisualSlot.Outfit, "outfit.casual",
+                view, "outfit_torso", "fixture.casual", 15));
+            parts.Add(new CharacterVisualLayer(CharacterVisualSlot.Outfit, "outfit.office",
+                view, "outfit_torso", "fixture.office", 15));
+            parts.Add(new CharacterVisualLayer(CharacterVisualSlot.Outfit, "outfit.apron",
+                view, "outfit_torso", "fixture.apron", 15));
+            if (headwear)
+                parts.Add(new CharacterVisualLayer(CharacterVisualSlot.Accessory,
+                    "accessory.none", view, "accessory_unused", "fixture.empty", 18));
+        }
+        var ids = new[] { "fixture.face", "fixture.face.alt", "fixture.hair",
+            "fixture.hair.back", "fixture.casual", "fixture.office", "fixture.apron",
+            "fixture.empty" };
+        return new CharacterVisualComposer(catalog, wardrobe, parts, ids);
+    }
+
+    private static void VisualComposerLayers()
+    {
+        var catalog = CharacterCatalog();
+        var composer = FixtureVisualComposer();
+        var look = catalog.Choose(catalog.NewDraft(), CharacterVisualSlot.Hair, "hair.long");
+        foreach (var view in new[] { CharacterRigView.Front, CharacterRigView.ThreeQuarterLeft,
+            CharacterRigView.Side, CharacterRigView.Back })
+        {
+            var plan = composer.Compose(look, null, CharacterSceneContext.Home, view);
+            Equal(view, plan.View);
+            Equal("outfit.casual", plan.OutfitId);
+            Equal("skin.warm", plan.SkinToneId);
+            Equal("haircolor.ink", plan.HairColorId);
+            True(plan.Layers.Count >= 4);
+            True(plan.Layers[0].SortingOrder <= plan.Layers[plan.Layers.Count - 1].SortingOrder);
+            True(plan.Layers.Any(x => x.PartId == "hair_back"));
+        }
+    }
+
+    private static void VisualComposerUniform()
+    {
+        var catalog = CharacterCatalog();
+        var look = catalog.NewDraft("base.male");
+        var composer = FixtureVisualComposer();
+        var work = composer.Compose(look, "developer", CharacterSceneContext.Work, CharacterRigView.Front);
+        Equal("outfit.office", work.OutfitId);
+        True(work.Layers.Any(x => x.SpriteAssetId == "fixture.office"));
+        var home = composer.Compose(look, "developer", CharacterSceneContext.Home, CharacterRigView.Front);
+        Equal("outfit.casual", home.OutfitId);
+        True(home.Layers.Any(x => x.SpriteAssetId == "fixture.casual"));
+        Equal("outfit.casual", look.OutfitId);
+        var unknown = composer.Compose(look, "unknown", CharacterSceneContext.Work, CharacterRigView.Front);
+        Equal("outfit.casual", unknown.OutfitId);
+    }
+
+    private static void VisualComposerOcclusion()
+    {
+        var catalog = CharacterCatalog();
+        var wardrobe = new CharacterWardrobeResolver(catalog, Array.Empty<CharacterWardrobeRule>());
+        var layers = new[]
+        {
+            new CharacterVisualLayer(CharacterVisualSlot.Face, "face.soft",
+                CharacterRigView.Front, "face", "approved.face", 13),
+            new CharacterVisualLayer(CharacterVisualSlot.Hair, "hair.short",
+                CharacterRigView.Front, "hair_front", "approved.hair", 14),
+            new CharacterVisualLayer(CharacterVisualSlot.Outfit, "outfit.casual",
+                CharacterRigView.Front, "outfit_torso", "approved.shirt", 15),
+            new CharacterVisualLayer(CharacterVisualSlot.Accessory, "accessory.none",
+                CharacterRigView.Front, "hat", "approved.hat", 18, new[] { "hair_front" })
+        };
+        var composer = new CharacterVisualComposer(catalog, wardrobe, layers,
+            new[] { "approved.face", "approved.hair", "approved.shirt", "approved.hat" });
+        var result = composer.Compose(catalog.NewDraft(), null,
+            CharacterSceneContext.Home, CharacterRigView.Front);
+        True(result.Layers.Any(x => x.PartId == "hat"));
+        True(result.Layers.All(x => x.PartId != "hair_front"));
+        Equal("hair.short", catalog.NewDraft().HairId);
+    }
+
+    private static void VisualComposerRejectsMissingViews()
+    {
+        var composer = FixtureVisualComposer(false);
+        var draft = CharacterCatalog().NewDraft();
+        ThrowsInvalidOperation(() => composer.Compose(draft, null,
+            CharacterSceneContext.Home, CharacterRigView.Side));
+        ThrowsArgument(() => composer.Compose(draft, null,
+            CharacterSceneContext.Home, (CharacterRigView)99));
+    }
+
+    private static void VisualComposerRejectsUnapproved()
+    {
+        var cat = CharacterCatalog();
+        var wardrobe = new CharacterWardrobeResolver(cat, Array.Empty<CharacterWardrobeRule>());
+        ThrowsArgument(() => new CharacterVisualComposer(cat, wardrobe,
+            new[] { new CharacterVisualLayer(CharacterVisualSlot.Face, "face.soft",
+                CharacterRigView.Front, "face", "Art/Source/raw.png", 13) },
+            new[] { "approved.face" }));
+        ThrowsArgument(() => new CharacterVisualComposer(cat, wardrobe,
+            new[] { new CharacterVisualLayer(CharacterVisualSlot.Face, "face.missing",
+                CharacterRigView.Front, "face", "approved.face", 13) },
+            new[] { "approved.face" }));
+    }
+
+    private static void VisualComposerRejectsConflicts()
+    {
+        var cat = CharacterCatalog();
+        var wardrobe = new CharacterWardrobeResolver(cat, Array.Empty<CharacterWardrobeRule>());
+        var layer = new CharacterVisualLayer(CharacterVisualSlot.Face, "face.soft",
+            CharacterRigView.Front, "face", "approved.face", 13);
+        ThrowsArgument(() => new CharacterVisualComposer(cat, wardrobe,
+            new[] { layer, layer }, new[] { "approved.face" }));
+        ThrowsArgument(() => new CharacterVisualLayer(CharacterVisualSlot.Trait, "trait.careful",
+            CharacterRigView.Front, "magic", "approved.face", 13));
+        ThrowsArgument(() => new CharacterVisualLayer(CharacterVisualSlot.Hair, "hair.short",
+            CharacterRigView.Front, "hair", "approved.hair", 14, new[] { "hair" }));
+    }
+
+    private static void VisualComposerIgnoresTrait()
+    {
+        var cat = CharacterCatalog();
+        var composer = FixtureVisualComposer();
+        var baseLook = cat.NewDraft("base.female");
+        var traitLook = cat.Choose(baseLook, CharacterVisualSlot.Trait, "trait.energetic");
+        var basePlan = composer.Compose(baseLook, "developer",
+            CharacterSceneContext.Work, CharacterRigView.Front);
+        var otherPlan = composer.Compose(traitLook, "developer",
+            CharacterSceneContext.Work, CharacterRigView.Front);
+        Equal(basePlan.Layers.Count, otherPlan.Layers.Count);
+        for (int i = 0; i < basePlan.Layers.Count; i++)
+            True(object.ReferenceEquals(basePlan.Layers[i], otherPlan.Layers[i]));
     }
 
     private static CharacterLookCatalog CharacterCatalog()
