@@ -26,7 +26,8 @@ namespace StartupLife.Editor
             // Existing scenes predate multi-page Character Creator. The repair
             // routine is idempotent and verifies the reopened serialized scene.
             FirstPlayableShellBuilder.RepairGeneratedAssetReferences();
-            Debug.Log("[StartupLifeM7] Repaired and verified first playable Character Creator.");
+            VerifyScene();
+            Debug.Log("[StartupLifeM7] Repaired AND reopened/verified first playable Character Creator.");
         }
 
         public static void VerifyScene()
