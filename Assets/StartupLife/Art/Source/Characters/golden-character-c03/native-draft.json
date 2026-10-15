@@ -78,5 +78,21 @@
     "unity_rig_animation": false,
     "device_beautycell": false
   },
-  "notes": "Technical source draft. The target style art-spec native canvas is 128x160; this 64x80 first pixel pass must be approved or redesigned and converted with correct PPU/pivots before Unity import. Nine previews include palette/expression variations rather than nine independently reviewed personalities."
+  "notes": "Technical source draft. The target style art-spec native canvas is 128x160; this 64x80 first pixel pass must be approved or redesigned and converted with correct PPU/pivots before Unity import. Nine previews include palette/expression variations rather than nine independently reviewed personalities.",
+  "owner_visual_review": {
+    "state": "REJECTED",
+    "review_date": "2026-10-16",
+    "reviewer": "product_owner",
+    "scope": "C03 source-raster draft generated from scripts/Render-GoldenCharacterC03.py",
+    "reason": "Owner states the rendered result is not the requested pixel character style. Technical native-grid pixels do not imply acceptable pixel-art craftsmanship.",
+    "verified_defects": [
+      "Hair overlays obscure forehead/eyes and create oversized rectangular dark blocks",
+      "Back views reuse front hairstyle and clothing construction and are nearly identical",
+      "Side and three-quarter poses are not independently convincing projections",
+      "Three body silhouettes and four facial expressions remain insufficiently distinguished"
+    ],
+    "next_gate": "Redesign one native-grid front-view silhouette and true-view anatomy; show a 1x/nearest-neighbor preview for owner review BEFORE generating a full variant batch or Unity rig.",
+    "can_integrate_in_unity": false,
+    "can_promote_to_registry": false
+  }
 }
