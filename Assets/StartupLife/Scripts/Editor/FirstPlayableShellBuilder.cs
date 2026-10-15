@@ -405,7 +405,9 @@ namespace StartupLife.Editor
             Assign(scaler, "touchSizer", sizer);
             var percent = identity.Find("CreatorTextSizeRow/CreatorTextPercentValue");
             if (!percent) throw new InvalidOperationException("Creator text percent label missing.");
-            Assign(scaler, "scaleValue", percent.GetComponent<TMP_Text>());
+            var percentage = percent.GetComponent<TMP_Text>();
+            if (string.IsNullOrWhiteSpace(percentage.text)) percentage.text = "100%";
+            Assign(scaler, "scaleValue", percentage);
 
             var keyboard = panel.GetComponent<CharacterCreatorKeyboardAvoidance>();
             if (!keyboard) keyboard = panel.AddComponent<CharacterCreatorKeyboardAvoidance>();
@@ -414,6 +416,7 @@ namespace StartupLife.Editor
             var parentCanvas = panel.GetComponentInParent<Canvas>();
             if (!parentCanvas) throw new InvalidOperationException("Creator needs a Canvas.");
             Assign(keyboard, "rootCanvas", parentCanvas);
+            sizer.RefreshAuthoredBindings();
 
             if (newRow)
             {

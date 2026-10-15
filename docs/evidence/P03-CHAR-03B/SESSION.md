@@ -41,3 +41,7 @@ Added exact source validator + mutation check, pure PresentationChecks, engine-f
 Added pure `CharacterCreatorKeyboardPolicy` with regression cases for keyboard intersection, safe-area replacement and viewport floor. Added `CharacterCreatorKeyboardAvoidance` to the existing creator panel; it only changes its bottom RectTransform offset while the name field is focused and the soft keyboard is visible, restores on dismissal, and preserves horizontal position. For devices with missing keyboard-area metrics it uses a bounded 38%-height **estimate**, not a device-certified fit. Editor repair wires a serialized name input and Canvas reference; the runtime gate enforces both. No per-frame allocations, save writes or game commands.
 
 **Unverified:** IME animation, Samsung floating keyboard, iOS keyboard accessory bar, OS dynamic font scaling and real screenshots. This remains an explicit on-device QA gate rather than claiming universal phone compatibility.
+
+## Additional robustness corrections
+
+Repairing an older scene with an existing touch-sizer now calls `RefreshAuthoredBindings()` **after** adding new text-size buttons, so the cached size targets include the new controls. A freshly created percentage label is initialized to `100%` even in Editor before the first `OnEnable` in PlayMode. Static UI validator was also updated to check the current variable name `sizer` rather than a stale `touchSizer` name; no negative test is weakened.

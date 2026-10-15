@@ -31,7 +31,11 @@ namespace StartupLife.Presentation
             Refresh();
         }
 
-        private void OnEnable()
+        private void OnEnable() => RefreshAuthoredBindings();
+
+        // Used once by the Editor migration *after* new accessibility
+        // buttons have been appended to a previously authored scene.
+        public void RefreshAuthoredBindings()
         {
             CacheTargets();
             Refresh();

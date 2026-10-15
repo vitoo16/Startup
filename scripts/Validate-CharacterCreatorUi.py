@@ -49,7 +49,9 @@ def verify(root=ROOT):
     assert "ResetCreatorScroll();" in view
     assert "lastOptionLabelKeys[index] == key" in view
     assert "panel.AddComponent<CharacterCreatorTouchSizer>()" in build
-    assert 'Assign(touchSizer, "uiTheme", theme);' in build
+    assert 'Assign(sizer, "uiTheme", theme);' in build
+    assert "sizer.RefreshAuthoredBindings();" in build
+    assert 'percentage.text = "100%"' in build
     assert "creatorPanel.GetComponent<CharacterCreatorTouchSizer>()" in gate
     assert "UpgradeCreatorTextScaling(panel, font, theme);" in build
     assert build.count("UpgradeCreatorTextScaling(panel, font, theme);") == 2
