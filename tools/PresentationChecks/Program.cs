@@ -17,6 +17,14 @@ internal static class Program
 
     private static int Main(string[] args)
     {
+        Check("cosmetic catalog rejects duplicate and invalid IDs", CosmeticCatalogRejectsInvalid);
+        Check("Nam/Nu changes only appearance, not trait/hair/face/outfit", AppearanceSwitchIsCosmetic);
+        Check("cosmetic choices preserve independent personal traits", CosmeticIndependence);
+        Check("career wardrobe resolver scopes uniforms to work only", WardrobeIsContextual);
+        Check("unknown career uses personal outfit and does not crash", WardrobeFallback);
+        Check("unrecognized outfit and duplicate mapping are rejected", WardrobeCatalogGuards);
+        Check("unrecognized legacy appearance has no silent fallback", LegacyAppearanceGuard);
+        Check("unknown visual draft choices are rejected", UnknownCosmeticGuard);
         Check("M12 Vietnamese dashboard localization has stable keys and complete onboarding",
             DashboardTranslations);
         Check("M15 event choice localization keys are scoped, unique and immutable", EventChoiceTranslations);
@@ -44,6 +52,152 @@ internal static class Program
         foreach (var failure in failures) Console.Error.WriteLine(failure);
         Console.WriteLine($"{passed}/{passed + failures.Count} passed." + (args.Length > 0 ? " Report: " + Path.GetFullPath(args[0]) : ""));
         return failures.Count == 0 ? 0 : 1;
+    }
+
+    private static CharacterLookCatalog CharacterCatalog()
+    {
+        var options = new[]
+        {
+            new CharacterVisualOption("base.male", CharacterVisualSlot.Appearance),
+            new CharacterVisualOption("base.female", CharacterVisualSlot.Appearance),
+            new CharacterVisualOption("face.soft", CharacterVisualSlot.Face),
+            new CharacterVisualOption("face.angular", CharacterVisualSlot.Face),
+            new CharacterVisualOption("hair.short", CharacterVisualSlot.Hair),
+            new CharacterVisualOption("hair.long", CharacterVisualSlot.Hair),
+            new CharacterVisualOption("haircolor.ink", CharacterVisualSlot.HairColor),
+            new CharacterVisualOption("skin.warm", CharacterVisualSlot.SkinTone),
+            new CharacterVisualOption("accessory.none", CharacterVisualSlot.Accessory),
+            new CharacterVisualOption("outfit.casual", CharacterVisualSlot.Outfit),
+            new CharacterVisualOption("outfit.office", CharacterVisualSlot.Outfit),
+            new CharacterVisualOption("outfit.apron", CharacterVisualSlot.Outfit),
+            new CharacterVisualOption("trait.balanced", CharacterVisualSlot.Trait),
+            new CharacterVisualOption("trait.careful", CharacterVisualSlot.Trait),
+            new CharacterVisualOption("trait.friendly", CharacterVisualSlot.Trait),
+            new CharacterVisualOption("trait.energetic", CharacterVisualSlot.Trait)
+        };
+        var defaults = new Dictionary<CharacterVisualSlot, string>
+        {
+            [CharacterVisualSlot.Appearance] = "base.female",
+            [CharacterVisualSlot.Face] = "face.soft",
+            [CharacterVisualSlot.Hair] = "hair.short",
+            [CharacterVisualSlot.HairColor] = "haircolor.ink",
+            [CharacterVisualSlot.SkinTone] = "skin.warm",
+            [CharacterVisualSlot.Accessory] = "accessory.none",
+            [CharacterVisualSlot.Outfit] = "outfit.casual",
+            [CharacterVisualSlot.Trait] = "trait.balanced"
+        };
+        return new CharacterLookCatalog(options, defaults);
+    }
+
+    private static void CosmeticCatalogRejectsInvalid()
+    {
+        var options = new[] {
+            new CharacterVisualOption("base.female", CharacterVisualSlot.Appearance),
+            new CharacterVisualOption("base.female", CharacterVisualSlot.Appearance)
+        };
+        ThrowsArgument(() => new CharacterVisualOption(" ", CharacterVisualSlot.Hair));
+        ThrowsArgument(() => new CharacterVisualOption(" hair", CharacterVisualSlot.Hair));
+        ThrowsArgument(() => new CharacterLookCatalog(options,
+            new Dictionary<CharacterVisualSlot, string>()));
+        ThrowsArgument(() => CharacterCatalog().Choose(
+            CharacterCatalog().NewDraft(), CharacterVisualSlot.Hair, "hair.unknown"));
+    }
+
+    private static void AppearanceSwitchIsCosmetic()
+    {
+        var catalog = CharacterCatalog();
+        var female = catalog.NewDraft("base.female");
+        female = catalog.Choose(female, CharacterVisualSlot.Face, "face.angular");
+        female = catalog.Choose(female, CharacterVisualSlot.Hair, "hair.long");
+        female = catalog.Choose(female, CharacterVisualSlot.Trait, "trait.careful");
+        var male = catalog.Choose(female, CharacterVisualSlot.Appearance, "base.male");
+        Equal("base.female", female.AppearanceId);
+        Equal("base.male", male.AppearanceId);
+        Equal(female.FaceId, male.FaceId);
+        Equal(female.HairId, male.HairId);
+        Equal(female.TraitId, male.TraitId);
+        Equal(female.OutfitId, male.OutfitId);
+        True(!object.ReferenceEquals(female, male));
+        True(object.ReferenceEquals(male,
+            catalog.Choose(male, CharacterVisualSlot.Appearance, "base.male")));
+    }
+
+    private static void CosmeticIndependence()
+    {
+        var catalog = CharacterCatalog();
+        var girl = catalog.NewDraft("base.female");
+        var boy = catalog.NewDraft("base.male");
+        foreach (var trait in new[] { "trait.careful", "trait.friendly", "trait.energetic", "trait.balanced" })
+        {
+            Equal(trait, catalog.Choose(girl, CharacterVisualSlot.Trait, trait).TraitId);
+            Equal(trait, catalog.Choose(boy, CharacterVisualSlot.Trait, trait).TraitId);
+        }
+        catalog.Validate(girl);
+        catalog.Validate(boy);
+    }
+
+    private static void WardrobeIsContextual()
+    {
+        var catalog = CharacterCatalog();
+        var resolver = new CharacterWardrobeResolver(catalog, new[]
+        {
+            new CharacterWardrobeRule("developer", CharacterSceneContext.Work, "outfit.office"),
+            new CharacterWardrobeRule("barista", CharacterSceneContext.Work, "outfit.apron")
+        });
+        var draft = catalog.Choose(catalog.NewDraft(), CharacterVisualSlot.Outfit, "outfit.casual");
+        Equal("outfit.office", resolver.Resolve(draft, "developer", CharacterSceneContext.Work));
+        Equal("outfit.apron", resolver.Resolve(draft, "barista", CharacterSceneContext.Work));
+        foreach (var context in new[] {
+            CharacterSceneContext.Home, CharacterSceneContext.Study, CharacterSceneContext.Business })
+            Equal("outfit.casual", resolver.Resolve(draft, "barista", context));
+        Equal("outfit.casual", draft.OutfitId);
+        Equal("base.female", draft.AppearanceId);
+    }
+
+    private static void WardrobeFallback()
+    {
+        var catalog = CharacterCatalog();
+        var resolver = new CharacterWardrobeResolver(catalog,
+            new[] { new CharacterWardrobeRule("developer", CharacterSceneContext.Work, "outfit.office") });
+        var draft = catalog.NewDraft("base.male");
+        Equal("outfit.casual", resolver.Resolve(draft, "unknown-career", CharacterSceneContext.Work));
+        Equal("outfit.casual", resolver.Resolve(draft, null, CharacterSceneContext.Work));
+        Equal("outfit.casual", resolver.Resolve(draft, "developer", CharacterSceneContext.Home));
+    }
+
+    private static void WardrobeCatalogGuards()
+    {
+        var catalog = CharacterCatalog();
+        ThrowsArgument(() => new CharacterWardrobeRule("developer", CharacterSceneContext.Home, "outfit.office"));
+        ThrowsArgument(() => new CharacterWardrobeRule(" developer", CharacterSceneContext.Work, "outfit.office"));
+        ThrowsArgument(() => new CharacterWardrobeResolver(catalog,
+            new[] { new CharacterWardrobeRule("developer", CharacterSceneContext.Work, "outfit.not-approved") }));
+        ThrowsArgument(() => new CharacterWardrobeResolver(catalog, new[]
+        {
+            new CharacterWardrobeRule("developer", CharacterSceneContext.Work, "outfit.office"),
+            new CharacterWardrobeRule("developer", CharacterSceneContext.Work, "outfit.apron")
+        }));
+    }
+
+    private static void LegacyAppearanceGuard()
+    {
+        var catalog = CharacterCatalog();
+        ThrowsArgument(() => catalog.NewDraft("appearance.new-schema"));
+        Equal("base.female", catalog.NewDraft().AppearanceId);
+    }
+
+    private static void UnknownCosmeticGuard()
+    {
+        var catalog = CharacterCatalog();
+        True(!catalog.Contains(CharacterVisualSlot.Hair, "base.female"));
+        ThrowsArgument(() => catalog.Choose(catalog.NewDraft(), CharacterVisualSlot.Face, "hair.short"));
+        ThrowsArgument(() => catalog.Choose(catalog.NewDraft(), (CharacterVisualSlot)99, "face.soft"));
+    }
+
+    private static void ThrowsArgument(Action action)
+    {
+        try { action(); } catch (ArgumentException) { return; }
+        throw new Exception("Expected ArgumentException.");
     }
 
     private static void EventChoiceTranslations()
