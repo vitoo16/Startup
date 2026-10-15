@@ -20,12 +20,38 @@ namespace UnityEngine
         }
     }
 
-    public class Component
+    public class Object
+    {
+        public static implicit operator bool(Object? target) => target != null;
+    }
+
+    public sealed class GameObject : Object
+    {
+        public bool activeSelf { get; private set; } = true;
+        public void SetActive(bool active) { activeSelf = active; }
+    }
+
+    public sealed class TextAsset : Object
+    {
+        public string text { get; }
+        public TextAsset(string content) { text = content; }
+    }
+
+    public class Component : Object
     {
         public Transform transform { get; set; } = new Transform();
+        public GameObject gameObject { get; set; } = new GameObject();
     }
 
     public class MonoBehaviour : Component { }
+
+    public static class JsonUtility
+    {
+        // Stubs are never a substitute for Unity's actual JsonUtility semantics.
+        public static T? FromJson<T>(string value) =>
+            System.Text.Json.JsonSerializer.Deserialize<T>(value,
+                new System.Text.Json.JsonSerializerOptions { IncludeFields = true });
+    }
 
     public sealed class Texture2D
     {
@@ -49,5 +75,29 @@ namespace UnityEngine
     public static class Mathf
     {
         public static float Abs(float value) => Math.Abs(value);
+        public static int Min(int a, int b) => Math.Min(a, b);
+        public static int Max(int a, int b) => Math.Max(a, b);
+    }
+}
+
+namespace TMPro
+{
+    public class TMP_Text : UnityEngine.Component { public string text = ""; }
+    public sealed class TMP_InputField : UnityEngine.Component { public string text = ""; }
+}
+
+namespace UnityEngine.UI
+{
+    public sealed class Button : UnityEngine.Component { public bool interactable = true; }
+    public sealed class ScrollRect : UnityEngine.Component { public float verticalNormalizedPosition = 1f; }
+}
+
+namespace StartupLife.Presentation
+{
+    // Only the documented tiny external surface needed by UI controller.
+    public sealed class LocalizedKeyLabel : UnityEngine.Component
+    {
+        public static LocalizedKeyLabel EnsureFor(TMPro.TMP_Text target) => new LocalizedKeyLabel();
+        public void SetKey(string key) { }
     }
 }

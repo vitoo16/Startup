@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="../PresentationChecks/StartupLife.PresentationModel.csproj" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterVisualAssembler.cs" Link="CharacterVisualAssembler.cs" />
+    <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreationViewController.cs" Link="CharacterCreationViewController.cs" />
     <Compile Include="UnityStubs.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>

@@ -19,3 +19,7 @@ Added an engine-free UI wiring validator plus 3 mutation cases. **Actual existin
 ## Follow-up — safe Editor migration and transparent UX
 
 The explicit Unity Editor menu `Startup Life/First Playable/Repair assets and Character Creator` upgrades an existing serialized scene without wholesale recreation and preserves the existing character actions. A repair of horizontal rows now preserves `theme.touchTarget` for newly authored `Creator*` selector/navigation controls instead of downgrading them to 90. A persistent user-visible text note clarifies that only identity fields persist, while cosmetic/trait choices remain an **unpersisted** in-memory prototype pending the separate save/CAS migration. This is not a 48dp device claim; device measurements are still mandatory.
+
+## Compile guard follow-up
+
+The existing engine-free .NET Unity-API-stub harness now compiles the **actual** `CharacterCreationViewController.cs` alongside the real assembler and the .NET presentation model. This catches C# signature/typing mistakes in the new creator flow that regex-based validation cannot. Stubs intentionally cover only fields/methods used by the linked file; they do NOT validate UI layout, Unity JsonUtility reflection semantics, localization async updates, scene serialization or Pixel Perfect output. The legacy Unity UI controller source was tagged `#nullable disable` to match its serialized MonoBehaviour reference conventions, while null-safe pure model remains nullable enabled.
