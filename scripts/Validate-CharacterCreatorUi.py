@@ -27,6 +27,9 @@ def verify(root=ROOT):
     assert "MobileScrollViewFactory.Create(panel.transform" in build
     assert "var identity = CreatorSection" in build and "look.SetActive(false)" in build
     assert "scroll.Scroll.transform.SetAsFirstSibling()" in build
+    assert "CreatorUnsavedNote" in build and "character.cosmetic.unsaved" in build
+    assert 'row.name.StartsWith("Creator", StringComparison.Ordinal)' in build
+    assert 'Repair assets and Character Creator' in build
     assert "UnityEventTools.AddPersistentListener(create.onClick, character.Submit)" in build
     assert 'var selectedAppearance = draft != null ? draft.Draft.AppearanceId : appearanceId;' in view
     assert "flow.CreateCharacter" in view and "GameSession" not in view

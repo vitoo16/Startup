@@ -199,6 +199,7 @@ namespace StartupLife.Editor
             Debug.Log("[StartupLifeFirstPlayable] Created source-wired first playable shell.");
         }
 
+        [MenuItem("Startup Life/First Playable/Repair assets and Character Creator")]
         public static void RepairGeneratedAssetReferences()
         {
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
@@ -232,8 +233,13 @@ namespace StartupLife.Editor
             }
             foreach (var row in UnityEngine.Object.FindObjectsByType<UnityEngine.UI.HorizontalLayoutGroup>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
-                row.GetComponent<UnityEngine.UI.LayoutElement>().preferredHeight = 90;
-                EditorUtility.SetDirty(row.GetComponent<UnityEngine.UI.LayoutElement>());
+                var height = row.GetComponent<UnityEngine.UI.LayoutElement>();
+                if (!height) continue;
+                // New creator selectors and navigation retain their 96-unit
+                // baseline when the existing scene's layout is repaired.
+                height.preferredHeight = row.name.StartsWith("Creator", StringComparison.Ordinal)
+                    ? theme.touchTarget : 90;
+                EditorUtility.SetDirty(height);
             }
             foreach (var button in UnityEngine.Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
@@ -345,6 +351,8 @@ namespace StartupLife.Editor
             navigation.transform.SetSiblingIndex(1);
             var submit = panel.transform.Find("CreateCharacterButton");
             if (submit) submit.SetSiblingIndex(2);
+            StaticLabel("CreatorUnsavedNote", "character.cosmetic.unsaved", panel.transform,
+                font, theme.caption, theme.ink, 76);
 
             Assign(character, "identityPage", identity);
             Assign(character, "lookPage", look);
@@ -553,6 +561,7 @@ namespace StartupLife.Editor
             Add(table, "character.trait.title", "Phong cách cá nhân");
             Add(table, "character.preview.pending", "Đang chuẩn bị hình nhân vật đạt chuẩn. Các lựa chọn hiện chỉ là bản nháp.");
             Add(table, "character.trait.note", "Đặc tính do bạn chọn, không phụ thuộc Nam/Nữ. Chưa ảnh hưởng gameplay.");
+            Add(table, "character.cosmetic.unsaved", "Chọn thử ngoại hình; hiện chỉ tên, tuổi và Nam/Nữ được lưu.");
             Add(table, "character.face", "Khuôn mặt");
             Add(table, "character.hair", "Kiểu tóc");
             Add(table, "character.haircolor", "Màu tóc");
