@@ -43,18 +43,19 @@ namespace StartupLife.Tests.PlayMode
             // FirstPlayableFlowTests' save isolation for standalone PlayMode.
             var saveDirectory = UnityEngine.Application.persistentDataPath;
             var originals = new Dictionary<string, byte[]>(StringComparer.Ordinal);
-            Directory.CreateDirectory(saveDirectory);
-            if (Directory.Exists(saveDirectory))
-                foreach (var save in Directory.GetFiles(saveDirectory, "startup-life.json*"))
-                {
-                    originals.Add(save, File.ReadAllBytes(save));
-                    File.Delete(save);
-                }
             var output = Environment.GetEnvironmentVariable("STARTUP_LIFE_CREATOR_RESPONSIVE_EVIDENCE");
             var saveRequested = !string.IsNullOrWhiteSpace(output);
+            var snapshotComplete = false;
 
             try
             {
+                Directory.CreateDirectory(saveDirectory);
+                foreach (var save in Directory.GetFiles(saveDirectory, "startup-life.json*"))
+                    originals.Add(save, File.ReadAllBytes(save));
+                // Never start destructive test cleanup if even one original
+                // save could not be read in full.
+                snapshotComplete = true;
+                foreach (var save in originals.Keys) File.Delete(save);
                 foreach (var dimensions in PortraitSizes)
                 {
                     Screen.SetResolution(dimensions.x, dimensions.y, false);
@@ -142,11 +143,20 @@ namespace StartupLife.Tests.PlayMode
                 foreach (var bootstrap in UnityEngine.Object.FindObjectsByType<StartupLifeBootstrapper>(
                     FindObjectsSortMode.None))
                     UnityEngine.Object.DestroyImmediate(bootstrap.gameObject);
-                foreach (var save in Directory.GetFiles(saveDirectory, "startup-life.json*"))
-                    File.Delete(save);
-                foreach (var pair in originals)
-                    File.WriteAllBytes(pair.Key, pair.Value);
-                Screen.SetResolution(originalWidth, originalHeight, originalFullscreen);
+                try
+                {
+                    if (snapshotComplete)
+                    {
+                        foreach (var save in Directory.GetFiles(saveDirectory, "startup-life.json*"))
+                            File.Delete(save);
+                        foreach (var pair in originals)
+                            File.WriteAllBytes(pair.Key, pair.Value);
+                    }
+                }
+                finally
+                {
+                    Screen.SetResolution(originalWidth, originalHeight, originalFullscreen);
+                }
             }
         }
 

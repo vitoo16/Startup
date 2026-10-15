@@ -34,6 +34,8 @@ def verify(root=ROOT):
         'Directory.GetFiles(saveDirectory, "startup-life.json*")',
         "File.WriteAllBytes(pair.Key, pair.Value)",
         "DestroyImmediate(bootstrap.gameObject)",
+        "snapshotComplete = false",
+        "if (snapshotComplete)",
     )
     for token in required:
         if token not in content:

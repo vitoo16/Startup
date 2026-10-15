@@ -17,7 +17,10 @@ def check(root=ROOT):
         "if (-not $graphicalPlayMode)",
         "$arguments.Add('-nographics')",
         "graphicalPlayModeRequested = $graphicalPlayMode",
-        "enableGraphics = $EnableGraphics.IsPresent"
+        "enableGraphics = $EnableGraphics.IsPresent",
+        "[switch]$PrepareFirstPlayableScene",
+        "StartupLife.Editor.FirstPlayableRuntimeGate.BuildAndVerify",
+        "Repaired AND reopened/verified first playable Character Creator."
     ]
     for item in required_cli:
         if item not in cli: raise AssertionError("Unity CLI graphical contract: "+item)
@@ -25,6 +28,7 @@ def check(root=ROOT):
         "STARTUP_LIFE_CREATOR_RESPONSIVE_EVIDENCE:",
         "Remove-Item -LiteralPath $dir -Recurse -Force",
         "-EnableGraphics",
+        "-PrepareFirstPlayableScene",
         "Verify-CreatorResponsiveEvidence.ps1",
         "Upload Android Unity evidence",
         "Upload iOS Unity evidence"

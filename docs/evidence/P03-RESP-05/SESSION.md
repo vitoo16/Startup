@@ -16,3 +16,9 @@ Added `scripts/Verify-CreatorResponsiveEvidence.ps1` which requires **36 distinc
 - **Save impact:** NONE to shipping save, no schema, commands or simulation changes.
 - **Known limitations:** physical Android/iOS not run; macOS self-hosted runner must have an interactive/graphical session. Unity CLI may reject unsupported GUI flags or native resolutions; failures must remain failures until verified.
 - **Files changed:** Unity CLI runner, manual Unity smoke workflow, evidence verifier, static gate, mutation tests, engine-free workflow, session record.
+
+## Second-stage gate: migration before screenshot testing + save atomicity
+
+The manual Unity graphical smoke workflow now requests `-PrepareFirstPlayableScene` for **both** self-hosted routes. The runner executes `unity run <project> -- -nographics -executeMethod StartupLife.Editor.FirstPlayableRuntimeGate.BuildAndVerify` before EditMode/PlayMode and requires the precise `Repaired AND reopened/verified` log receipt. This prevents false responsiveness verdicts against the old committed `FirstPlayable.unity`; the repair runs on the runner checkout, not as a blind scene file edit in GitHub.
+
+The PlayMode matrix now snapshots **all** preexisting save files before deleting **any**, and wraps the snapshot/cleanup in try/finally. Failure while reading any original cannot delete a file without a restore path. A nested finally always restores the screen size even if save cleanup fails. These are authored safeguards; Unity run evidence still required.

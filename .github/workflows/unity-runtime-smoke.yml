@@ -57,7 +57,7 @@ jobs:
         run: |
           $dir = $env:STARTUP_LIFE_CREATOR_RESPONSIVE_EVIDENCE
           if (Test-Path -LiteralPath $dir) { Remove-Item -LiteralPath $dir -Recurse -Force }
-          ./scripts/Test-UnityHeadless.ps1 -Mode All -EnableGraphics -OutputDirectory (Join-Path $env:RUNNER_TEMP 'startup-life/unity-tests')
+          ./scripts/Test-UnityHeadless.ps1 -Mode All -EnableGraphics -PrepareFirstPlayableScene -OutputDirectory (Join-Path $env:RUNNER_TEMP 'startup-life/unity-tests')
           ./scripts/Verify-CreatorResponsiveEvidence.ps1 -Directory $dir -ReportPath (Join-Path $env:RUNNER_TEMP 'startup-life/creator-responsive-report.json')
 
       - name: Build Android profile
@@ -106,7 +106,7 @@ jobs:
         run: |
           $dir = $env:STARTUP_LIFE_CREATOR_RESPONSIVE_EVIDENCE
           if (Test-Path -LiteralPath $dir) { Remove-Item -LiteralPath $dir -Recurse -Force }
-          ./scripts/Test-UnityHeadless.ps1 -Mode All -EnableGraphics -OutputDirectory (Join-Path $env:RUNNER_TEMP 'startup-life/unity-tests')
+          ./scripts/Test-UnityHeadless.ps1 -Mode All -EnableGraphics -PrepareFirstPlayableScene -OutputDirectory (Join-Path $env:RUNNER_TEMP 'startup-life/unity-tests')
           ./scripts/Verify-CreatorResponsiveEvidence.ps1 -Directory $dir -ReportPath (Join-Path $env:RUNNER_TEMP 'startup-life/creator-responsive-report.json')
 
       - name: Export iOS Xcode project from profile

@@ -20,6 +20,11 @@ class NativeMatrixContractTests(unittest.TestCase):
             "$testMode -eq 'PlayMode' -and $EnableGraphics.IsPresent",
             "$testMode -eq 'EditMode' -and $EnableGraphics.IsPresent"),encoding="utf8")
         with self.assertRaises(AssertionError):gate.check(self.root)
+    def test_migration_before_playmode_is_mandatory(self):
+        p=self.root/gate.WORKFLOW
+        p.write_text(p.read_text().replace("-PrepareFirstPlayableScene",
+            "-SkipSceneMigration"),encoding="utf8")
+        with self.assertRaises(AssertionError):gate.check(self.root)
     def test_image_check_cannot_be_disabled(self):
         p=self.root/gate.WORKFLOW
         p.write_text(p.read_text().replace("Verify-CreatorResponsiveEvidence.ps1",

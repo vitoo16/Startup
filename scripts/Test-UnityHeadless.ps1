@@ -6,7 +6,8 @@ param(
     [string]$UnityCliPath,
     [int]$TimeoutSeconds = 900,
     [switch]$AllowEditorInstall,
-    [switch]$EnableGraphics
+    [switch]$EnableGraphics,
+    [switch]$PrepareFirstPlayableScene
 )
 
 $ErrorActionPreference = 'Stop'
@@ -60,6 +61,43 @@ if ($editorVersion -ne $expectedEditorVersion) {
 }
 
 $cli = Resolve-UnityCli $UnityCliPath
+
+if ($PrepareFirstPlayableScene) {
+    # The committed .unity scene predates the multi-page creator. Do not run
+    # Unity PlayMode assertions against an old scene and call them UI QA.
+    $migrationLog = Join-Path $OutputDirectory 'first-playable-scene-migration.log'
+    if (Test-Path -LiteralPath $migrationLog -PathType Leaf) {
+        Remove-Item -LiteralPath $migrationLog -Force
+    }
+    $migrationArgs = @(
+        'run', $repositoryRoot,
+        '--editor-version', $editorVersion,
+        '--timeout', $TimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture),
+        '--', '-nographics', '-executeMethod',
+        'StartupLife.Editor.FirstPlayableRuntimeGate.BuildAndVerify'
+    )
+    if ($AllowEditorInstall) {
+        $migrationArgs = @(
+            'run', $repositoryRoot,
+            '--editor-version', $editorVersion,
+            '--allow-install',
+            '--timeout', $TimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture),
+            '--', '-nographics', '-executeMethod',
+            'StartupLife.Editor.FirstPlayableRuntimeGate.BuildAndVerify'
+        )
+    }
+    Write-Output 'Migrating and validating FirstPlayable scene in Unity before test execution...'
+    & $cli @migrationArgs 2>&1 | Tee-Object -FilePath $migrationLog
+    $migrationExitCode = $LASTEXITCODE
+    if ($migrationExitCode -ne 0) {
+        throw "Unity Editor scene migration failed (exit $migrationExitCode). See $migrationLog"
+    }
+    $migrationText = [IO.File]::ReadAllText($migrationLog)
+    if (-not $migrationText.Contains(
+        '[StartupLifeM7] Repaired AND reopened/verified first playable Character Creator.')) {
+        throw "Unity exited without the exact reopened-scene validation receipt. See $migrationLog"
+    }
+}
 $modes = if ($Mode -eq 'All') { @('EditMode', 'PlayMode') } else { @($Mode) }
 $results = [System.Collections.Generic.List[object]]::new()
 $failure = $null
@@ -151,6 +189,7 @@ $summaryPath = Join-Path $OutputDirectory 'unity-headless-summary.json'
     unityCli = Split-Path -Leaf $cli
     requestedMode = $Mode
     enableGraphics = $EnableGraphics.IsPresent
+    preparedFirstPlayableScene = $PrepareFirstPlayableScene.IsPresent
     success = ($null -eq $failure)
     results = $results
     note = 'Native screenshot evidence requires EnableGraphics and verification of captured PNG files. Unity tests do not prove physical-device behavior.'
