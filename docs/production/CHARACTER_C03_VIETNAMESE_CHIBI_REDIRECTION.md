@@ -220,3 +220,20 @@ four expressions, at least two further distinct personalities,
 Unity 2D articulated motion, device BeautyCell, originality/IP clearance,
 full 128×160 production-grid/pivot alignment. Unity/phone tests **NOT RUN**.
 Gameplay balance, save schema and approved registry unchanged.
+
+## C03-R4 concept-only handoff — 2026-10-16
+
+Owner feedback on R2 (left) / R3 (right): **APPROVE DIRECTION — REVISE AGAIN**.
+Keep R2's sturdier body/legs/shoes and R3's softer friendly face/hair; further
+polish signature asymmetric fringe, rounded jaw, eyes/smile, slight weight-shift,
+jacket hem, compact sling bag and wider shoes. **This is NOT approval of a sprite
+or permission to expand to turnaround/animation.**
+
+The subsequent generated illustration is a 1122×1402 RGB **concept visual only**,
+not an authored 64×80 RGBA sprite and not committed as pixel artwork. See
+[`docs/evidence/production-art/C03-R4-CONCEPT-HANDOFF.md`](../evidence/production-art/C03-R4-CONCEPT-HANDOFF.md)
+for concept provenance and the native-source acceptance checklist.
+
+**Current gate:** `CONCEPT_ONLY_AWAITING_NATIVE_PIXEL_REAUTHORING`.
+R1–R3 history preserved. No R4 front sprite source, approved-registry entry,
+Unity/device evidence or independent IP clearance yet.
