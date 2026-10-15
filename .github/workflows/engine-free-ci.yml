@@ -113,6 +113,11 @@ jobs:
           python3 scripts/Validate-CharacterCreatorResponsiveMatrix.py
           python3 -m unittest discover -s tools/CharacterCreatorResponsiveChecks -p 'test_*.py' -v
 
+      - name: Validate graphical Unity runner and 36 native responsive screenshot gate
+        run: |
+          python3 scripts/Validate-UnityCreatorGraphicalRunner.py
+          python3 -m unittest discover -s tools/UnityCreatorGraphicalChecks -p 'test_*.py' -v
+
       - name: Validate asset provenance and approval join (no legal clearance implied)
         run: |
           python3 scripts/Validate-AssetProvenance.py

@@ -5,7 +5,8 @@ param(
     [string]$OutputDirectory,
     [string]$UnityCliPath,
     [int]$TimeoutSeconds = 900,
-    [switch]$AllowEditorInstall
+    [switch]$AllowEditorInstall,
+    [switch]$EnableGraphics
 )
 
 $ErrorActionPreference = 'Stop'
@@ -89,8 +90,14 @@ foreach ($testMode in $modes) {
         '--format', 'github'
     )) { $arguments.Add([string]$value) }
     if ($AllowEditorInstall) { $arguments.Add('--allow-install') }
-    $arguments.Add('--')
-    $arguments.Add('-nographics')
+    # Responsive PlayMode assertions use Screen.SetResolution + real screenshots.
+    # Keep EditMode headless; remove -nographics ONLY on explicitly graphical
+    # PlayMode runs. Missing GPU/display must fail the tests, never fake PASS.
+    $graphicalPlayMode = ($testMode -eq 'PlayMode' -and $EnableGraphics.IsPresent)
+    if (-not $graphicalPlayMode) {
+        $arguments.Add('--')
+        $arguments.Add('-nographics')
+    }
 
     Write-Output "Running Unity $testMode tests with Editor $editorVersion..."
     & $cli @arguments 2>&1 | Tee-Object -FilePath $logPath
@@ -100,6 +107,7 @@ foreach ($testMode in $modes) {
     $junitExists = Test-Path -LiteralPath $junitPath -PathType Leaf
     $result = [ordered]@{
         mode = $testMode
+        graphicalPlayModeRequested = $graphicalPlayMode
         exitCode = $exitCode
         nunitReport = $nunitPath
         nunitExists = $nunitExists
@@ -138,13 +146,14 @@ foreach ($testMode in $modes) {
 
 $summaryPath = Join-Path $OutputDirectory 'unity-headless-summary.json'
 [ordered]@{
-    suite = 'Startup Life Unity headless tests'
+    suite = 'Startup Life Unity test gate'
     editorVersion = $editorVersion
     unityCli = Split-Path -Leaf $cli
     requestedMode = $Mode
+    enableGraphics = $EnableGraphics.IsPresent
     success = ($null -eq $failure)
     results = $results
-    note = 'A successful result is real Unity test evidence. This script does not build mobile players or prove physical-device behavior.'
+    note = 'Native screenshot evidence requires EnableGraphics and verification of captured PNG files. Unity tests do not prove physical-device behavior.'
 } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $summaryPath -Encoding utf8
 
 Write-Output "Summary: $summaryPath"

@@ -50,9 +50,15 @@ jobs:
         shell: pwsh
         run: ./scripts/Test-UnityFoundationStatic.ps1 -ReportPath (Join-Path $env:RUNNER_TEMP 'startup-life/static-foundation.json')
 
-      - name: Run Unity EditMode and PlayMode tests
+      - name: Run Unity EditMode and graphical PlayMode responsive matrix
         shell: pwsh
-        run: ./scripts/Test-UnityHeadless.ps1 -Mode All -OutputDirectory (Join-Path $env:RUNNER_TEMP 'startup-life/unity-tests')
+        env:
+          STARTUP_LIFE_CREATOR_RESPONSIVE_EVIDENCE: ${{ runner.temp }}/startup-life/creator-responsive
+        run: |
+          $dir = $env:STARTUP_LIFE_CREATOR_RESPONSIVE_EVIDENCE
+          if (Test-Path -LiteralPath $dir) { Remove-Item -LiteralPath $dir -Recurse -Force }
+          ./scripts/Test-UnityHeadless.ps1 -Mode All -EnableGraphics -OutputDirectory (Join-Path $env:RUNNER_TEMP 'startup-life/unity-tests')
+          ./scripts/Verify-CreatorResponsiveEvidence.ps1 -Directory $dir -ReportPath (Join-Path $env:RUNNER_TEMP 'startup-life/creator-responsive-report.json')
 
       - name: Build Android profile
         if: ${{ inputs.run_build }}
@@ -93,9 +99,15 @@ jobs:
         shell: pwsh
         run: ./scripts/Test-UnityFoundationStatic.ps1 -ReportPath (Join-Path $env:RUNNER_TEMP 'startup-life/static-foundation.json')
 
-      - name: Run Unity EditMode and PlayMode tests
+      - name: Run Unity EditMode and graphical PlayMode responsive matrix
         shell: pwsh
-        run: ./scripts/Test-UnityHeadless.ps1 -Mode All -OutputDirectory (Join-Path $env:RUNNER_TEMP 'startup-life/unity-tests')
+        env:
+          STARTUP_LIFE_CREATOR_RESPONSIVE_EVIDENCE: ${{ runner.temp }}/startup-life/creator-responsive
+        run: |
+          $dir = $env:STARTUP_LIFE_CREATOR_RESPONSIVE_EVIDENCE
+          if (Test-Path -LiteralPath $dir) { Remove-Item -LiteralPath $dir -Recurse -Force }
+          ./scripts/Test-UnityHeadless.ps1 -Mode All -EnableGraphics -OutputDirectory (Join-Path $env:RUNNER_TEMP 'startup-life/unity-tests')
+          ./scripts/Verify-CreatorResponsiveEvidence.ps1 -Directory $dir -ReportPath (Join-Path $env:RUNNER_TEMP 'startup-life/creator-responsive-report.json')
 
       - name: Export iOS Xcode project from profile
         if: ${{ inputs.run_build }}
