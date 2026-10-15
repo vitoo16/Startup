@@ -205,11 +205,16 @@ def sheet(cards,columns,scale=4):
                         pixels[dst:dst+4]=frame[j:j+4]
     return png_rgba(width,height,(pixels[y*width*4:(y+1)*width*4] for y in range(height)))
 
-def build(output,fronts=None,report=None,export_layers=None):
+def build(output,fronts=None,report=None,export_layers=None,native_output=None):
     # Explicitly do not mutate production approved registry.
     main=[draw(style,view) for style in STYLES for view in VIEWS]
     output=Path(output);output.parent.mkdir(parents=True,exist_ok=True)
     output.write_bytes(sheet(main,4))
+    if native_output:
+        # Art review must inspect true 1:1 pixels as well as integer NN enlargement.
+        native_output=Path(native_output)
+        native_output.parent.mkdir(parents=True,exist_ok=True)
+        native_output.write_bytes(sheet(main,4,scale=1))
     if fronts:
         thumbs=[draw(style,'front',tone,('neutral','soft_smile','delighted')[tone])
                 for style in STYLES for tone in range(3)]
@@ -236,8 +241,9 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser()
     parser.add_argument('--output',required=True)
     parser.add_argument('--fronts')
+    parser.add_argument('--native-output',help='Write the 1:1 native-pixel contact sheet for owner review')
     parser.add_argument('--report')
     parser.add_argument('--export-layers')
     args=parser.parse_args()
-    build(args.output,args.fronts,args.report,args.export_layers)
+    build(args.output,args.fronts,args.report,args.export_layers,args.native_output)
     print('PASS first-party native C03 source DRAFT; art/IP/Unity approval NOT RUN')
