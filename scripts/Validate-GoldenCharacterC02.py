@@ -22,6 +22,9 @@ def validate(root=ROOT):
     assert data["schema"]=="startup-life.pixel-character-explorations.v1"
     assert data["style_id"]==spec["style_id"]==registry["style_id"]=="vn_everyday_pixel_v1"
     assert data["status"]=="DRAFT_NOT_APPROVED"
+    assert data["owner_visual_review"]["status"]=="REVISE_REQUIRED", (
+        "Owner rejected C02's Westernized/mature-looking art direction")
+    assert data["owner_visual_review"]["release_blocked"] is True
     assert data["art_direction"]["ppu"] == 32
     art=data["art_direction"]
     assert art["native_canvas_px"]==[128,160]

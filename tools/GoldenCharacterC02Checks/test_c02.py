@@ -50,6 +50,11 @@ class GoldenC02Checks(unittest.TestCase):
         self.mutate(gate.SOURCE,lambda d:d["approval"].update(ip_review=True))
         with self.assertRaises(AssertionError):gate.validate(self.root)
 
+    def test_owner_visual_rejection_cannot_silently_become_approved(self):
+        self.mutate(gate.SOURCE, lambda d: d["owner_visual_review"].update(
+            status="APPROVED", release_blocked=False))
+        with self.assertRaises(AssertionError): gate.validate(self.root)
+
     def test_no_autoapproval(self):
         self.mutate(gate.REGISTRY,lambda d:d["approved_entries"].append(
             {"asset_id":"not-reviewed"}))

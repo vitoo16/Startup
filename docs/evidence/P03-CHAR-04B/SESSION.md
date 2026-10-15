@@ -33,3 +33,18 @@ Neutral adult workplace proportions and clothes, not child-coded and not assigni
 
 ## Source preflight correction
 The C02 record has now been added to the canonical provenance manifest as **DRAFT** (no fake rights or approval dates). The C02 validator checks the six boolean approval flags explicitly, rather than mistakenly treating the nonempty path of the approval registry as an approval. The RGBA rasterizer validates bounds even on externally mutated layer clusters, preventing clipping/silent data loss. This closes the source gate and retains all previous independent review restrictions.
+
+## Owner visual direction feedback — 2026-10-16
+
+**REVISE_REQUIRED — do not promote C02 to a Golden character.** The owner
+explicitly rejected the C02 silhouette as mature-looking and Euro-American
+rather than contemporary Vietnamese/SEA-feeling pixel chibi. This supersedes
+earlier assistant recommendations to shortlist "Sương Sớm". The art is not
+suitable for human approval as-is. `owner_visual_review` is recorded in the
+C02 quarantined source manifest; validator and mutation checks enforce that
+the visual rejection remains release-blocking. No stats, gender balance,
+approved registry or production asset was changed.
+
+Art team next works only from fresh C03 first-party source and the
+`docs/production/CHARACTER_C03_VIETNAMESE_CHIBI_REDIRECTION.md` direction,
+subject to owner review of actual rendered previews; no ethnic caricature.

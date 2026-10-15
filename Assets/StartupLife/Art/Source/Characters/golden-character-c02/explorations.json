@@ -431,5 +431,15 @@
     "unity_import": false,
     "physical_device_beautycell": false,
     "animator_verified": false
+  },
+  "owner_visual_review": {
+    "status": "REVISE_REQUIRED",
+    "reported_at": "2026-10-16",
+    "reviewer": "product_owner",
+    "reason": "C02 looks older and stylistically Euro-American rather than modern Vietnamese pixel chibi, misses intended visual identity.",
+    "supersedes_recommendation": "none_selected",
+    "release_blocked": true,
+    "next_source_family": "sl-golden-character-c03",
+    "approvals_prohibited_until": "new original visual shortlist, owner aesthetic review, independent IP and Unity/device checks"
   }
 }
