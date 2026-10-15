@@ -56,6 +56,8 @@ def verify(root=ROOT):
     assert "CreatorTextSmallerButton" in build and "CreatorTextLargerButton" in build
     assert "UnityEventTools.AddPersistentListener(larger.onClick, scaler.IncreaseTextScale);" in build
     assert "CharacterCreatorTextScaler" in gate and "CreatorTextSizeRow" in gate
+    assert "panel.AddComponent<CharacterCreatorKeyboardAvoidance>()" in build
+    assert "CharacterCreatorKeyboardAvoidance" in gate and 'CheckReferences(keyboard, "nameInput", "rootCanvas");' in gate
     assert 'Add(table, "character.textsize", "Cỡ chữ");' in build
     assert "page.activeSelf != visible" in view
     assert "ageValue.text != ageLabel" in view

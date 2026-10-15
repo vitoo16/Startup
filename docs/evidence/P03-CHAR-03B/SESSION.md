@@ -35,3 +35,9 @@ Added `CharacterCreatorTextScalePolicy` (pure 3-step scale, 2-line responsive co
 **Important bug fixed:** touch-sizer used to be added to an active scene panel *before* creating later avatar selectors, so its `OnEnable()` cached incomplete controls. Migration now calls `UpgradeCreatorTextScaling` at the END of first-time creation, or as an idempotent follow-up for previously upgraded scenes; it attaches the touch sizer only after the creator subtree is complete.
 
 Added exact source validator + mutation check, pure PresentationChecks, engine-free compilation of the **real Unity text-scaler file** and strict Editor scene gate for the two serialized text-size buttons. Actual Unity Editor/device, keyboard overlap and 200% screenshot **not run**, remains release BLOCKED.
+
+## Keyboard safe-area avoidance (following commit)
+
+Added pure `CharacterCreatorKeyboardPolicy` with regression cases for keyboard intersection, safe-area replacement and viewport floor. Added `CharacterCreatorKeyboardAvoidance` to the existing creator panel; it only changes its bottom RectTransform offset while the name field is focused and the soft keyboard is visible, restores on dismissal, and preserves horizontal position. For devices with missing keyboard-area metrics it uses a bounded 38%-height **estimate**, not a device-certified fit. Editor repair wires a serialized name input and Canvas reference; the runtime gate enforces both. No per-frame allocations, save writes or game commands.
+
+**Unverified:** IME animation, Samsung floating keyboard, iOS keyboard accessory bar, OS dynamic font scaling and real screenshots. This remains an explicit on-device QA gate rather than claiming universal phone compatibility.

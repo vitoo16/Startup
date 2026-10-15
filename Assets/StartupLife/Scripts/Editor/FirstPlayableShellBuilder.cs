@@ -407,6 +407,14 @@ namespace StartupLife.Editor
             if (!percent) throw new InvalidOperationException("Creator text percent label missing.");
             Assign(scaler, "scaleValue", percent.GetComponent<TMP_Text>());
 
+            var keyboard = panel.GetComponent<CharacterCreatorKeyboardAvoidance>();
+            if (!keyboard) keyboard = panel.AddComponent<CharacterCreatorKeyboardAvoidance>();
+            Assign(keyboard, "nameInput", panel.GetComponent<CharacterCreationViewController>()
+                .GetComponentInChildren<TMP_InputField>(true));
+            var parentCanvas = panel.GetComponentInParent<Canvas>();
+            if (!parentCanvas) throw new InvalidOperationException("Creator needs a Canvas.");
+            Assign(keyboard, "rootCanvas", parentCanvas);
+
             if (newRow)
             {
                 var smaller = identity.Find("CreatorTextSizeRow/CreatorTextSmallerButton")

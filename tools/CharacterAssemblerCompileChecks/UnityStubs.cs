@@ -25,6 +25,28 @@ namespace UnityEngine
         public static implicit operator bool(Object? target) => target != null;
     }
 
+    public struct Vector2
+    {
+        public float x, y;
+        public Vector2(float x, float y) { this.x = x; this.y = y; }
+    }
+
+    public struct Rect
+    {
+        public float yMin, yMax, height;
+    }
+
+    public sealed class RectTransform : Component
+    {
+        public Vector2 offsetMin;
+    }
+
+    public static class TouchScreenKeyboard
+    {
+        public static bool visible;
+        public static Rect area;
+    }
+
     public sealed class GameObject : Object
     {
         public bool activeSelf { get; private set; } = true;
@@ -56,7 +78,9 @@ namespace UnityEngine
     public static class Screen
     {
         public static int width = 360;
+        public static int height = 640;
         public static float dpi = 160f;
+        public static Rect safeArea = new Rect { yMin = 0f, height = 640f };
     }
 
     public static class JsonUtility
@@ -101,7 +125,11 @@ namespace TMPro
         public string text = "";
         public float fontSize = 36f;
     }
-    public sealed class TMP_InputField : UnityEngine.Component { public string text = ""; }
+    public sealed class TMP_InputField : UnityEngine.Component
+    {
+        public string text = "";
+        public bool isFocused;
+    }
 }
 
 namespace UnityEngine.UI

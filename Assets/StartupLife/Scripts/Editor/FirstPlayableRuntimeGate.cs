@@ -59,6 +59,9 @@ namespace StartupLife.Editor
                 .FindProperty("uiTheme").objectReferenceValue ==
                 AssetDatabase.LoadAssetAtPath<MobileTheme>("Assets/StartupLife/Data/MobileTheme.asset"),
                 "Character Creator touch policy must use the serialized pixel theme.");
+            var keyboard = creatorPanel.GetComponent<CharacterCreatorKeyboardAvoidance>();
+            Require(keyboard, "Creator needs keyboard inset handler.");
+            CheckReferences(keyboard, "nameInput", "rootCanvas");
             var textScaler = creatorPanel.GetComponent<CharacterCreatorTextScaler>();
             Require(textScaler, "Missing responsive text-size controller.");
             CheckReferences(textScaler, "touchSizer", "scaleValue");

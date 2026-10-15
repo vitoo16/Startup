@@ -24,6 +24,8 @@ internal static class Program
         Check("sprite must have independent approval and catalog registration", VisualComposerRejectsUnapproved);
         Check("duplicate rig parts and malformed catalog entries rejected", VisualComposerRejectsConflicts);
         Check("trait changes cannot mutate sprite composition", VisualComposerIgnoresTrait);
+        Check("creator keyboard inset respects safe area and visible floor", CreatorKeyboardSafeArea);
+        Check("creator keyboard inset fails on invalid geometry", CreatorKeyboardInvalid);
         Check("creator text scale 100/150/200 expands touch controls", CreatorTextScale);
         Check("creator text scale rejects invalid and clamps navigation", CreatorTextScaleInvalid);
         Check("creator touch geometry scales for low and high dpi", CreatorTouchResponsive);
@@ -219,6 +221,26 @@ internal static class Program
         Equal(basePlan.Layers.Count, otherPlan.Layers.Count);
         for (int i = 0; i < basePlan.Layers.Count; i++)
             True(object.ReferenceEquals(basePlan.Layers[i], otherPlan.Layers[i]));
+    }
+
+    private static void CreatorKeyboardSafeArea()
+    {
+        Equal(0f, CharacterCreatorKeyboardPolicy.BottomInsetCanvasUnits(
+            640, 24f, 590f, 0f, 1f / 3f, 560f));
+        Equal(360f, CharacterCreatorKeyboardPolicy.BottomInsetCanvasUnits(
+            640, 24f, 590f, 144f, 1f / 3f, 560f));
+        Equal(0f, CharacterCreatorKeyboardPolicy.BottomInsetCanvasUnits(
+            640, 300f, 300f, 280f, 1f / 3f, 560f));
+        Equal(200f, CharacterCreatorKeyboardPolicy.BottomInsetCanvasUnits(
+            640, 24f, 250f, 300f, .5f, 300f));
+    }
+
+    private static void CreatorKeyboardInvalid()
+    {
+        ThrowsArgument(() => CharacterCreatorKeyboardPolicy.BottomInsetCanvasUnits(
+            640, 24f, 590f, 300f, 0f, 560f));
+        ThrowsArgument(() => CharacterCreatorKeyboardPolicy.BottomInsetCanvasUnits(
+            0, 24f, 590f, 300f, 1f, 560f));
     }
 
     private static void CreatorTextScale()

@@ -18,6 +18,7 @@
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreationViewController.cs" Link="CharacterCreationViewController.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreatorTouchSizer.cs" Link="CharacterCreatorTouchSizer.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreatorTextScaler.cs" Link="CharacterCreatorTextScaler.cs" />
+    <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreatorKeyboardAvoidance.cs" Link="CharacterCreatorKeyboardAvoidance.cs" />
     <Compile Include="UnityStubs.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
