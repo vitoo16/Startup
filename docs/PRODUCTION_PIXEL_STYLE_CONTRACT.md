@@ -12,6 +12,14 @@ An **original, soft and playful pixel-art depiction of everyday contemporary Vie
 
 ## Owner Art Director decision — 2026-10-15
 
+**OWNER VISUAL REDIRECTION (2026-10-16):** C02 has been expressly rejected
+for older/Westernized presentation and C03 should be a distinct native-grid
+pixel style rather than glossy anime imagery with a pixel filter. The owner
+accepted a **casual modern Vietnamese daily-life + softer, playful head/hair**
+direction only; approval of the direction does not clear any asset. Follow
+`docs/production/CHARACTER_C03_VIETNAMESE_CHIBI_REDIRECTION.md` and
+require one-to-one native-pixel inspection before art approval.
+
 **ACTIVE DESIGN TARGET:** Short, softly rounded, expressive **adult** chibi at **2.2–2.4 total heads, nominal 2.3**. This supersedes the previous 2.5–2.8 direction. Keep provisional source canvas, PPU and camera constants unchanged until rig/phone tests. Existing C01 first-party front-facing pixel draft was authored for the earlier proportions; it remains **DRAFT_NOT_APPROVED** and must be redesigned/verified. No automatic retroactive acceptance.
 
 Native contemporary Vietnamese environments must be composed as **original pixel clusters and tile geometry**, not photo pixelization of online photographs, re-colored stock/game sprites, traced screenshots or derivative branded shop facades. Write a locality sheet for each location with a purpose, socioeconomic context, 2–4 plausible anchors, excluded stereotypes, blank signage/TMP text and gameplay action zones. Architectural details, scooter helmets, compact shops, practical QR stands and apartment routines convey locality more authentically than a tourism-symbol collage.

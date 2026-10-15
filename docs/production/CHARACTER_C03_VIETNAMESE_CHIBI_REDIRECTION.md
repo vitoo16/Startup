@@ -57,6 +57,43 @@ checklists or claiming ethnic identity is identifiable from fixed facial feature
 These are work directions, not approved names, gameplay gender roles or
 automatic registrations. The concept art must visibly differ.
 
+## Owner-approved design DIRECTION — 2026-10-16 (not asset approval)
+
+Product owner accepted the revision: use the *daily-life, casual-work* silhouette
+family as the starting language, merge the softer, youthful hair/face treatment
+of the first exploratory concept, and REMOVE repetitive AI gloss. The earlier
+assistant estimate of `40–50%` reduction is qualitative only, **not** a
+technical percentage or acceptance threshold. Do not trace, upscale or
+pixelate previous AI image samples as sprite sources.
+
+**Specific anti-slop design gates:**
+
+1. Native hand-authored pixels only. At true 1× resolution,
+   silhouette, hair and eye/mouth expressions must be clear. Export may
+   be nearest-neighbor integer scaled for review; never bilinear or
+   fake pixel overlay.
+2. No large generic anime pupils, bloom, airbrush, faux 3-D, shiny
+   gradient hair or heavily repeated symmetrical face templates.
+3. At least three **meaningfully distinct** body/hair/clothing silhouettes
+   evaluated in monochrome; recoloring the same body does not count.
+4. Ensure a neutral/soft smile/focused/delighted expression sheet while
+   remaining young **adult**; appearance choices and gender never encode
+   abilities or character value.
+5. Everyday contemporary Vietnamese life is communicated by believable
+   clothes, bags, spaces, routines and later environment composition;
+   not stereotyped eye shapes, forced nón lá or decorative fake signage.
+6. Separate clean hair/head/torso/forearm/hand/thigh/shin/foot layers
+   and pivots, no whole-body slide as walk, with four authored views.
+7. Human art-direction approval requires **the actual PNG at 1× and
+   enlarged nearest-neighbor**, not only a style prompt, CI PASS or a
+   colorful concept sheet. Missing approval leaves the registry empty.
+
+A quick first-party procedural low-res sketch was inspected in this
+session and **rejected internally** as too crude and insufficiently
+differentiated; it must not be committed as a Golden candidate or
+mistaken for art approval. The C03 *direction* is approved, **not** any
+specific sprite or art sheet.
+
 ## Review acceptance / veto
 
 Art Director/owner receives an actual PNG contact sheet first (not just JSON).
