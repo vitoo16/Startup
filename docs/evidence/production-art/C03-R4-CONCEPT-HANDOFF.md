@@ -81,3 +81,16 @@ native sprite QA, build, Unity or device testing.
 **Known limitations:** Image binary absent from repo; native R4 source and 21
 layers **NOT CREATED**; independent IP and owner sprite review **NOT RUN**.  
 **Files changed:** This document and art-direction status pointer (if updated).
+
+## Latest owner direction — APPROVE_DIRECTION + final polish (2026-10-16)
+
+The owner has now approved the **concept direction**, while explicitly requesting
+small final refinements to the **neck join, ear protrusion, hip/footplant,
+asymmetric pose and cross-body strap/bag**. Preserve face/hair direction; avoid
+another wholesale redesign. The authoritative executable redline is
+[`C03-R4-FINAL-POLISH-REDLINE.md`](C03-R4-FINAL-POLISH-REDLINE.md).
+
+**No change to asset gate:** The owner has *not* approved a native R4 front
+sprite, Unity animation, commercial rights or a production prefab. The concept
+remains `CONCEPT_ONLY_AWAITING_NATIVE_PIXEL_REAUTHORING`. Do not start other
+views until the first real R4 native 1× and 8× PNG pass owner visual review.
