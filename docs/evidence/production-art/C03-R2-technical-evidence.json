@@ -1,0 +1,49 @@
+{
+  "schema": "startup-life.c03-r2-local-technical-evidence.v1",
+  "date": "2026-10-16",
+  "source": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/r2-front-draft.json",
+  "renderer": "scripts/Render-GoldenCharacterC03R2.py",
+  "status": "DRAFT_AWAITING_OWNER_REVIEW",
+  "source_blob_sha": "072c662dd76c54004d640bddbf208c15b41704cd",
+  "measurements": {
+    "native_canvas": [
+      64,
+      80
+    ],
+    "visible_alpha_bbox_xyxy_exclusive": [
+      15,
+      7,
+      54,
+      79
+    ],
+    "visible_height_px": 72,
+    "hair_top_y": 7,
+    "chin_bottom_y_inclusive": 38,
+    "head_height_px": 32,
+    "heads_tall": 2.25,
+    "head_fraction": 0.4444
+  },
+  "technical_checks": {
+    "native_rgba": "PASS_LOCAL",
+    "pixel_to_pixel_nearest_neighbor_8x": "PASS_LOCAL",
+    "rgba_alpha_binary": "PASS_LOCAL",
+    "semantic_parts_count": 21,
+    "all_parts_have_pixels": true,
+    "maximum_hair_alpha_y": {
+      "hair_back": 25,
+      "hair_front": 22
+    },
+    "renderer_reproducibility": "PASS_LOCAL"
+  },
+  "generated_file_sha256": {
+    "C03-R2-native-1x.png": "f1d3195065e630070e65bbd4bad76cc7d97f3dc7448ca6c93865174fb2e15f7b",
+    "C03-R2-review-8x.png": "0bf509355e7da01bec85f04c90b64da1a28fc2a1c8e58af3a2e7a4b170adfbb0",
+    "C03-R2-silhouette.png": "331e3c6db6423b2cac951ccedce3a0c8f649ac5a6415a3cdf08493dd2c67f996",
+    "C03-R2-comparison.png": "bae9d9fc8e2236fc5e3bfef8d0c9d6ee7a2eed3a40c41dda9dbe624efae16b79"
+  },
+  "visual_owner_verdict": "AWAITING_OWNER_REVIEW",
+  "independent_ip_verdict": "NOT_RUN",
+  "unity_animation_device": "NOT_RUN",
+  "production_approved": false,
+  "note": "Engine-free QA and content hashes only. No aesthetic/rights approval; ratio chin landmark has human interpretation; no Unity/device validation."
+}
