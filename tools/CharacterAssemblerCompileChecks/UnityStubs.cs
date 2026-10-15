@@ -130,5 +130,6 @@ namespace StartupLife.Presentation
     public sealed class MobileTheme : UnityEngine.Object
     {
         public int touchTarget = 96;
+        public float body = 36f;
     }
 }
