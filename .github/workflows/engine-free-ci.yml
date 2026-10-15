@@ -92,6 +92,11 @@ jobs:
           python3 scripts/Render-GoldenCharacterPreview.py --output "${RUNNER_TEMP}/startup-life/c01-front-draft.png"
           python3 -m unittest discover -s tools/GoldenCharacterPreviewChecks -p 'test_*.py' -v
 
+      - name: Validate Unity character assembler source and quarantine (no Editor)
+        run: |
+          python3 scripts/Validate-CharacterVisualAssembler.py
+          python3 -m unittest discover -s tools/CharacterAssemblerChecks -p 'test_*.py' -v
+
       - name: Validate asset provenance and approval join (no legal clearance implied)
         run: |
           python3 scripts/Validate-AssetProvenance.py
