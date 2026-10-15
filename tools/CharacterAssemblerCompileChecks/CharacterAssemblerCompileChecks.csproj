@@ -7,6 +7,10 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Only Unity [SerializeField] backing fields are injected by scene/prefab serialization,
+         so a standalone non-Unity compiler cannot detect their assignments.
+         All other C# warnings remain errors in this harness. -->
+    <NoWarn>$(NoWarn);CS0649</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../PresentationChecks/StartupLife.PresentationModel.csproj" />
