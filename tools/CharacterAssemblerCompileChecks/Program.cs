@@ -28,11 +28,14 @@ internal static class Program
         internal readonly CharacterLookCatalog Looks;
         internal readonly CharacterVisualComposer Composer;
         internal readonly CharacterVisualAssembler Assembler;
+        internal readonly SpriteRenderer Body;
         internal readonly SpriteRenderer Face;
         internal readonly SpriteRenderer Hair;
         internal readonly SpriteRenderer Clothes;
         internal readonly Sprite HomeSprite;
         internal readonly Sprite WorkSprite;
+        internal readonly Sprite FemaleBody;
+        internal readonly Sprite MaleBody;
 
         internal Fixture(bool includeOffice = true, bool badHairImport = false)
         {
@@ -43,7 +46,9 @@ internal static class Program
                 new CharacterVisualOption("face.soft", CharacterVisualSlot.Face),
                 new CharacterVisualOption("hair.short", CharacterVisualSlot.Hair),
                 new CharacterVisualOption("haircolor.ink", CharacterVisualSlot.HairColor),
+                new CharacterVisualOption("haircolor.chestnut", CharacterVisualSlot.HairColor),
                 new CharacterVisualOption("skin.warm", CharacterVisualSlot.SkinTone),
+                new CharacterVisualOption("skin.gold", CharacterVisualSlot.SkinTone),
                 new CharacterVisualOption("accessory.none", CharacterVisualSlot.Accessory),
                 new CharacterVisualOption("outfit.casual", CharacterVisualSlot.Outfit),
                 new CharacterVisualOption("outfit.office", CharacterVisualSlot.Outfit),
@@ -68,6 +73,10 @@ internal static class Program
             Composer = new CharacterVisualComposer(Looks, outfits,
                 new[]
                 {
+                    new CharacterVisualLayer(CharacterVisualSlot.Appearance, "base.female",
+                        CharacterRigView.Front, "body", "approved.body.female", 12),
+                    new CharacterVisualLayer(CharacterVisualSlot.Appearance, "base.male",
+                        CharacterRigView.Front, "body", "approved.body.male", 12),
                     new CharacterVisualLayer(CharacterVisualSlot.Face, "face.soft",
                         CharacterRigView.Front, "face", "approved.face", 13),
                     new CharacterVisualLayer(CharacterVisualSlot.Hair, "hair.short",
@@ -77,18 +86,24 @@ internal static class Program
                     new CharacterVisualLayer(CharacterVisualSlot.Outfit, "outfit.office",
                         CharacterRigView.Front, "outfit_torso", "approved.work", 15)
                 },
-                new[] { "approved.face", "approved.hair", "approved.home", "approved.work" });
+                new[] { "approved.face", "approved.hair", "approved.home", "approved.work",
+                    "approved.body.female", "approved.body.male" });
 
             var root = new Transform();
+            Body = new SpriteRenderer { transform = new Transform { Parent = root } };
             Face = new SpriteRenderer { transform = new Transform { Parent = root } };
             Hair = new SpriteRenderer { transform = new Transform { Parent = root } };
             Clothes = new SpriteRenderer { transform = new Transform { Parent = root } };
             HomeSprite = new Sprite();
             WorkSprite = new Sprite();
+            FemaleBody = new Sprite();
+            MaleBody = new Sprite();
             var hairSprite = new Sprite();
             if (badHairImport) hairSprite.texture.filterMode = FilterMode.Bilinear;
             var map = new Dictionary<string, Sprite>
             {
+                ["approved.body.female"] = FemaleBody,
+                ["approved.body.male"] = MaleBody,
                 ["approved.face"] = new Sprite(),
                 ["approved.hair"] = hairSprite,
                 ["approved.home"] = HomeSprite
@@ -98,6 +113,7 @@ internal static class Program
             Assembler = new CharacterVisualAssembler { transform = root };
             Assembler.Configure(new SpriteSource(map),
                 new[] {
+                    new CharacterRigPartBinding("body", Body),
                     new CharacterRigPartBinding("face", Face),
                     new CharacterRigPartBinding("hair_front", Hair),
                     new CharacterRigPartBinding("outfit_torso", Clothes)
@@ -132,6 +148,55 @@ internal static class Program
             Console.WriteLine("PASS engine-free simulated Unity surface: " + name);
         }
 
+        Case("creator approved-only bridge uses the same body rig for Nam/Nữ and work uniforms", () =>
+        {
+            var f = new Fixture();
+            var bridge = new CharacterCreatorVisualPreviewBridge();
+            Assert(!bridge.TryShow(f.Looks.NewDraft()),
+                "Unconfigured bridge must not display even test sprites.");
+            bridge.Configure(f.Composer, f.Assembler, "skin.warm", "haircolor.ink");
+            var female = f.Looks.NewDraft();
+            Assert(bridge.TryShow(female) && bridge.IsShowing, "Approved fixture not rendered");
+            Assert(ReferenceEquals(f.Body.sprite, f.FemaleBody), "Wrong female body sprite");
+            var male = f.Looks.Choose(female, CharacterVisualSlot.Appearance, "base.male");
+            Assert(bridge.TryShow(male), "Switching appearance should render");
+            Assert(ReferenceEquals(f.Body.sprite, f.MaleBody), "Wrong male body sprite");
+            Assert(bridge.SetSceneContext(CharacterSceneContext.Work, "developer"),
+                "Work uniform must be previewable");
+            Assert(ReferenceEquals(f.Clothes.sprite, f.WorkSprite), "Work outfit missing");
+            Assert(bridge.SetSceneContext(CharacterSceneContext.Home, null),
+                "Home outfit must be previewable");
+            Assert(ReferenceEquals(f.Clothes.sprite, f.HomeSprite), "Personal outfit missing");
+            Assert(male.OutfitId == "outfit.casual",
+                "Scene context must not change personal cosmetic draft");
+            bridge.Hide();
+            Assert(!bridge.IsShowing && f.Body.sprite == null && f.Clothes.sprite == null,
+                "Hidden creator must not leak a previous sprite preview");
+            Throws<InvalidOperationException>(() =>
+                bridge.Configure(f.Composer, f.Assembler, "skin.warm", "haircolor.ink"));
+        });
+        Case("unsupported palette or unauthored side view hides stale character instead of faking colors", () =>
+        {
+            var f = new Fixture();
+            var bridge = new CharacterCreatorVisualPreviewBridge();
+            bridge.Configure(f.Composer, f.Assembler, "skin.warm", "haircolor.ink");
+            var draft = f.Looks.NewDraft();
+            Assert(bridge.TryShow(draft), "Front should render");
+            var alternative = f.Looks.Choose(draft, CharacterVisualSlot.SkinTone, "skin.gold");
+            Assert(!bridge.TryShow(alternative) && !bridge.IsShowing &&
+                f.Body.sprite == null && !f.Body.enabled,
+                "Missing approved skin palette must never show the old body");
+            Assert(bridge.TryShow(draft), "Original baked palette should be restored");
+            Assert(!bridge.SetView(CharacterRigView.Side) && !bridge.IsShowing &&
+                f.Face.sprite == null,
+                "Unauthored side sprites cannot silently mirror front sprites");
+            Assert(bridge.SetView(CharacterRigView.Front) && bridge.IsShowing,
+                "Front view should restore original approved fixture");
+            var newHair = f.Looks.Choose(draft,
+                CharacterVisualSlot.HairColor, "haircolor.chestnut");
+            Assert(!bridge.TryShow(newHair) && f.Clothes.sprite == null,
+                "Unsupported hair color must hide, not claim a visual change");
+        });
         Case("reuse existing renderer instances and preserve sort", () =>
         {
             var f = new Fixture();

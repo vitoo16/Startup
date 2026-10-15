@@ -50,6 +50,9 @@ namespace StartupLife.Presentation
         }
 
         private CharacterCreatorDraftSession draft;
+        // Not serialized into the scene while the approved asset registry is empty.
+        // Bound explicitly after independent BeautyCell/rights approval.
+        private CharacterCreatorVisualPreviewBridge approvedPreview;
         private FirstPlayableFlow flow;
         private Action onCreated;
         private LocalizedKeyLabel appearanceLabel;
@@ -69,12 +72,32 @@ namespace StartupLife.Presentation
             if (draftCatalog != null)
                 draft = ParseDraft(draftCatalog);
             RenderSelection();
+            ShowApprovedPreviewIfAvailable();
         }
 
         public void SetVisible(bool visible)
         {
+            if (!visible) approvedPreview?.Hide();
             if (root) root.SetActive(visible);
             else gameObject.SetActive(visible);
+            if (visible) ShowApprovedPreviewIfAvailable();
+        }
+
+        // The preview is opt-in: a separate approved rig/palette integration
+        // must explicitly bind it. Current production scene stays text-only.
+        public void AttachApprovedPreview(CharacterCreatorVisualPreviewBridge preview)
+        {
+            if (preview == null || !preview.IsConfigured)
+                throw new ArgumentException("Preview must have approved rig bindings.", nameof(preview));
+            if (approvedPreview != null && approvedPreview != preview)
+                throw new InvalidOperationException("A creator cannot own two preview rigs.");
+            approvedPreview = preview;
+            ShowApprovedPreviewIfAvailable();
+        }
+
+        private void ShowApprovedPreviewIfAvailable()
+        {
+            if (draft != null) approvedPreview?.TryShow(draft.Draft);
         }
 
         public void DecreaseAge()
@@ -94,6 +117,8 @@ namespace StartupLife.Presentation
             appearanceId = "base.female";
             draft?.Select(CharacterVisualSlot.Appearance, appearanceId);
             RenderSelection();
+            ShowApprovedPreviewIfAvailable();
+            ShowApprovedPreviewIfAvailable();
         }
 
         public void SelectMale()
@@ -162,6 +187,7 @@ namespace StartupLife.Presentation
             if (draft == null) return;
             draft.Cycle(slot, direction);
             RenderSelection();
+            ShowApprovedPreviewIfAvailable();
         }
 
         private static CharacterCreatorDraftSession ParseDraft(TextAsset source)

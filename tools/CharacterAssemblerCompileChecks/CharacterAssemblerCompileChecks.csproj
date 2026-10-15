@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="../PresentationChecks/StartupLife.PresentationModel.csproj" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterVisualAssembler.cs" Link="CharacterVisualAssembler.cs" />
+    <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreatorVisualPreviewBridge.cs" Link="CharacterCreatorVisualPreviewBridge.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreationViewController.cs" Link="CharacterCreationViewController.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreatorTouchSizer.cs" Link="CharacterCreatorTouchSizer.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreatorTextScaler.cs" Link="CharacterCreatorTextScaler.cs" />

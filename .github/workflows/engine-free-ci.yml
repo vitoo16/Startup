@@ -118,6 +118,11 @@ jobs:
           python3 scripts/Validate-UnityCreatorGraphicalRunner.py
           python3 -m unittest discover -s tools/UnityCreatorGraphicalChecks -p 'test_*.py' -v
 
+      - name: Validate approved-only character preview bridge and quarantine
+        run: |
+          python3 scripts/Validate-CharacterCreatorPreviewBridge.py
+          python3 -m unittest discover -s tools/CharacterPreviewBridgeChecks -p 'test_*.py' -v
+
       - name: Validate asset provenance and approval join (no legal clearance implied)
         run: |
           python3 scripts/Validate-AssetProvenance.py
