@@ -1,0 +1,38 @@
+{
+  "status": "DRAFT_AWAITING_OWNER_REVIEW",
+  "view": "front",
+  "native_grid": [
+    64,
+    80
+  ],
+  "actual_opaque_bbox_xyxy_exclusive": [
+    15,
+    7,
+    53,
+    79
+  ],
+  "actual_height_px": 72,
+  "hair_top_y": 7,
+  "chin_landmark_y_inclusive": 38,
+  "head_height_px": 32,
+  "heads_tall": 2.25,
+  "head_height_share": 0.4444,
+  "authored_commands": 85,
+  "nonempty_semantic_layers": 21,
+  "native_edge_alpha": "BINARY_ONLY",
+  "owner_gate": "AWAITING_OWNER_REVIEW",
+  "owner_previous_verdict": {
+    "version": "C03-R2",
+    "verdict": "REVISE"
+  },
+  "unity_animation": "NOT_RUN",
+  "independent_ip": "NOT_RUN",
+  "visual_art_approval": "NOT_GRANTED",
+  "file_sha256": {
+    "C03-R3-native-1x.png": "0d6eac508c0064c79e68307efd2faed48d70b6b787a269490993d167be7540df",
+    "C03-R3-review-8x.png": "aeabdbd5b92d6bfb7c5321ffb0d1ed1bd9014d25e8c508592c22209daaa2c0e8",
+    "C03-R3-silhouette.png": "e86695ca07b4c3c63087a7a6724f5c3ecdd40b744d540f8eb2b45e6edb06a579",
+    "C03-R3-comparison-R2-R3.png": "ae1f73be85e40cfb5b2ab44487e5c75903cdc9109101d385f26d29493387b4e5"
+  },
+  "limitations": "Engine-free validation only; 1x human aesthetic quality unresolved; no Unity/device/IP clearance"
+}
