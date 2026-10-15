@@ -96,7 +96,11 @@ namespace UnityEngine
 
 namespace TMPro
 {
-    public class TMP_Text : UnityEngine.Component { public string text = ""; }
+    public class TMP_Text : UnityEngine.Component
+    {
+        public string text = "";
+        public float fontSize = 36f;
+    }
     public sealed class TMP_InputField : UnityEngine.Component { public string text = ""; }
 }
 

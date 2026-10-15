@@ -18,6 +18,18 @@ namespace StartupLife.Presentation
         private UnityEngine.UI.LayoutElement[] targets =
             Array.Empty<UnityEngine.UI.LayoutElement>();
         private float lastAppliedHeight = -1f;
+        private float typographyMultiplier = 1f;
+
+        public void SetTypographyMultiplier(float multiplier)
+        {
+            // Reject invalid input before dirtying any Canvas/layout state.
+            CharacterCreatorTextScalePolicy.Multiplier(
+                multiplier == 1f ? 0 : multiplier == 1.5f ? 1 :
+                multiplier == 2f ? 2 : -1);
+            if (Math.Abs(typographyMultiplier - multiplier) < .01f) return;
+            typographyMultiplier = multiplier;
+            Refresh();
+        }
 
         private void OnEnable()
         {
@@ -65,8 +77,10 @@ namespace StartupLife.Presentation
             if (!hostCanvas) hostCanvas = GetComponentInParent<Canvas>();
             if (!hostCanvas || hostCanvas.scaleFactor <= 0f || Screen.width <= 0) return;
 
-            var target = CharacterCreatorTouchPolicy.MinimumCanvasUnits(
+            var densityMinimum = CharacterCreatorTouchPolicy.MinimumCanvasUnits(
                 hostCanvas.scaleFactor, Screen.dpi, Screen.width, uiTheme.touchTarget);
+            var target = CharacterCreatorTextScalePolicy.ControlHeight(densityMinimum,
+                uiTheme.body, typographyMultiplier);
             if (Math.Abs(target - lastAppliedHeight) < 0.01f) return;
             // Store before modifying geometry: Unity may call this method
             // recursively while layout dimensions propagate.

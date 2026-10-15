@@ -24,6 +24,8 @@ internal static class Program
         Check("sprite must have independent approval and catalog registration", VisualComposerRejectsUnapproved);
         Check("duplicate rig parts and malformed catalog entries rejected", VisualComposerRejectsConflicts);
         Check("trait changes cannot mutate sprite composition", VisualComposerIgnoresTrait);
+        Check("creator text scale 100/150/200 expands touch controls", CreatorTextScale);
+        Check("creator text scale rejects invalid and clamps navigation", CreatorTextScaleInvalid);
         Check("creator touch geometry scales for low and high dpi", CreatorTouchResponsive);
         Check("creator touch geometry rejects invalid screen values", CreatorTouchInvalid);
         Check("four-step character draft navigation stays bounded", CharacterCreatorNavigation);
@@ -217,6 +219,24 @@ internal static class Program
         Equal(basePlan.Layers.Count, otherPlan.Layers.Count);
         for (int i = 0; i < basePlan.Layers.Count; i++)
             True(object.ReferenceEquals(basePlan.Layers[i], otherPlan.Layers[i]));
+    }
+
+    private static void CreatorTextScale()
+    {
+        Equal(1f, CharacterCreatorTextScalePolicy.Multiplier(0));
+        Equal(1.5f, CharacterCreatorTextScalePolicy.Multiplier(1));
+        Equal(2f, CharacterCreatorTextScalePolicy.Multiplier(2));
+        Equal(96f, CharacterCreatorTextScalePolicy.ControlHeight(96f, 36f, 1f));
+        Equal(132f, CharacterCreatorTextScalePolicy.ControlHeight(96f, 36f, 1.5f));
+        Equal(168f, CharacterCreatorTextScalePolicy.ControlHeight(96f, 36f, 2f));
+    }
+
+    private static void CreatorTextScaleInvalid()
+    {
+        Equal(0, CharacterCreatorTextScalePolicy.ClampStep(-10));
+        Equal(2, CharacterCreatorTextScalePolicy.ClampStep(900));
+        ThrowsArgument(() => CharacterCreatorTextScalePolicy.Multiplier(3));
+        ThrowsArgument(() => CharacterCreatorTextScalePolicy.ControlHeight(96f, 36f, .5f));
     }
 
     private static void CreatorTouchResponsive()

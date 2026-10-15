@@ -13,6 +13,7 @@
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCustomizationModel.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreatorDraftSession.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreatorTouchPolicy.cs" />
+    <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterCreatorTextScalePolicy.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/CharacterVisualComposition.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Presentation/EventLocalizationCatalog.cs" />
