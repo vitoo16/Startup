@@ -124,3 +124,13 @@ python scripts/Render-GoldenCharacterC03.py --output artifacts/C03-turnaround-4x
 ```
 
 The `--native-output` sheet contains the same twelve 64×80 native canvases at **exactly 1×**, surrounded only by sheet gutters. Compare it against the default integer nearest-neighbor 4× sheet; review each character's hair silhouette, adult proportions and distinct outfit geometry at 1×. Rendering, source generation or static validation alone **does not imply visual approval**. Ask owner `APPROVE / REVISE / REJECT` only with actual visible PNG previews. The production registry remains untouched until independent IP review, rig animation and device BeautyCell gates are met.
+
+## C03 source-render review — internal technical/art QA, 2026-10-16
+
+**Source inspected:** `scripts/Render-GoldenCharacterC03.py` blob `72ff442e8799d8546b1e08087b18dd322953967e`. Recreated twelve 64×80 native-grid turnarounds, twelve face-expression previews (three styles × four expressions), nine appearance front variants and **252 layered PNGs** (three styles × four views × 21 semantic parts). Generated report remains `DRAFT_NOT_APPROVED`.
+
+- **Technical pixel evidence:** 1× RGBA contact sheet SHA-256 `3162dc82bb909ddb4e8d0a7122dbabe0fbbf05288c561debd95d23d4888027de`, 4× SHA-256 `9b9057ce89a6e836825b45c73ea203d300f080067527f364171e7e32aa2d0e15`. Per-sprite 4× nearest-neighbor pixel blocks were checked against exact 1× and matched. Asset generation and this pixel check are **not** Unity, device, independent IP or aesthetic approval.
+- **Internal art QA: REVISE RECOMMENDED (not the owner's decision).** The front/three-quarter/profile views are visually under-differentiated; prominent square forehead/hair highlights can read as overlarge block eyes; the three body silhouettes still look too alike, especially at 1×. Facial acting lacks clean separation across all expressions. Further source-native silhouette, true-profile, fringe/face and expression re-authoring is required **before** rig animation or production registration.
+- **Owner review state: AWAITING_OWNER_REVIEW.** Actual PNGs were rendered for conversation review; these outputs are not committed as approved Unity assets or shipped. The approved registry and save schema remain unchanged. No Unity playback/BeautyCell or independent rights clearance was executed.
+
+Reproduction uses the `--native-output`/`--output` arguments recorded above. The generated previews may be shared for **REVISE / REJECT / direction feedback**; do not infer owner approval from silence.
