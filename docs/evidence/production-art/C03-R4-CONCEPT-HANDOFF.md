@@ -94,3 +94,18 @@ another wholesale redesign. The authoritative executable redline is
 sprite, Unity animation, commercial rights or a production prefab. The concept
 remains `CONCEPT_ONLY_AWAITING_NATIVE_PIXEL_REAUTHORING`. Do not start other
 views until the first real R4 native 1× and 8× PNG pass owner visual review.
+
+## Native R4 execution update — 2026-10-16
+
+This file is retained as the **prior concept-only decision history**. Subsequent
+implementation has now created **one** actual native front-view R4 source:
+`Assets/StartupLife/Art/Source/Characters/golden-character-c03/r4-front-draft.json`.
+It is a **draft, not an approved sprite**. Source, byte-for-byte nearest-neighbor
+renderer, 21 semantic parts, visible-pixel measurement and evidence are documented
+in [`C03-R4-review.md`](C03-R4-review.md) and
+[`C03-R4-technical-evidence.json`](C03-R4-technical-evidence.json).
+
+**Superseding active status:** `DRAFT_AWAITING_OWNER_REVIEW` for the native
+front sprite. R4 has **no** owner visual verdict yet. Unity animation, mobile
+BeautyCell, independent IP rights review and approval registry remain untouched.
+No additional views/variants/animation may proceed until explicit owner feedback.
