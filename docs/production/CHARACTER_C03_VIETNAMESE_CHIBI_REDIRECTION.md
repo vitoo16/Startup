@@ -134,3 +134,48 @@ The `--native-output` sheet contains the same twelve 64×80 native canvases at *
 - **Owner review state: AWAITING_OWNER_REVIEW.** Actual PNGs were rendered for conversation review; these outputs are not committed as approved Unity assets or shipped. The approved registry and save schema remain unchanged. No Unity playback/BeautyCell or independent rights clearance was executed.
 
 Reproduction uses the `--native-output`/`--output` arguments recorded above. The generated previews may be shared for **REVISE / REJECT / direction feedback**; do not infer owner approval from silence.
+
+## OWNER VETO — C03 native-grid render (2026-10-16)
+
+**Decision: REJECT CURRENT C03 RASTER.** The owner's feedback is that the current
+pixel-character render is stylistically incorrect. This supersedes the earlier
+internal `REVISE RECOMMENDED / AWAITING_OWNER_REVIEW` on this specific rendered
+source. It does **not** revoke the approved overall modern-Vietnamese daily-life
+character direction.
+
+Visual verification of the existing first-party `64×80` assets finds:
+- Dark, square hair/fringe clusters invade the facial read and can resemble
+  extremely oversized eyes. This fails the requested softer, deliberately
+  pixel-authored charming adult chibi shape language.
+- `back` views are derived from nearly the same front head, fringe and garment
+  geometry; visually comparing total canvas RGBA yields only ~0.6–2.1% changed
+  pixels between front/rear for all three silhouettes.
+- A separate occupied-pixel diagnostic reports front/rear differences of
+  **5.86%, 1.55%, 1.60%** respectively. A native raster, rectangular pixels,
+  distinct file names or 21 populated layers does **not** prove independently
+  authored views, visual craftsmanship or good sprite animation.
+- `side` and `three_quarter_left` reuse near-front anatomy rather than
+  a credible profile, while facial expressions and family silhouettes are
+  insufficiently distinct at 1×.
+
+**Engineering follow-up:** `python scripts/Inspect-GoldenCharacterC03Views.py`
+returns a nonzero status on these invalid turnarounds. This extra structural
+heuristic is intentionally **not** a substitute for the human art gate; even
+a passing report is not asset approval. The older native-source validator
+confirms only low-level RGBA/grid/provenance invariants, not art quality.
+
+**Next visual production gate:** Do not create more palette/face variants or
+start rigging this C03 shape. Re-author **one carefully composed front-view
+character at native 1×** first, with readable hair/eyes, distinct uneven
+pixel clusters, believable short-adult posture and recognizable everyday
+workwear. Show the exact native PNG and pixel-precise nearest-neighbor
+enlargement to the owner. After feedback, independently draw a genuine side
+profile and rear (new head/hair/garment silhouettes, not front projections
+with facial features removed); then expand to three differentiated characters
+and expressions. Do not use AI pixel-filtered photos, traced internet sprites,
+fake pixel overlays or stereotype-based facial markers.
+
+**Approval / shipping state:** `DRAFT_NOT_APPROVED`, owner visual verdict
+`REJECTED`, independent IP clearance not performed, Unity animation/device
+BeautyCell not performed. `Assets/StartupLife/Art/Approved/registry.json`
+must remain unchanged.
