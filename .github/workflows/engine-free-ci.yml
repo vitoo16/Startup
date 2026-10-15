@@ -103,6 +103,11 @@ jobs:
       - name: Validate data-only Character Creator options
         run: python3 scripts/Validate-CharacterCreatorCatalog.py
 
+      - name: Validate responsive Character Creator wiring (no Unity Editor)
+        run: |
+          python3 scripts/Validate-CharacterCreatorUi.py
+          python3 -m unittest discover -s tools/CharacterCreatorUiChecks -p 'test_*.py' -v
+
       - name: Validate asset provenance and approval join (no legal clearance implied)
         run: |
           python3 scripts/Validate-AssetProvenance.py

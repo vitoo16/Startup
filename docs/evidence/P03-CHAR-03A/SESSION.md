@@ -9,3 +9,9 @@
 **Save impact:** NONE; no persistence introduced.
 **Known limitations:** textual choices only, no Unity scene preview, no 200% typography proof or responsive device captures.
 **Files changed:** pure session C#/.meta, JSON option catalog/.meta, PresentationChecks project/tests, validator, CI, evidence.
+
+## UI builder and runtime controller integration
+
+Follow-up adds a scroll-clipped, four-page character creator and reusable selector rows to `FirstPlayableShellBuilder`. It **reuses** the existing name/age/Nam-Nữ controls and associated serialized UnityEvents by reparenting, not recreating. New text-only option controls stay under `CharacterCreatorScroll`; Back/Next and the historic Create button remain reachable outside that viewport within `MobileSafeArea`. Every option label and localized Vietnamese copy is sourced from `CharacterCreatorDraftCatalog.json`, and the serialized TextAsset is bound on both Create and the explicit idempotent `RepairGeneratedAssetReferences` path. Runtime `CharacterCreationViewController` applies draft changes in memory and sends *only* the original appearance ID in `CreateCharacter`, preserving receipt/save semantics. Old, not-yet-repaired scenes keep the legacy identity-only flow instead of loading unapproved sprites. A pending-preview label explicitly discloses absent approved art.
+
+Added an engine-free UI wiring validator plus 3 mutation cases. **Actual existing .unity scene has NOT been repaired or imported**; required next action is Unity Editor `RepairGeneratedAssetReferences()` and visual/mobile verification. No real responsive screenshot or dynamically-scaled font at 200% is claimed. Art/IP registry remains unchanged and no economy traits applied.

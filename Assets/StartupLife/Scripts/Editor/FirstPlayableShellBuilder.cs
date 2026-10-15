@@ -177,6 +177,7 @@ namespace StartupLife.Editor
             UnityEventTools.AddPersistentListener(female.onClick, character.SelectFemale);
             UnityEventTools.AddPersistentListener(male.onClick, character.SelectMale);
             UnityEventTools.AddPersistentListener(create.onClick, character.Submit);
+            UpgradeCharacterCreator(characterPanel, character, font, theme);
 
             UnityEventTools.AddPersistentListener(accept.onClick, life.AcceptDeveloper);
             UnityEventTools.AddPersistentListener(workButton.onClick, life.RunWorkShift);
@@ -220,6 +221,10 @@ namespace StartupLife.Editor
             var life = UnityEngine.Object.FindAnyObjectByType<LifeScreenViewController>();
             if (!life) throw new InvalidOperationException("Missing life screen for UI theme migration.");
             Assign(life, "uiTheme", theme);
+            var character = UnityEngine.Object.FindAnyObjectByType<CharacterCreationViewController>(
+                FindObjectsInactive.Include);
+            if (!character) throw new InvalidOperationException("Missing character creator.");
+            UpgradeCharacterCreator(character.gameObject, character, font, theme);
             foreach (var layout in UnityEngine.Object.FindObjectsByType<UnityEngine.UI.VerticalLayoutGroup>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
                 layout.spacing = theme.gap / 2f;
@@ -262,6 +267,130 @@ namespace StartupLife.Editor
             EditorUtility.SetDirty(table.SharedData);
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             AssetDatabase.SaveAssets();
+        }
+
+        [Serializable] private sealed class CreatorOptionsDocument
+        {
+            public CreatorTextEntry[] options = Array.Empty<CreatorTextEntry>();
+        }
+        [Serializable] private sealed class CreatorTextEntry
+        {
+            public string labelKey = "";
+            public string label = "";
+        }
+
+        private const string CreatorOptionsPath =
+            Root + "/Data/CharacterCreatorDraftCatalog.json";
+
+        // Explicit, idempotent migration. Existing scenes keep their serialized
+        // identity controls and onClick listeners; nothing is regenerated.
+        private static void UpgradeCharacterCreator(GameObject panel,
+            CharacterCreationViewController character, TMP_FontAsset font, MobileTheme theme)
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<TextAsset>(CreatorOptionsPath);
+            if (!asset) throw new InvalidOperationException("Character Creator catalog missing.");
+            Assign(character, "draftCatalog", asset);
+            if (panel.transform.Find("CharacterCreatorScroll") != null) return;
+
+            var scroll = MobileScrollViewFactory.Create(panel.transform,
+                "CharacterCreatorScroll", theme.background,
+                new RectOffset(12, 12, 16, 16), theme.gap / 2f,
+                TextAnchor.UpperLeft, 32f);
+            scroll.Scroll.transform.SetAsFirstSibling();
+            var identity = CreatorSection("CreatorIdentityPage", scroll.Content.transform, theme);
+            var look = CreatorSection("CreatorLookPage", scroll.Content.transform, theme);
+            var wardrobe = CreatorSection("CreatorWardrobePage", scroll.Content.transform, theme);
+            var traits = CreatorSection("CreatorTraitsPage", scroll.Content.transform, theme);
+            foreach (var name in new[] { "CharacterTitle", "CharacterNameLabel",
+                "CharacterNameInput", "CharacterAgeLabel", "AgeRow",
+                "AppearanceLabel", "AppearanceRow" })
+            {
+                var child = panel.transform.Find(name);
+                if (!child) throw new InvalidOperationException("Missing historical identity control: " + name);
+                child.SetParent(identity.transform, false);
+            }
+            StaticLabel("CharacterLookTitle", "character.look.title", look.transform,
+                font, theme.heading, theme.ink, 100);
+            StaticLabel("CharacterPreviewPending", "character.preview.pending", look.transform,
+                font, theme.caption, theme.ink, 96);
+            CreatorSelector("Face", "character.face", "character.option.face.soft",
+                look.transform, character, font, theme, character.PreviousFace, character.NextFace);
+            CreatorSelector("Hair", "character.hair", "character.option.hair.short",
+                look.transform, character, font, theme, character.PreviousHair, character.NextHair);
+            CreatorSelector("HairColor", "character.haircolor", "character.option.haircolor.ink",
+                look.transform, character, font, theme, character.PreviousHairColor, character.NextHairColor);
+            CreatorSelector("SkinTone", "character.skintone", "character.option.skin.warm",
+                look.transform, character, font, theme, character.PreviousSkinTone, character.NextSkinTone);
+            StaticLabel("CharacterWardrobeTitle", "character.wardrobe.title", wardrobe.transform,
+                font, theme.heading, theme.ink, 100);
+            CreatorSelector("Outfit", "character.outfit", "character.option.outfit.casual",
+                wardrobe.transform, character, font, theme, character.PreviousOutfit, character.NextOutfit);
+            CreatorSelector("Accessory", "character.accessory", "character.option.accessory.none",
+                wardrobe.transform, character, font, theme, character.PreviousAccessory, character.NextAccessory);
+            StaticLabel("CharacterTraitsTitle", "character.trait.title", traits.transform,
+                font, theme.heading, theme.ink, 100);
+            StaticLabel("CharacterTraitsNote", "character.trait.note", traits.transform,
+                font, theme.caption, theme.ink, 142);
+            CreatorSelector("Trait", "character.trait", "character.option.trait.balanced",
+                traits.transform, character, font, theme, character.PreviousTrait, character.NextTrait);
+
+            var navigation = Row("CreatorPageNavigation", panel.transform, theme.gap);
+            navigation.GetComponent<UnityEngine.UI.LayoutElement>().preferredHeight = theme.touchTarget;
+            var back = Button("CreatorPreviousPageButton", "character.page.previous",
+                navigation.transform, font, theme);
+            var next = Button("CreatorNextPageButton", "character.page.next",
+                navigation.transform, font, theme);
+            UnityEventTools.AddPersistentListener(back.onClick, character.PreviousCreatorPage);
+            UnityEventTools.AddPersistentListener(next.onClick, character.NextCreatorPage);
+            navigation.transform.SetSiblingIndex(1);
+            var submit = panel.transform.Find("CreateCharacterButton");
+            if (submit) submit.SetSiblingIndex(2);
+
+            Assign(character, "identityPage", identity);
+            Assign(character, "lookPage", look);
+            Assign(character, "wardrobePage", wardrobe);
+            Assign(character, "traitsPage", traits);
+            Assign(character, "creatorScroll", scroll.Scroll);
+            Assign(character, "creatorBackButton", back);
+            Assign(character, "creatorNextButton", next);
+            look.SetActive(false);
+            wardrobe.SetActive(false);
+            traits.SetActive(false);
+        }
+
+        private static GameObject CreatorSection(string name, Transform parent, MobileTheme theme)
+        {
+            var obj = new GameObject(name, typeof(RectTransform),
+                typeof(UnityEngine.UI.VerticalLayoutGroup));
+            obj.transform.SetParent(parent, false);
+            var layout = obj.GetComponent<UnityEngine.UI.VerticalLayoutGroup>();
+            layout.spacing = theme.gap / 2f;
+            layout.childControlHeight = true;
+            layout.childControlWidth = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            return obj;
+        }
+
+        private static void CreatorSelector(string name, string key, string initialKey,
+            Transform parent, CharacterCreationViewController character,
+            TMP_FontAsset font, MobileTheme theme, UnityEngine.Events.UnityAction previous,
+            UnityEngine.Events.UnityAction next)
+        {
+            StaticLabel("Character" + name + "Label", key, parent,
+                font, theme.body, theme.ink, 66);
+            var row = Row("Creator" + name + "Row", parent, theme.gap / 2f);
+            row.GetComponent<UnityEngine.UI.LayoutElement>().preferredHeight = theme.touchTarget;
+            var backButton = Button("Creator" + name + "PreviousButton",
+                "character.option.previous", row.transform, font, theme);
+            var value = LocalizedValue("Creator" + name + "Value", initialKey,
+                row.transform, font, theme, theme.touchTarget);
+            var nextButton = Button("Creator" + name + "NextButton",
+                "character.option.next", row.transform, font, theme);
+            UnityEventTools.AddPersistentListener(backButton.onClick, previous);
+            UnityEventTools.AddPersistentListener(nextButton.onClick, next);
+            var fieldName = name.Substring(0, 1).ToLowerInvariant() + name.Substring(1) + "Value";
+            Assign(character, fieldName, value);
         }
 
         static void ConfigureFatalStatus(TMP_Text text, MobileTheme theme)
@@ -419,6 +548,29 @@ namespace StartupLife.Editor
             Add(table, "character.appearance.female", "Nữ");
             Add(table, "character.appearance.male", "Nam");
             Add(table, "character.create", "Bắt đầu");
+            Add(table, "character.look.title", "Diện mạo");
+            Add(table, "character.wardrobe.title", "Trang phục");
+            Add(table, "character.trait.title", "Phong cách cá nhân");
+            Add(table, "character.preview.pending", "Đang chuẩn bị hình nhân vật đạt chuẩn. Các lựa chọn hiện chỉ là bản nháp.");
+            Add(table, "character.trait.note", "Đặc tính do bạn chọn, không phụ thuộc Nam/Nữ. Chưa ảnh hưởng gameplay.");
+            Add(table, "character.face", "Khuôn mặt");
+            Add(table, "character.hair", "Kiểu tóc");
+            Add(table, "character.haircolor", "Màu tóc");
+            Add(table, "character.skintone", "Màu da");
+            Add(table, "character.outfit", "Quần áo");
+            Add(table, "character.accessory", "Phụ kiện");
+            Add(table, "character.trait", "Đặc tính");
+            Add(table, "character.page.previous", "Quay lại");
+            Add(table, "character.page.next", "Tiếp theo");
+            Add(table, "character.option.previous", "−");
+            Add(table, "character.option.next", "+");
+            var optionAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(CreatorOptionsPath);
+            if (!optionAsset) throw new InvalidOperationException("Character Creator text catalog missing.");
+            var optionTexts = JsonUtility.FromJson<CreatorOptionsDocument>(optionAsset.text);
+            if (optionTexts == null || optionTexts.options == null)
+                throw new InvalidOperationException("Invalid Character Creator localized catalog.");
+            foreach (var option in optionTexts.options)
+                Add(table, option.labelKey, option.label);
 
             Add(table, "life.title", "Hôm nay của bạn");
             Add(table, "life.name", "Tên");
