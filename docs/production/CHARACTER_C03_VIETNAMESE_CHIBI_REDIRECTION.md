@@ -179,3 +179,44 @@ fake pixel overlays or stereotype-based facial markers.
 `REJECTED`, independent IP clearance not performed, Unity animation/device
 BeautyCell not performed. `Assets/StartupLife/Art/Approved/registry.json`
 must remain unchanged.
+
+## C03-R1 — first native-pixel re-authoring (2026-10-16)
+
+**Owner verdict on the previous C03 raster remains REJECTED.** This is an
+independent, **front-facing only** first revision; it does not rehabilitate
+the rejected procedural turnarounds or imply approval of the new art.
+
+Source of truth: `Assets/StartupLife/Art/Source/Characters/golden-character-c03/r1-front-draft.json`.
+The `commands` list records **74 authored native pixel contours and hand-placed
+horizontal pixel clusters**, each with an explicit palette role and semantic
+rig-layer destination. The generic renderer does not use the rejected
+oval/rectangle character generator. No photographs, network sprites or
+image-to-pixel filters were used. This design is still subject to independent
+IP similarity review before shipping.
+
+Export exact native 64×80 RGBA, owner-review 1×, 4×, and 8× nearest-neighbor:
+
+```bash
+python scripts/Render-GoldenCharacterC03R1.py --output-dir artifacts/c03-r1
+```
+
+Native PNG SHA-256 of the currently reviewed R1 source:
+`2aa58b165ff6183a0c288340dd53783ce286eba75dfcd6004ed6f4f8f0e680e6`.
+At this revision all 21 semantic rig layers have authored pixels;
+this **does not establish working motion** or that pivots are approved.
+Review enlarged and true-size PNG together. Technical pixel/scale diagnostics
+are not a proxy for visual quality.
+
+**Required human review now:** Character looks appropriately youthful and
+adult, actually cute at 1×, pixel-cluster silhouette reads cleanly, brows and
+eyes are not covered by bangs, chin does not look bearded, clothing feels
+contemporary Vietnamese daily life without ethnic stereotypes. Ask for
+**REVISE / REJECT / APPROVE_DIRECTION** on this *single* front view, not approval
+of a shippable rig. No extra views, palette recolors, animation or registry
+promotion until owner direction is resolved.
+
+**Open:** owner visual decision, true side and independent rear geometry,
+four expressions, at least two further distinct personalities,
+Unity 2D articulated motion, device BeautyCell, originality/IP clearance,
+full 128×160 production-grid/pivot alignment. Unity/phone tests **NOT RUN**.
+Gameplay balance, save schema and approved registry unchanged.
