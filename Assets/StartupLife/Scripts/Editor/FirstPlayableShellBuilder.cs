@@ -298,11 +298,13 @@ namespace StartupLife.Editor
             var asset = AssetDatabase.LoadAssetAtPath<TextAsset>(CreatorOptionsPath);
             if (!asset) throw new InvalidOperationException("Character Creator catalog missing.");
             Assign(character, "draftCatalog", asset);
-            // Attach once even when the rest of the scene has already migrated.
-            var touchSizer = panel.GetComponent<CharacterCreatorTouchSizer>();
-            if (!touchSizer) touchSizer = panel.AddComponent<CharacterCreatorTouchSizer>();
-            Assign(touchSizer, "uiTheme", theme);
-            if (panel.transform.Find("CharacterCreatorScroll") != null) return;
+            if (panel.transform.Find("CharacterCreatorScroll") != null)
+            {
+                // Older migrated scenes already contain options and buttons but
+                // not the new text-size controls. Upgrade only what is missing.
+                UpgradeCreatorTextScaling(panel, font, theme);
+                return;
+            }
 
             var scroll = MobileScrollViewFactory.Create(panel.transform,
                 "CharacterCreatorScroll", theme.background,
@@ -370,6 +372,50 @@ namespace StartupLife.Editor
             look.SetActive(false);
             wardrobe.SetActive(false);
             traits.SetActive(false);
+            UpgradeCreatorTextScaling(panel, font, theme);
+        }
+
+        private static void UpgradeCreatorTextScaling(GameObject panel,
+            TMP_FontAsset font, MobileTheme theme)
+        {
+            var identity = panel.transform.Find(
+                "CharacterCreatorScroll/Viewport/Content/CreatorIdentityPage");
+            if (!identity)
+                throw new InvalidOperationException("Character Creator identity page missing.");
+            var newRow = identity.Find("CreatorTextSizeRow") == null;
+            if (newRow)
+            {
+                StaticLabel("CreatorTextSizeTitle", "character.textsize",
+                    identity, font, theme.body, theme.ink, 70);
+                var row = Row("CreatorTextSizeRow", identity, theme.gap / 2f);
+                row.GetComponent<UnityEngine.UI.LayoutElement>().preferredHeight = theme.touchTarget;
+                var smaller = Button("CreatorTextSmallerButton", "character.option.previous",
+                    row.transform, font, theme);
+                var value = PlainValue("CreatorTextPercentValue", row.transform,
+                    font, theme.body, theme.ink, theme.touchTarget);
+                value.alignment = TextAlignmentOptions.Center;
+                var larger = Button("CreatorTextLargerButton", "character.option.next",
+                    row.transform, font, theme);
+            }
+            var sizer = panel.GetComponent<CharacterCreatorTouchSizer>();
+            if (!sizer) sizer = panel.AddComponent<CharacterCreatorTouchSizer>();
+            Assign(sizer, "uiTheme", theme);
+            var scaler = panel.GetComponent<CharacterCreatorTextScaler>();
+            if (!scaler) scaler = panel.AddComponent<CharacterCreatorTextScaler>();
+            Assign(scaler, "touchSizer", sizer);
+            var percent = identity.Find("CreatorTextSizeRow/CreatorTextPercentValue");
+            if (!percent) throw new InvalidOperationException("Creator text percent label missing.");
+            Assign(scaler, "scaleValue", percent.GetComponent<TMP_Text>());
+
+            if (newRow)
+            {
+                var smaller = identity.Find("CreatorTextSizeRow/CreatorTextSmallerButton")
+                    .GetComponent<UnityEngine.UI.Button>();
+                var larger = identity.Find("CreatorTextSizeRow/CreatorTextLargerButton")
+                    .GetComponent<UnityEngine.UI.Button>();
+                UnityEventTools.AddPersistentListener(smaller.onClick, scaler.DecreaseTextScale);
+                UnityEventTools.AddPersistentListener(larger.onClick, scaler.IncreaseTextScale);
+            }
         }
 
         private static GameObject CreatorSection(string name, Transform parent, MobileTheme theme)
@@ -563,6 +609,7 @@ namespace StartupLife.Editor
             Add(table, "character.appearance.male", "Nam");
             Add(table, "character.create", "Bắt đầu");
             Add(table, "character.look.title", "Diện mạo");
+            Add(table, "character.textsize", "Cỡ chữ");
             Add(table, "character.wardrobe.title", "Trang phục");
             Add(table, "character.trait.title", "Phong cách cá nhân");
             Add(table, "character.preview.pending", "Đang chuẩn bị hình nhân vật đạt chuẩn. Các lựa chọn hiện chỉ là bản nháp.");

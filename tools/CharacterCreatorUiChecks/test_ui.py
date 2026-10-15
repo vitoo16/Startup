@@ -44,6 +44,13 @@ class CreatorUiCases(unittest.TestCase):
         p.write_text(p.read_text().replace(
             "lastOptionLabelKeys[index] == key", "false"),encoding="utf-8")
         with self.assertRaises(AssertionError):gate.verify(self.root)
+    def test_creator_text_scale_wiring_cannot_disappear(self):
+        p=self.root/gate.BUILDER
+        p.write_text(p.read_text().replace(
+            "UnityEventTools.AddPersistentListener(larger.onClick, scaler.IncreaseTextScale);",
+            "// handler removed"),encoding="utf-8")
+        with self.assertRaises(AssertionError):gate.verify(self.root)
+
     def test_missing_control_rejected(self):
         p=self.root/gate.VIEW
         p.write_text(p.read_text().replace(

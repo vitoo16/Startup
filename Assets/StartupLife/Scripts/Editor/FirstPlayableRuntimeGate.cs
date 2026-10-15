@@ -59,6 +59,23 @@ namespace StartupLife.Editor
                 .FindProperty("uiTheme").objectReferenceValue ==
                 AssetDatabase.LoadAssetAtPath<MobileTheme>("Assets/StartupLife/Data/MobileTheme.asset"),
                 "Character Creator touch policy must use the serialized pixel theme.");
+            var textScaler = creatorPanel.GetComponent<CharacterCreatorTextScaler>();
+            Require(textScaler, "Missing responsive text-size controller.");
+            CheckReferences(textScaler, "touchSizer", "scaleValue");
+            var textSizeRow = objects.Single(obj => obj.name == "CreatorTextSizeRow");
+            Require(textSizeRow.transform.IsChildOf(creatorPanel) &&
+                textSizeRow.transform.parent.name == "CreatorIdentityPage",
+                "Font-size control must remain inside scrollable creator identity page.");
+            foreach (var label in new[] {
+                "CreatorTextSmallerButton", "CreatorTextLargerButton"
+            })
+            {
+                var button = objects.Single(obj => obj.name == label)
+                    .GetComponent<UnityEngine.UI.Button>();
+                Require(button && button.onClick.GetPersistentEventCount() == 1 &&
+                    button.onClick.GetPersistentTarget(0) == textScaler,
+                    "Text size control lost serialized callback: " + label);
+            }
             var creatorScroll = objects.Single(obj => obj.name == "CharacterCreatorScroll")
                 .GetComponent<UnityEngine.UI.ScrollRect>();
             Require(creatorScroll && creatorScroll.vertical && !creatorScroll.horizontal &&

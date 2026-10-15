@@ -51,6 +51,12 @@ def verify(root=ROOT):
     assert "panel.AddComponent<CharacterCreatorTouchSizer>()" in build
     assert 'Assign(touchSizer, "uiTheme", theme);' in build
     assert "creatorPanel.GetComponent<CharacterCreatorTouchSizer>()" in gate
+    assert "UpgradeCreatorTextScaling(panel, font, theme);" in build
+    assert build.count("UpgradeCreatorTextScaling(panel, font, theme);") == 2
+    assert "CreatorTextSmallerButton" in build and "CreatorTextLargerButton" in build
+    assert "UnityEventTools.AddPersistentListener(larger.onClick, scaler.IncreaseTextScale);" in build
+    assert "CharacterCreatorTextScaler" in gate and "CreatorTextSizeRow" in gate
+    assert 'Add(table, "character.textsize", "Cỡ chữ");' in build
     assert "page.activeSelf != visible" in view
     assert "ageValue.text != ageLabel" in view
     for option in data["options"]:
