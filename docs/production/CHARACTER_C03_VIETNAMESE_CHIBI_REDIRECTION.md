@@ -445,3 +445,24 @@ independently author crisp native front pixels and layered hand+bag, check
 real 1×/8× occlusion, rig pivots and actual motion in Unity, independent
 rights/IP clearance, device BeautyCell, final owner Golden approval.
 Approved registry, runtime bindings, save/economy and other views remain unchanged.
+
+## Post-approval technical continuation — draft cutout and stricter rig occlusion (2026-10-16)
+
+The owner-approved C03 front visual **has not changed**. The team created
+an optional high-resolution transparency draft using
+`scripts/Prepare-C03OwnerConceptCutout.py`, for foreground isolation
+QA only. It preserves the original RGB appearance and supplies a separate
+binary-alpha mask. This output is **not** approved pixel art or production
+rigging. Details, real image bounds and evidence:
+`docs/evidence/production-art/C03-CONCEPT-ISOLATION-REVIEW.md`.
+
+The owner-approved concept source PNG is still NOT present in Git. Its
+strict hash-gated handoff ZIP and staging script provide the correct upload
+path without calling it uploaded. The C03 partial-occlusion validator now
+rejects skin appearing above/through the bag front; this is applied to the
+specific affected hand, not an unrestricted global hand sorting rule.
+
+Do not unlock additional character variants or register the high-resolution
+draft. Remaining release gates: binary source commit, manually authored native
+pixel layers/pivots, actual localized bag mask and overlap, Unity joint motion,
+phone BeautyCell, independent IP clearance and owner Golden art review.
