@@ -10,7 +10,9 @@ import hashlib
 import json
 import lzma
 import struct
+import sys
 from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parent))
 from PixelPng import png_rgba
 
 ROOT=Path(__file__).resolve().parents[1]
