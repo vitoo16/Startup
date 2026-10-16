@@ -492,3 +492,32 @@ The exact earlier high-resolution owner concept PNG has not yet been
 versioned in Git. No Unity pivot, independent joint motion, mobile BeautyCell,
 IP clearance or registry promotion. **Do not start other views or animation
 until owner reviews the authored native translation.**
+
+## C03 approved native front — 16-frame idle and Unity authoring handoff (2026-10-17)
+
+The native front direction already explicitly approved by the owner is
+**frozen for identity**; no new hairstyle/face, outfit, additional camera
+angles, or production registry promotion in this implementation slice.
+
+New draft tooling:
+`scripts/Preview-C03IdleLoop.py` renders 16 genuine hierarchical joint
+rotation frames from the existing 16-joint/21-layer native C03 source.
+Its contract is `C03-front-joint-plan-DRAFT.json/idle_loop_proof`,
+with eight limb connections tested frame-by-frame (maximum 1 native pixel
+gap), continuous root-fixed motion, preserved bag-over-hand occlusion,
+native bounds and non-duplicate loop frames. A separate
+`scripts/Export-C03UnityRigHandoff.py` exports Unity transform/renderer
+authoring offsets with 32 PPU, Point/no-mip import requirements and explicit
+sorting. It **does not edit Unity assets, .meta or scenes**.
+
+Local 16-frame pixel-probe evidence: 128/128 contact checks PASS, changed
+pixels between adjacent frames 82–466, hand/bag overlap 191 px, 24 px exposed
+below and none exposed through bag. This is **engine-free** evidence only;
+actual Editor SpriteEditor capability check, Unity import/pivots, runtime
+animation, mobile BeautyCell, independent IP and final Golden signoff
+are **NOT RUN / OPEN**. Record and reproduction:
+`docs/evidence/production-art/C03-IDLE-16-FRAME-HANDOFF.md`.
+
+The exact approved original concept PNG binary remains missing in Git. Do
+not confuse a drafted Unity authoring manifest with a working prefab or the
+unchanged Approved Registry with a production integration.
