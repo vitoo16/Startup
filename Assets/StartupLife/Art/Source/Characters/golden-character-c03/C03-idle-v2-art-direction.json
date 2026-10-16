@@ -128,6 +128,6 @@
   "owner_inhale_visual_score": "14/30",
   "inhale_excluded_from_active_idle": true,
   "active_idle_task": "C03-IDLE-V3-STABLE-BODY-BLINK",
-  "active_idle_source": "C03-Idle-V3-stable-blink-DRAFT.json",
+  "active_idle_source": "docs/evidence/production-art/source/C03-Idle-V3-stable-blink-DRAFT.json",
   "previous_v2_and_v21_sources_remain_historical": true
 }
