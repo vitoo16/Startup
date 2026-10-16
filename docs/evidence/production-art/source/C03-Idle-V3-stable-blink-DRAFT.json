@@ -1,0 +1,130 @@
+{
+  "schema": "startup-life.c03.idle-v3-stable-blink.v1",
+  "task_id": "C03-IDLE-V3-STABLE-BODY-BLINK",
+  "status": "IDLE_V3_BLINK_PLAYBACK_AWAITING_OWNER_REVIEW",
+  "owner_verdict": "REJECT_INHALE_MOTION",
+  "character_id": "C03",
+  "view": "front",
+  "native_canvas": [
+    128,
+    160
+  ],
+  "art_style_id": "vn_everyday_pixel_v1",
+  "native_pixel_packet_sha256": "1b04022f5f828ba95374cc3e0e875df9597ea89454d3ebdd5730aa46a3254c1f",
+  "rest_source": "C03-native-front-source.json",
+  "closed_source": "C03-idle-v2-keyposes-DRAFT.json",
+  "closed_source_pose": "blink",
+  "original_rest_pixel_identical": true,
+  "rejected_sources_archive_only": [
+    "C03-idle-v2.1-inhale-contour-DRAFT.json",
+    "scripts/Preview-C03IdleLoop.py"
+  ],
+  "active_pose_order": [
+    "open",
+    "half",
+    "closed",
+    "half",
+    "open"
+  ],
+  "enable_half_pose_in_review": true,
+  "half_close_edits": [
+    [
+      "erase_iris",
+      50,
+      49,
+      4
+    ],
+    [
+      "erase_iris",
+      51,
+      49,
+      4
+    ],
+    [
+      "erase_iris",
+      50,
+      78,
+      4
+    ],
+    [
+      "erase_iris",
+      51,
+      78,
+      4
+    ],
+    [
+      "erase_iris",
+      47,
+      79,
+      3
+    ]
+  ],
+  "eye_roi_xyxy": [
+    48,
+    47,
+    83,
+    52
+  ],
+  "half_max_changed_pixels": 24,
+  "closed_max_changed_pixels": 42,
+  "frozen_parts": [
+    "hair_back",
+    "accessory_back",
+    "foot_l",
+    "foot_r",
+    "lower_leg_l",
+    "lower_leg_r",
+    "upper_leg_l",
+    "upper_leg_r",
+    "pelvis",
+    "torso",
+    "upper_arm_l",
+    "upper_arm_r",
+    "forearm_l",
+    "forearm_r",
+    "hand_l",
+    "hand_r",
+    "outfit_torso",
+    "head",
+    "hair_front",
+    "accessory_front"
+  ],
+  "timing_profile": {
+    "closing_ms": 50,
+    "closed_hold_ms": 60,
+    "reopening_ms": 70,
+    "total_blink_ms": 180,
+    "opening_half_at_ms": 110,
+    "playback_sample_rest_gaps_ms": [
+      3000,
+      5000,
+      4000
+    ],
+    "playback_sample_blink_count": 2,
+    "playback_only_gaps_not_production_schedule": true,
+    "future_scheduler_rest_gap_range_ms": [
+      2800,
+      6500
+    ],
+    "blink_independent_of_other_actions": true,
+    "deterministic_gameplay_state_untouched": true
+  },
+  "constraints": {
+    "only_face_eye_pixels_change": true,
+    "binary_alpha_only": true,
+    "no_full_body_translation": true,
+    "no_cosine": true,
+    "no_inhale": true,
+    "no_microgestures": true,
+    "no_new_views": true,
+    "no_golden_promotion": true
+  },
+  "gate": {
+    "art_review": "AWAITING_OWNER",
+    "timed_playback_visual": "AWAITING_OWNER",
+    "unity": "NOT_RUN",
+    "device": "NOT_RUN",
+    "independent_ip": "NOT_RUN",
+    "approved_registry": false
+  }
+}
