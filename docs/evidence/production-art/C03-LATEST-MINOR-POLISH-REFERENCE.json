@@ -1,0 +1,53 @@
+{
+  "schema": "startup-life.c03.visual-reference-update.v1",
+  "character_id": "C03",
+  "character_name": "Sáng Ngõ Nhỏ",
+  "date": "2026-10-16",
+  "latest_owner_request": "Preserve the selected character as the reference and only make small neck, ear, lower body and pose adjustments.",
+  "previous_owner_selection": "docs/evidence/production-art/C03-OWNER-SELECTION.json",
+  "stage": "OWNER_REQUESTED_VISUAL_POLISH",
+  "visual_status": "NEW_GENERATED_REFERENCE_PENDING_OWNER_CONFIRMATION",
+  "latest_reference": {
+    "filename": "chibi_pixel_traveler_with_satchel.png",
+    "sha256": "64bb3520c38537d8b0ebaed1daac9a879215b81564642eee088d9e0cbf98807b",
+    "width": 1149,
+    "height": 1368,
+    "mime": "image/png",
+    "color_mode": "RGB",
+    "background": "cream; fully opaque",
+    "source": "assistant-generated image in this conversation",
+    "exact_binary_committed_to_git": false,
+    "expected_repo_draft_path": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-minor-polish-visual-reference.png"
+  },
+  "comparison_input": {
+    "filename": "friendly_pixel_messenger_character.png",
+    "sha256": "b50fd50492a86126c0652425e9bffaa2820952148cb2877d33c20008b92f58fe",
+    "width": 1122,
+    "height": 1402,
+    "mime": "image/png",
+    "color_mode": "RGB",
+    "exact_binary_committed_to_git": false
+  },
+  "owner_changes_only": [
+    "shorten visibly exposed neck and smooth chin-to-collar connection",
+    "tuck ears slightly closer to the head outline",
+    "strengthen differentiation of thighs, shins, shoes and outward toe shapes",
+    "subtle weight shift, one shoulder slightly lower, hands/feet less symmetrical"
+  ],
+  "locked_appearance": [
+    "same friendly short asymmetrical dark hair, gentle youthful face and smile",
+    "muted green jacket, cream shirt, blue-grey trousers, broad sneakers",
+    "brown cross-body messenger strap and compact satchel",
+    "one front character only; no additional poses or variants"
+  ],
+  "limitations": {
+    "native_pixel_64x80": "NOT_AUTHORED_FROM_THIS_ILLUSTRATION",
+    "source_rgba_cutout": "NOT_AVAILABLE; BACKGROUND_BAKED",
+    "semantic_rig_21_parts": "NOT_PRODUCED_FROM_THIS_ILLUSTRATION",
+    "unity_and_device": "NOT_RUN",
+    "independent_ip": "NOT_RUN",
+    "approved_registry": "UNMODIFIED",
+    "native_art_approval": "NOT_APPROVED"
+  },
+  "required_follow_up": "Upload exact generated PNG bytes to expected draft reference path; verify sha256; evaluate 1x/native reconstruction independently. Do not claim binary committed until GitHub returns its blob. Do not automatically replace previously owner-selected baseline with unreviewed new generated variant."
+}
