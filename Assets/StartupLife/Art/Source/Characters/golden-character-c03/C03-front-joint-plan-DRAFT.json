@@ -287,6 +287,13 @@
       "No consecutive duplicate frame (including loop seam) at 1x",
       "No root translation or fake whole-body slide",
       "Only preview/front direction, no Unity/runtime/gallery approval"
-    ]
-  }
+    ],
+    "legacy_review_status": "OWNER_REJECTED_ARCHIVE_ONLY",
+    "review_note": "The 16-frame proof passed some technical structural metrics but FAILED the owner visual gate; no auto generation, registry promotion, or Unity runtime use."
+  },
+  "owner_idle_animation_verdict": "REJECTED",
+  "owner_idle_animation_reason": "Visual owner review rejected the 16-frame periodic cosine idle as ugly, mechanically unconvincing, and inappropriate pixel character motion. Preserve artifacts only as failed evidence.",
+  "legacy_poses_allowed_for_production": false,
+  "legacy_idle_loop_allowed_for_production": false,
+  "replacement_motion_contract": "C03-idle-v2-art-direction.json"
 }
