@@ -14,7 +14,7 @@ Do not continue V1 cosine, V2 shading-only Inhale or V2.1 shoulder-contour Inhal
 
 ## New source and implementation
 
-- `Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-Idle-V3-stable-blink-DRAFT.json`: versioned pose source, half-eye native pixel removals, closed-eye V2 inheritance, body locks, eye ROI and timing configuration.
+- `docs/evidence/production-art/source/C03-Idle-V3-stable-blink-DRAFT.json`: versioned pose source, half-eye native pixel removals, closed-eye V2 inheritance, body locks, eye ROI and timing configuration.
 - `scripts/Render-C03IdleV3.py`: reuses existing `Render-C03OwnerNativeFront`, `Render-C03IdleV2Keyposes` **only for approved closed-eye keypose**, and `Validate-C03OwnerRigHandoff` for bag/hand overlap. It never imports V2/V2.1 inhale or V1 motion.
 - `tools/tests/test_c03_idle_v3.py`: source/alpha/ROI/locked-part, rejection and time-coded GIF checks.
 - Existing V2/V2.1 code/evidence retained unchanged except clear supersession notes in production documentation.
@@ -88,3 +88,5 @@ Play the timed GIF at its **real duration** and inspect open/half/closed at 1×,
 **Skills used:** startup-life-session-orchestrator, startup-life-asset-quality-gate,
 vietnam-art-direction, 2d-pixel-perfect, sprite-editor (read only); no live Unity Editor.  
 **Owner model:** GPT-6. **Known blockers:** real Unity playback, phone BeautyCell, independent IP, owner motion/GOLDEN signoff and exact concept PNG archival.
+
+**Unity import restriction:** V3 is an offline authored review source under `docs/evidence/production-art/source` until the live Editor can generate valid `.meta` files. Baseline CI already failed on older C03 source `.meta` gaps; CI static foundation has not been weakened.
