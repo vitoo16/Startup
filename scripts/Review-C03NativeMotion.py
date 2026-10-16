@@ -98,7 +98,7 @@ def inspect(frames,contract):
 
 def check_files(directory,contract_path=SPEC):
     contract=json.loads(Path(contract_path).read_text(encoding='utf8'))
-    files=sorted(Path(directory).glob('*.png'))
+    files=sorted(Path(directory).glob('C03-idle-*-native-DRAFT.png'))
     if not files:
         raise ValueError('No native motion frames in directory')
     read=decoder()
