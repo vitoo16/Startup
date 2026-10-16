@@ -1,3 +1,10 @@
+> **SUPERSEDED FOR INHALE — 2026-10-17:** Owner requested `REVISE INHALE`. The shading-only Inhale described here is an
+> archived, **not approved** study. Rest and closed-eye Blink directions
+> stay as reviewed. The new ONE-pose trial with local 1-pixel shoulder
+> contour authoring is documented in
+> [C03-IDLE-V21-INHALE-REVIEW.md](C03-IDLE-V21-INHALE-REVIEW.md).
+> No full loop or runtime approval follows from either document.
+
 # C03 — Idle V2: first native keyposes (owner visual review)
 
 **Date:** 2026-10-17  
