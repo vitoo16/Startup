@@ -359,3 +359,29 @@ version exact original PNG, resolve clean alpha/native grid fidelity without
 changing identity, build semantic rig layers and verify Unity/motion/IP/mobile.
 Do **not** use any unapproved image in the runtime or silently treat this as
 Golden release approval. Approved Registry and game systems remain unchanged.
+
+## Follow-up to owner-selected image — limited neck/ears/legs/pose polish (2026-10-16)
+
+An owner-directed **small polish** of the selected friendly C03 illustration
+was generated later in the conversation. Do **not** mistake this for approval
+of a native game sprite, and do not erase the earlier exact-image selection.
+
+The reproducible **selection/change decision** (not PNG bytes) is now recorded in
+`docs/evidence/production-art/C03-LATEST-MINOR-POLISH-REFERENCE.json`
+and `C03-LATEST-MINOR-POLISH-REFERENCE.md`. The new illustration is
+`chibi_pixel_traveler_with_satchel.png`, **1149×1368 RGB**,
+SHA-256 `64bb3520c38537d8b0ebaed1daac9a879215b81564642eee088d9e0cbf98807b`.
+Its exact binary is **NOT YET COMMITTED TO GIT**. The earlier owner selection
+retains its independent provenance record and remains the approved *direction*
+baseline until the specific latest minor polish is visually confirmed.
+
+The only requested changes are: shorten exposed neck, tuck ears, refine
+trousers/sneaker shape and gentle foot turn, and subtly offset shoulders/hands.
+Lock the friendly face, distinctive fringe, olive jacket, cream tee, blue-grey
+trousers, brown sling bag and front-only scope. Do not introduce another
+mascot, alternate A/B poses, or automatic native resampling.
+
+The image has an opaque background, no 64×80 native authored source and
+no 21-part rig. Do not present Git text metadata or a render as a committed
+pixel sprite. Commercial originality, animation, device and Golden review gates
+remain open; approved registry unchanged.
