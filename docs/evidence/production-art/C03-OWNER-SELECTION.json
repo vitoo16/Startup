@@ -1,0 +1,43 @@
+{
+  "schema": "startup-life.c03.owner-visual-selection.v1",
+  "character_id": "C03",
+  "character_name": "Sáng Ngõ Nhỏ",
+  "date": "2026-10-16",
+  "decision": "OWNER_SELECTED_VISUAL_MASTER",
+  "source_file_name": "image(20261016-093800).png",
+  "source_sha256": "457478717a96f5bcfeddc5976af4c3034ddd7cf9086e988b093707e039d928aa",
+  "source_format": {
+    "mime": "image/png",
+    "width": 1122,
+    "height": 1402,
+    "color_mode": "RGBA",
+    "alpha_min": 255,
+    "alpha_max": 255,
+    "background_baked": true
+  },
+  "source_location": {
+    "kind": "user_conversation_upload",
+    "committed_to_repository": false,
+    "verified_source_artifact": "C03-selected-visual-master.png",
+    "exact_bytes_required": true
+  },
+  "supersedes": [
+    "C03-R5.1 chest-grip pose",
+    "C03 Neutral Idle Candidate A",
+    "C03 Neutral Idle Candidate B"
+  ],
+  "directions": {
+    "visual_identity": "OWNER_SELECTED",
+    "native_pixel_asset": "NOT_IMPLEMENTED",
+    "transparent_isolation": "NOT_IMPLEMENTED",
+    "rig_animation": "NOT_IMPLEMENTED",
+    "approved_asset_registry": "DO_NOT_MODIFY",
+    "independent_ip_clearance": "NOT_RUN"
+  },
+  "constraints": [
+    "preserve exact selected illustration as visual reference",
+    "no automatic redesign, variants or A/B selection",
+    "no automatic 64x80 downsample or fake-native pixel conversion",
+    "no production scene references until quality, provenance, Unity and owner gates"
+  ]
+}
