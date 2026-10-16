@@ -60,19 +60,21 @@
     "no_runtime_generated_masks": true,
     "no_procedural_redrawing_of_owner_illustration": true,
     "no_production_binding_before_golden_approval": true,
-    "authoring_stage": "21 native layers generated reproducibly from committed source; pivots and Unity joint motion unverified"
+    "authoring_stage": "Owner-approved native FRONT source with existing 21 layers; joint positions are draft, not verified by Unity Editor and phone"
   },
   "open_gates": [
-    "owner_native_128x160_front_reconstruction_review",
+    "independently_review_real_pivot_joint_motion_and_hand_bag_overlap",
     "commit_exact_original_concept_binary",
     "21_native_rgba_layer_sources_and_pivots",
     "independent_originality_IP",
     "unity_joint_animation_and_layer_sorting",
     "device_BeautyCell_and_owner_golden_approval"
   ],
-  "native_front_source_status": "NATIVE_RLE_SOURCE_COMMITTED_AWAITING_OWNER_NATIVE_VISUAL_REVIEW",
+  "native_front_source_status": "NATIVE_DIRECTION_APPROVED_PREPARING_FRONT_RIG",
   "native_front_artifact": "C03-native-front-runs-DRAFT.json",
   "native_front_source_manifest": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-native-front-source.json",
   "native_front_source_packet": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-native-front-pixel-runs.lzma.b64",
-  "native_front_source_packet_sha256": "1b04022f5f828ba95374cc3e0e875df9597ea89454d3ebdd5730aa46a3254c1f"
+  "native_front_source_packet_sha256": "1b04022f5f828ba95374cc3e0e875df9597ea89454d3ebdd5730aa46a3254c1f",
+  "owner_native_direction": "APPROVE_NATIVE_DIRECTION",
+  "owner_native_direction_date": "2026-10-16"
 }
