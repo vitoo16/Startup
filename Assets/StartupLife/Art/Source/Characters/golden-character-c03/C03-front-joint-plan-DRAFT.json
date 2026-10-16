@@ -1,0 +1,235 @@
+{
+  "schema": "startup-life.c03.front-joint-plan.v1",
+  "status": "DRAFT_PREVIEW_ONLY_PENDING_UNITY_PIVOT_AND_MOTION_QA",
+  "character_id": "C03",
+  "view": "front",
+  "owner_native_direction": "APPROVE_NATIVE_DIRECTION",
+  "canvas_px": [
+    128,
+    160
+  ],
+  "pixels_per_unit": 32,
+  "pixel_space": "origin top-left, x right, y down; joints represent absolute bind-pose native pixel positions",
+  "native_source_packet_sha256": "1b04022f5f828ba95374cc3e0e875df9597ea89454d3ebdd5730aa46a3254c1f",
+  "joints": [
+    {
+      "id": "root",
+      "parent": null,
+      "pivot": [
+        67,
+        116
+      ],
+      "parts": []
+    },
+    {
+      "id": "hips",
+      "parent": "root",
+      "pivot": [
+        67,
+        115
+      ],
+      "parts": [
+        "pelvis"
+      ]
+    },
+    {
+      "id": "spine",
+      "parent": "hips",
+      "pivot": [
+        67,
+        113
+      ],
+      "parts": [
+        "torso",
+        "outfit_torso",
+        "accessory_back",
+        "accessory_front"
+      ]
+    },
+    {
+      "id": "neck",
+      "parent": "spine",
+      "pivot": [
+        67,
+        77
+      ],
+      "parts": [
+        "head",
+        "hair_back",
+        "hair_front",
+        "face"
+      ]
+    },
+    {
+      "id": "shoulder_l",
+      "parent": "spine",
+      "pivot": [
+        46,
+        85
+      ],
+      "parts": [
+        "upper_arm_l"
+      ]
+    },
+    {
+      "id": "elbow_l",
+      "parent": "shoulder_l",
+      "pivot": [
+        38,
+        104
+      ],
+      "parts": [
+        "forearm_l"
+      ]
+    },
+    {
+      "id": "wrist_l",
+      "parent": "elbow_l",
+      "pivot": [
+        38,
+        116
+      ],
+      "parts": [
+        "hand_l"
+      ]
+    },
+    {
+      "id": "shoulder_r",
+      "parent": "spine",
+      "pivot": [
+        93,
+        87
+      ],
+      "parts": [
+        "upper_arm_r"
+      ]
+    },
+    {
+      "id": "elbow_r",
+      "parent": "shoulder_r",
+      "pivot": [
+        99,
+        106
+      ],
+      "parts": [
+        "forearm_r"
+      ]
+    },
+    {
+      "id": "wrist_r",
+      "parent": "elbow_r",
+      "pivot": [
+        98,
+        116
+      ],
+      "parts": [
+        "hand_r"
+      ]
+    },
+    {
+      "id": "hip_l",
+      "parent": "hips",
+      "pivot": [
+        57,
+        122
+      ],
+      "parts": [
+        "upper_leg_l"
+      ]
+    },
+    {
+      "id": "knee_l",
+      "parent": "hip_l",
+      "pivot": [
+        57,
+        137
+      ],
+      "parts": [
+        "lower_leg_l"
+      ]
+    },
+    {
+      "id": "ankle_l",
+      "parent": "knee_l",
+      "pivot": [
+        55,
+        149
+      ],
+      "parts": [
+        "foot_l"
+      ]
+    },
+    {
+      "id": "hip_r",
+      "parent": "hips",
+      "pivot": [
+        81,
+        123
+      ],
+      "parts": [
+        "upper_leg_r"
+      ]
+    },
+    {
+      "id": "knee_r",
+      "parent": "hip_r",
+      "pivot": [
+        81,
+        138
+      ],
+      "parts": [
+        "lower_leg_r"
+      ]
+    },
+    {
+      "id": "ankle_r",
+      "parent": "knee_r",
+      "pivot": [
+        84,
+        149
+      ],
+      "parts": [
+        "foot_r"
+      ]
+    }
+  ],
+  "skinning": "Rigid native source pixels per semantic layer, rotating around joint pivots; children inherit parent rotations. No whole-body translation as substitute for joint articulation.",
+  "sorting": "Reuse C03-owner-front-rig-contract.json rig_parts_back_to_front; accessory_front MUST composite after hand_r, but hand_r is NOT hidden in source or disabled.",
+  "poses": [
+    {
+      "id": "bind_front",
+      "degrees": {}
+    },
+    {
+      "id": "idle_left_test",
+      "degrees": {
+        "neck": -2,
+        "shoulder_l": -3,
+        "elbow_l": 4,
+        "shoulder_r": 2,
+        "elbow_r": -2,
+        "hip_r": 1,
+        "knee_r": -2
+      }
+    },
+    {
+      "id": "idle_right_test",
+      "degrees": {
+        "neck": 2,
+        "shoulder_l": 2,
+        "elbow_l": -3,
+        "shoulder_r": -2,
+        "elbow_r": 2,
+        "hip_r": -1,
+        "knee_r": 1
+      }
+    }
+  ],
+  "review_gates": [
+    "Visual gap/tearing check at shoulder, elbow, wrist, hips, knees, ankles",
+    "hand_r remains physically authored behind bag body in every demonstration frame",
+    "validate real Unity joint transforms/pivots and sorting; do not edit Unity import metadata without live Editor",
+    "approve pixel-art articulation, phone BeautyCell and independent originality/IP before production binding"
+  ],
+  "release_approved": false
+}
