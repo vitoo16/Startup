@@ -29,6 +29,9 @@ class C03UnityHandoffTests(unittest.TestCase):
         self.assertEqual(len(doc['sprite_renderers']),21)
         self.assertFalse(doc['owner_final_golden_approval'])
         self.assertEqual(doc['unity_import_and_animation'],'NOT_RUN')
+        self.assertEqual(doc['owner_idle_animation_verdict'],'REJECTED')
+        self.assertFalse(doc['idle_motion_clip_ready'])
+        self.assertEqual(doc['rejected_legacy_idle'],'DO_NOT_BIND_OR_INTEGRATE')
         records={item['part_id']:item for item in doc['sprite_renderers']}
         self.assertGreater(records['accessory_front']['sort_order'],
                            records['hand_r']['sort_order'])
