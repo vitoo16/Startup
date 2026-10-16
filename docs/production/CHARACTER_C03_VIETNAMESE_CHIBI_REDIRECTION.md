@@ -578,3 +578,34 @@ Status `KEYPOSES_DRAFT_AWAITING_OWNER_VISUAL_REVIEW`; only after explicit
 owner keypose verdict should a discrete timing animation be built and
 shown at true native scale. Unity runtime, mobile, independent IP and
 Approved Registry continue BLOCKED.
+
+## C03 Idle V2.1 — owner REVISE INHALE, restore local contour authoring (2026-10-17)
+
+The Art Director identified a **contract problem**, not insufficient effort by
+the artist: Idle V2 Inhale could only recolor existing opaque pixels, and its
+validator required full alpha/silhouette equality. That structurally prevented
+breathing volume. The specific owner verdict is **REVISE INHALE**, KEEP Rest
+and KEEP the direction of the closed-eye Blink keyframe. No full loop is
+authorized; keep Blink separately timed and short when animation eventually
+begins.
+
+One controlled V2.1 alternative was authored in
+`C03-idle-v2.1-inhale-contour-DRAFT.json`, using
+`scripts/Render-C03IdleV21Inhale.py`. It *reuses* native 21-layer source and
+the old V2 Rest/Blink compiler, changes only named upper arms and jacket
+collar/chest; a special local rule permits adding/removing at most one native
+pixel of exterior shoulder contour. Hard-coded layer/ROI/count restrictions
+prevent JSON threshold changes from broadening validation.
+
+The first independent pixel inspection gives 21 changed composite pixels,
+7 changed visible alpha pixels (9 shoulder-layer additions before
+occlusion), 0 removed alpha, and the original satchel/hand relationship.
+This is **a subtle draft trial only**. If it looks like sleeve jitter
+instead of a genuine breath, stop and prefer static torso with independent
+blink or contextual gestures, rather than escalating movement or weakening
+the validator.
+
+See `docs/evidence/production-art/C03-IDLE-V21-INHALE-REVIEW.md`.
+The V1 mechanical loop is still rejected, the V2 shine-only inhale remains
+historical, the V2.1 inhale is awaiting human review, and the
+Approved Registry, game/runtime and Unity imports stay unchanged.
