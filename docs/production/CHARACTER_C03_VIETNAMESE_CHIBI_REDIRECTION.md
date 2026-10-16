@@ -621,7 +621,7 @@ Preserve their historical source/evidence and the approved native front
 character direction.
 
 The new review source is
-`Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-Idle-V3-stable-blink-DRAFT.json`.
+`docs/evidence/production-art/source/C03-Idle-V3-stable-blink-DRAFT.json`.
 `scripts/Render-C03IdleV3.py` uses the unmodified native Rest, the
 inherited closed-eye V2 face pose, and one half-eye authoring experiment.
 All 20 non-face native layers are byte-exact through each pose; bag/hand
