@@ -1,6 +1,6 @@
 {
   "schema": "startup-life.c03.idle-v2-motion-direction.v1",
-  "status": "MOTION_REAUTHOR_REQUIRED_AWAITING_KEYPOSE_VISUAL_REVIEW",
+  "status": "KEYPOSES_DRAFT_AWAITING_OWNER_VISUAL_REVIEW",
   "character_id": "C03",
   "view": "front",
   "canvas_px": [
@@ -110,5 +110,13 @@
     "INDEPENDENT_IP",
     "GOLDEN_ASSET_REGISTRY"
   ],
-  "no_automatic_runtime_promotion": true
+  "no_automatic_runtime_promotion": true,
+  "latest_review_source": "C03-idle-v2-keyposes-DRAFT.json",
+  "latest_review_renderer": "scripts/Render-C03IdleV2Keyposes.py",
+  "latest_review_poses": [
+    "rest",
+    "inhale",
+    "blink"
+  ],
+  "latest_review_quality_note": "First V2 study: 27 visible chest/shoulder shade pixels and 35 eyelid pixels differ; no positional movement, no loop; breathing pose may be too subtle. Owner must review keyposes before motion timing or additional animation."
 }
