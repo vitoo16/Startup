@@ -256,3 +256,29 @@ older R3 front-face/hair authoring remains unchanged. Details and hashes:
 **Actual R4 sprite status:** `DRAFT_AWAITING_OWNER_REVIEW`, not `APPROVED`.
 Do not promote, bind Unity runtime, create additional views, start animation
 or call IP rights cleared without explicit independent/owner gates.
+
+## Owner correction R4 → staged personality pass R5 (2026-10-16)
+
+**Owner decision:** **C03-R4 REVISE REQUIRED**, even though native RGBA/8×
+checks passed. R4 became too generic: facial emotion and signature fringe
+flattened, the head/torso did not share one shape language, pose looked like
+a mannequin, and shoe/strap details did not rescue the whole character.
+Do not promote R4 or treat its previous `APPROVE_DIRECTION` as acceptance
+of the raster. Technical symmetry/ratio checks are only a supporting gate.
+
+**Next art direction:** Restore the playful, asymmetric R2 *intent* without
+copying its pixel shapes. Evaluate R5 **Silhouette → Face & Hair → Full
+Character**, each at actual native 1× and integer-nearest 8×. Prioritize an
+expressive small eye/brow rhythm, diagonal fringe (not a cap), one weight-
+bearing leg and one relaxed leg, genuinely purposeful strap-grip hand.
+Reduce irrelevant pixel noise. Draw one front view only.
+
+R5 reproducible draft source: `Assets/StartupLife/Art/Source/Characters/golden-character-c03/r5-personality-front-review.json`.
+Review/QA: `docs/evidence/production-art/C03-R5-review.md` and
+`C03-R5-technical-evidence.json`.
+
+**Current R5 gate:** `DRAFT_AWAITING_OWNER_REVIEW` — aesthetic personality
+not signed off. All 21 existing semantic names are present in the study
+source, but full rig-ready layers, Unity sorting/pivots, independent IP and
+device BeautyCell are **NOT approved**. No other views, cosmetics, animation,
+save/gameplay or approved registry changes.
