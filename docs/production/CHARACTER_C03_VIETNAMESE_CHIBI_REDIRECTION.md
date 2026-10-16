@@ -609,3 +609,33 @@ See `docs/evidence/production-art/C03-IDLE-V21-INHALE-REVIEW.md`.
 The V1 mechanical loop is still rejected, the V2 shine-only inhale remains
 historical, the V2.1 inhale is awaiting human review, and the
 Approved Registry, game/runtime and Unity imports stay unchanged.
+
+
+## C03 Idle V3 — owner rejects inhale, stable body + blink only (2026-10-17)
+
+Art Director formally rejected the native V2.1 Inhale (14/30), because
+a 1-pixel shoulder volume experiment still did not read as natural
+breathing at true 1×. **Do not add new Inhale versions or use V1 cosine
+motion, V2 highlight flicker, or V2.1 contour animation in active Idle.**
+Preserve their historical source/evidence and the approved native front
+character direction.
+
+The new review source is
+`Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-Idle-V3-stable-blink-DRAFT.json`.
+`scripts/Render-C03IdleV3.py` uses the unmodified native Rest, the
+inherited closed-eye V2 face pose, and one half-eye authoring experiment.
+All 20 non-face native layers are byte-exact through each pose; bag/hand
+occlusion and plant feet stay constant. Only eye pixels in
+`x=48..82, y=47..51` may differ: 19 half and 35 closed pixels.
+
+The owner playback demo includes two fast 180ms blinks separated by
+unequal 3s/5s/4s rest holds, total 12.36s. This is a **review-only**
+timing sample, *not a production fixed schedule*. No inhale coupling.
+The offline 360×640 preview is not a Unity BeautyCell.
+
+Evidence and gate: `docs/evidence/production-art/C03-IDLE-V3-BLINK-REVIEW.md`.
+Current status `IDLE_V3_BLINK_PLAYBACK_AWAITING_OWNER_REVIEW`.
+Ask owner to choose `APPROVE_MOTION_DIRECTION`, `REVISE_MOTION`,
+or `REJECT_MOTION`; silence is not approval.
+Do not enable runtime references or approved registry entries until
+Unity, mobile, independent rights and final art gates actually pass.
