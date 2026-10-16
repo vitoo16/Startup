@@ -385,3 +385,30 @@ The image has an opaque background, no 64×80 native authored source and
 no 21-part rig. Do not present Git text metadata or a render as a committed
 pixel sprite. Commercial originality, animation, device and Golden review gates
 remain open; approved registry unchanged.
+
+## Latest owner edit — hand must sit BEHIND the bag (2026-10-16)
+
+After the selected-character neck/ear/legs polish, owner requested a **single
+localized occlusion correction**: the hand beside the brown crossbody satchel
+must remain *under and behind* the satchel body/flap, with only a small skin
+sliver visible below its lower edge. This **supersedes all older depictions**
+where the hand is in front of/on the bag. Do not redesign the face, hair,
+outfit, bag strap, feet or stance as part of this fix.
+
+Source-of-truth for this correction:
+- `docs/evidence/production-art/C03-HAND-BAG-OCCLUSION-REVIEW.md`
+- `docs/evidence/production-art/C03-LATEST-MINOR-POLISH-REFERENCE.json`
+- `scripts/Verify-C03HandBagReference.py`
+
+Latest exact **draft concept**: `pixel_art_boy_with_brown_satchel.png`,
+1171×1343 RGB, SHA-256
+`d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e`.
+Its binary is **not committed yet**; only its verified metadata and occlusion
+contract are in the repository. Do not report full art sync, approval or
+runtime integration until the PNG itself is in Git and verified.
+
+For native semantic rigging, hand-under-bag is a **localized layering rule**:
+bag `accessory_front` must be in front of affected hand in the overlap area.
+Unrelated hand and prop interactions have their own sorting contracts. No
+change to approved registry, saved games or gameplay. Unity, device, IP and
+owner final-art gates remain open.
