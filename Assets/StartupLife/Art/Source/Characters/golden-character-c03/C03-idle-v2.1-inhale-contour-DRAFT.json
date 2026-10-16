@@ -1,0 +1,212 @@
+{
+  "schema": "startup-life.c03.idle-v2.1-contour-study.v1",
+  "status": "INHALE_V21_DRAFT_AWAITING_OWNER_REVIEW",
+  "character_id": "C03",
+  "view": "front",
+  "canvas_px": [
+    128,
+    160
+  ],
+  "parent_keyposes": "C03-idle-v2-keyposes-DRAFT.json",
+  "frozen_native_packet_sha256": "1b04022f5f828ba95374cc3e0e875df9597ea89454d3ebdd5730aa46a3254c1f",
+  "owner_verdict": "REVISE_INHALE_KEEP_REST_BLINK",
+  "owner_approved_inhale": false,
+  "owner_approved_idle_loop": false,
+  "replaces_only": "inhale",
+  "patches": [
+    [
+      "upper_arm_l",
+      "add_opaque",
+      78,
+      45,
+      2,
+      "ink"
+    ],
+    [
+      "upper_arm_l",
+      "add_opaque",
+      79,
+      42,
+      2,
+      "ink"
+    ],
+    [
+      "upper_arm_l",
+      "repaint",
+      79,
+      44,
+      2,
+      "green_dark"
+    ],
+    [
+      "upper_arm_l",
+      "repaint",
+      80,
+      41,
+      2,
+      "green_dark"
+    ],
+    [
+      "upper_arm_r",
+      "add_opaque",
+      79,
+      88,
+      1,
+      "ink"
+    ],
+    [
+      "upper_arm_r",
+      "add_opaque",
+      80,
+      87,
+      1,
+      "ink"
+    ],
+    [
+      "upper_arm_r",
+      "add_opaque",
+      80,
+      89,
+      2,
+      "ink"
+    ],
+    [
+      "upper_arm_r",
+      "add_opaque",
+      81,
+      91,
+      1,
+      "ink"
+    ],
+    [
+      "upper_arm_r",
+      "repaint",
+      81,
+      88,
+      2,
+      "green_dark"
+    ],
+    [
+      "outfit_torso",
+      "repaint",
+      78,
+      50,
+      2,
+      "green_lit"
+    ],
+    [
+      "outfit_torso",
+      "repaint",
+      78,
+      82,
+      2,
+      "green_lit"
+    ],
+    [
+      "outfit_torso",
+      "repaint",
+      90,
+      59,
+      1,
+      "cream_lit"
+    ],
+    [
+      "outfit_torso",
+      "repaint",
+      91,
+      59,
+      1,
+      "cream_lit"
+    ],
+    [
+      "outfit_torso",
+      "repaint",
+      92,
+      58,
+      1,
+      "green_dark"
+    ],
+    [
+      "outfit_torso",
+      "repaint",
+      92,
+      79,
+      1,
+      "green_lit"
+    ],
+    [
+      "outfit_torso",
+      "repaint",
+      93,
+      79,
+      1,
+      "green_lit"
+    ]
+  ],
+  "limits": {
+    "allowed_regions": {
+      "upper_arm_l": {
+        "x": [
+          39,
+          51
+        ],
+        "y": [
+          77,
+          84
+        ]
+      },
+      "upper_arm_r": {
+        "x": [
+          85,
+          95
+        ],
+        "y": [
+          79,
+          84
+        ]
+      },
+      "outfit_torso": {
+        "x": [
+          49,
+          86
+        ],
+        "y": [
+          77,
+          95
+        ]
+      }
+    },
+    "alpha_operations_only_on": "upper_arm_l/upper_arm_r: exterior contour of original opaque pixels; add within 1px of prior contour; erase only on prior exterior boundary",
+    "maximum_new_alpha_pixels_per_arm": 6,
+    "maximum_global_added_alpha_pixels": 12,
+    "maximum_global_removed_alpha_pixels": 6,
+    "maximum_visible_changed_pixels": 48,
+    "minimum_visible_changed_pixels": 10,
+    "minimum_visible_alpha_changed_pixels": 4,
+    "max_contour_shift_chebyshev_px": 1,
+    "freeze_parts": [
+      "head",
+      "face",
+      "hair_front",
+      "hair_back",
+      "foot_l",
+      "foot_r",
+      "lower_leg_l",
+      "lower_leg_r",
+      "upper_leg_l",
+      "upper_leg_r",
+      "pelvis",
+      "hand_l",
+      "hand_r",
+      "forearm_l",
+      "forearm_r",
+      "accessory_front",
+      "accessory_back",
+      "torso"
+    ],
+    "preserve_rest_and_blink_byte_identical": true,
+    "preserve_bag_front_over_hand": true,
+    "exclude_full_body_translation": true
+  },
+  "notes": "One authored contour experiment, not a loop. Shoulder outline is locally lifted at most 1px by adding outline above and repainting old edge; selected left shirt seam gains one cream pixel on two scanlines. No pose approval implied."
+}
