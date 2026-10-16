@@ -34,7 +34,7 @@ def export(folder,source=SRC/'r5-personality-front-review.json'):
         or any(data[k] for k in ('owner_approved','ip_cleared','unity_integrated'))):
         raise ValueError('Invalid R5 one-front quarantine/staging/stack order')
     full,layers=r1.paint(data)
-    face=stage_composite(layers,['head','face','hair_front'])
+    face=stage_composite(layers,['hair_back','head','face','hair_front'])
     shadow=bytes(v for px in (full[i:i+4] for i in range(0,len(full),4))
                  for v in ((35,35,39,255) if px[3] else (0,0,0,0)))
     w,h=240,96
