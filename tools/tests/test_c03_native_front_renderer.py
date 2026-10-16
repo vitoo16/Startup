@@ -49,6 +49,25 @@ class NativeFrontRows(unittest.TestCase):
             self.assertEqual(report['nonempty_layers'],21)
             self.assertEqual((Path(path)/'out/C03-native-front-128x160-DRAFT.png').read_bytes()[:8],b'\x89PNG\r\n\x1a\n')
 
+    def test_repo_native_rows_and_hand_bag_overlap(self):
+        # Decodes the ACTUAL committed pixel source, not a synthetic fixture.
+        data=module.expand_source(module.SOURCE)
+        self.assertEqual(len(data['layers']),21)
+        parts,mask=module.paint(data)
+        actual=module.composite(parts)
+        self.assertEqual(len(actual),128*160*4)
+        self.assertEqual(set(actual[3::4]),{0,255})
+        dec_spec=importlib.util.spec_from_file_location(
+            'c03_occlusion',ROOT/'scripts/Validate-C03OwnerRigHandoff.py')
+        checker=importlib.util.module_from_spec(dec_spec)
+        dec_spec.loader.exec_module(checker)
+        stats=checker.inspect_masked_occlusion(
+            parts['hand_r'],parts['accessory_front'],mask,
+            canvas=(128,160),minimum_overlap=16,minimum_exposed_below=8)
+        self.assertGreaterEqual(stats['overlap_covered_px'],16)
+        self.assertGreaterEqual(stats['hand_visible_below_bag_px'],8)
+        self.assertTrue(stats['bag_front_occludes_hand'])
+
     def test_reject_out_of_bounds_runs(self):
         f=fixture();f['layers']['hand_l'].append([160,2,1,'skin'])
         with self.assertRaisesRegex(ValueError,'Invalid native pixel row'):
