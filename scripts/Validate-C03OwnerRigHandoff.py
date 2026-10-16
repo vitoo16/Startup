@@ -46,19 +46,28 @@ def inspect_masked_occlusion(hand, bag, bag_body, canvas=(64, 80), *, minimum_ov
     h, a, m = (coverage(buf) for buf in (hand, bag, bag_body))
     if any(m[i] and not a[i] for i in range(pixel_count)):
         raise ValueError('Bag-body mask must be a subset of accessory_front')
+    bag_top_at_x = {}
     bag_bottom_at_x = {}
     for x in range(width):
         ys = [y for y in range(height) if m[y*width+x]]
         if ys:
+            bag_top_at_x[x] = min(ys)
             bag_bottom_at_x[x] = max(ys)
     overlap = sum(bool(h[i] and m[i]) for i in range(pixel_count))
     below = sum(bool(h[y*width+x] and not m[y*width+x] and
                      x in bag_bottom_at_x and y > bag_bottom_at_x[x])
                 for y in range(height) for x in range(width))
+    # A partially visible hand is permitted BELOW the bag, never floating
+    # above it or showing through a transparent gap inside the bag body.
+    misplaced = sum(bool(h[y*width+x] and not m[y*width+x] and
+                         x in bag_top_at_x and y <= bag_bottom_at_x[x])
+                    for y in range(height) for x in range(width))
     if overlap < minimum_overlap:
         raise ValueError(f'Bag does not sufficiently occlude the hand ({overlap} overlap pixels)')
     if below < minimum_exposed_below:
         raise ValueError(f'Hand is not visibly below the bottom of bag ({below} pixels)')
+    if misplaced:
+        raise ValueError(f'Hand pixels are wrongly exposed above/inside the bag body ({misplaced})')
     # The new composite must draw the complete accessory_front after the hand.
     # This also explicitly preserves covered hand pixels for later joint motion.
     composite = bytearray(hand)
