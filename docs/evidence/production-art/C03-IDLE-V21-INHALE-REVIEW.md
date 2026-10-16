@@ -1,3 +1,5 @@
+OWNER REVIEW UPDATE (2026-10-17): REJECT_INHALE_MOTION. Independent Art Director score 14/30. The V2.1 Inhale is historical rejected evidence; it is excluded from Idle V3. See docs/evidence/production-art/C03-IDLE-V3-BLINK-REVIEW.md.
+
 # C03 — Idle V2.1 Inhale: one localized native contour revision
 
 **Date:** 2026-10-17 · **Decision being addressed:** owner Art Director `REVISE INHALE`  
