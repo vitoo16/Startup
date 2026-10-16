@@ -106,3 +106,48 @@ native approval from the existing concept approval.
 **Owner model:** GPT-6. **Skills:** startup-life-session-orchestrator,
 vietnam-art-direction, startup-life-asset-quality-gate, 2d-pixel-perfect,
 sprite-editor (reference only; no live Unity Editor). **Save impact:** None.
+
+## Owner decision and rig continuation — 2026-10-16
+
+**Owner verdict: `APPROVE_NATIVE_DIRECTION`.** The owner's "ok rồi" directly
+answered the native-direction visual gate for the 128×160 C03 front
+illustration. The previously stated `AWAITING_OWNER_NATIVE_VISUAL_REVIEW`
+in the historical section above is now **CLOSED** for visual direction only.
+The chosen native character should not undergo further face/hair/outfit redesign
+unless the owner explicitly reopens it.
+
+The single FRONT sprite source and palette were **not** repainted. No other
+view, expression set or cosmetic variant has been started. Work resumed only
+on the authored rig handoff: `C03-front-joint-plan-DRAFT.json`
+maps 16 named integer-pixel joints to all 21 existing semantic RGBA parts,
+including separate shoulder-elbow-wrist and hip-knee-ankle chains.
+The satchel `accessory_front` remains attached to the torso; `hand_r`
+stays attached to its wrist and is composited before the bag in the
+front-view overlap.
+
+`scripts/Preview-C03FrontRig.py` is a **temporary engine-free cutout
+articulation proof**. It reads the same SHA-pinned lossless native pixel
+source and performs inverse nearest-neighbor sampling of each
+individual sprite **around its own parent-inherited joint**, not sliding
+the entire character. Three poses are exported: bind, small left idle
+and small right idle; a local experimental render measured 191 hand pixels
+covered, 24 pixels below the bag and 0 misexposed on the bag for each
+sample. The visual on a cream board had only subtle motion; no claim is
+made that this is production animation, suitable timing, or fully
+joint-clean. The preview script has a new unit-test suite and requires a
+reproducible run from the Git checkout before treating the report as CI
+evidence.
+
+Reference local diagnostic image SHA-256:
+`bd7680620b3d74208a16639e934aa35b0df68ddcac1110a7b083f90e4e2fd8b7`
+(1272×540, integer 3× contact sheet, experimental rig visualization).
+These PNG bytes are **not committed to Git**; regenerate review samples
+from the source. No Unity Editor was connected or evaluated, so pivots
+were *authored in JSON*, not imported or verified by the Unity Sprite
+Editor. Do not edit Unity `.meta` files manually.
+
+**Next blocking step:** in a real Unity 6.3 Editor, verify importer PPU,
+point filter, joint/pivot offsets, layering, elbow/wrist/hip movement,
+occlusion under animation and device BeautyCell. Keep the entire
+production rig unregistered until originality/IP and final owner Golden
+art approval. Source concept PNG is still not versioned as exact binary.
