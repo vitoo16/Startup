@@ -466,3 +466,29 @@ Do not unlock additional character variants or register the high-resolution
 draft. Remaining release gates: binary source commit, manually authored native
 pixel layers/pivots, actual localized bag mask and overlap, Unity joint motion,
 phone BeautyCell, independent IP clearance and owner Golden art review.
+
+## Production continuation — first native 128×160 C03 front (2026-10-16)
+
+The high-resolution front-view C03 selected by the owner remains **the
+authoritative design reference**; face/hair/outfit redesign is not authorized.
+A first **manually authored native 128×160 sprite** is now available in Git
+as DRAFT art source. Unlike the prior concept cutout this is not a resized
+HD reference, but its visual fidelity still requires an **independent owner
+native-render review** before animation and other camera views.
+
+Sources: `C03-native-front-source.json` and SHA-pinned
+`C03-native-front-pixel-runs.lzma.b64` under the character source folder;
+reconstruction: `scripts/Render-C03OwnerNativeFront.py`.
+The native output has all canonical 21 layers, and a separate bag mask
+measuring **191 hand pixels behind the bag, 24 visible below, 0 incorrectly
+exposed above/through the bag**. Its actual 147-pixel height and 66-pixel
+head landmark yield **2.227 heads tall**. It uses the production 128×160
+grid and 32 PPU; no generic PNG resampling or new runtime renderer.
+
+Review, commands, provenance and QA:
+`docs/evidence/production-art/C03-NATIVE-FRONT-128-REVIEW.md`.
+Native-art verdict remains `DRAFT_AWAITING_OWNER_NATIVE_VISUAL_REVIEW`.
+The exact earlier high-resolution owner concept PNG has not yet been
+versioned in Git. No Unity pivot, independent joint motion, mobile BeautyCell,
+IP clearance or registry promotion. **Do not start other views or animation
+until owner reviews the authored native translation.**
