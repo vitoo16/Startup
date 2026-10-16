@@ -1,0 +1,114 @@
+{
+  "schema": "startup-life.c03.idle-v2-motion-direction.v1",
+  "status": "MOTION_REAUTHOR_REQUIRED_AWAITING_KEYPOSE_VISUAL_REVIEW",
+  "character_id": "C03",
+  "view": "front",
+  "canvas_px": [
+    128,
+    160
+  ],
+  "pixels_per_unit": 32,
+  "frozen_visual_packet_sha256": "1b04022f5f828ba95374cc3e0e875df9597ea89454d3ebdd5730aa46a3254c1f",
+  "owner_approved_native_direction": true,
+  "owner_approved_idle_animation": false,
+  "rejected_legacy_motion": {
+    "source": "scripts/Preview-C03IdleLoop.py",
+    "rig_plan": "C03-front-joint-plan-DRAFT.json",
+    "reason": "16-frame cosine oscillation makes head wobble and native pixels crawl; passing per-frame difference is not a sign of quality",
+    "reuse_for_production": false,
+    "retain_only_as_failed_evidence": true
+  },
+  "motion_approach": "FRAME_BY_FRAME_AUTHORED_NATIVE_LAYER_KEYPOSES",
+  "cycle_ms": 3200,
+  "intended_tone": "calm young urban Vietnamese adult, quietly alive, slightly playful, natural breathing and brief blink",
+  "timeline": [
+    {
+      "at_ms": 0,
+      "name": "rest_A",
+      "action": "held grounded bind pose, natural weight established"
+    },
+    {
+      "at_ms": 320,
+      "name": "inhale_start",
+      "action": "shoulder/chest one native pixel of hand-authored upward volume; keep head readable"
+    },
+    {
+      "at_ms": 760,
+      "name": "inhale_hold",
+      "action": "one small settled collar/jacket/upper-arm response, no neck swivel"
+    },
+    {
+      "at_ms": 1230,
+      "name": "exhale",
+      "action": "chest returns smoothly via separately authored clusters, no whole-character slide"
+    },
+    {
+      "at_ms": 1670,
+      "name": "rest_B",
+      "action": "two-foot grounded hold; duplicate adjacent frames permitted to create dwell"
+    },
+    {
+      "at_ms": 2200,
+      "name": "blink_anticipation",
+      "action": "tiny eye eyelid pixels only, hair still, no full-head turn"
+    },
+    {
+      "at_ms": 2280,
+      "name": "blink_closed",
+      "action": "brief natural eyelid shape at 1x, facial landmarks fixed"
+    },
+    {
+      "at_ms": 2400,
+      "name": "blink_open",
+      "action": "recover smile/eyes; bag and arm unchanged"
+    },
+    {
+      "at_ms": 3200,
+      "name": "rest_A_loop",
+      "action": "repeat identical first keypose pixel-for-pixel; no jump"
+    }
+  ],
+  "authoring_requirements": [
+    "Art-direct independent editable keypose RGBA native pixels rather than rotating whole 128x160 slabs with inverse nearest sampling",
+    "Keep hair contour and facial identity stable; no periodic head sway",
+    "Brace both feet on the ground; do not rotate knees or ankles during breathing Idle",
+    "For small torso volume changes, manually repair shoulder/elbow seam clusters at every keypose",
+    "Bag is coupled to torso, with hand behind satchel in every keypose; strap attachment continuous",
+    "Deliberate dwell/rest frames ARE ALLOWED; do not require all consecutive frames to differ",
+    "Use no gradient, filter, blur, sprite HD downsampling, or additional views",
+    "Export one sheet of distinct KEY POSES and full-duration real-timing playback before reviewing a 16+ frame loop"
+  ],
+  "quality_checks": {
+    "native_bbox_alpha_must_not_touch_canvas": true,
+    "face_hair_roi_y": [
+      8,
+      76
+    ],
+    "torso_roi_y": [
+      76,
+      115
+    ],
+    "planted_shoe_roi_y": [
+      140,
+      160
+    ],
+    "max_head_changed_pixels_vs_rest": 128,
+    "max_head_to_torso_changed_pixels_per_row_ratio": 2,
+    "apply_ratio_only_if_head_changed_pixels_exceeds": 80,
+    "feet_must_be_pixel_identical_in_idle": true,
+    "permit_duplicate_neighbor_frames": true,
+    "reject_full_character_translation": true,
+    "verified_bag_front_occlusion_per_keypose": true,
+    "minimum_bag_mask_overlap_px": 16,
+    "minimum_hand_visible_below_bag_px": 8
+  },
+  "review_gates": [
+    "OWNER_REVIEW_DISTINCT_KEYPOSES",
+    "OWNER_REVIEW_TIMED_MOTION",
+    "UNITY_REAL_PIVOTS_AND_SORTING",
+    "MOBILE_BEAUTYCELL",
+    "INDEPENDENT_IP",
+    "GOLDEN_ASSET_REGISTRY"
+  ],
+  "no_automatic_runtime_promotion": true
+}
