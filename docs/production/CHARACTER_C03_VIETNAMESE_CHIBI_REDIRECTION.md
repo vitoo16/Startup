@@ -336,3 +336,26 @@ On rejection of both, STOP micro-polish and seek new silhouette-level
 arm/bag layout direction. No R5.2, R5.3, turnaround, animation,
 production prefabs or asset registry promotion. Technical tests do
 not qualify as Golden art approval.
+
+## CURRENT OWNER LOCK: exact image selected for C03 — 2026-10-16
+
+**This is the latest owner directive and supersedes all earlier R5.1/idle A/B
+review requests:** Owner has chosen their uploaded image
+`image(20261016-093800).png` as the **preferred C03 character design**.
+Use this visual master instead of the existing procedural 64×80 R5.1 hand-grip
+sprite or neutral idle A/B drafts. Do not restart micro-polish or present
+additional A/B pose-choice gates.
+
+The authoritative selection/provenance record is
+`docs/evidence/production-art/C03-OWNER-SELECTED-VISUAL-MASTER.md` with
+machine-readable `C03-OWNER-SELECTION.json`; the owner's exact PNG has
+SHA-256 `457478717a96f5bcfeddc5976af4c3034ddd7cf9086e988b093707e039d928aa`.
+It is a 1122×1402 RGBA image **with fully opaque beige background**, not
+a native 64×80 cutout or rig, and **its bytes are not yet checked into Git**.
+
+**Decision split:** `OWNER_SELECTED_VISUAL_MASTER` for art direction;
+`NOT_PRODUCTION_READY` for imported game asset. Next technical pass is to
+version exact original PNG, resolve clean alpha/native grid fidelity without
+changing identity, build semantic rig layers and verify Unity/motion/IP/mobile.
+Do **not** use any unapproved image in the runtime or silently treat this as
+Golden release approval. Approved Registry and game systems remain unchanged.
