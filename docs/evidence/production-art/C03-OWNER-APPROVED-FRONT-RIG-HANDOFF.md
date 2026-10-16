@@ -72,3 +72,24 @@ Golden registry. The existing Approved Registry must stay unchanged.
 startup-life-asset-quality-gate, 2d-pixel-perfect, sprite-editor,
 unity-cli (reference guidance; no connected local Editor).  
 **Owner model:** GPT-6 · **Save/gameplay impact:** none.
+
+## Next-stage cutout evidence (2026-10-16)
+
+An optional offline `scripts/Prepare-C03OwnerConceptCutout.py` now generates
+a **DRAFT** transparency test from the exact owner-approved RGB PNG. It
+does not trace, resize, re-color or promote that concept into pixel art.
+The expected mask has alpha bounding box `[330,156,817,1172]` at its
+1171×1343 resolution and 327708 opaque pixels. On the art workstation,
+a checker-background preview was inspected for gross silhouette integrity;
+this is **not** a passed release-ready edge, native-pixel or Unity gate.
+
+Local generated draft-alpha PNG SHA-256:
+`c5fbf21d71954229ed7d765f6217b826e1f038580f02973a8809c1c319b4723b`.
+The original owner PNG has not been edited or committed to Git.
+See `C03-CONCEPT-ISOLATION-REVIEW.md`.
+
+The draft C03 overlap validator also rejects a hand that visibly pokes
+*above* the bag body or through an unsupported transparent gap; the hand
+still exists underneath the covering layer. A new synthetic negative
+test was added. Actual animation rig, joints and per-layer authored pixels
+are still missing; do not claim the 9-case test suite proves them.
