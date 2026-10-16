@@ -310,3 +310,29 @@ mandatory at true 1× plus exact NN 8×, and the owner must explicitly decide
 `DRAFT_AWAITING_OWNER_REVIEW`, with IP, independent animation rig, Unity
 and device QA not performed. The approved registry is unchanged and no
 other views, expressions or outfits may proceed before the owner verdict.
+
+## C03 Neutral Idle anatomy gate — R5.1 hand rejected (2026-10-16)
+
+**Owner Art Director verdict: R5.1 front hand pose REVISE — chest-high
+strap grip rejected.** This supersedes any previous implication that
+R5.1 grip was aesthetically approved; the remaining portrait/body
+direction remains in force.
+
+Exactly **two first-party native front-view candidates** have been created:
+`C03-IdlePose-A.json` (Relaxed Idle, preference) and
+`C03-IdlePose-B.json` (Casual Idle fallback), under
+`Assets/StartupLife/Art/Source/Characters/golden-character-c03/`.
+These preserve R5.1 head/face/hair, outfit, legs, palette and 2.25-head
+proportion. Arms/wrists/palms, shoulder contour and B's hip bag are
+redrawn from native shapes. The front bag strap must stay visually
+continuous with no hand on chest. `hand_r` renders **before**
+`accessory_front` in both draft sources; this sort order is **NOT**
+verified in live Unity.
+
+Owner handoff, actual 1× and pixel-exact 8× preview evidence:
+`docs/evidence/production-art/C03-IdlePose-AB-review.md`.
+Status `A_AND_B_AWAITING_OWNER_REVIEW`; select **A / B / REDESIGN**.
+On rejection of both, STOP micro-polish and seek new silhouette-level
+arm/bag layout direction. No R5.2, R5.3, turnaround, animation,
+production prefabs or asset registry promotion. Technical tests do
+not qualify as Golden art approval.
