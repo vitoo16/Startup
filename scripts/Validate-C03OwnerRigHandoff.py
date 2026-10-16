@@ -13,6 +13,10 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONTRACT = ROOT / 'Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-owner-front-rig-contract.json'
 DECODER = ROOT / 'scripts/Validate-GoldenCharacterC03R1.py'
+CANONICAL_PARTS = frozenset(('hair_back','accessory_back','foot_l','foot_r',
+    'lower_leg_l','lower_leg_r','upper_leg_l','upper_leg_r','pelvis','torso',
+    'upper_arm_l','upper_arm_r','forearm_l','forearm_r','hand_l','hand_r',
+    'outfit_torso','head','face','hair_front','accessory_front'))
 
 
 def rgba_decoder():
@@ -74,7 +78,7 @@ def validate_contract(contract):
     if contract.get('view') != 'front' or contract.get('canvas_px') != [64,80]:
         raise ValueError('Owner-only front native-grid contract changed')
     names = contract['rig_parts_back_to_front']
-    if len(names) != 21 or len(set(names)) != 21:
+    if len(names) != 21 or len(set(names)) != 21 or set(names) != CANONICAL_PARTS:
         raise ValueError('Need precisely the 21 existing semantic rig parts')
     layering=contract['occlusion']
     affected=layering['hand_part_id']
