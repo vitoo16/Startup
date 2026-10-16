@@ -35,6 +35,8 @@ def vec_pixel_to_unity(dx, dy, pixels_per_unit):
 def generate(plan, contract, source):
     preview=load_preview()
     joints,assigned=preview.read_plan(plan,contract,source)
+    if plan.get('owner_idle_animation_verdict') != 'REJECTED' or plan.get('legacy_idle_loop_allowed_for_production') is not False:
+        raise ValueError('Legacy C03 Idle rejection record is required before Unity handoff')
     width,height=plan['canvas_px']
     ppu=plan['pixels_per_unit']
     root=joints['root']['pivot']
@@ -99,6 +101,10 @@ def generate(plan, contract, source):
             'Do not delete covered hand pixels or change identity of approved image',
             'Test actual rotation and phone BeautyCell before Golden registry approval'
         ],
+        'rejected_legacy_idle':'DO_NOT_BIND_OR_INTEGRATE',
+        'idle_v2_keypose_contract':'C03-idle-v2-art-direction.json',
+        'idle_motion_clip_ready':False,
+        'owner_idle_animation_verdict':'REJECTED',
         'unity_import_and_animation':'NOT_RUN',
         'owner_final_golden_approval':False
     }
