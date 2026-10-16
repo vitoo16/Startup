@@ -521,3 +521,35 @@ are **NOT RUN / OPEN**. Record and reproduction:
 The exact approved original concept PNG binary remains missing in Git. Do
 not confuse a drafted Unity authoring manifest with a working prefab or the
 unchanged Approved Registry with a production integration.
+
+## Owner animation veto — C03 native Idle v1 (2026-10-17)
+
+**Owner verdict on 16-frame C03 Idle animation: REJECT.** The front
+character's *appearance direction* remains approved, but the mechanical
+motion from `Preview-C03IdleLoop.py` is artistically invalid. Technical
+checks from the earlier proof (16 frames, seam adjacency, sorted bag-over-hand,
+point sampling, per-frame changed pixel count) **do not** overrule this
+explicit Art Director veto.
+
+The former cosine joint oscillation over full-canvas inverse-sampled
+layers made the head/hair wobble and pixel contours crawl. Recomputed
+native RGBA regional max changes relative to frame 0:
+**head 1,317 px**, torso 130 px, foot 0 px; row-normalized motion
+ratio **5.81×**. This is not a breathing Idle. The historical
+renderer now fails closed unless explicitly invoked with
+`--archive-rejected`; historical tests require that deliberate opt-in.
+
+Replacement production direction is **hand-authored front pixel KEY POSES
+with real timing/dwell**, not another continuously rotated cosine loop.
+The motion art gate is
+`Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-idle-v2-art-direction.json`;
+preflight validator `scripts/Review-C03NativeMotion.py`.
+The first owner review should show isolated **rest/inhale/blink native
+keyposes** at 1× and integer 4×, then a correctly timed loop after
+keyposes are approved. Keep the feet planted, stable face/hair silhouette,
+natural upper torso movement, and the hand BEHIND the brown satchel.
+
+**Release still BLOCKED.** No new Idle animation is yet approved or
+implemented in Unity. No game runtime, save, registry or owner-selected
+front appearance was changed. Detailed decision and reproducible diagnostics:
+`docs/evidence/production-art/C03-IDLE-V1-REJECTION-AND-V2-REAUTHOR.md`.
