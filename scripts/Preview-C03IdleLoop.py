@@ -146,12 +146,14 @@ def frames_sheet(frames, width=128, height=160):
     return bytes(canvas), sheet_width, sheet_height
 
 
-def render(output_dir, native=NATIVE, joint_plan=JOINTS, contract_path=CONTRACT, export_gif=False):
+def render(output_dir, native=NATIVE, joint_plan=JOINTS, contract_path=CONTRACT, export_gif=False, allow_rejected_archive=False):
     motion=load_tool('Preview-C03FrontRig')
     painter=load_tool('Render-C03OwnerNativeFront')
     overlay=load_tool('Validate-C03OwnerRigHandoff')
     source=painter.expand_source(native)
     plan=json.loads(Path(joint_plan).read_text(encoding='utf-8'))
+    if plan.get('owner_idle_animation_verdict') == 'REJECTED' and not allow_rejected_archive:
+        raise ValueError('Owner REJECTED this mechanical cosine Idle. Archive only: --archive-rejected')
     contract=json.loads(Path(contract_path).read_text(encoding='utf-8'))
     joints, assigned=motion.read_plan(plan, contract, source)
     qa=plan['idle_loop_proof']
@@ -210,7 +212,9 @@ def render(output_dir, native=NATIVE, joint_plan=JOINTS, contract_path=CONTRACT,
             images.append(picture.convert('RGB').resize((512,640),Image.Resampling.NEAREST))
         images[0].save(out/'C03-idle-16-frame-debug.gif',save_all=True,
                        append_images=images[1:],duration=100,loop=0,optimize=False)
-    evidence={'stage':'C03_ENGINE_FREE_IDLE_MOTION_PROOF_NOT_UNITY',
+    evidence={'stage':'LEGACY_C03_IDLE_REJECTED_OWNER_VISUAL_ARCHIVE_ONLY',
+        'owner_animation_verdict':'REJECTED',
+        'production_animation_permitted':False,
         'native_canvas':[128,160],'source_packet_sha256':source['packet_sha256'],
         'sample_count':count,'joint_count':len(joints),
         'semantic_layer_count':len(layers),'contacts_checked_per_frame':8,
@@ -234,7 +238,8 @@ if __name__ == '__main__':
     p=argparse.ArgumentParser()
     p.add_argument('--output-dir',type=Path,required=True)
     p.add_argument('--gif',action='store_true',help='Optional Pillow-dependent GIF for inspection only')
+    p.add_argument('--archive-rejected',action='store_true',help='Explicitly regenerate rejected animation for forensic review only')
     args=p.parse_args()
-    result=render(args.output_dir,export_gif=args.gif)
+    result=render(args.output_dir,export_gif=args.gif,allow_rejected_archive=args.archive_rejected)
     print(json.dumps({k:v for k,v in result.items() if k not in ('frames','adjacent_changed_pixels')},
                      indent=2,ensure_ascii=False))
