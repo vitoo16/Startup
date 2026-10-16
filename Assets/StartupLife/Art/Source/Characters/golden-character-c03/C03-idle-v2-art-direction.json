@@ -123,5 +123,11 @@
   "rest_direction": "KEEP_NO_CHANGE",
   "blink_direction": "KEEP_CLOSED_EYES_KEYFRAME_PENDING_REAL_TIMING_REVIEW",
   "blink_timing_contract": "Short standalone eye blink; don't always couple blink to inhale and don't hold closed eyes long; no timed loop in V2.1.",
-  "next_review": "Compare original Rest and exactly one V2.1 Inhale 1x and NN 4x, inspect 10x shoulder/chest, decide APPROVE_INHALE_KEYPOSE or REVISE_INHALE; no full loop."
+  "next_review": "Compare original Rest and exactly one V2.1 Inhale 1x and NN 4x, inspect 10x shoulder/chest, decide APPROVE_INHALE_KEYPOSE or REVISE_INHALE; no full loop.",
+  "owner_inhale_final_verdict": "REJECT_INHALE_MOTION",
+  "owner_inhale_visual_score": "14/30",
+  "inhale_excluded_from_active_idle": true,
+  "active_idle_task": "C03-IDLE-V3-STABLE-BODY-BLINK",
+  "active_idle_source": "C03-Idle-V3-stable-blink-DRAFT.json",
+  "previous_v2_and_v21_sources_remain_historical": true
 }
