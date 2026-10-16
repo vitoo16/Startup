@@ -90,3 +90,20 @@ Inspect actual **A 1× / B 1×** first, then native-derived **8×**, silhouette 
 **Owner model:** GPT-6 · **Skills:** startup-life-session-orchestrator, vietnam-art-direction, startup-life-asset-quality-gate, 2d-pixel-perfect, sprite-editor (reference-only; live Editor unavailable).  
 **Tests:** native PNG bytes, strict NN scaling, 21 painted parts, unchanged face/identity, shoulder-elbow-wrist overlap, hands below chest, seam overlap threshold.  
 **Save impact:** None. **Known limitations:** silhouette charm unresolved, Unity layer pivot/sorting and IP unfinished.
+
+## FINAL OWNER SUPERSESSION — EXACT IMAGE SELECTED (2026-10-16)
+
+**A/B selection CANCELLED.** Owner has selected the exact separately uploaded
+1122×1402 visual master as C03's preferred appearance: **"thôi xài lại bản này đi"**.
+This later decision supersedes the A/B review request and any default preference
+for A. Both A/B JSONs stay in repository for historical provenance only; do
+**not** automatically use or register either candidate.
+
+Canonical decision: [`C03-OWNER-SELECTED-VISUAL-MASTER.md`](C03-OWNER-SELECTED-VISUAL-MASTER.md)
+and [`C03-OWNER-SELECTION.json`](C03-OWNER-SELECTION.json).
+
+**Current owner gate:** Visual identity is **selected**, but no approved
+engine-ready image or cutout exists. The selected owner attachment remains
+a high-resolution opaque-background concept until original bytes are
+committed and a fidelity-preserving production asset passes independent gates.
+No other native idle revisions or turnaround begin without renewed instruction.
