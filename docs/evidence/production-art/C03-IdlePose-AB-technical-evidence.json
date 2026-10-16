@@ -1,0 +1,79 @@
+{
+  "schema": "startup-life.c03-idle-pose-ab-local-qa.v1",
+  "date": "2026-10-16",
+  "owner_baseline_verdict": "R5.1_REVISE_HAND_POSE_REJECTED",
+  "status": "A_AND_B_AWAITING_OWNER_REVIEW",
+  "sources": {
+    "base": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/r5-1-personality-front-review.json",
+    "candidate_A": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-IdlePose-A.json",
+    "candidate_B": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-IdlePose-B.json"
+  },
+  "sha_git_blobs": {
+    "candidate_A": "fd6497582825c64c8054b2ab4b2fec6f49c41519",
+    "candidate_B": "4be97348febaaddcc36e618f32368acb09fe0408"
+  },
+  "local_checks": {
+    "output": "PASS_LOCAL",
+    "head_face_hair_frozen": "PASS_LOCAL",
+    "all21_layers": "PASS_LOCAL",
+    "native_rgba_binary_alpha": "PASS_LOCAL",
+    "arm_elbow_wrist_overlap": "PASS_LOCAL",
+    "hand_below_chest": "PASS_LOCAL",
+    "hand_bag_overlap_le_2": "PASS_LOCAL",
+    "nearest_neighbor_8x_pixel_exact": "PASS_LOCAL",
+    "actual_ratio_2_25": "PASS_LOCAL"
+  },
+  "candidates": {
+    "A": {
+      "actual_alpha_bbox_exclusive": [
+        14,
+        7,
+        57,
+        79
+      ],
+      "occupied_height_px": 72,
+      "head_height_px": 32,
+      "heads_tall": 2.25,
+      "head_pct": 44.44,
+      "all_semantic_layers_populated": true,
+      "hand_pixels": 33,
+      "hand_bag_layer_overlap_pixels": 2,
+      "hand_layer_before_bag": true
+    },
+    "B": {
+      "actual_alpha_bbox_exclusive": [
+        14,
+        7,
+        56,
+        79
+      ],
+      "occupied_height_px": 72,
+      "head_height_px": 32,
+      "heads_tall": 2.25,
+      "head_pct": 44.44,
+      "all_semantic_layers_populated": true,
+      "hand_pixels": 35,
+      "hand_bag_layer_overlap_pixels": 2,
+      "hand_layer_before_bag": true
+    }
+  },
+  "file_sha256": {
+    "C03-IdlePose-A-1x.png": "bcdef9f989b47e694ec8eb2115a7b3f8ae84bcbfd8e980e7b737fd5a0854bd52",
+    "C03-IdlePose-A-8x.png": "a468202f52fffa0a8a47094cfbcd6ae1a0fddf2d9faac1bda1184a26763bb181",
+    "C03-IdlePose-B-1x.png": "214e63fa1892ccdcbba7bb5cc6cf751bce123c9a7755cb7ef50fbfff4baef610",
+    "C03-IdlePose-B-8x.png": "bfaa1f16870ea04cb2cfcc4b54225e59c95e88476f040968d98760fdd23ed9b8",
+    "C03-IdlePose-Silhouette-AB.png": "efbf62296c19380780086542d8f70397a49153dfeb24c7de57b269588432ef3f",
+    "C03-IdlePose-Silhouette-AB-1x.png": "ac3f244b4ce778a0b4f74389311d4b931c4d3cc2e21db96d2bb187cf55689a2c",
+    "C03-IdlePose-Comparison.png": "23823314819688992638f7c377f61d0534ccf846d84d6b7f826920681ee33f82",
+    "C03-IdlePose-HandCrop-AB.png": "07dc997b26d9148166679f51bbc9e51657b8c6487766524738f68cdf2e4a21f8"
+  },
+  "open_gates": {
+    "human_visual": "PENDING",
+    "rig_joint_motion": "NOT_RUN",
+    "Unity_pivots_and_sort": "NOT_RUN",
+    "mobile_beautycell": "NOT_RUN",
+    "independent_originality_ip": "NOT_RUN",
+    "golden_asset": "NOT_GRANTED"
+  },
+  "claim_limit": "Structural and pixel equality evidence only; not Golden PASS."
+}
