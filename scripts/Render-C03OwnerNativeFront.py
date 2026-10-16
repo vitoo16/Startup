@@ -5,13 +5,16 @@ Not an HD resampler or approval pipeline. Reuses first-party PixelPng.py.
 Layer names, transparency and draw order match the existing shared rig.
 """
 import argparse
+import base64
 import hashlib
 import json
+import lzma
+import struct
 from pathlib import Path
 from PixelPng import png_rgba
 
 ROOT=Path(__file__).resolve().parents[1]
-SOURCE=ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-native-front-runs-DRAFT.json'
+SOURCE=ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-native-front-source.json'
 PARTS=('hair_back','accessory_back','foot_l','foot_r','lower_leg_l','lower_leg_r',
  'upper_leg_l','upper_leg_r','pelvis','torso','upper_arm_l','upper_arm_r',
  'forearm_l','forearm_r','hand_l','hand_r','outfit_torso','head','face',
@@ -19,6 +22,58 @@ PARTS=('hair_back','accessory_back','foot_l','foot_r','lower_leg_l','lower_leg_r
 WIDTH,HEIGHT=128,160
 EXPECTED_VISUAL_SHA='d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e'
 
+
+
+def expand_source(source):
+    """Decode a size-bounded, SHA-pinned lossless native pixel-row source.
+
+    Row packet: magic C03N, big-endian uint16 counts, [part,y,x,length,palette]
+    bytes for each colored pixel run, then [y,x,length] bag mask runs.
+    Only 128x160 native pixels; no HD texture sampling or rescaling.
+    """
+    descriptor=json.loads(Path(source).read_text(encoding='utf8'))
+    if 'compressed_runs_file' not in descriptor:
+        return descriptor
+    base=Path(source).resolve().parent
+    filename=descriptor['compressed_runs_file']
+    if (not isinstance(filename,str) or Path(filename).name!=filename
+        or filename!='C03-native-front-pixel-runs.lzma.b64'):
+        raise ValueError('Noncanonical source stream filename')
+    packed=base/filename
+    encoded=base64.b64decode(packed.read_text(encoding='ascii').strip(),validate=True)
+    decompressor=lzma.LZMADecompressor()
+    raw=decompressor.decompress(encoded,max_length=20000)
+    if not decompressor.eof or decompressor.unused_data or len(raw)>20000:
+        raise ValueError('Oversized or truncated C03 native source packet')
+    if hashlib.sha256(raw).hexdigest()!=descriptor.get('packet_sha256'):
+        raise ValueError('Native pixel packet SHA256 does not match source')
+    if raw[:4]!=b'C03N' or len(raw)<8:
+        raise ValueError('Unknown native pixel source packet')
+    count,mask_count=struct.unpack('>HH',raw[4:8])
+    if (count!=descriptor.get('pixel_runs_count') or
+        mask_count!=descriptor.get('bag_body_mask_runs_count') or
+        len(raw)!=8+5*count+3*mask_count):
+        raise ValueError('Corrupt native source row counts')
+    palette=descriptor['palette_order']
+    if (len(palette)!=len(descriptor['palette']) or
+        set(palette)!=set(descriptor['palette']) or len(set(palette))!=len(palette)):
+        raise ValueError('Native pixel palette ordering corrupted')
+    layers={name:[] for name in PARTS}
+    offset=8
+    for index in range(count):
+        part,y,x,length,color=raw[offset:offset+5]
+        offset+=5
+        if part>=len(PARTS) or color>=len(palette):
+            raise ValueError('Invalid authored part/palette index')
+        layers[PARTS[part]].append([y,x,length,palette[color]])
+    mask=[]
+    for index in range(mask_count):
+        y,x,length=raw[offset:offset+3]
+        offset+=3
+        mask.append([y,x,length])
+    descriptor['layers']=layers
+    descriptor['bag_body_mask']=mask
+    return descriptor
 
 def paint(data):
     if (data.get('schema')!='startup-life.c03.native-layer-runs.v1'
@@ -99,7 +154,7 @@ def enlarge(pixels,scale=8):
 
 
 def export(source,out):
-    spec=json.loads(Path(source).read_text(encoding='utf8'))
+    spec=expand_source(source)
     layers,mask=paint(spec)
     image=composite(layers)
     matte=bytearray(len(image))
