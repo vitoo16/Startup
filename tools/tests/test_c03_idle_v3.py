@@ -22,7 +22,7 @@ def loaded():
     older=json.loads((ART/'C03-idle-v2-keyposes-DRAFT.json').read_text())
     rule=json.loads((ART/'C03-idle-v2-art-direction.json').read_text())
     closed=prior.compile_poses(source,older,rule,body)['blink']
-    direction=json.loads((ART/'C03-idle-v3-stable-blink-DRAFT.json').read_text())
+    direction=json.loads((ART/'C03-Idle-V3-stable-blink-DRAFT.json').read_text())
     return painter,checker,source,body,mask,closed,direction
 
 
