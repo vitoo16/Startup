@@ -71,10 +71,17 @@ class C03IdleLoopTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'ancestry'):
             loop.inspect_connections(mutated,joints,assigned,parts,w)
 
+    def test_owner_rejected_legacy_loop_fails_closed(self):
+        with tempfile.TemporaryDirectory(prefix='c03-idle-reject-') as folder:
+            with self.assertRaisesRegex(ValueError,'Owner REJECTED'):
+                loop.render(Path(folder))
+
     def test_real_native_source_all_sixteen_frames_have_connected_joints(self):
         with tempfile.TemporaryDirectory(prefix='c03-idle-test-') as folder:
-            report=loop.render(Path(folder))
-            self.assertEqual(report['stage'],'C03_ENGINE_FREE_IDLE_MOTION_PROOF_NOT_UNITY')
+            report=loop.render(Path(folder),allow_rejected_archive=True)
+            self.assertEqual(report['stage'],'LEGACY_C03_IDLE_REJECTED_OWNER_VISUAL_ARCHIVE_ONLY')
+            self.assertEqual(report['owner_animation_verdict'],'REJECTED')
+            self.assertFalse(report['production_animation_permitted'])
             self.assertEqual(report['sample_count'],16)
             self.assertEqual(report['joint_count'],16)
             self.assertEqual(report['semantic_layer_count'],21)
