@@ -86,3 +86,16 @@ Record overall `APPROVE_DIRECTION`, `REVISE`, or `REJECT`, optionally with stage
 **Save impact:** None.  
 **Files:** R5 review JSON, renderer/exporter, validator, this review, R4 owner decision note and technical evidence hash manifest.  
 **Known limitations:** Aesthetic readiness pending, rig drawing order is prototype-only, Unity/mobile & IP unverified.
+
+## Owner verdict — R5 REVISE (2026-10-16)
+
+**This explicit verdict supersedes all prior `AWAITING_OWNER_REVIEW` wording above for R5 itself.** The owner finds R5 more expressive than R4 but **NOT** ready to lock the front-view direction:
+
+- **Silhouette: REVISE.** Large rounded head, abrupt slim torso, right-side bag mass; overall shape not memorable enough in monochrome.
+- **Face & Hair: NEAR PASS, REVISE.** Asymmetric eyes/smile preserved; the falling screen-left fringe remains too dense at real 1×.
+- **Full Character: REVISE.** Grip reads as a hand resting on the chest, not fingers around the strap; upper posture still stiff and support/relaxed legs not sufficiently distinguished.
+
+**Scope of R5.1:** controlled final personality polish, **NOT a new R6 redesign**. Freeze original R5 face-command geometry, palette, adult proportions (~2.25 heads), jacket/trousers/bag and one front view. Re-author *only* left fringe pixel clumps, geometry of thumb/palm/fingers around the strap, and left supporting/right relaxed leg plus minimal shoulder/hip adjustment. Do not open other views or animated rigs.
+
+Revised successor and exact native-evidence gate:
+[`C03-R5.1-review.md`](C03-R5.1-review.md). R5 remains historical rejected-for-Golden draft; no owner or commercial approval is implied.
