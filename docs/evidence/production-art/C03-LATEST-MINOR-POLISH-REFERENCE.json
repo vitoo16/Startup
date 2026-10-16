@@ -6,7 +6,7 @@
   "latest_owner_request": "Keep the latest C03 character; correct only bag/hand occlusion: bag must cover the near-side hand, which remains partly visible beneath the lower edge.",
   "previous_owner_selection": "docs/evidence/production-art/C03-OWNER-SELECTION.json",
   "stage": "OWNER_REQUESTED_VISUAL_POLISH",
-  "visual_status": "OWNER_REQUESTED_HAND_BAG_OCCLUSION_CONCEPT_RECORDED_BINARY_PENDING",
+  "visual_status": "OWNER_APPROVED_FRONT_VISUAL_REFERENCE_PENDING_BINARY_AND_PRODUCTION",
   "latest_reference": {
     "filename": "pixel_art_boy_with_brown_satchel.png",
     "sha256": "d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e",
@@ -18,8 +18,8 @@
     "source": "assistant-generated edit of the previously selected C03 front visual, at owner request",
     "exact_binary_committed_to_git": false,
     "expected_repo_draft_path": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png",
-    "repo_status": "EXACT_PNG_NOT_YET_UPLOADED",
-    "art_state": "DRAFT_REFERENCE_NOT_NATIVE_OR_APPROVED"
+    "repo_status": "EXACT_PNG_NOT_YET_COMMITTED",
+    "art_state": "OWNER_APPROVED_VISUAL_REFERENCE_NOT_NATIVE_OR_PRODUCTION"
   },
   "comparison_input": {
     "filename": "friendly_pixel_messenger_character.png",
@@ -83,5 +83,9 @@
     ],
     "rig_translation": "render accessory_front above affected hand only within bag-overlap region; verify Unity sort/pivot independently"
   },
-  "owner_approval_scope": "occlusion direction specified; new generated illustration not yet explicitly approved as an engine-ready asset"
+  "owner_approval_scope": "OWNER_APPROVED_DIRECTION of exact hand-behind-bag C03 front reference; NOT Golden/runtime authorization",
+  "owner_approval_recorded_on": "2026-10-16",
+  "production_rig_handoff_contract": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-owner-front-rig-contract.json",
+  "production_occlusion_validation": "scripts/Validate-C03OwnerRigHandoff.py",
+  "next_stage": "After committing exact reference bytes, independently author native semantic layers, prove partial occlusion in composited pixels, then run Unity/device/IP Golden gates"
 }
