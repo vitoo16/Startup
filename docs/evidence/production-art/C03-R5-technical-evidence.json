@@ -1,0 +1,65 @@
+{
+  "schema": "startup-life.c03-r5-personality-native-qa.v1",
+  "date": "2026-10-16",
+  "source": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/r5-personality-front-review.json",
+  "renderer": "scripts/Render-GoldenCharacterC03R5.py",
+  "validator": "scripts/Validate-GoldenCharacterC03R5.py",
+  "current_verdict": "DRAFT_AWAITING_OWNER_REVIEW",
+  "r4_owner_verdict": "REVISE_REQUIRED",
+  "measurements": {
+    "native_canvas": [
+      64,
+      80
+    ],
+    "visible_bbox_xyxy_exclusive": [
+      14,
+      7,
+      53,
+      79
+    ],
+    "occupied_height_px": 72,
+    "hair_top_y": 7,
+    "chin_y_inclusive": 38,
+    "head_height_px": 32,
+    "heads_tall": 2.25,
+    "head_height_share_percent": 44.44
+  },
+  "art_pipeline": {
+    "review_stages": [
+      "silhouette",
+      "face_hair",
+      "full_character"
+    ],
+    "authored_native_commands": 78,
+    "semantic_names_preserved": 21,
+    "rig_ready": false,
+    "custom_draft_layer_order": "hand_r composited after accessory_front for review; Unity sorting not validated"
+  },
+  "technical_qa": {
+    "native_rgba": "PASS_LOCAL",
+    "binary_alpha": "PASS_LOCAL",
+    "three_review_stages": "PASS_LOCAL",
+    "nearest_neighbor_8x_per_pixel": "PASS_LOCAL",
+    "source_compile": "PASS_LOCAL",
+    "real_alpha_ratio": "PASS_LOCAL"
+  },
+  "unverified": {
+    "owner_visual": "AWAITING_REVIEW",
+    "Unity": "NOT_RUN",
+    "animation": "NOT_RUN",
+    "device": "NOT_RUN",
+    "independent_IP": "NOT_RUN"
+  },
+  "files_sha256": {
+    "C03-R5-silhouette-1x.png": "671e2069d9f742dd945dd2facb6417e66136694c05e3c928d810e89d9a09c1b0",
+    "C03-R5-silhouette-8x.png": "89d94c2e01be39abec0dba896f6a44ab1c39442d424d25099927df1cb7b799e1",
+    "C03-R5-face-hair-1x.png": "1fe9c62ea89c55570c3efa7f01b38308b4e752d3e92baa5bdf19b0032f51fb6a",
+    "C03-R5-face-hair-8x.png": "033610a388e687bd04d3b322a2ef10dc9babf0fde2f2419073eb00a95b803c4e",
+    "C03-R5-full-character-1x.png": "45cf85883e777105cabeeb7e9c9c5aebe47cb94ff6cf688d09a1475d842692a8",
+    "C03-R5-full-character-8x.png": "12abef15f575ab53f48bf302e8682a2ae2d77e58984a23bb05df1b13df8db58f",
+    "C03-R5-stages-1x.png": "2f9c8d43a6e1671c7b28cb8f30e1de3710e1f6d98fefa5070ec671a4a5f7c77b",
+    "C03-R5-stages-8x.png": "fb1d4bcb5cfe18495c87dbf808a49f10f0b9d2f26a73c8e86a0038f1eb9c8087",
+    "C03-R5-comparison-R2-R4-R5-8x.png": "665ecb951b687a1975672a85b48e7aa8a1a1e97800eab8db78cdfdfca29476ed"
+  },
+  "guardrail": "Native QA PASS does not mean aesthetic, IP, rig, Unity or owner approval"
+}
