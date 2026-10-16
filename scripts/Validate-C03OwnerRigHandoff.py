@@ -84,7 +84,7 @@ def inspect_masked_occlusion(hand, bag, bag_body, canvas=(64, 80), *, minimum_ov
 def validate_contract(contract):
     if contract.get('schema') != 'startup-life.c03.owner-front-rig-handoff.v1':
         raise ValueError('Unknown C03 rig contract version')
-    if contract.get('view') != 'front' or contract.get('canvas_px') != [64,80]:
+    if contract.get('view') != 'front' or contract.get('canvas_px') != [128,160]:
         raise ValueError('Owner-only front native-grid contract changed')
     names = contract['rig_parts_back_to_front']
     if len(names) != 21 or len(set(names)) != 21 or set(names) != CANONICAL_PARTS:
@@ -110,13 +110,13 @@ def verify(contract_path, layers_dir):
     for name in contract['rig_parts_back_to_front']:
         path=Path(layers_dir) / (name+'.png')
         w,h,pixels=decode(path.read_bytes())
-        if (w,h)!=(64,80):raise ValueError('Wrong pixel layer dimensions: '+name)
+        if (w,h)!=tuple(contract['canvas_px']):raise ValueError('Wrong pixel layer dimensions: '+name)
         layers[name]=pixels
     mask_path=Path(layers_dir)/contract['occlusion']['bag_body_mask_filename']
     w,h,mask=decode(mask_path.read_bytes())
-    if (w,h)!=(64,80):raise ValueError('Wrong bag mask dimensions')
+    if (w,h)!=tuple(contract['canvas_px']):raise ValueError('Wrong bag mask dimensions')
     report=inspect_masked_occlusion(layers[contract['occlusion']['hand_part_id']],
-            layers['accessory_front'],mask,minimum_overlap=contract['occlusion']['minimum_covered_native_px'],
+            layers['accessory_front'],mask,canvas=tuple(contract['canvas_px']),minimum_overlap=contract['occlusion']['minimum_covered_native_px'],
             minimum_exposed_below=contract['occlusion']['minimum_visible_below_native_px'])
     return report
 
