@@ -111,5 +111,9 @@
   "owner_native_reconstruction_approved": false,
   "ip_cleared": false,
   "unity_animation_verified": false,
-  "notes": "The encoded file holds the exact lossless rows for 21 parts and a separate bag mask. Expand them with the renderer for transparent JSON/PNG audit. Draft-native design remains subject to visual and real-joint review."
+  "notes": "Owner explicitly approved native front direction. Exact lossless authored rows/palette and character identity are frozen for initial rig pivot handoff; full Golden rights/Unity/mobile gates remain pending.",
+  "owner_native_direction_approved": true,
+  "native_direction_owner_verdict": "APPROVE_NATIVE_DIRECTION",
+  "native_direction_decision_date": "2026-10-16",
+  "native_direction_scope": "Front view visual direction and pixel character proportions only; not final Golden art/runtime approval."
 }
