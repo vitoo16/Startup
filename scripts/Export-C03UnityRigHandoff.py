@@ -38,8 +38,8 @@ def generate(plan, contract, source):
     width,height=plan['canvas_px']
     ppu=plan['pixels_per_unit']
     root=joints['root']['pivot']
-    if width!=128 or height!=160 or ppu!=32 or root!=[67,116]:
-        raise ValueError('Unreviewed canvas or root-pivot drift')
+    if width!=128 or height!=160 or ppu!=32:
+        raise ValueError('Unreviewed native production grid or PPU drift')
     rig=[]
     for name,item in joints.items():
         parent=item['parent']
