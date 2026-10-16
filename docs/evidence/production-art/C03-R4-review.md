@@ -83,3 +83,20 @@ Silence means pending. Even `APPROVE_DIRECTION` is a front-view *direction* deci
 - **Save impact:** None.
 - **Known limitations:** No Unity/phone evidence, no IP/legal clearance, no owner sprite verdict, no validated working rig.
 - **Files changed:** R4 JSON + text meta, R4 renderer, R4 validator, this review and technical-evidence document.
+
+## Owner verdict update — R4 REVISE REQUIRED (2026-10-16)
+
+**Supersedes R4's previous `AWAITING_OWNER_REVIEW` state.**
+The product owner explicitly rejected R4 as a final front-view Golden direction:
+the face became too neutral, the haircut too cap-like and generic, and the
+head-to-torso and rigid standing pose failed the personality/silhouette gate.
+A numerically compliant 2.25-head ratio and pixel-perfect output do NOT
+override this art-direction rejection.
+
+**Disposition:** R4 native source remains immutable historical DRAFT; it is
+**not** production approved and must not be used as the final personality
+anchor. The next front-only investigation is
+[`C03-R5-review.md`](C03-R5-review.md) with three separate **silhouette,
+face/hair and full-character** review stages, explicitly restoring the playful
+character of R2 without tracing/repixelating any R2 bitmap. This is not
+permission to start other views, expressions, a rig or Unity animations.
