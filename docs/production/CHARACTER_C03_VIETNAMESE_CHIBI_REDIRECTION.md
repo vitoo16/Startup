@@ -412,3 +412,36 @@ bag `accessory_front` must be in front of affected hand in the overlap area.
 Unrelated hand and prop interactions have their own sorting contracts. No
 change to approved registry, saved games or gameplay. Unity, device, IP and
 owner final-art gates remain open.
+
+## OWNER APPROVAL — exact front appearance, hand behind bag (2026-10-16)
+
+**Latest owner verdict: APPROVED VISUAL DIRECTION** for the single front-view
+C03 image with the satchel fully covering the relevant upper hand pixels and
+only a small natural hand segment below it. This supersedes older requests to
+choose between R5.1/idle A/B, or continue face/hair micro-polish. Keep the
+selected face, hair, clothing, shoes, body silhouette and bag pose fixed.
+
+Implementation reference is the exact generated visual
+`pixel_art_boy_with_brown_satchel.png`,
+SHA-256 `d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e`.
+The image is an opaque 1171×1343 RGB concept, **not a native 64×80 layered sprite**;
+its exact binary is still not in Git, so the asset has not been registered,
+rigged or Unity/device tested.
+
+A separate draft authoring handoff now exists:
+`Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-owner-front-rig-contract.json`
+and `scripts/Validate-C03OwnerRigHandoff.py`. The 21 original semantic IDs are
+preserved. Within the front-view bag overlap, `accessory_front` composites
+over `hand_r`; the hand stays authored in its own part for future joint motion.
+Do not use the `CoveredPartIds` mechanism to delete the whole hand. The exact
+anatomical left/right part assignment must be verified at Unity rig binding.
+
+Eight engine-free synthetic regression checks passed locally; the actual
+21 native layers **do not exist yet**. See
+`docs/evidence/production-art/C03-OWNER-APPROVED-FRONT-RIG-HANDOFF.md`.
+
+**Next blocking gates**: version exact concept PNG from the handoff ZIP,
+independently author crisp native front pixels and layered hand+bag, check
+real 1×/8× occlusion, rig pivots and actual motion in Unity, independent
+rights/IP clearance, device BeautyCell, final owner Golden approval.
+Approved registry, runtime bindings, save/economy and other views remain unchanged.
