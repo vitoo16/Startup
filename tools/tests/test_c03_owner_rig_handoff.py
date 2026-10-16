@@ -35,6 +35,13 @@ class C03OwnerRigTests(unittest.TestCase):
         self.assertEqual(result['overlap_covered_px'],20)
         self.assertEqual(result['hand_visible_below_bag_px'],12)
 
+    def test_rejects_hand_poking_above_bag_front(self):
+        hand,bag,mask=layers()
+        index=(33*64+40)*4
+        hand[index:index+4]=bytes((234,175,139,255))
+        with self.assertRaisesRegex(ValueError,'wrongly exposed above/inside'):
+            mod.inspect_masked_occlusion(hand,bag,mask)
+
     def test_rejects_missing_hand_bag_intersection(self):
         hand,bag,mask=layers()
         hand[:]=bytes(len(hand))
