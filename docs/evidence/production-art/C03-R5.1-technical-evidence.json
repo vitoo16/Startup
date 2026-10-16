@@ -1,0 +1,62 @@
+{
+  "schema": "startup-life.c03-r5-1-native-technical-evidence.v1",
+  "date": "2026-10-16",
+  "source": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/r5-1-personality-front-review.json",
+  "source_blob_sha": "5e8623de82e580aafc68e4ff7bc4ce5257013289",
+  "renderer": "scripts/Render-GoldenCharacterC03R5_1.py",
+  "validator": "scripts/Validate-GoldenCharacterC03R5_1.py",
+  "owner_previous_verdict": "R5_REVISE",
+  "owner_current_gate": "R5.1_AWAITING_OWNER_REVIEW",
+  "pixel": {
+    "canvas": [
+      64,
+      80
+    ],
+    "bounding_box_xyxy_exclusive": [
+      14,
+      7,
+      53,
+      79
+    ],
+    "actual_height_px": 72,
+    "head_height_px": 32,
+    "heads_tall": 2.25,
+    "head_fraction": 0.4444,
+    "commands": 80,
+    "semantic_layer_names": 21,
+    "changed_occupied_pixels": 183,
+    "occupied_pixel_union": 2004,
+    "changed_fraction": 0.0913,
+    "palette_unchanged": true,
+    "face_unchanged": true
+  },
+  "local_checks": {
+    "native_rgba": "PASS",
+    "binary_alpha": "PASS",
+    "three_stages": "PASS",
+    "exact_nn8": "PASS",
+    "face_and_palette_freeze": "PASS",
+    "proportion": "PASS",
+    "python_validator": "PASS"
+  },
+  "gates": {
+    "rig_motion": "NOT_RUN",
+    "unity": "NOT_RUN",
+    "device_beautycell": "NOT_RUN",
+    "independent_ip": "NOT_RUN",
+    "owner_front_direction": "AWAITING_OWNER_REVIEW",
+    "golden_approval": "NOT_GRANTED"
+  },
+  "files_sha256": {
+    "C03-R5.1-silhouette-1x.png": "b7732245f5452155f94d9330c31ac6bad4ceb993aa4c4cb9cc2e65325b710fcd",
+    "C03-R5.1-silhouette-8x.png": "eac8a4f0d0ac10569ae7272d83ec5943febc9dfcbc6225ef9e9e1d3f118ec527",
+    "C03-R5.1-face-hair-1x.png": "81db5c281e2793f95307ee5776ef68b4432e1537e4ad9c75f91b5c13f4d5ad2d",
+    "C03-R5.1-face-hair-8x.png": "1c80c0a28b788aef29d82f9c3008defc6b1cd29c49f94062f928a0f8cc5cb30b",
+    "C03-R5.1-full-character-1x.png": "238b6d2bdb275ff444502b377e68f7f6be71724874a31d1638fd89e18ea5188f",
+    "C03-R5.1-full-character-8x.png": "6e66195ec2068c5434d024787d12cc5885555b8887d5b57e752ff2c88e4d501d",
+    "C03-R5.1-three-stages-1x.png": "eb380e93ab764afe5548faa9de2d6e3e53d02f8a65936b48f8273ac73e43f5ee",
+    "C03-R5.1-three-stages-8x.png": "ce89922f7dd212ff5c0b2fc2dc4211331dd51c360554861c7c73d77f8873fff8",
+    "C03-R5-vs-R5.1-8x.png": "9886f1e7dfc36cabcae66df435e9a97ee050767a833a067ea2c766bd58081873"
+  },
+  "note": "Three native review states only; technical PASS never confers owner aesthetic/GOLDEN/IP/Unity approval."
+}
