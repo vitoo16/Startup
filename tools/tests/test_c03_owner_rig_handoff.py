@@ -57,6 +57,13 @@ class C03OwnerRigTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'Never hide'):
             mod.validate_contract(d)
 
+    def test_rejects_unknown_semantic_rig_part(self):
+        contract=json.loads(CONTRACT.read_text())
+        stack=contract['rig_parts_back_to_front']
+        stack[0]='unapproved_proxy_layer'
+        with self.assertRaisesRegex(ValueError,'precisely the 21'):
+            mod.validate_contract(contract)
+
     def test_rejects_bag_mask_unbacked_by_accessory_pixels(self):
         hand,bag,mask=layers()
         bag[(34*64+40)*4+3]=0
