@@ -231,5 +231,62 @@
     "validate real Unity joint transforms/pivots and sorting; do not edit Unity import metadata without live Editor",
     "approve pixel-art articulation, phone BeautyCell and independent originality/IP before production binding"
   ],
-  "release_approved": false
+  "release_approved": false,
+  "idle_loop_proof": {
+    "status": "ENGINE_FREE_DEBUG_ONLY_NOT_UNITY_ANIMATION",
+    "sample_count": 16,
+    "interpolation": "cosine between idle_left_test and idle_right_test; fixed root; 1× nearest-neighbor RGBA",
+    "max_local_contact_gap_px": 1,
+    "local_contact_radius_px": 10,
+    "connections": [
+      [
+        "upper_arm_l",
+        "forearm_l",
+        "elbow_l"
+      ],
+      [
+        "forearm_l",
+        "hand_l",
+        "wrist_l"
+      ],
+      [
+        "upper_arm_r",
+        "forearm_r",
+        "elbow_r"
+      ],
+      [
+        "forearm_r",
+        "hand_r",
+        "wrist_r"
+      ],
+      [
+        "upper_leg_l",
+        "lower_leg_l",
+        "knee_l"
+      ],
+      [
+        "lower_leg_l",
+        "foot_l",
+        "ankle_l"
+      ],
+      [
+        "upper_leg_r",
+        "lower_leg_r",
+        "knee_r"
+      ],
+      [
+        "lower_leg_r",
+        "foot_r",
+        "ankle_r"
+      ]
+    ],
+    "requirements": [
+      "Every frame has nonzero alpha and stays within native canvas",
+      "All 8 connections remain within 1 native pixel around their independently authored joint pivots",
+      "Covered hand remains present under satchel body, partially visible only below bag",
+      "No consecutive duplicate frame (including loop seam) at 1x",
+      "No root translation or fake whole-body slide",
+      "Only preview/front direction, no Unity/runtime/gallery approval"
+    ]
+  }
 }
