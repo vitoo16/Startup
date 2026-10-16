@@ -192,5 +192,13 @@ if __name__=='__main__':
     cli=argparse.ArgumentParser()
     cli.add_argument('--source',type=Path,default=SOURCE)
     cli.add_argument('--output-dir',type=Path,required=True)
+    cli.add_argument('--expanded-source-output',type=Path,
+                     help='Optional, editable/inspectable complete native row JSON')
     args=cli.parse_args()
+    if args.expanded_source_output:
+        expanded=expand_source(args.source)
+        expanded.pop('compressed_runs_file',None)
+        expanded.pop('codec',None)
+        args.expanded_source_output.parent.mkdir(parents=True,exist_ok=True)
+        args.expanded_source_output.write_text(json.dumps(expanded,indent=2,ensure_ascii=False)+'\n',encoding='utf8')
     print(json.dumps(export(args.source,args.output_dir),indent=2))
