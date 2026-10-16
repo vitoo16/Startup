@@ -282,3 +282,31 @@ not signed off. All 21 existing semantic names are present in the study
 source, but full rig-ready layers, Unity sorting/pivots, independent IP and
 device BeautyCell are **NOT approved**. No other views, cosmetics, animation,
 save/gameplay or approved registry changes.
+
+## Owner R5 verdict and native R5.1 final personality pass — 2026-10-16
+
+**Owner R5 decision: REVISE, not REJECT.** R5 is currently the strongest
+personality direction, yet its monochrome silhouette is unmemorable, its
+left sweeping fringe still merges into a dark block at 1×, and the right
+hand appears to rest on the chest rather than grasping the strap. Its
+stance also lacks clear weight distribution. R5 is **not** a front-view
+lock or Golden approval.
+
+R5.1 is a **controlled final polish of one FRONT character**. Keep the R5
+facial coordinates and slightly asymmetric smile, exactly the R5 palette,
+olive jacket, cream T-shirt, blue-grey trousers, brown bag, 64×80 native
+grid and 2.25-head ratio. Retouch only left fringe clusters, thumb/palm/
+finger-strap geometry, shoulder/pelvis and planted/relaxed leg geometry.
+All R1–R5 historical sources remain immutable.
+
+New source: `Assets/StartupLife/Art/Source/Characters/golden-character-c03/r5-1-personality-front-review.json`.
+Renderer: `scripts/Render-GoldenCharacterC03R5_1.py`.
+Review and QA: `docs/evidence/production-art/C03-R5.1-review.md`;
+`C03-R5.1-technical-evidence.json`.
+
+The three-stage review **Silhouette → Face & Hair → Full Character** is still
+mandatory at true 1× plus exact NN 8×, and the owner must explicitly decide
+`APPROVE_DIRECTION / REVISE / REJECT`. R5.1 remains
+`DRAFT_AWAITING_OWNER_REVIEW`, with IP, independent animation rig, Unity
+and device QA not performed. The approved registry is unchanged and no
+other views, expressions or outfits may proceed before the owner verdict.
