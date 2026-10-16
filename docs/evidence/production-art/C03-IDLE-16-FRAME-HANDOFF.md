@@ -1,3 +1,11 @@
+> **OWNER REJECTED THIS ANIMATION — 2026-10-17.** Although older engine-free structural checks passed, the visual
+> motion was judged incorrect and ugly. This document is **failed historical
+> evidence only**, not a usable Idle rig or production handoff. Do not merge,
+> register, export or integrate its cosine motion. The replacement direction is
+> [C03-IDLE-V1-REJECTION-AND-V2-REAUTHOR.md](C03-IDLE-V1-REJECTION-AND-V2-REAUTHOR.md).
+> The old renderer now requires an explicit `--archive-rejected` switch.
+> Native front appearance direction remains approved; only this animation failed.
+
 # C03 — Engine-free 16-frame Idle articulation proof and Unity handoff
 
 **Date:** 2026-10-17  
