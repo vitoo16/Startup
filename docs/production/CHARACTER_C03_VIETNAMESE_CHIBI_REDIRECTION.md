@@ -553,3 +553,28 @@ natural upper torso movement, and the hand BEHIND the brown satchel.
 implemented in Unity. No game runtime, save, registry or owner-selected
 front appearance was changed. Detailed decision and reproducible diagnostics:
 `docs/evidence/production-art/C03-IDLE-V1-REJECTION-AND-V2-REAUTHOR.md`.
+
+## C03 Idle V2 — first authored keypose review (2026-10-17)
+
+V1 oscillator remains **OWNER_REJECTED_ARCHIVE_ONLY**. The native front
+appearance selection is unchanged. For V2, a new **three-pose manually
+authored native 128×160 pixel patch set** is now committed at
+`Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-idle-v2-keyposes-DRAFT.json`.
+The renderer `scripts/Render-C03IdleV2Keyposes.py` reuses the existing
+native source, semantic compositing and bag/hand mask validator. It does not
+rotate all the layered sprites or produce a timed looping animation.
+
+The currently authored visual studies are `rest` (unaltered),
+`inhale` (27 visible jacket/upper-chest shade pixels), and `blink`
+(35 eyelid pixels). Hair, face/head silhouette, bag, hand, lower body and
+feet remain fixed. All 3 display the original 191 covered / 24 exposed
+below-bag native hand pixels. The inhale is intentionally labeled **very
+subtle, shading-only and not yet convincing physical breathing**. Do not
+misrepresent structural pixel correctness as animation approval.
+
+Review and reproducibility:
+`docs/evidence/production-art/C03-IDLE-V2-KEYPOSE-REVIEW.md`.
+Status `KEYPOSES_DRAFT_AWAITING_OWNER_VISUAL_REVIEW`; only after explicit
+owner keypose verdict should a discrete timing animation be built and
+shown at true native scale. Unity runtime, mobile, independent IP and
+Approved Registry continue BLOCKED.
