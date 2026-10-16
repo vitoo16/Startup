@@ -1,6 +1,6 @@
 {
   "schema": "startup-life.c03.owner-front-rig-handoff.v1",
-  "status": "AUTHORING_REQUIRED_NOT_RUNTIME",
+  "status": "NATIVE_FRONT_ART_STUDY_NOT_RUNTIME",
   "style_id": "vn_everyday_pixel_v1",
   "character_id": "C03",
   "name": "Sáng Ngõ Nhỏ",
@@ -8,11 +8,11 @@
   "production_registry_approval": false,
   "view": "front",
   "canvas_px": [
-    64,
-    80
+    128,
+    160
   ],
   "pixel_per_unit": 32,
-  "grid_is_provisional_until_native_reconstruction": true,
+  "grid_is_provisional_until_native_reconstruction": false,
   "selected_concept": {
     "image_sha256": "d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e",
     "repo_target": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png",
@@ -48,8 +48,8 @@
     "covering_part_id": "accessory_front",
     "bag_body_mask_filename": "masks/bag_body.png",
     "covered_part_ids_to_hide_entirely": [],
-    "minimum_covered_native_px": 2,
-    "minimum_visible_below_native_px": 1,
+    "minimum_covered_native_px": 16,
+    "minimum_visible_below_native_px": 8,
     "front_to_back_rule": "Hand pixels remain authored behind bag; bag body/flap draws over hand at actual intersecting pixels, while small hand portion stays visible beneath bag",
     "compositor_rule": "alpha composite hand before accessory_front, never erase the underlying hand or use global sorting for all poses"
   },
@@ -62,11 +62,14 @@
     "no_production_binding_before_golden_approval": true
   },
   "open_gates": [
+    "commit_native_front_source_bytes_and_reproduce",
+    "owner_native_128x160_front_reconstruction_review",
     "commit_exact_original_concept_binary",
-    "authored_native_front_sprite_from_owner_visual",
     "21_native_rgba_layer_sources_and_pivots",
     "independent_originality_IP",
     "unity_joint_animation_and_layer_sorting",
     "device_BeautyCell_and_owner_golden_approval"
-  ]
+  ],
+  "native_front_source_status": "MANUALLY_AUTHORED_DRAFT_AWAITING_REPO_IMPORT_AND_OWNER_NATIVE_REVIEW",
+  "native_front_artifact": "C03-native-front-runs-DRAFT.json"
 }
