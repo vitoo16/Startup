@@ -665,3 +665,37 @@ Unity proof from the review GIF, or claim CI PASS while the inherited
 Unity `.meta` source debt remains. Perform importer metadata changes
 only via the live Editor. `Assets/StartupLife/Art/Approved/registry.json`
 remains unchanged; **no gameplay/save change**.
+
+## C03 Idle V3 Unity quarantine integration preparation — 2026-10-18
+
+The owner already approved the **V3 stable-body blink motion direction**;
+not a Golden sprite. Next technical slice has now committed
+`scripts/Stage-C03IdleV3UnityProof.py` and a quarantined Unity Editor
+builder within the existing
+`Assets/StartupLife/Scripts/Editor/GoldenCharacterDraftBuilder.cs`.
+
+Stage generation splits the V3 composite into **24 authored native PNGs**:
+21 unmodified body/prop parts plus Open/Half/Closed **face-only** variants.
+Offline verified all three 21-part recompositions byte-for-byte against
+the approved-direction V3 source. A reproducible staging manifest pins
+per-file SHA-256 plus the original Rest/Closed frame hash, checks the
+16-joint topology, bag-over-hand sorting and the face-only eye ROI.
+No runtime class duplication or experimental .meta authoring.
+
+On a connected Unity Editor, the quarantined menu builder imports these
+PNG sprites into a nonproduction `Generated-V3-Quarantine` folder,
+applies Point/32 PPU/no mipmap/uncompressed import settings, creates
+a 16-joint hierarchy and 21 sprite renderers, and authors a **face-only
+180ms** AnimationClip and manual Animator `Blink` trigger. It never
+modifies the real gameplay scene, production resolver, cosmetics,
+save or Approved Registry; it fails closed on any pre-existing output.
+
+**No live Editor run occurred in this session.** Neither prefab nor
+animation is claimed Unity validated. Engine-free CI remains blocked
+by **pre-existing missing Unity `.meta` files** under C03 source,
+not by lowered validators; the Editor must generate importer metadata.
+
+See `docs/evidence/production-art/C03-IDLE-V3-UNITY-QUARANTINE-HANDOFF.md`.
+Next required live gates: run editor import + actual PlayMode frame check,
+capture phone BeautyCell, independent IP and Golden review before
+production binding.
