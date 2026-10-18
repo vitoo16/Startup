@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_CONTRACT = ROOT / 'Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-owner-front-rig-contract.json'
+DEFAULT_CONTRACT = ROOT / 'docs/evidence/production-art/source/c03-authoring/C03-owner-front-rig-contract.json'
 DECODER = ROOT / 'scripts/Validate-GoldenCharacterC03R1.py'
 CANONICAL_PARTS = frozenset(('hair_back','accessory_back','foot_l','foot_r',
     'lower_leg_l','lower_leg_r','upper_leg_l','upper_leg_r','pelvis','torso',

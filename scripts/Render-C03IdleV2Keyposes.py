@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / 'scripts'
-ART = ROOT / 'Assets/StartupLife/Art/Source/Characters/golden-character-c03'
+ART = ROOT / 'docs/evidence/production-art/source/c03-authoring'
 SOURCE = ART / 'C03-native-front-source.json'
 KEYPOSES = ART / 'C03-idle-v2-keyposes-DRAFT.json'
 RULES = ART / 'C03-idle-v2-art-direction.json'

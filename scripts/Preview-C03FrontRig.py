@@ -15,7 +15,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-BASE = ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03'
+BASE = ROOT/'docs/evidence/production-art/source/c03-authoring'
 NATIVE = BASE/'C03-native-front-source.json'
 JOINTS = BASE/'C03-front-joint-plan-DRAFT.json'
 CONTRACT = BASE/'C03-owner-front-rig-contract.json'

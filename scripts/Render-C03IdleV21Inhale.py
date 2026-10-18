@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
-ART=ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03'
+ART=ROOT/'docs/evidence/production-art/source/c03-authoring'
 W,H=128,160
 NATIVE=ART/'C03-native-front-source.json'
 PARENT=ART/'C03-idle-v2-keyposes-DRAFT.json'

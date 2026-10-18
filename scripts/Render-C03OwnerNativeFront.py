@@ -16,7 +16,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parent))
 from PixelPng import png_rgba
 
 ROOT=Path(__file__).resolve().parents[1]
-SOURCE=ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-native-front-source.json'
+SOURCE=ROOT/'docs/evidence/production-art/source/c03-authoring/C03-native-front-source.json'
 PARTS=('hair_back','accessory_back','foot_l','foot_r','lower_leg_l','lower_leg_r',
  'upper_leg_l','upper_leg_r','pelvis','torso','upper_arm_l','upper_arm_r',
  'forearm_l','forearm_r','hand_l','hand_r','outfit_torso','head','face',
