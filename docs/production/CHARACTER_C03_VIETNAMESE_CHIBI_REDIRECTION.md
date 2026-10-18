@@ -639,3 +639,29 @@ Ask owner to choose `APPROVE_MOTION_DIRECTION`, `REVISE_MOTION`,
 or `REJECT_MOTION`; silence is not approval.
 Do not enable runtime references or approved registry entries until
 Unity, mobile, independent rights and final art gates actually pass.
+
+
+## C03 Idle V3 owner motion-direction approval — 2026-10-18
+
+**Owner explicitly decided `APPROVE_MOTION_DIRECTION`.** This
+covers the C03 Idle V3 **stable-body native front blink only**
+(Open → Half → Closed → Half → Open); not Golden, import,
+Unity runtime animation, device BeautyCell, or commercial IP clearance.
+The short eye animation is approved to **enter integration/QA** while the
+historical V1/V2/V2.1 inhale attempts remain rejected.
+
+Canonical owner-review source:
+`docs/evidence/production-art/source/C03-Idle-V3-stable-blink-DRAFT.json`.
+Renderer and draft test:
+`scripts/Render-C03IdleV3.py`,
+`tools/tests/test_c03_idle_v3.py`.
+Decision/evidence:
+`docs/evidence/production-art/C03-IDLE-V3-BLINK-REVIEW.md`.
+Status:
+`IDLE_V3_MOTION_DIRECTION_APPROVED_UNITY_QA_PENDING`.
+
+Do not accidentally promote the unimported offline PNGs, infer real-time
+Unity proof from the review GIF, or claim CI PASS while the inherited
+Unity `.meta` source debt remains. Perform importer metadata changes
+only via the live Editor. `Assets/StartupLife/Art/Approved/registry.json`
+remains unchanged; **no gameplay/save change**.
