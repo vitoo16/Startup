@@ -1,3 +1,12 @@
+> **OWNER DECISION — 2026-10-18: `APPROVE_MOTION_DIRECTION`.** The user
+> approved the stable-body C03 Idle V3 blink direction and its displayed
+> review playback, authorizing transition to **Unity integration/QA**.
+> This does **not** approve release sprites, Unity playback, mobile BeautyCell,
+> independent IP clearance or Golden Asset registration. Status:
+> `IDLE_V3_MOTION_DIRECTION_APPROVED_UNITY_QA_PENDING`.
+> The initial review and the original pending request below are preserved
+> as historical pre-decision evidence.
+
 # C03 — Idle V3 Stable Body & Natural Blink · owner motion review
 
 **Directive:** `C03-IDLE-V3-STABLE-BODY-BLINK`  
@@ -90,3 +99,46 @@ vietnam-art-direction, 2d-pixel-perfect, sprite-editor (read only); no live Unit
 **Owner model:** GPT-6. **Known blockers:** real Unity playback, phone BeautyCell, independent IP, owner motion/GOLDEN signoff and exact concept PNG archival.
 
 **Unity import restriction:** V3 is an offline authored review source under `docs/evidence/production-art/source` until the live Editor can generate valid `.meta` files. Baseline CI already failed on older C03 source `.meta` gaps; CI static foundation has not been weakened.
+
+## Owner decision record — 2026-10-18
+
+**Verdict:** `APPROVE_MOTION_DIRECTION` (explicit owner reply).
+
+**Scope approved:** C03 Idle V3 native 128×160 eyes-only behavior,
+stable planted Rest, fast eyelid sequence and irregular review-only
+rest timing. No fixed production blink cadence was approved.
+
+**Frozen inputs:** original Rest; original V2 closed-eye keypose; V3
+half-closed authored eye pixels; bag-over-hand and 20 non-face parts
+unchanged. Prior Inhale V1/V2/V2.1 remains `REJECT_INHALE_MOTION`
+and excluded from all active motion.
+
+**Next gate:** `UNITY_RUNTIME_AND_DEVICE_QA_PENDING`.
+
+Before gameplay binding or registry promotion:
+
+1. Reproduce draft native part PNGs from lossless source.
+2. Use a connected Unity Editor to import textures properly with generated
+   `.meta`, Point filtering, uncompressed, no mipmaps, 32 PPU and full
+   128×160 grid. Never hand-write the importer metadata.
+3. Bind source pose frames to the shared runtime character presentation
+   or existing rig/prefab only when the original art/source permissions and
+   runtime integration contract are satisfied. Avoid adding a separate C03-only
+   animation system or replacing gameplay timing.
+4. Verify actual Unity Open/Half/Closed/Open frames and true 180ms blink
+   timing in a running portrait scene; check pixel edges, occlusion, static
+   silhouette, absence of head/torso/feet wobble, and independent blink
+   schedule with holds.
+5. Capture a real mobile BeautyCell and obtain technical/visual QA. Independently
+   clear asset provenance and licensing. Only then consider Golden registration.
+
+**Existing CI blocker:** Engine-free CI previously failed on
+`scripts/Test-UnityFoundationStatic.ps1` because several older C03
+source items lack Unity `.meta` sidecars, including at baseline
+`a162e5ed94d6e84bc6e5705a47daea1fa4b458b1`. The current V3 review JSON
+is outside Unity `Assets/` to avoid adding to this debt. This legacy
+failure is not marked fixed, ignored or relaxed.
+
+**Owner model:** GPT-6. **Approval recorded in Git:** V3 source JSON
+status and `gate.art_review`. **Save impact:** None.
+**Approval does not imply completed Unity integration.**
