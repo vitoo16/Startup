@@ -699,3 +699,32 @@ See `docs/evidence/production-art/C03-IDLE-V3-UNITY-QUARANTINE-HANDOFF.md`.
 Next required live gates: run editor import + actual PlayMode frame check,
 capture phone BeautyCell, independent IP and Golden review before
 production binding.
+
+
+## 2026-10-18 — Unity .meta CI incident fixed by moving unimported C03 authoring source
+
+Engine-free CI static foundation correctly found eleven C03 authoring
+`.json`/`.b64` files **tracked directly under Unity Assets without
+generated .meta**. They are offline artist input contracts and rejected
+review evidence, not imported runtime sprites. The remedy is to move the
+exact original Git blobs to:
+
+`docs/evidence/production-art/source/c03-authoring/`
+
+The migration retained each object's original git blob SHA and repointed
+all C03 Native Front, joint-plan, Idle V1/V2/V2.1/V3, R5/R5.1, A/B and
+engine-free test readers. Five older C03 R1–R4/native draft JSON files
+already have .meta, so those remain in Unity Assets for backward compatibility.
+
+`scripts/Test-UnityFoundationStatic.ps1` and the official Unity sprite
+importer remain unchanged, **no hand-written .meta or exception lists**.
+Live Unity Editor imports from
+`scripts/Stage-C03IdleV3UnityProof.py` still generate real importer
+metadata for draft PNGs in an isolated quarantine folder.
+
+The original contract JSON's historical absolute source path strings are
+pre-migration evidence; follow this explicit relocation for current
+offline source files. Migration details and Git object verification:
+`docs/evidence/production-art/C03-AUTHORING-SOURCE-RELOCATION.md`.
+Owner V3 Blink direction approval remains intact; no Unity runtime,
+device BeautyCell, IP clearance or Golden registry implied.
