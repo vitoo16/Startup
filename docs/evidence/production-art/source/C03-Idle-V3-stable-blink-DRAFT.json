@@ -1,7 +1,7 @@
 {
   "schema": "startup-life.c03.idle-v3-stable-blink.v1",
   "task_id": "C03-IDLE-V3-STABLE-BODY-BLINK",
-  "status": "IDLE_V3_BLINK_PLAYBACK_AWAITING_OWNER_REVIEW",
+  "status": "IDLE_V3_MOTION_DIRECTION_APPROVED_UNITY_QA_PENDING",
   "owner_verdict": "REJECT_INHALE_MOTION",
   "character_id": "C03",
   "view": "front",
@@ -120,11 +120,15 @@
     "no_golden_promotion": true
   },
   "gate": {
-    "art_review": "AWAITING_OWNER",
-    "timed_playback_visual": "AWAITING_OWNER",
+    "art_review": "APPROVE_MOTION_DIRECTION",
+    "timed_playback_visual": "APPROVE_MOTION_DIRECTION",
     "unity": "NOT_RUN",
     "device": "NOT_RUN",
     "independent_ip": "NOT_RUN",
     "approved_registry": false
-  }
+  },
+  "owner_motion_review_verdict": "APPROVE_MOTION_DIRECTION",
+  "owner_motion_review_date": "2026-10-18",
+  "owner_motion_review_scope": "Direction approval of V3 fixed-body blink and sample playback only; not asset release, Golden registry, Unity/runtime or mobile approval",
+  "owner_golden_asset_approved": false
 }
