@@ -39,8 +39,14 @@ def pixel_diffs(a, b):
 def assemble(manifest, v3, native_layers, closed_layers):
     """Only the face pixel layer is replaceable. Source validation fails closed."""
     if (v3.get('schema') != 'startup-life.c03.idle-v3-stable-blink.v1' or
-        v3.get('status') != 'IDLE_V3_BLINK_PLAYBACK_AWAITING_OWNER_REVIEW' or
+        v3.get('status') != 'IDLE_V3_MOTION_DIRECTION_APPROVED_UNITY_QA_PENDING' or
         v3.get('owner_verdict') != 'REJECT_INHALE_MOTION' or
+        v3.get('owner_motion_review_verdict') != 'APPROVE_MOTION_DIRECTION' or
+        v3.get('owner_golden_asset_approved') is not False or
+        v3.get('gate', {}).get('art_review') != 'APPROVE_MOTION_DIRECTION' or
+        v3.get('gate', {}).get('unity') != 'NOT_RUN' or
+        v3.get('gate', {}).get('device') != 'NOT_RUN' or
+        v3.get('gate', {}).get('independent_ip') != 'NOT_RUN' or
         v3.get('native_canvas') != [W, H] or
         v3.get('native_pixel_packet_sha256') != manifest['packet_sha256'] or
         v3.get('rest_source') != 'C03-native-front-source.json' or
@@ -199,8 +205,10 @@ def export(folder, source=SOURCE, old_poses=OLD_POSES, old_rules=OLD_RULES, v3pa
         actual=[animated.seek(i) or animated.info['duration'] for i in range(animated.n_frames)]
     if actual != durations:
         raise ValueError('Exported GIF playback durations do not match contract')
-    evidence={'status':'IDLE_V3_BLINK_PLAYBACK_AWAITING_OWNER_REVIEW',
-              'owner_approval':False,'owner_verdict_for_inhale':'REJECT_INHALE_MOTION',
+    evidence={'status':'IDLE_V3_MOTION_DIRECTION_APPROVED_UNITY_QA_PENDING',
+              'owner_motion_direction_approval':'APPROVE_MOTION_DIRECTION',
+              'owner_golden_asset_approved':False,
+              'owner_verdict_for_inhale':'REJECT_INHALE_MOTION',
               'native_grid':[W,H], 'frames':statistics,
               'playback_timing_ms':durations,'playback_total_ms':sum(actual),
               'blink_count_in_sample':2,'rest_open_equals_close':True,
