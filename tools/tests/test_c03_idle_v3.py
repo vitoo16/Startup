@@ -66,6 +66,20 @@ class C03IdleV3Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'timing'):
             v3module.playback_timing(data)
 
+    def test_owner_direction_approval_keeps_release_gates_closed(self):
+        painter, checker, source, base, mask, closed, data=loaded()
+        self.assertEqual(data['owner_motion_review_verdict'], 'APPROVE_MOTION_DIRECTION')
+        self.assertEqual(data['owner_verdict'], 'REJECT_INHALE_MOTION')
+        self.assertEqual(data['gate']['unity'], 'NOT_RUN')
+        self.assertFalse(data['gate']['approved_registry'])
+        data['owner_golden_asset_approved'] = True
+        with self.assertRaisesRegex(ValueError, 'review gate drift'):
+            v3module.assemble(source, data, base, closed)
+        painter, checker, source, base, mask, closed, data=loaded()
+        data['gate']['unity'] = 'PASS'
+        with self.assertRaisesRegex(ValueError, 'review gate drift'):
+            v3module.assemble(source, data, base, closed)
+
     def test_only_iris_ink_can_be_replaced(self):
         painter,checker,source,base,mask,closed,data=loaded()
         data['half_close_edits'][0]=['erase_iris',49,60,1]
@@ -76,7 +90,9 @@ class C03IdleV3Tests(unittest.TestCase):
         from PIL import Image
         with tempfile.TemporaryDirectory(prefix='c03-v3-') as folder:
             qa=v3module.export(Path(folder))
-            self.assertEqual(qa['status'],'IDLE_V3_BLINK_PLAYBACK_AWAITING_OWNER_REVIEW')
+            self.assertEqual(qa['status'],'IDLE_V3_MOTION_DIRECTION_APPROVED_UNITY_QA_PENDING')
+            self.assertEqual(qa['owner_motion_direction_approval'],'APPROVE_MOTION_DIRECTION')
+            self.assertFalse(qa['owner_golden_asset_approved'])
             self.assertEqual(qa['playback_total_ms'],12360)
             self.assertEqual(qa['blink_count_in_sample'],2)
             self.assertEqual(qa['unity_editor'],'NOT_RUN')
