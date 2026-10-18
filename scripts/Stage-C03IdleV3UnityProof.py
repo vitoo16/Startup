@@ -18,6 +18,8 @@ PARTS=('hair_back','accessory_back','foot_l','foot_r','lower_leg_l','lower_leg_r
 POSES=('open','half','closed')
 EYE=(48,47,83,52)
 PACKET='1b04022f5f828ba95374cc3e0e875df9597ea89454d3ebdd5730aa46a3254c1f'
+REST='efda42e83eb039d31e6ff3cd25dbf68db8d4f65cdc34beab842ee90be96ebe1d'
+CLOSED='1faf1b8c78e078dd3aed386e22a7932eea5b19d3836bebcb260ae62a3ebd853b'
 
 
 def native(path):
@@ -52,6 +54,15 @@ def prepare(native_layers, v3_frames, rig_json, dest):
         base.alpha_composite(layers[part])
     if base.tobytes()!=poses['open'].tobytes():
         raise ValueError('Authored layered Rest and owner V3 Open pixels differ')
+    if hashlib.sha256(base.tobytes()).hexdigest()!=REST:
+        raise ValueError('Unexpected source: Rest SHA256 mismatch')
+    if hashlib.sha256(poses['closed'].tobytes()).hexdigest()!=CLOSED:
+        raise ValueError('Unexpected source: inherited Closed SHA256 mismatch')
+    changes={name:sum(poses[name].getpixel((x,y))!=base.getpixel((x,y))
+        for y in range(160) for x in range(128)) for name in POSES}
+    if changes!={'open':0,'half':19,'closed':35}:
+        raise ValueError('Unexpected native eye-pixel changes')
+
     faces={}
     for name in POSES:
         face=layers['face'].copy()
