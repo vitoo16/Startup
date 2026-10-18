@@ -8,6 +8,7 @@ from pathlib import Path
 import argparse,importlib.util,hashlib,json,sys
 ROOT=Path(__file__).resolve().parents[1]
 SRC=ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03'
+R5_SOURCE=ROOT/'docs/evidence/production-art/source/c03-authoring'
 SCRIPTS=ROOT/'scripts'
 
 def load(name):
@@ -23,7 +24,7 @@ def stage_composite(layers,names):
             if pixels[pos+3]: rgba[pos:pos+4]=pixels[pos:pos+4]
     return bytes(rgba)
 
-def export(folder,source=SRC/'r5-personality-front-review.json'):
+def export(folder,source=R5_SOURCE/'r5-personality-front-review.json'):
     r1=load('Render-GoldenCharacterC03R1');r2=load('Render-GoldenCharacterC03R2')
     data=json.loads(Path(source).read_text(encoding='utf8'))
     if (data['schema']!='startup-life.c03-r5-personality-front-review.v1'

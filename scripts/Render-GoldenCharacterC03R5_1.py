@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / 'scripts'
-SOURCE_DIR = ROOT / 'Assets/StartupLife/Art/Source/Characters/golden-character-c03'
+SOURCE_DIR = ROOT / 'docs/evidence/production-art/source/c03-authoring'
 SOURCE = SOURCE_DIR / 'r5-1-personality-front-review.json'
 PREVIOUS = SOURCE_DIR / 'r5-personality-front-review.json'
 

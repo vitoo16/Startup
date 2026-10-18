@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 S=Path(__file__).resolve().parent
-A=S.parent/'Assets/StartupLife/Art/Source/Characters/golden-character-c03'
+A=S.parent/'docs/evidence/production-art/source/c03-authoring'
 
 def module(name):
     sys.path.insert(0,str(S))
