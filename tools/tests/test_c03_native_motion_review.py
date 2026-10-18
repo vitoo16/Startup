@@ -6,7 +6,7 @@ import unittest
 
 ROOT=Path(__file__).resolve().parents[2]
 SCRIPT=ROOT/'scripts/Review-C03NativeMotion.py'
-SPEC=ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-idle-v2-art-direction.json'
+SPEC=ROOT/'docs/evidence/production-art/source/c03-authoring/C03-idle-v2-art-direction.json'
 module_spec=importlib.util.spec_from_file_location('c03_motion_review',SCRIPT)
 review=importlib.util.module_from_spec(module_spec)
 module_spec.loader.exec_module(review)

@@ -7,9 +7,9 @@ import unittest
 
 ROOT=Path(__file__).resolve().parents[2]
 SCRIPT=ROOT/'scripts/Preview-C03FrontRig.py'
-PLAN=ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-front-joint-plan-DRAFT.json'
-CONTRACT=ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-owner-front-rig-contract.json'
-SOURCE=ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-native-front-source.json'
+PLAN=ROOT/'docs/evidence/production-art/source/c03-authoring/C03-front-joint-plan-DRAFT.json'
+CONTRACT=ROOT/'docs/evidence/production-art/source/c03-authoring/C03-owner-front-rig-contract.json'
+SOURCE=ROOT/'docs/evidence/production-art/source/c03-authoring/C03-native-front-source.json'
 
 spec=importlib.util.spec_from_file_location('c03_joint_preview',SCRIPT)
 mod=importlib.util.module_from_spec(spec)

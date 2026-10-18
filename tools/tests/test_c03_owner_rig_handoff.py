@@ -6,7 +6,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT=ROOT/'scripts/Validate-C03OwnerRigHandoff.py'
-CONTRACT=ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-owner-front-rig-contract.json'
+CONTRACT=ROOT/'docs/evidence/production-art/source/c03-authoring/C03-owner-front-rig-contract.json'
 modspec=importlib.util.spec_from_file_location('occlusion',SCRIPT)
 mod=importlib.util.module_from_spec(modspec)
 modspec.loader.exec_module(mod)

@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 ROOT=Path(__file__).resolve().parents[2]
-SOURCE=ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03'
+SOURCE=ROOT/'docs/evidence/production-art/source/c03-authoring'
 SPEC=importlib.util.spec_from_file_location('unity_manifest',ROOT/'scripts/Export-C03UnityRigHandoff.py')
 module=importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(module)

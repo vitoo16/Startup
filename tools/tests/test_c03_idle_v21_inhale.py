@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 ROOT=Path(__file__).resolve().parents[2]
-ART=ROOT/'Assets/StartupLife/Art/Source/Characters/golden-character-c03'
+ART=ROOT/'docs/evidence/production-art/source/c03-authoring'
 SCRIPTS=ROOT/'scripts'
 
 
