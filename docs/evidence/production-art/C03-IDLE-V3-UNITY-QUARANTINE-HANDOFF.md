@@ -121,3 +121,69 @@ vietnam-art-direction, 2d-pixel-perfect, sprite-editor and Unity CLI guidance.
 **Known blockers:** connected Unity Editor, actual PlayMode/Blink playback,
 phone screen evidence, independent IP clearance, source PNG provenance
 and final Golden asset approval.
+
+
+## R2 hardening — Unity import/persisted proof (2026-10-19)
+
+The quarantined authoring pipeline has been strengthened following the
+owner-approved Idle V3 direction. Previously, the Editor only checked
+hashes for 24 native PNGs, not the rig manifest, and generated a prefab
+without reloading and inspecting the persisted result.
+
+**New source gates** in `scripts/Stage-C03IdleV3UnityProof.py`:
+
+- Pin the canonical 21-layer order, 16-bone identity and the frozen native
+  art packet SHA. Reject moved joint pivots and nonmatching sprite local
+  offsets, rather than relying solely on correct flattened previews.
+- Verify all face changes belong to the exact eye ROI before pixel-count
+  bounds, producing an actionable error instead of generic failure.
+- Store `rig_manifest_sha256` in the offline staging receipt, in addition
+  to the 24 per-PNG SHA-256 checks.
+
+**New Editor proof gates** in the existing
+`C03IdleV3QuarantineBuilder` (part of
+`Assets/StartupLife/Scripts/Editor/GoldenCharacterDraftBuilder.cs`):
+
+- Refuse staging if `rig_manifest_sha256` does not match the full
+  rig-authoring JSON input bytes.
+- Save/reimport Unity assets and verify the reloaded prefab has exactly
+  16 authored bone transforms and 21 SpriteRenderers, the intended
+  parent-local transforms and stable bag-over-hand rendering order.
+- Confirm imported textures are full-size Single Sprite, Point,
+  uncompressed, no mipmaps, 32 PPU and centered.
+- Confirm the persisted AnimationClip has exactly **one**
+  object-reference animation binding: the face
+  `SpriteRenderer.m_Sprite`. Assert exact
+  Open/Half/Closed/Half/Open sprite references at
+  `[0, 20, 50, 110, 180]` milliseconds; no transform curves.
+- Expose Unity Editor menu
+  **Startup Life → Art → C03 → Verify quarantined Idle V3 blink preview**
+  to repeat persisted serialized asset verification after generation.
+  This is not a live PlayMode/BeautyCell test.
+
+The previous handoff ZIP's rig descriptor predated the current
+rig exporter and did not carry the new hash. Use the regenerated
+**C03-Idle-V3-Unity-Quarantine-Handoff-R2.zip**, whose 24 native PNG
+bytes are unchanged from R1, with updated non-shipping rig metadata
+and a SHA-pinned staging receipt. The R2 ZIP was rechecked locally:
+24/24 PNG hashes match; all 16 joint and 21 renderer offsets follow the
+original authoring coordinates; Open and Closed recomposites match the
+approved-direction native image RGBA SHA-256.
+
+**Automated CI gate:** Engine-free CI now executes the actual C03
+source migration, V3 blink and quarantined staging Python regression
+suites with a pinned authoring-only Pillow version. The code+CI
+commit `d848842d656b530ce4cde1dea95afee8bc6b23ec` recorded a
+successful run. This checks engine-free art contracts only; it is
+not an Editor compilation or PlayMode proof.
+
+**Still blocked until a real Unity Editor/device is available:**
+C# script compilation in Unity, quarantine import execution,
+reloaded prefab in actual Editor, PlayMode eye-frame timing,
+real pixel-perfect portrait screenshot, phone BeautyCell,
+independent originality/IP and Golden approval. None are
+automatically promoted by this change.
+
+**Owner model:** GPT-6 · **Skills:** session-orchestrator,
+startup-life-asset-quality-gate, unity-cli, sprite-editor,
+2d-pixel-perfect. **Save impact:** none. **Runtime changes:** none.
