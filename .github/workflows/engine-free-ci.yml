@@ -104,6 +104,13 @@ jobs:
           python3 -m unittest discover -s tools/GoldenCharacterC03Checks -p 'test_*.py' -v
           python3 scripts/Render-GoldenCharacterC03.py --output "${RUNNER_TEMP}/startup-life/c03-3-styles-4-views-DRAFT.png" --fronts "${RUNNER_TEMP}/startup-life/c03-9-front-variants-DRAFT.png" --report "${RUNNER_TEMP}/startup-life/c03-source-report.json"
 
+      - name: Validate C03 source migration and Idle V3 Unity staging (no Editor)
+        run: |
+          python3 -m pip install --disable-pip-version-check --quiet 'Pillow==11.3.0'
+          python3 -m unittest discover -s tools/tests -p 'test_c03_authoring_source_migration.py' -v
+          python3 -m unittest discover -s tools/tests -p 'test_c03_idle_v3.py' -v
+          python3 -m unittest discover -s tools/tests -p 'test_c03_idle_v3_unity_staging.py' -v
+
       - name: Validate Unity character assembler source and quarantine (no Editor)
         run: |
           python3 scripts/Validate-CharacterVisualAssembler.py
