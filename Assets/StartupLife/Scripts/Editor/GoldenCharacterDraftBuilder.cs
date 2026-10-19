@@ -288,6 +288,7 @@ namespace StartupLife.Editor
         {
             public string schema = "", status = "", source_packet_sha256 = "";
             public string owner_motion_direction = "";
+            public string rig_manifest_sha256 = "";
             public bool rest_pixel_identical, blink_only_face_layer;
             public bool owner_golden_asset_approved, production_registry_approved;
             public int[] native_grid = Array.Empty<int>();
@@ -415,6 +416,8 @@ namespace StartupLife.Editor
                 root.AddComponent<Animator>().runtimeAnimatorController = controller;
                 PrefabUtility.SaveAsPrefabAsset(root, Output + "/C03_IDLE_V3_QUARANTINED.prefab");
                 AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+                VerifySerializedProof(rig);
                 Debug.Log("C03 V3 quarantine imported in Editor. Trigger Blink manually in "
                     + "Play Mode and inspect pixel edges/sorting. Not production approved.");
             }
@@ -448,6 +451,9 @@ namespace StartupLife.Editor
                 rig.pixels_per_unit != 32 || rig.joints.Length != 16 ||
                 rig.sprite_renderers.Length != 21 || staging.files.Length != 24)
                 throw new InvalidOperationException("Unapproved or malformed C03 staged import.");
+            if (!string.Equals(staging.rig_manifest_sha256, SHA256(File.ReadAllBytes(rigPath)),
+                    StringComparison.Ordinal))
+                throw new InvalidOperationException("C03 rig manifest hash mismatch.");
             if (rig.joints.Count(j => j.id == "root" && string.IsNullOrEmpty(j.parent)) != 1 ||
                 rig.joints.Select(j => j.id).Distinct(StringComparer.Ordinal).Count() != 16 ||
                 rig.joints.Any(j => j.local_xy_unity_units.Length != 2) ||
@@ -473,12 +479,119 @@ namespace StartupLife.Editor
                 {
                     var path = Path.Combine(Input, file.path);
                     if (!File.Exists(path)) throw new FileNotFoundException("C03 input missing.", path);
-                    var actual = BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(path)))
-                        .Replace("-", "").ToLowerInvariant();
+                    var actual = SHA256(File.ReadAllBytes(path));
                     if (!string.Equals(actual, file.sha256, StringComparison.Ordinal))
                         throw new InvalidOperationException("C03 input hash mismatch: " + file.path);
                 }
             return (staging, rig);
+        }
+
+        private static string SHA256(byte[] data)
+        {
+            using (var hash = System.Security.Cryptography.SHA256.Create())
+                return BitConverter.ToString(hash.ComputeHash(data)).Replace("-", "").ToLowerInvariant();
+        }
+
+        [MenuItem("Startup Life/Art/C03/Verify quarantined Idle V3 blink preview")]
+        public static void VerifyExisting()
+        {
+            var checkedInputs = ValidateInputs();
+            VerifySerializedProof(checkedInputs.Item2);
+            Debug.Log("C03 V3 serialized quarantine proof verified in Unity Editor. "
+                + "Actual PlayMode, device and Golden art gates are still NOT RUN.");
+        }
+
+        private static void VerifySerializedProof(Rig rig)
+        {
+            var prefabPath = Output + "/C03_IDLE_V3_QUARANTINED.prefab";
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(
+                Output + "/C03-Idle-V3-Blink-PROOF.anim");
+            var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(
+                Output + "/C03-Idle-V3-QUARANTINED.controller");
+            if (!prefab || !clip || !controller ||
+                prefab.name != "C03_Idle_V3_QUARANTINED_NOT_FOR_GAMEPLAY")
+                throw new InvalidOperationException("Missing persisted quarantined C03 prefab/clip.");
+            var animator = prefab.GetComponent<Animator>();
+            if (!animator || animator.runtimeAnimatorController != controller ||
+                controller.parameters.Length != 1 ||
+                controller.parameters[0].name != "Blink" ||
+                controller.parameters[0].type != AnimatorControllerParameterType.Trigger)
+                throw new InvalidOperationException("C03 proof Animator lost its manual-only Blink.");
+            var renderers = prefab.GetComponentsInChildren<SpriteRenderer>(true);
+            if (renderers.Length != 21 || rig.sprite_renderers.Length != 21)
+                throw new InvalidOperationException("C03 persisted rig has incorrect renderer count.");
+            var byName = renderers.ToDictionary(r => r.gameObject.name, StringComparer.Ordinal);
+            if (byName.Count != 21 || !byName.ContainsKey("face"))
+                throw new InvalidOperationException("C03 persisted rig lost semantic part identity.");
+            var transforms = prefab.GetComponentsInChildren<Transform>(true)
+                .ToDictionary(t => t.gameObject.name, StringComparer.Ordinal);
+            if (transforms.Count != 37) // 1 root + 15 child bones + 21 renderers
+                throw new InvalidOperationException("C03 persisted rig lost bone/part hierarchy.");
+            foreach (var bone in rig.joints)
+            {
+                var current = bone.id == "root" ? prefab.transform : transforms[bone.id];
+                var parent = bone.parent == null ? null :
+                    bone.parent == "root" ? prefab.transform : transforms[bone.parent];
+                if (current.parent != parent ||
+                    Vector2.Distance((Vector2)current.localPosition, (Vector2)XY(bone.local_xy_unity_units)) > 0.00001f ||
+                    current.localRotation != Quaternion.identity)
+                    throw new InvalidOperationException("C03 joint transform drift: " + bone.id);
+            }
+            foreach (var part in rig.sprite_renderers)
+            {
+                var renderer = byName[part.part_id];
+                var expected = AssetDatabase.LoadAssetAtPath<Sprite>(Output + "/" + part.filename);
+                var expectedParent = part.bone == "root" ? prefab.transform : transforms[part.bone];
+                if (!expected || renderer.sprite != expected ||
+                    renderer.sortingOrder != part.sort_order ||
+                    renderer.transform.parent != expectedParent ||
+                    Vector2.Distance((Vector2)renderer.transform.localPosition,
+                        (Vector2)XY(part.local_xy_unity_units)) > 0.00001f ||
+                    renderer.transform.localRotation != Quaternion.identity)
+                    throw new InvalidOperationException("C03 imported native pose drift: " + part.part_id);
+            }
+            if (byName["accessory_front"].sortingOrder <= byName["hand_r"].sortingOrder)
+                throw new InvalidOperationException("C03 bag/hand sorting is reversed.");
+            var bindings = AnimationUtility.GetObjectReferenceCurveBindings(clip);
+            if (bindings.Length != 1 || bindings[0].type != typeof(SpriteRenderer) ||
+                bindings[0].propertyName != "m_Sprite" ||
+                bindings[0].path != AnimationUtility.CalculateTransformPath(
+                    byName["face"].transform, prefab.transform) ||
+                AnimationUtility.GetCurveBindings(clip).Length != 0)
+                throw new InvalidOperationException("C03 Blink must only swap the face sprite.");
+            var keys = AnimationUtility.GetObjectReferenceCurve(clip, bindings[0]);
+            var names = new[] { "face_open.png", "face_half.png", "face_closed.png",
+                "face_half.png", "face_open.png" };
+            var times = new[] { 0f, .02f, .05f, .11f, .18f };
+            if (keys == null || keys.Length != 5 || Mathf.Abs(clip.length - .18f) > .0001f)
+                throw new InvalidOperationException("C03 Blink is not exactly 180ms.");
+            for (var i = 0; i < keys.Length; i++)
+                if (Mathf.Abs(keys[i].time - times[i]) > .0001f ||
+                    keys[i].value != Load(names[i]))
+                    throw new InvalidOperationException("C03 Blink eye-frame order/timing mismatch.");
+            var states = controller.layers[0].stateMachine.states;
+            if (states.Length != 2 ||
+                states.Count(st => st.state.name == "Rest_Frozen") != 1 ||
+                states.Count(st => st.state.name == "Blink_Once_180ms") != 1)
+                throw new InvalidOperationException("C03 proof should have exactly Rest and Blink states.");
+            foreach (var part in rig.sprite_renderers)
+                VerifyImportedTexture(Output + "/" + part.filename);
+            foreach (var name in new[] { "face_open.png", "face_half.png", "face_closed.png" })
+                VerifyImportedTexture(Output + "/" + name);
+        }
+
+        private static void VerifyImportedTexture(string path)
+        {
+            var tex = AssetImporter.GetAtPath(path) as TextureImporter;
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (tex == null || !sprite || tex.textureType != TextureImporterType.Sprite ||
+                tex.spriteImportMode != SpriteImportMode.Single ||
+                tex.spritePixelsPerUnit != 32 ||
+                tex.spriteAlignment != (int)SpriteAlignment.Center ||
+                tex.filterMode != FilterMode.Point || tex.mipmapEnabled ||
+                tex.textureCompression != TextureImporterCompression.Uncompressed)
+                throw new InvalidOperationException("C03 sprite import settings drift: " + path);
         }
 
         private static Vector3 XY(float[] value) =>
