@@ -47,6 +47,37 @@ def prepare(native_layers, v3_frames, rig_json, dest):
     if (set(slots)!=set(PARTS) or len(set(s['sort_order'] for s in slots.values()))!=21
         or slots['accessory_front']['sort_order']<=slots['hand_r']['sort_order']):
         raise ValueError('Bad semantic rig sorting or parts')
+    # The rig is source-authored, not a freehand Editor transform guess.
+    if (rig.get('native_art_packet_sha256')!=PACKET
+        or [slots[p]['sort_order'] for p in PARTS]!=list(range(len(PARTS)))):
+        raise ValueError('Bad semantic rig sorting or packet identity')
+    joints={bone['id']:bone for bone in rig['joints']}
+    if (len(joints)!=16 or set(joints)!=set(bone['id'] for bone in rig['joints'])
+        or rig['joints'][0]['id']!='root'):
+        raise ValueError('Invalid joint identity or root')
+    if joints['root']['parent'] is not None or joints['root']['local_xy_unity_units']!=[0.0,0.0]:
+        raise ValueError('Invalid root pivot or transform')
+    for bone in rig['joints']:
+        if (len(bone['native_pivot_xy'])!=2 or len(bone['local_xy_unity_units'])!=2):
+            raise ValueError('Incomplete native joint geometry')
+        if bone['id']!='root':
+            parent=joints.get(bone['parent'])
+            if not parent or parent is bone:
+                raise ValueError('Invalid joint parent')
+            expected=[(bone['native_pivot_xy'][0]-parent['native_pivot_xy'][0])/32,
+                      -(bone['native_pivot_xy'][1]-parent['native_pivot_xy'][1])/32]
+            if any(abs(a-b)>1e-6 for a,b in zip(expected,bone['local_xy_unity_units'])):
+                raise ValueError('Joint offset no longer matches native pivot')
+    for part in slots.values():
+        bone=joints.get(part['bone'])
+        if (bone is None or len(part['local_xy_unity_units'])!=2 or
+            part['filename']!='layers/'+part['part_id']+'.png'):
+            raise ValueError('Invalid semantic part geometry')
+        expected=[(64-bone['native_pivot_xy'][0])/32,
+                  -(80-bone['native_pivot_xy'][1])/32]
+        if any(abs(a-b)>1e-6 for a,b in zip(expected,part['local_xy_unity_units'])):
+            raise ValueError('Sprite center no longer aligns with native bind pose')
+    rig_sha256=hashlib.sha256(rig_json.read_bytes()).hexdigest()
     layers={part:native(native_layers/(part+'.png')) for part in PARTS}
     poses={name:native(v3_frames/('C03-Idle-V3-'+name+'-1x.png')) for name in POSES}
     base=Image.new('RGBA',(128,160))
@@ -96,7 +127,8 @@ def prepare(native_layers, v3_frames, rig_json, dest):
     result={
      'schema':'startup-life.c03.idle-v3.unity-quarantine-input.v1',
      'status':'OFFLINE_STAGING_EDITOR_IMPORT_PENDING',
-     'source_packet_sha256':PACKET,'native_grid':[128,160],
+     'source_packet_sha256':PACKET,'rig_manifest_sha256':rig_sha256,
+     'native_grid':[128,160],
      'pixels_per_unit':32,'rest_pixel_identical':True,
      'blink_only_face_layer':True,
      'frame_changed_visible_pixels':{'open':0,'half':19,'closed':35},
