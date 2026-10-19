@@ -509,7 +509,8 @@ namespace StartupLife.Editor
             var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(
                 Output + "/C03-Idle-V3-QUARANTINED.controller");
             if (!prefab || !clip || !controller ||
-                prefab.name != "C03_Idle_V3_QUARANTINED_NOT_FOR_GAMEPLAY")
+                (prefab.name != "C03_Idle_V3_QUARANTINED_NOT_FOR_GAMEPLAY" &&
+                 prefab.name != "C03_IDLE_V3_QUARANTINED"))
                 throw new InvalidOperationException("Missing persisted quarantined C03 prefab/clip.");
             var animator = prefab.GetComponent<Animator>();
             if (!animator || animator.runtimeAnimatorController != controller ||
@@ -589,7 +590,10 @@ namespace StartupLife.Editor
                 tex.spritePixelsPerUnit != 32 ||
                 tex.spriteAlignment != (int)SpriteAlignment.Center ||
                 tex.filterMode != FilterMode.Point || tex.mipmapEnabled ||
-                tex.textureCompression != TextureImporterCompression.Uncompressed)
+                tex.textureCompression != TextureImporterCompression.Uncompressed ||
+                Mathf.Abs(sprite.rect.width - 128f) > .0001f ||
+                Mathf.Abs(sprite.rect.height - 160f) > .0001f ||
+                Vector2.Distance(sprite.pivot, new Vector2(64f, 80f)) > .0001f)
                 throw new InvalidOperationException("C03 sprite import settings drift: " + path);
         }
 
