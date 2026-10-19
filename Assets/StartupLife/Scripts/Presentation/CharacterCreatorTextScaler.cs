@@ -15,6 +15,10 @@ namespace StartupLife.Presentation
         private bool initialized;
         private int step;
 
+        // Read-only UI state; uses the same scale policy as the rendered labels.
+        // PlayMode responsive QA checks 100%, 150%, and 200% through this contract.
+        public int ScalePercent => (int)(CharacterCreatorTextScalePolicy.Multiplier(step) * 100f);
+
         private void OnEnable() { Cache(); ApplyScale(); }
         public void IncreaseTextScale() => SetStep(step + 1);
         public void DecreaseTextScale() => SetStep(step - 1);
@@ -60,8 +64,7 @@ namespace StartupLife.Presentation
             }
             if (scaleValue)
             {
-                var value = (int)(factor * 100f);
-                var label = value.ToString(System.Globalization.CultureInfo.InvariantCulture) + "%";
+                var label = ScalePercent.ToString(System.Globalization.CultureInfo.InvariantCulture) + "%";
                 if (scaleValue.text != label) scaleValue.text = label;
             }
             if (touchSizer) touchSizer.SetTypographyMultiplier(factor);
