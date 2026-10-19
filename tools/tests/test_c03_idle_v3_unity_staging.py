@@ -74,6 +74,29 @@ class C03UnityStagingTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'outside blink eye ROI'):
             stage.prepare(self.parts,corrupted,self.rig,self.root/'bad-proof')
 
+    def test_reject_tampered_joint_pivot_and_full_canvas_sprite_offset(self):
+        manifest=json.loads(self.rig.read_text(encoding='utf8'))
+        joint=next(x for x in manifest['joints'] if x['id']=='neck')
+        joint['local_xy_unity_units'][0]+=0.03125
+        shifted=self.root/'tampered-joint.json'
+        shifted.write_text(json.dumps(manifest),encoding='utf8')
+        with self.assertRaisesRegex(ValueError,'Joint offset'):
+            stage.prepare(self.parts,self.frames,shifted,self.root/'invalid-joint')
+        manifest=json.loads(self.rig.read_text(encoding='utf8'))
+        face=next(x for x in manifest['sprite_renderers'] if x['part_id']=='face')
+        face['local_xy_unity_units'][0]+=0.03125
+        shifted=self.root/'tampered-face.json'
+        shifted.write_text(json.dumps(manifest),encoding='utf8')
+        with self.assertRaisesRegex(ValueError,'Sprite center'):
+            stage.prepare(self.parts,self.frames,shifted,self.root/'invalid-face')
+
+    def test_staging_manifest_carries_exact_source_rig_sha256(self):
+        import hashlib
+        report=json.loads((self.root/'proof1/C03-quarantine-input.json').read_text(encoding='utf8'))
+        self.assertEqual(report['rig_manifest_sha256'],
+                         hashlib.sha256(self.rig.read_bytes()).hexdigest())
+        self.assertEqual(len(report['files']),24)
+
     def test_wrong_bag_sorting_not_promoted(self):
         contract=json.loads(self.rig.read_text(encoding='utf8'))
         parts=contract['sprite_renderers']
