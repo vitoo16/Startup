@@ -39,6 +39,24 @@ class Unity63LocalCompileContractTests(unittest.TestCase):
         self.assertIn("NativeSpriteImportSettings.ConfigurePivot(importer, SpriteAlignment.Center,", editor)
         self.assertIn("NativeSpriteImportSettings.HasAlignment(tex, SpriteAlignment.Center)", editor)
 
+    def test_editor_importers_do_not_access_removed_texture_importer_alignment_api(self):
+        # Check all Editor source, not only the original C01/C03 builder.
+        # The valid Unity 6.3 API is TextureImporterSettings.spriteAlignment.
+        editor_root = ROOT / "Assets/StartupLife/Scripts/Editor"
+        offenders = []
+        for source in sorted(editor_root.rglob("*.cs")):
+            code = source.read_text(encoding="utf-8")
+            # Identify TextureImporter-typed locals/parameters before checking their
+            # member accesses. Avoid flagging TextureImporterSettings variables.
+            importer_names = set(re.findall(
+                r"\\bTextureImporter\\s+([A-Za-z_][A-Za-z_0-9]*)\\b", code
+            ))
+            for name in importer_names:
+                if re.search(r"\\b" + re.escape(name) + r"\\s*\\.\\s*spriteAlignment\\b", code):
+                    offenders.append(str(source.relative_to(ROOT)) + ": " + name)
+        self.assertEqual([], offenders,
+                         "Unity 6.3 requires TextureImporterSettings.spriteAlignment")
+
     def test_approved_asset_gate_unchanged_and_unity_proof_quarantined(self):
         editor = EDITOR.read_text(encoding="utf-8")
         self.assertIn("C03_Idle_V3_QUARANTINED_NOT_FOR_GAMEPLAY", editor)
