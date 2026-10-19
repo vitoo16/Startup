@@ -89,6 +89,11 @@ def prepare(native_layers, v3_frames, rig_json, dest):
         raise ValueError('Unexpected source: Rest SHA256 mismatch')
     if hashlib.sha256(poses['closed'].tobytes()).hexdigest()!=CLOSED:
         raise ValueError('Unexpected source: inherited Closed SHA256 mismatch')
+    for name in POSES:
+        if any(poses[name].getpixel((x,y))!=base.getpixel((x,y))
+               and not(EYE[0]<=x<EYE[2] and EYE[1]<=y<EYE[3])
+               for y in range(160) for x in range(128)):
+            raise ValueError('Unauthorized changes outside blink eye ROI')
     changes={name:sum(poses[name].getpixel((x,y))!=base.getpixel((x,y))
         for y in range(160) for x in range(128)) for name in POSES}
     if changes!={'open':0,'half':19,'closed':35}:
