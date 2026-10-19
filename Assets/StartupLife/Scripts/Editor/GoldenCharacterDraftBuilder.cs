@@ -8,6 +8,29 @@ using UnityEngine;
 
 namespace StartupLife.Editor
 {
+    // Unity 6.x exposes spriteAlignment on TextureImporterSettings, not TextureImporter.
+    // Shared by the C01 and C03 draft importers to keep pivot authoring consistent.
+    internal static class NativeSpriteImportSettings
+    {
+        internal static void ConfigurePivot(TextureImporter importer, SpriteAlignment alignment, Vector2 pivot)
+        {
+            if (importer == null) throw new ArgumentNullException(nameof(importer));
+            var settings = new TextureImporterSettings();
+            importer.ReadTextureSettings(settings);
+            settings.spriteAlignment = (int)alignment;
+            settings.spritePivot = pivot;
+            importer.SetTextureSettings(settings);
+        }
+
+        internal static bool HasAlignment(TextureImporter importer, SpriteAlignment alignment)
+        {
+            if (importer == null) return false;
+            var settings = new TextureImporterSettings();
+            importer.ReadTextureSettings(settings);
+            return settings.spriteAlignment == (int)alignment;
+        }
+    }
+
     // C01 is a hand-authored editable *candidate*, never an approved runtime asset.
     // Generated assets stay in Art/Source and are NOT added to any build scene.
     public static class GoldenCharacterDraftBuilder
@@ -220,10 +243,9 @@ namespace StartupLife.Editor
                 importer.textureType = TextureImporterType.Sprite;
                 importer.spriteImportMode = SpriteImportMode.Single;
                 importer.spritePixelsPerUnit = draft.ppu;
-                importer.spriteAlignment = (int)SpriteAlignment.Custom;
-                importer.spritePivot = new Vector2(
-                    (part.joint_px[0] - left) / (float)width,
-                    (part.joint_px[1] - bottom) / (float)height);
+                NativeSpriteImportSettings.ConfigurePivot(importer, SpriteAlignment.Custom,
+                    new Vector2((part.joint_px[0] - left) / (float)width,
+                        (part.joint_px[1] - bottom) / (float)height));
                 importer.filterMode = FilterMode.Point;
                 importer.mipmapEnabled = false;
                 importer.alphaIsTransparency = true;
@@ -588,7 +610,7 @@ namespace StartupLife.Editor
             if (tex == null || !sprite || tex.textureType != TextureImporterType.Sprite ||
                 tex.spriteImportMode != SpriteImportMode.Single ||
                 tex.spritePixelsPerUnit != 32 ||
-                tex.spriteAlignment != (int)SpriteAlignment.Center ||
+                !NativeSpriteImportSettings.HasAlignment(tex, SpriteAlignment.Center) ||
                 tex.filterMode != FilterMode.Point || tex.mipmapEnabled ||
                 tex.textureCompression != TextureImporterCompression.Uncompressed ||
                 Mathf.Abs(sprite.rect.width - 128f) > .0001f ||
@@ -614,7 +636,8 @@ namespace StartupLife.Editor
             if (importer == null) throw new InvalidOperationException("Not a PNG importer: " + path);
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
-            importer.spriteAlignment = (int)SpriteAlignment.Center;
+            NativeSpriteImportSettings.ConfigurePivot(importer, SpriteAlignment.Center,
+                new Vector2(.5f, .5f));
             importer.spritePixelsPerUnit = 32;
             importer.filterMode = FilterMode.Point;
             importer.mipmapEnabled = false;
