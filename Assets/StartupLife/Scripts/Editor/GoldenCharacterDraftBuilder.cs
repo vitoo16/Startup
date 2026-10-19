@@ -474,15 +474,14 @@ namespace StartupLife.Editor
                 staging.files.Select(f => f.path).Distinct(StringComparer.Ordinal).Count() != 24 ||
                 staging.files.Any(f => !files.Contains(f.path)))
                 throw new InvalidOperationException("Unexpected native C03 input files.");
-            using (var sha = System.Security.Cryptography.SHA256.Create())
-                foreach (var file in staging.files)
-                {
-                    var path = Path.Combine(Input, file.path);
-                    if (!File.Exists(path)) throw new FileNotFoundException("C03 input missing.", path);
-                    var actual = SHA256(File.ReadAllBytes(path));
-                    if (!string.Equals(actual, file.sha256, StringComparison.Ordinal))
-                        throw new InvalidOperationException("C03 input hash mismatch: " + file.path);
-                }
+            foreach (var file in staging.files)
+            {
+                var path = Path.Combine(Input, file.path);
+                if (!File.Exists(path)) throw new FileNotFoundException("C03 input missing.", path);
+                var actual = SHA256(File.ReadAllBytes(path));
+                if (!string.Equals(actual, file.sha256, StringComparison.Ordinal))
+                    throw new InvalidOperationException("C03 input hash mismatch: " + file.path);
+            }
             return (staging, rig);
         }
 
