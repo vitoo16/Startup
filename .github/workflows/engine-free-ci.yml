@@ -114,6 +114,10 @@ jobs:
       - name: Guard Unity 6.3 sprite import and responsive PlayMode compile contracts (no Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_unity63_local_compile_contract.py' -v
 
+      - name: Triage Unity Console diagnostics without suppressing unknown errors (no Editor)
+        run: python3 -m unittest discover -s tools/tests -p 'test_unity_console_triage.py' -v
+
+
       - name: Validate Unity character assembler source and quarantine (no Editor)
         run: |
           python3 scripts/Validate-CharacterVisualAssembler.py
