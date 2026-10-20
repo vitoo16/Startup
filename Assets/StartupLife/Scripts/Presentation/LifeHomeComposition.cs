@@ -79,11 +79,11 @@ namespace StartupLife.Presentation
             BuildGeometricStage(stage.transform, font);
 
             var progressCard = Card("LifeProgressCard", content, theme.panel, 12);
-            Label("LifeProgressHeading", "life.home.progress", progressCard.transform, font, 36f, theme.accent);
+            Label("LifeProgressHeading", "dashboard.life.home.progress", progressCard.transform, font, 36f, theme.accent);
             foreach (var node in progress) node.SetParent(progressCard.transform, false);
 
             var choices = Card("LifeActionCard", content, theme.panel, 12);
-            Label("LifeActionHeading", "life.home.actions", choices.transform, font, 36f, theme.accent);
+            Label("LifeActionHeading", "dashboard.life.home.actions", choices.transform, font, 36f, theme.accent);
             actions.SetParent(choices.transform, false);
             actionButtons = actions.GetComponentsInChildren<Button>(true);
             acceptAction = actions.Find("AcceptDeveloperButton")?.GetComponent<Button>();
@@ -119,9 +119,9 @@ namespace StartupLife.Presentation
                 if (background) background.color = button == primary ? theme.accent : theme.ink;
             }
             var minute = snapshot.Instant.Minute;
-            var key = minute >= 17 * 60 ? "life.home.evening" :
-                !string.IsNullOrEmpty(snapshot.CareerId) ? "life.home.work" :
-                snapshot.ActiveCourse != null ? "life.home.study" : "life.home.newday";
+            var key = minute >= 17 * 60 ? "dashboard.life.home.evening" :
+                !string.IsNullOrEmpty(snapshot.CareerId) ? "dashboard.life.home.work" :
+                snapshot.ActiveCourse != null ? "dashboard.life.home.study" : "dashboard.life.home.newday";
             if (key == activeMomentKey) return;
             activeMomentKey = key;
             momentLabel.SetKey(key);
@@ -176,12 +176,12 @@ namespace StartupLife.Presentation
             Block("Cup", parent, warm, new Vector2(0.56f, 0.23f), new Vector2(0.62f, 0.34f));
             Block("Hook", parent, warm, new Vector2(0.09f, 0.51f), new Vector2(0.13f, 0.53f));
             // These proportions intentionally do not constitute final world art.
-            Label("StageHeading", "life.home.stage", parent, font, 34f, ink,
+            Label("StageHeading", "dashboard.life.home.stage", parent, font, 34f, ink,
                 new Vector2(0.08f, 0.75f), new Vector2(0.62f, 0.98f));
-            momentText = Label("StageMoment", "life.home.newday", parent, font, 27f, ink,
+            momentText = Label("StageMoment", "dashboard.life.home.newday", parent, font, 27f, ink,
                 new Vector2(0.08f, 0.39f), new Vector2(0.63f, 0.72f));
             momentLabel = momentText.GetComponent<LocalizedKeyLabel>();
-            activeMomentKey = "life.home.newday";
+            activeMomentKey = "dashboard.life.home.newday";
         }
 
         private static void Block(string name, Transform parent, Color color, Vector2 low, Vector2 high)
