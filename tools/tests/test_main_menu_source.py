@@ -56,7 +56,8 @@ class HomeMenuContracts(unittest.TestCase):
         self.assertIn('screen.SetActive(false)', menu)
         self.assertIn('lifecycle.SetPaused(true)', bootstrap)
         self.assertIn('if (archive.Length == 0)', bootstrap)
-        self.assertIn('lifecycle.SetPaused(false)', bootstrap)
+        self.assertIn('Fail("fatal.save_unavailable")', bootstrap)
+        self.assertNotIn('lifecycle.SetPaused(false)', bootstrap)
 
 
 if __name__ == "__main__":
