@@ -75,8 +75,9 @@ namespace StartupLife.Presentation
                 settingsPage.transform, ShowHome);
 
             confirmationPage = Page("StartupMainMenuNewGameConfirmation", screen.transform);
-            Text("StartupMainMenuWarning", "dashboard.menu.confirm",
+            var warning = Text("StartupMainMenuWarning", "dashboard.menu.confirm",
                 confirmationPage.transform, theme.body);
+            warning.GetComponent<LayoutElement>().preferredHeight = theme.touchTarget * 2.5f;
             Button("StartupMainMenuConfirmButton", "dashboard.menu.archive_new",
                 confirmationPage.transform, ConfirmNewGame);
             Button("StartupMainMenuCancelButton", "dashboard.menu.cancel",
