@@ -101,3 +101,15 @@ Code-only candidate, **not an owner-approved visual**:
 **Known limitations:** full main-menu art, true scene/character motion, scroll/portrait accessibility, other settings, and UI-based restore of archived runs are not complete.
 
 **Files changed:** `LocalCheckpointArchiver.cs` and .meta, `FirstPlayableMainMenu.cs` and .meta, `StartupLifeBootstrapper.cs`, `DashboardLocalizationCatalog.cs`, `StartupLifeLocalSaveDiagnostics.cs`, `SaveArchiveChecks`, `test_main_menu_source.py`, `test_editor_save_diagnostics.py`, `FirstPlayableMainMenuTests.cs` and .meta, `engine-free-ci.yml`, `LOCAL_SAVE_EDITOR_DIAGNOSTICS.md`, and this note.
+
+## 2026-10-20 player-menu portrait and touch QA follow-up
+
+**Task lane:** runtime UI ergonomics after validated `2599b32` menu/save slice. **Owner:** GPT-6 Technical Director. **Skills consulted:** `startup-life-session-orchestrator`, `ui`, `ui-ugui` + `scrollview-setup.md`, `unity-cli`, `localization`, `vietnam-art-direction`, gameplay guardian, production roadmap.
+
+**Implementation:** the three existing menu page GameObjects now host `MobileScrollViewFactory` content with independent vertical `ScrollRect`, `Mask`, `VerticalLayoutGroup`, and `ContentSizeFitter`. Original button objects, localized keys and callbacks are preserved. Extra-long Vietnamese confirmation text has a taller layout slot and all buttons use readable `MobileTheme` typography with enough row height for two lines. Navigation resets only the selected page scroll. This does not add fonts, artwork or duplicate scroll implementations.
+
+**Unity PlayMode evidence contract:** `FirstPlayableMainMenuTests` checks all three scroll hierarchies, touch buttons and run identity. `FirstPlayableMainMenuResponsiveTests` requests real 360×640, 390×844, 430×932 portrait resolutions, rejects unsupported resizing, checks safe-area page bounds, min 96 reference-pixel touch targets and no TMP text overflow. It does **not** delete or replace the user save, and optionally writes nine real screenshots when `STARTUP_LIFE_MAIN_MENU_RESPONSIVE_EVIDENCE` names an output directory. It restores the screen resolution on exit. The no-CI-Unity limitation remains explicit: static CI != mobile screenshot/visual approval.
+
+**Manual review:** in Unity Editor `FirstPlayable.unity`, open menu with/without an existing named character; inspect Home → Settings → back, New Game → Cancel, and scroll all way to the bottom of the confirmation without pressing confirm on a valuable save. Review at three portrait sizes and enlarged Vietnamese text, and send one top/bottom screenshot of the confirmation page. Do not run confirmed New Game until a backup is verified.
+
+**No gameplay/economy/save changes** in this follow-up. `approved_entries` remains empty; no rejected C03 assets promoted. Still **NOT ACCEPTED** for production character/environment motion or overall visual direction.
