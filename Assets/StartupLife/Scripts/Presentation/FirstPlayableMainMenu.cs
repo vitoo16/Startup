@@ -35,6 +35,11 @@ namespace StartupLife.Presentation
             menu.theme = palette;
             menu.font = typeface;
             menu.Build(safeArea);
+            // Existing runs enter through the player-facing choice, not a
+            // silent jump to the old dashboard. A fresh run starts directly
+            // in Character Creator without an unnecessary extra click.
+            var state = owner.Snapshot;
+            if (state != null && !string.IsNullOrEmpty(state.Name)) menu.Open();
             return menu;
         }
 
