@@ -132,19 +132,19 @@ namespace StartupLife.Presentation
             var current = career.CurrentEmployment;
             careerSummary.text = current == null
                 ? (career.IsFullTimeFounder ? "Đang tập trung khởi nghiệp" : "Hiện chưa có công việc")
-                : "Nghề hiện tại: " + DisplayCareer(current.CareerNameKey) +
-                  "\nBậc nghề: " + (current.RankIndex + 1).ToString(CultureInfo.InvariantCulture) +
-                  " · XP nghề: " + current.CareerXp.ToString("N0", CurrencyCulture) +
-                  "\nLương tháng theo bậc: " + Money(current.MonthlySalaryAtRecordedRankVnd ?? 0);
+                : "Đang làm: " + DisplayCareer(current.CareerNameKey) +
+                  "\nCấp nghề: " + (current.RankIndex + 1).ToString(CultureInfo.InvariantCulture) +
+                  " · Kinh nghiệm: " + current.CareerXp.ToString("N0", CurrencyCulture) +
+                  "\nLương mỗi tháng: " + Money(current.MonthlySalaryAtRecordedRankVnd ?? 0);
             careerHistory.text = career.PreviousEmployments.Count == 0
                 ? "Chưa có công việc trước đây"
                 : string.Join("\n", career.PreviousEmployments.Select(x =>
                     DisplayCareer(x.CareerNameKey) + " · " + x.StartedIso + " – " +
                     (x.EndedIso ?? "hiện tại") + " · bậc " +
                     (x.RankIndex + 1).ToString(CultureInfo.InvariantCulture)));
-            salary.text = "Lương đã làm, chưa nhận: " + Money(career.OutstandingSalary.FloorToInt64()) +
+            salary.text = "Lương chờ nhận: " + Money(career.OutstandingSalary.FloorToInt64()) +
                 (career.OutstandingSalary.Denominator != System.Numerics.BigInteger.One
-                    ? " (còn phần lẻ được giữ chính xác trong save)" : "");
+                    ? "" : "");
             accept.interactable = career.HasCharacter && !career.IsEmployed;
             work.interactable = career.IsEmployed;
             resign.interactable = career.IsEmployed;
@@ -159,7 +159,7 @@ namespace StartupLife.Presentation
             courses.text = string.Join("\n", model.Courses.Select(x =>
                 DisplayCourse(x.NameKey) + " · lên cấp " +
                 x.TargetLevel.ToString(CultureInfo.InvariantCulture) +
-                "\n" + Money(x.PriceVnd) + " · học cơ bản " +
+                "\n" + Money(x.PriceVnd) + " · khoảng " +
                 x.BaseStudyMinutes.ToString(CultureInfo.InvariantCulture) + " phút" +
                 (x.IsActive && x.TargetUnits.HasValue && x.TargetUnits.Value > 0
                     ? " · đang học " + (x.ProgressUnits!.Value * 100 / x.TargetUnits.Value)
@@ -170,11 +170,11 @@ namespace StartupLife.Presentation
             study.interactable = model.Game.ActiveCourse != null;
 
             finance.text = "Tiền mặt: " + Money(model.Finance.CashVnd) +
-                "\nTổng nợ còn lại: " + Money(model.Finance.OutstandingArrearsVnd) +
-                "\nLương chưa nhận: " + Money(model.Finance.UnpaidSalaryExact.FloorToInt64()) +
-                "\nDoanh thu kinh doanh đã quyết toán: " +
+                "\nNợ cần trả: " + Money(model.Finance.OutstandingArrearsVnd) +
+                "\nLương chờ nhận: " + Money(model.Finance.UnpaidSalaryExact.FloorToInt64()) +
+                "\nDoanh thu đã chốt: " +
                     Money(model.Finance.CommittedBusinessGrossVnd) +
-                "\nLợi nhuận đã quyết toán: " +
+                "\nLãi đã chốt: " +
                     Money(model.Finance.CommittedBusinessProfitVnd);
             arrears.text = model.Finance.Arrears.Count == 0
                 ? "Hiện không có khoản nợ đến hạn."
@@ -183,15 +183,15 @@ namespace StartupLife.Presentation
 
             business.text = "Doanh nghiệp đang hoạt động: " +
                 career.ActiveBusinessCount.ToString(CultureInfo.InvariantCulture) +
-                "\nNguồn vốn và thời gian vận hành được kiểm tra trước mỗi lệnh." +
-                "\nMở Quản lý doanh nghiệp để xem giá, công suất, lịch và các khoản đã quyết toán.";
+                "\nMỗi quyết định đều cần cân nhắc vốn và thời gian." +
+                "\nMở Quản lý doanh nghiệp để xem lịch, giá bán và thu chi.";
             profile.text = "Tên: " + model.Game.Name +
-                "\nNgày mô phỏng: " + model.Game.Instant.Date +
+                "\nHôm nay: " + model.Game.Instant.Date +
                 "\n" + (career.IsFullTimeFounder ? "Vai trò: Nhà sáng lập toàn thời gian" :
                     career.IsEmployed ? "Vai trò: Người đi làm" : "Vai trò: Đang tìm hướng đi") +
-                "\nSố công việc đã qua: " +
+                "\nCông việc từng trải qua: " +
                     career.PreviousEmployments.Count.ToString(CultureInfo.InvariantCulture) +
-                "\nSố doanh nghiệp đang hoạt động: " +
+                "\nDoanh nghiệp đang hoạt động: " +
                     career.ActiveBusinessCount.ToString(CultureInfo.InvariantCulture);
             RefreshGuidance(model.Game.RunId);
             textScaleLabel.text = "Cỡ chữ giao diện: " +
@@ -376,7 +376,7 @@ namespace StartupLife.Presentation
             }
 
             var careerPage = pages[Section.Career].transform;
-            Subheading(careerPage, "Công việc hiện tại");
+            Subheading(careerPage, "Công việc của bạn");
             careerSummary = TextNode("LifeCareerSummary", careerPage, "", 31, Ink);
             salary = TextNode("LifeUnpaidSalary", careerPage, "", 29, Ink);
             accept = ButtonNode("LifeCareerAcceptButton", "Nhận việc lập trình",
@@ -399,13 +399,13 @@ namespace StartupLife.Presentation
                 skillPage, host.Study60Minutes).GetComponent<Button>();
 
             var financePage = pages[Section.Finance].transform;
-            Subheading(financePage, "Dòng tiền và kết quả đã ghi nhận");
+            Subheading(financePage, "Thu chi của bạn");
             finance = TextNode("LifeFinanceValue", financePage, "", 30, Ink);
             Subheading(financePage, "Các khoản nợ");
             arrears = TextNode("LifeArrearsValue", financePage, "", 29, Muted);
 
             var businessPage = pages[Section.Business].transform;
-            Subheading(businessPage, "Danh mục kinh doanh");
+            Subheading(businessPage, "Góc kinh doanh");
             business = TextNode("LifeBusinessValue", businessPage, "", 30, Ink);
             ButtonNode("LifeOpenBusinessButton", "Mở quản lý doanh nghiệp",
                 businessPage, OpenBusiness);
