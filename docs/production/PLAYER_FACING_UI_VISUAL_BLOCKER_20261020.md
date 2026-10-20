@@ -83,3 +83,21 @@ Code-only candidate, **not an owner-approved visual**:
 **Files changed:** `LifeHomeComposition.cs`, `LifeDashboardOverlay.cs`, `DashboardLocalizationCatalog.cs`, `LifeHomeCompositionTests.cs`, `test_life_journal_source.py`, `test_presentation_motion_source.py`, and this evidence note.
 
 **Manual Unity review request:** Stop Play → update to HEAD → FirstPlayable → Play, check that **Đi làm/Nhận việc/Học** (when enabled) is first and visibly emphasized, all six old actions remain accessible by scrolling, Dashboard → Hồ sơ can toggle reduced motion, and Vietnamese accents/heading sizes remain legible. Send a 390×844 portrait screenshot of the top and bottom of the scroll. Treat errors/overlap or unreachable controls as FAIL.
+
+## 2026-10-20 Player home-menu and safe new-run entry
+
+**Status: CODE CANDIDATE, not production visual approval.** Older saved games now enter via a localized choice panel (**Tiếp tục hành trình / Trò chơi mới / Cài đặt**), while a fresh uncommitted run still enters Character Creator directly. A persistent Menu entry permits revisiting this panel without file manipulation. Settings currently provides reduced motion only; full audio/language controls remain future work.
+
+**New-run safety:** a named run must explicitly confirm archival before any scene reload. `LocalCheckpointArchiver` is shared by the runtime and Unity Editor Debug menu; it takes the same `.lock` as `AtomicFileSaveStore`, moves only primary + recovery backup into a timestamped `RunArchives`, attempts rollback on failure, and does not deserialize/rewrite gameplay state. Refusal or archive/reload failure leaves the gameplay UI inaccessible rather than risking a write from an orphaned in-memory session. Multiple concurrently open players can still create a new save after the lock is released, so use one running Editor/player instance per test.
+
+**Skills used:** `startup-life-session-orchestrator`, `ui`, `ui-ugui`, `ui-ugui/references/scrollview-setup.md`, `unity-cli`, `localization`, `vietnam-art-direction`, GDD and production roadmap.
+
+**Tests:** `tools/SaveArchiveChecks` runs .NET 8 tests against the actual archive source (pair/backup-only/missing/locked/sequential); `tools/tests/test_main_menu_source.py` guards confirmation/localization/entry; existing Editor diagnostic source tests updated; `FirstPlayableMainMenuTests.cs` covers menu cancellation, settings and unchanged revision. Final CI result must be read at exact HEAD. **Unity compilation, PlayMode and device screenshots: NOT RUN in this coding session.**
+
+**Save impact:** no schema migration, receipt change or economic logic change. Primary + backup move only after explicit player confirmation. Archive is a recovery path, not a complete multi-slot save manager.
+
+**Visual evidence:** the previously rejected flat Life UI remains unapproved; this menu uses the current MobileTheme/TMP substrate and is likewise awaiting owner screenshot review. Pixel character and real scene animation are still BLOCKED pending independent art approval.
+
+**Known limitations:** full main-menu art, true scene/character motion, scroll/portrait accessibility, other settings, and UI-based restore of archived runs are not complete.
+
+**Files changed:** `LocalCheckpointArchiver.cs` and .meta, `FirstPlayableMainMenu.cs` and .meta, `StartupLifeBootstrapper.cs`, `DashboardLocalizationCatalog.cs`, `StartupLifeLocalSaveDiagnostics.cs`, `SaveArchiveChecks`, `test_main_menu_source.py`, `test_editor_save_diagnostics.py`, `FirstPlayableMainMenuTests.cs` and .meta, `engine-free-ci.yml`, `LOCAL_SAVE_EDITOR_DIAGNOSTICS.md`, and this note.
