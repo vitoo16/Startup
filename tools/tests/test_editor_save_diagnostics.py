@@ -1,0 +1,45 @@
+"""Engine-free source contract for opt-in Unity Editor save diagnostics.
+
+Does NOT run Unity, exercise filesystem moves, or validate user data.
+"""
+from pathlib import Path
+import unittest
+
+ROOT = Path(__file__).resolve().parents[2]
+EDITOR = ROOT / "Assets/StartupLife/Scripts/Editor/StartupLifeLocalSaveDiagnostics.cs"
+BOOTSTRAP = ROOT / "Assets/StartupLife/Scripts/Presentation/StartupLifeBootstrapper.cs"
+
+
+class EditorSaveDiagnosticsContractTests(unittest.TestCase):
+    def test_editor_matches_runtime_save_location_and_name(self):
+        editor = EDITOR.read_text(encoding="utf-8")
+        bootstrap = BOOTSTRAP.read_text(encoding="utf-8")
+        self.assertIn('private const string SaveFileName = "startup-life.json";', editor)
+        self.assertIn('saveFileName = "startup-life.json"', bootstrap)
+        self.assertIn('Application.persistentDataPath', editor)
+        self.assertIn('UnityEngine.Application.persistentDataPath', bootstrap)
+        self.assertIn('"Startup Life/Debug/Show actual save location"', editor)
+        self.assertIn('"Startup Life/Debug/Archive test save for new character"', editor)
+
+    def test_archiving_is_opt_in_and_fails_closed_in_play_mode(self):
+        editor = EDITOR.read_text(encoding="utf-8")
+        self.assertIn('EditorApplication.isPlayingOrWillChangePlaymode', editor)
+        self.assertIn('if (!EditorUtility.DisplayDialog("Archive local Startup Life test save?"', editor)
+        self.assertIn('File.Move(source, destination)', editor)
+        self.assertIn('File.Move(destination, source)', editor)
+        self.assertIn('EditorTestSaveArchives', editor)
+        self.assertNotIn('File.Delete(', editor)
+        self.assertNotIn('Directory.Delete(', editor)
+        self.assertNotIn('PlayerPrefs.DeleteAll(', editor)
+        self.assertNotIn('GameSession.NewState(', editor)
+
+    def test_diagnostics_distinguish_runtime_snapshot_from_disk(self):
+        editor = EDITOR.read_text(encoding="utf-8")
+        self.assertIn('FindAnyObjectByType<StartupLifeBootstrapper>', editor)
+        self.assertIn('snapshot.Name', editor)
+        self.assertIn('Matching local save files:', editor)
+        self.assertIn('No startup-life.json* files were found', editor)
+
+
+if __name__ == '__main__':
+    unittest.main()
