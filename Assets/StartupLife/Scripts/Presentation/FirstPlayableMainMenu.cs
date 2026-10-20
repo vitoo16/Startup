@@ -213,11 +213,15 @@ namespace StartupLife.Presentation
             button.colors = colors;
             button.onClick.AddListener(() => callback());
             var rowLayout = node.GetComponent<RectTransform>();
+            // Two-line Vietnamese labels need more than the minimum tap height.
+            // Take sizing from the single serialized theme, not per-button magic.
+            var labelSize = theme.heading * 1.2f;
+            var buttonHeight = Mathf.Max(theme.touchTarget, labelSize * 2.3f);
             if (parent.GetComponent<VerticalLayoutGroup>())
-                node.AddComponent<LayoutElement>().preferredHeight = theme.touchTarget;
+                node.AddComponent<LayoutElement>().preferredHeight = buttonHeight;
             else
-                rowLayout.sizeDelta = new Vector2(205f, theme.touchTarget);
-            var label = Text(name + "Label", key, node.transform, theme.heading);
+                rowLayout.sizeDelta = new Vector2(205f, buttonHeight);
+            var label = Text(name + "Label", key, node.transform, labelSize);
             var labelRect = (RectTransform)label.transform;
             Stretch(labelRect);
             labelRect.offsetMin = new Vector2(8f, 3f);
