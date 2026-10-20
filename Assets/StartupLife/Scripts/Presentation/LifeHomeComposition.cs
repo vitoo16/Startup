@@ -103,7 +103,22 @@ namespace StartupLife.Presentation
             Label("LifeProgressHeading", "dashboard.life.home.progress", progressCard.transform, font, 36f, theme.accent);
             foreach (var node in progress) node.SetParent(progressCard.transform, false);
 
+            // Reuse the only serialized typography authority. The historical
+            // baseline used 28–36 reference-pixel text, which was too small
+            // after the 1080-reference Canvas scales to a 360-wide phone.
+            ApplyReadableTypography(intro.transform, progressCard.transform, actions);
             built = true;
+        }
+
+        private void ApplyReadableTypography(Transform intro, Transform progress, Transform actions)
+        {
+            foreach (var text in intro.GetComponentsInChildren<TMP_Text>(true))
+                text.fontSize = text.gameObject.name == "LifeTitle"
+                    ? theme.title : Mathf.Max(text.fontSize, theme.heading);
+            foreach (var text in progress.GetComponentsInChildren<TMP_Text>(true))
+                text.fontSize = Mathf.Max(text.fontSize, theme.heading);
+            foreach (var text in actions.GetComponentsInChildren<TMP_Text>(true))
+                text.fontSize = Mathf.Max(text.fontSize, theme.heading);
         }
 
         public void Refresh(FirstPlayableState snapshot)
