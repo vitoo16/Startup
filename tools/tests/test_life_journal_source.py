@@ -68,6 +68,17 @@ class LifeJournalSourceTests(unittest.TestCase):
         self.assertIn('LifeActionCard").GetSiblingIndex()', tests)
         self.assertIn('ProfileOffersReducedMotionToggleWithoutChangingGameState', tests)
 
+    def test_journal_typography_is_derived_from_single_theme(self):
+        source = SCENE.read_text(encoding="utf-8")
+        playmode = (ROOT / "Assets/StartupLife/Tests/PlayMode/LifeHomeCompositionTests.cs").read_text(
+            encoding="utf-8")
+        self.assertIn('ApplyReadableTypography(intro.transform, progressCard.transform, actions)', source)
+        self.assertIn('theme.title', source)
+        self.assertIn('Mathf.Max(text.fontSize, theme.heading)', source)
+        self.assertIn('title.fontSize, Is.GreaterThanOrEqualTo(root.UiTheme.title)', playmode)
+        self.assertIn('workText.fontSize, Is.GreaterThanOrEqualTo(root.UiTheme.heading)', playmode)
+        self.assertNotIn('TMP_FontAsset.CreateFontAsset', source)
+
     def test_idempotent_and_preserves_scroll_on_refresh(self):
         source = SCENE.read_text(encoding="utf-8")
         self.assertIn('if (!component.built)', source)
