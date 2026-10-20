@@ -145,6 +145,17 @@ namespace UnityEngine.UI
 
 namespace StartupLife.Presentation
 {
+    // UI motion is a Unity runtime component. This minimal engine-free surface
+    // exists only so the Character Creator source contract remains compiled;
+    // it never simulates coroutines, opacity or in-Editor visual behavior.
+    public static class UiPanelReveal
+    {
+        public static void Show(UnityEngine.GameObject target)
+        {
+            if (target != null) target.SetActive(true);
+        }
+    }
+
     // Only the documented tiny external surface needed by UI controller.
     public sealed class LocalizedKeyLabel : UnityEngine.Component
     {
