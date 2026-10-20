@@ -67,6 +67,7 @@ namespace StartupLife.Presentation
         private BusinessManagementOverlay businessOverlay;
         private Func<LifeDashboardSnapshot> lifeDashboardReader;
         private LifeDashboardOverlay lifeDashboard;
+        private LifeHomeComposition lifeHome;
         private EventChoiceOverlay eventChoiceOverlay;
 
         // Deliberately opt-in: V3 production runs have no pending-choice journal.
@@ -150,13 +151,22 @@ namespace StartupLife.Presentation
             daySummary = summary ?? throw new ArgumentNullException(nameof(summary));
             studyActions = new StudyActionController(flow, Refresh, status);
             workPlayback.Bind(flow, content, Refresh, status);
+            // Preserve source-wired buttons/IDs. Recompose only authored Life shells;
+            // isolated test fixtures and older partial scenes remain usable.
+            if (transform.Find("LifeTitle") && transform.Find("Actions"))
+                lifeHome = LifeHomeComposition.Install(this,
+                    cashValue ? cashValue : GetComponentInChildren<TMP_Text>(true));
             Refresh();
         }
 
         public void SetVisible(bool visible)
         {
             var target = root ? root : gameObject;
-            if (visible) UiPanelReveal.Show(target);
+            if (visible)
+            {
+                if (!target.activeSelf) lifeHome?.ScrollToTopOnFreshEntry();
+                UiPanelReveal.Show(target);
+            }
             else if (target.activeSelf) target.SetActive(false);
         }
 
@@ -235,6 +245,7 @@ namespace StartupLife.Presentation
             if (buyCourseButton) buyCourseButton.interactable = snapshot.ActiveCourse == null && snapshot.Arrears == 0;
             if (studyButton) studyButton.interactable = snapshot.ActiveCourse != null;
             if (resignButton) resignButton.interactable = employed;
+            lifeHome?.Refresh(snapshot);
             businessOverlay?.Refresh();
             lifeDashboard?.Refresh();
             eventChoiceOverlay?.Refresh();
