@@ -34,6 +34,9 @@ namespace StartupLife.Presentation
         private EventV4CommitGateway eventGateway;
         private FirstPlayableFlow flow;
         private FirstPlayableLifecycle lifecycle;
+        private FirstPlayableMainMenu mainMenu;
+
+        private string SavePath => Path.Combine(UnityEngine.Application.persistentDataPath, saveFileName);
 
         public bool IsReady { get; private set; }
         public FirstPlayableFlow Flow => flow;
@@ -66,7 +69,7 @@ namespace StartupLife.Presentation
                 var staged = new StagedV3SaveSerializer(historical, replay);
                 var serializer = new V3SaveCompatibilitySerializer(
                     content, GameSession.CreateRestoreValidator(), migration, staged);
-                var path = Path.Combine(UnityEngine.Application.persistentDataPath, saveFileName);
+                var path = SavePath;
                 var commandIds = new GuidCommandIdSource();
                 if (enableVerifiedEventV4)
                 {
@@ -172,6 +175,9 @@ namespace StartupLife.Presentation
                 IsReady = true;
                 RefreshMode();
                 lifecycle.RestoreAfterBootstrap();
+                var menuFont = lifeScreen.GetComponentInChildren<TMPro.TMP_Text>(true);
+                mainMenu = FirstPlayableMainMenu.Install(this, lifeScreen.transform.parent,
+                    lifeScreen.UiTheme, menuFont ? menuFont.font : null);
             }
             catch (Exception error)
             {
@@ -219,6 +225,47 @@ namespace StartupLife.Presentation
         {
             if (!IsReady || lifecycle == null) return;
             lifecycle.SetPaused(pauseStatus);
+        }
+
+        public bool TryArchiveAndStartNewGame(out string reason)
+        {
+            reason = string.Empty;
+            if (!IsReady || lifecycle == null || flow == null || workPlayback.IsRunning)
+            {
+                reason = "Game is not ready or a work shift is in progress.";
+                return false;
+            }
+            if (string.IsNullOrEmpty(flow.Refresh().Name))
+            {
+                // A brand-new draft does not own a committed character save.
+                reason = "A new character is already being created.";
+                return false;
+            }
+            lifecycle.SetPaused(true);
+            try
+            {
+                // Archive both the primary and its recovery backup under the
+                // same cross-process save lock. No new-run state is written here.
+                var archive = LocalCheckpointArchiver.Archive(SavePath);
+                if (archive.Length == 0)
+                {
+                    reason = "Expected committed checkpoint was not present.";
+                    lifecycle.SetPaused(false);
+                    return false;
+                }
+                Debug.Log("[StartupLife][Menu] Existing run archived at " + archive);
+                var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+                UnityEngine.SceneManagement.SceneManager.LoadScene(scene.name,
+                    UnityEngine.SceneManagement.LoadSceneMode.Single);
+                return true;
+            }
+            catch (Exception error)
+            {
+                Debug.LogException(error);
+                reason = "Unable to archive and reload safely; see Console for details.";
+                lifecycle.SetPaused(false);
+                return false;
+            }
         }
 
         public void RefreshMode()
