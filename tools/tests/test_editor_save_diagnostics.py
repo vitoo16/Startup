@@ -25,9 +25,12 @@ class EditorSaveDiagnosticsContractTests(unittest.TestCase):
         editor = EDITOR.read_text(encoding="utf-8")
         self.assertIn('EditorApplication.isPlayingOrWillChangePlaymode', editor)
         self.assertIn('if (!EditorUtility.DisplayDialog("Archive local Startup Life test save?"', editor)
-        self.assertIn('File.Move(source, destination)', editor)
-        self.assertIn('File.Move(destination, source)', editor)
-        self.assertIn('EditorTestSaveArchives', editor)
+        self.assertIn('LocalCheckpointArchiver.Archive(savePath)', editor)
+        self.assertIn('RunArchives', editor)
+        self.assertNotIn('File.Move(', editor)
+        archive_source = (ROOT / "Assets/StartupLife/Scripts/Infrastructure/LocalCheckpointArchiver.cs").read_text(encoding="utf-8")
+        self.assertIn('File.Move(source, Path.Combine(archive, Path.GetFileName(source)))', archive_source)
+        self.assertIn('File.Move(Path.Combine(archive, Path.GetFileName(original)), original)', archive_source)
         self.assertNotIn('File.Delete(', editor)
         self.assertNotIn('Directory.Delete(', editor)
         self.assertNotIn('PlayerPrefs.DeleteAll(', editor)
@@ -38,7 +41,7 @@ class EditorSaveDiagnosticsContractTests(unittest.TestCase):
         self.assertIn('FindAnyObjectByType<StartupLifeBootstrapper>', editor)
         self.assertIn('snapshot.Name', editor)
         self.assertIn('Matching local save files:', editor)
-        self.assertIn('No startup-life.json* files were found', editor)
+        self.assertIn('No startup-life.json or its .backup file was found', editor)
 
 
     def test_bootstrap_logs_actual_load_status_without_exposing_names(self):
