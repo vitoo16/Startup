@@ -95,6 +95,7 @@ namespace StartupLife.Presentation
             panel.SetActive(true);
             panel.transform.SetAsLastSibling();
             Select(selected);
+            UiPanelReveal.Show(panel);
         }
 
         public void Hide()
@@ -107,6 +108,8 @@ namespace StartupLife.Presentation
             if (!pages.ContainsKey(section)) throw new ArgumentOutOfRangeException(nameof(section));
             selected = section;
             foreach (var page in pages) page.Value.SetActive(page.Key == section);
+            if (panel != null && panel.activeInHierarchy)
+                UiPanelReveal.Show(pages[section]);
             foreach (var button in nav)
             {
                 button.Value.GetComponent<Image>().color =
@@ -445,6 +448,16 @@ namespace StartupLife.Presentation
             size.preferredHeight = TouchHeight;
             var button = go.GetComponent<Button>();
             button.targetGraphic = go.GetComponent<Image>();
+            // Press/highlight feedback uses the existing theme-colored Image;
+            // no new texture, shader or off-grid transform is needed.
+            var colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(0.96f, 0.96f, 0.96f, 1f);
+            colors.pressedColor = new Color(0.78f, 0.78f, 0.78f, 1f);
+            colors.selectedColor = Color.white;
+            colors.disabledColor = new Color(1f, 1f, 1f, 0.56f);
+            colors.fadeDuration = 0.08f;
+            button.colors = colors;
             button.onClick.AddListener(() => onClick());
             var label = TextNode(name + "Label", go.transform, value, 27, Color.white);
             label.alignment = TextAlignmentOptions.Center;
