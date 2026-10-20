@@ -22,6 +22,11 @@ namespace StartupLife.Presentation
         private TMP_Text momentText;
         private LocalizedKeyLabel momentLabel;
         private string activeMomentKey;
+        private Button[] actionButtons;
+        private Button acceptAction;
+        private Button workAction;
+        private Button studyAction;
+        private Button advanceAction;
         private MobileTheme theme;
         private ScrollRect scroll;
         private bool built;
@@ -55,8 +60,10 @@ namespace StartupLife.Presentation
             var actions = transform.Find("Actions");
             if (!actions) throw new InvalidOperationException("Life actions are missing.");
 
+            // Reserve space for the persistent Dashboard and Business buttons
+            // already anchored above this scroll view by their owning overlays.
             var view = MobileScrollViewFactory.Create(transform, "LifeHomeScroll", theme.background,
-                new RectOffset(24, 24, 16, 32), 20f, TextAnchor.UpperLeft, 32f);
+                new RectOffset(24, 24, 148, 32), 20f, TextAnchor.UpperLeft, 32f);
             scroll = view.Scroll;
             var content = view.Content.transform;
 
@@ -78,11 +85,15 @@ namespace StartupLife.Presentation
             var choices = Card("LifeActionCard", content, theme.panel, 12);
             Label("LifeActionHeading", "life.home.actions", choices.transform, font, 36f, theme.accent);
             actions.SetParent(choices.transform, false);
-            var buttons = actions.GetComponentsInChildren<Button>(true);
-            foreach (var button in buttons)
+            actionButtons = actions.GetComponentsInChildren<Button>(true);
+            acceptAction = actions.Find("AcceptDeveloperButton")?.GetComponent<Button>();
+            workAction = actions.Find("WorkButton")?.GetComponent<Button>();
+            studyAction = actions.Find("Study60Button")?.GetComponent<Button>();
+            advanceAction = actions.Find("AdvanceDayButton")?.GetComponent<Button>();
+            foreach (var button in actionButtons)
             {
-                // A visible pressed state, with the existing colored hierarchy
-                // and existing persistent listener/IDs left intact.
+                // A visible pressed state, with all existing event listeners
+                // and stable UI identities left untouched.
                 var colors = button.colors;
                 colors.highlightedColor = new Color(0.92f, 0.92f, 0.92f, 1f);
                 colors.pressedColor = new Color(0.72f, 0.72f, 0.72f, 1f);
@@ -96,6 +107,17 @@ namespace StartupLife.Presentation
         public void Refresh(FirstPlayableState snapshot)
         {
             if (!built || snapshot == null || !momentText) return;
+            // Only one relevant action receives the accent; all other actions
+            // remain available according to their authoritative interactable state.
+            var primary = !string.IsNullOrEmpty(snapshot.CareerId) && snapshot.Instant.Minute < 17 * 60
+                ? workAction : snapshot.ActiveCourse != null ? studyAction :
+                  string.IsNullOrEmpty(snapshot.CareerId) ? acceptAction : advanceAction;
+            if (primary == null || !primary.interactable) primary = advanceAction;
+            foreach (var button in actionButtons)
+            {
+                var background = button.targetGraphic as Image;
+                if (background) background.color = button == primary ? theme.accent : theme.ink;
+            }
             var minute = snapshot.Instant.Minute;
             var key = minute >= 17 * 60 ? "life.home.evening" :
                 !string.IsNullOrEmpty(snapshot.CareerId) ? "life.home.work" :
