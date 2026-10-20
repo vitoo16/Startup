@@ -62,9 +62,8 @@ namespace StartupLife.Presentation
 
             var intro = Card("LifeJournalHeader", content, theme.panel, 16);
             foreach (var node in header) node.SetParent(intro.transform, false);
-            // The original labels remain active and localized.
-            var nameRow = intro.transform.Find("NameRow");
-            if (nameRow) nameRow.SetAsLastSibling();
+            // The original labels remain active, localized and in their
+            // source order so existing runtime tests can still discover them.
 
             var stage = RectNode("LifeNeighborhoodStage", content, typeof(Image), typeof(LayoutElement));
             stage.GetComponent<Image>().color = theme.panel;
