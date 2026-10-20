@@ -20,6 +20,8 @@ namespace StartupLife.Presentation
             { "CashRow", "CareerRow", "RankRow", "CourseRow", "CourseProgressRow", "LifeStatus" };
 
         private TMP_Text momentText;
+        private LocalizedKeyLabel momentLabel;
+        private string activeMomentKey;
         private MobileTheme theme;
         private ScrollRect scroll;
         private bool built;
@@ -99,7 +101,9 @@ namespace StartupLife.Presentation
             var key = minute >= 17 * 60 ? "life.home.evening" :
                 !string.IsNullOrEmpty(snapshot.CareerId) ? "life.home.work" :
                 snapshot.ActiveCourse != null ? "life.home.study" : "life.home.newday";
-            LocalizedKeyLabel.EnsureFor(momentText).SetKey(key);
+            if (key == activeMomentKey) return;
+            activeMomentKey = key;
+            momentLabel.SetKey(key);
         }
 
         // Called by the game's normal dashboard close/open lifecycle; never
@@ -155,6 +159,8 @@ namespace StartupLife.Presentation
                 new Vector2(0.08f, 0.75f), new Vector2(0.62f, 0.98f));
             momentText = Label("StageMoment", "life.home.newday", parent, font, 27f, ink,
                 new Vector2(0.08f, 0.39f), new Vector2(0.63f, 0.72f));
+            momentLabel = momentText.GetComponent<LocalizedKeyLabel>();
+            activeMomentKey = "life.home.newday";
         }
 
         private static void Block(string name, Transform parent, Color color, Vector2 low, Vector2 high)
