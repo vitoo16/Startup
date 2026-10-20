@@ -63,3 +63,23 @@ Code-only candidate, **not an owner-approved visual**:
 - No changes to `GameState`, `FirstPlayableFlow`, event journal, CAS gateway, save path, command handlers, approval registry, art source or player preferences.
 
 **Unity QA to perform:** Pull exact head, open FirstPlayable on a test save and on a new run, verify the old Life controls are now children of `LifeHomeScroll/Viewport/Content`; scroll from journal to actions, click each available action, open/close dashboard and business, confirm save restore/cold restart and readable Vietnamese. Check 360×640/390×844/430×932 and enlarged text. Character and world animation remain BLOCKED; user visual approval is still missing. Source regression + PlayMode test are additional checks but not a substitute for Unity runtime screenshots.
+
+## 2026-10-20 continuation: action-first Life and motion accessibility
+
+**Owner:** GPT-6 Technical Director. **Lane:** `main`. **Goal:** improve real player touch ergonomics/readability before proposing any art approval.
+
+**Code slice:** `LifeHomeComposition` now presents the existing action card before the long statistics card, moves the highest-priority currently enabled action to the top without replacing any GameObject/UnityEvent, and derives baseline Life/title/action typography from serialized `MobileTheme`. The `LifeDashboardOverlay` Profile page now exposes a localized, persistent toggle for `UiPanelReveal.ReducedMotionPreference`; it changes only UI animations, not gameplay time or state.
+
+**Skills used:** `startup-life-session-orchestrator`, `ui`, `ui-ugui` (including `scrollview-setup.md`), `unity-cli`, `localization`, `vietnam-art-direction`; GDD and production roadmap checked.
+
+**Tests:** Added source contracts plus PlayMode assertions for action-card precedence, readable typography and user-accessible reduced motion. Engine-free GitHub CI must be read at the final HEAD. **Unity Editor compilation, 360×640/390×844/430×932 screenshots, 200%-text, touch and device tests: NOT RUN in this session.** No claim of visual approval.
+
+**Visual evidence:** Existing owner screenshot remains FAIL for legacy UI; no new accepted Game View footage yet. Existing geometry-only environment remains staging, not approved original scene art. C03 raster remains rejected and the approved-art registry is not changed.
+
+**Save impact:** No schema, serializer, receipts or economy changes; reduced-motion option uses `PlayerPrefs` only.
+
+**Known limitations:** Not yet a character-driven animated Life scene. Gameplay buttons remain inherited prototype controls and may require responsive typography/layout adjustment after device evidence. Full Vietnamese dynamic copy review remains open.
+
+**Files changed:** `LifeHomeComposition.cs`, `LifeDashboardOverlay.cs`, `DashboardLocalizationCatalog.cs`, `LifeHomeCompositionTests.cs`, `test_life_journal_source.py`, `test_presentation_motion_source.py`, and this evidence note.
+
+**Manual Unity review request:** Stop Play → update to HEAD → FirstPlayable → Play, check that **Đi làm/Nhận việc/Học** (when enabled) is first and visibly emphasized, all six old actions remain accessible by scrolling, Dashboard → Hồ sơ can toggle reduced motion, and Vietnamese accents/heading sizes remain legible. Send a 390×844 portrait screenshot of the top and bottom of the scroll. Treat errors/overlap or unreachable controls as FAIL.
