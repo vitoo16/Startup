@@ -56,7 +56,7 @@ namespace StartupLife.Presentation
             mainPage = Page("StartupMainMenuHome", screen.transform);
             Text("StartupMainMenuTitle", "dashboard.menu.title", mainPage.transform, theme.title);
             continueButton = Button("StartupMainMenuContinueButton", "dashboard.menu.continue",
-                mainPage.transform, Close);
+                mainPage.transform, Close).GetComponent<Button>();
             Button("StartupMainMenuNewGameButton", "dashboard.menu.new",
                 mainPage.transform, RequestNewGame);
             Button("StartupMainMenuSettingsButton", "dashboard.menu.settings",
@@ -190,12 +190,10 @@ namespace StartupLife.Presentation
             button.colors = colors;
             button.onClick.AddListener(() => callback());
             var rowLayout = node.GetComponent<RectTransform>();
-            if (parent == screen?.transform || parent == null)
-            {
-                // Absolute-position entry button, not a layout-controlled row.
+            if (parent.GetComponent<VerticalLayoutGroup>())
+                node.AddComponent<LayoutElement>().preferredHeight = theme.touchTarget;
+            else
                 rowLayout.sizeDelta = new Vector2(205f, theme.touchTarget);
-            }
-            else node.AddComponent<LayoutElement>().preferredHeight = theme.touchTarget;
             var label = Text(name + "Label", key, node.transform, theme.heading);
             var labelRect = (RectTransform)label.transform;
             Stretch(labelRect);
