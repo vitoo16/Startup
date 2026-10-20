@@ -41,5 +41,16 @@ class EditorSaveDiagnosticsContractTests(unittest.TestCase):
         self.assertIn('No startup-life.json* files were found', editor)
 
 
+    def test_bootstrap_logs_actual_load_status_without_exposing_names(self):
+        bootstrap = BOOTSTRAP.read_text(encoding="utf-8")
+        self.assertIn('private static void LogEditorSaveRead(string path, LoadResult read)', bootstrap)
+        self.assertEqual(2, bootstrap.count('LogEditorSaveRead(path, '))
+        self.assertIn('status=" + read.Status', bootstrap)
+        self.assertIn('backupExists=" + File.Exists(path + ".backup")', bootstrap)
+        self.assertIn('characterPresent=" + (read.State != null', bootstrap)
+        self.assertIn('#if UNITY_EDITOR', bootstrap)
+        self.assertNotIn('Debug.Log(read.State.Name)', bootstrap)
+
+
 if __name__ == '__main__':
     unittest.main()
