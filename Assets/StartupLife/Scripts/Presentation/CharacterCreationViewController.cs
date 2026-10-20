@@ -78,9 +78,13 @@ namespace StartupLife.Presentation
         public void SetVisible(bool visible)
         {
             if (!visible) approvedPreview?.Hide();
-            if (root) root.SetActive(visible);
-            else gameObject.SetActive(visible);
-            if (visible) ShowApprovedPreviewIfAvailable();
+            var target = root ? root : gameObject;
+            if (visible)
+            {
+                UiPanelReveal.Show(target);
+                ShowApprovedPreviewIfAvailable();
+            }
+            else if (target.activeSelf) target.SetActive(false);
         }
 
         // The preview is opt-in: a separate approved rig/palette integration
