@@ -6,6 +6,18 @@
 
 `FirstPlayable.unity` has `CharacterCreationPanel` active and `LifePanel` inactive in serialized scene data. `StartupLifeBootstrapper.RefreshMode()` enables Life only when the loaded `FirstPlayableState.Name` is nonempty. `GameSession.NewState()` creates an empty name. If the Game View shows a named character after opening this scene, either an existing checkpoint was restored or an already-running Play Mode still holds the character in memory. Removing save files while Play Mode is running cannot reset the in-memory character.
 
+## What the new Editor startup receipt proves
+
+On each Play Mode initialization, Console prints a line starting with `[StartupLife][SaveBoot]`. It is emitted by `StartupLifeBootstrapper` immediately after the physical V3 or V4 store read, before any UI visibility decisions. Fields:
+
+- `status=Missing`: no valid primary or backup was read; the first run should have no character.
+- `status=Valid`: primary save was read and accepted.
+- `status=RecoveredBackup`: the secondary `startup-life.json.backup` was used because the primary could not be read as a valid checkpoint.
+- `primaryExists`, `backupExists`: whether corresponding files exist at read time.
+- `revision`, `characterPresent`: the read checkpoint's state, without logging personal names.
+
+If `status=Missing` and `characterPresent=False` but the Life panel still appears in a *fresh Play Mode*, capture the whole Console and Hierarchy: this points to view or lifecycle handling rather than a hidden save. Stop Play Mode first before moving any files. If the user removed the folder while Play Mode was running, the current in-memory state does not reset until a fresh start.
+
 ## Safe UI procedure
 
 1. Select `Assets/StartupLife/Scenes/FirstPlayable.unity`.
