@@ -250,7 +250,7 @@ namespace StartupLife.Presentation
                 if (archive.Length == 0)
                 {
                     reason = "Expected committed checkpoint was not present. Restart the scene to inspect the save.";
-                    IsReady = false;
+                    Fail("fatal.save_unavailable");
                     return false;
                 }
                 Debug.Log("[StartupLife][Menu] Existing run archived at " + archive);
@@ -265,7 +265,7 @@ namespace StartupLife.Presentation
                 // An interrupted archive or a failed scene reload must not
                 // resume the old in-memory session and recreate a checkpoint
                 // in the path reserved for the next run. Fail closed instead.
-                IsReady = false;
+                Fail("fatal.save_unavailable");
                 reason = "Unable to archive and reload safely. Restart the scene and inspect RunArchives.";
                 return false;
             }
