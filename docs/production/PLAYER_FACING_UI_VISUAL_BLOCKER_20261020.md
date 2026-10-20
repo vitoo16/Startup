@@ -50,3 +50,16 @@ Art registry impact: None; rejected artwork is not promoted.
 Unity compilation: **NOT RUN in this coding session**.  
 Visual/device evidence: owner screenshot shows **FAIL** for current base Life design; new motion not yet reviewed in Unity.  
 Known limitation: main Life scene remains legacy prototype geometry, no approved character/environment/rig, only incremental motion/copy improvements landed.  
+
+
+## Incremental Life journal layout — 2026-10-20 follow-up
+
+Code-only candidate, **not an owner-approved visual**:
+
+- `LifeHomeComposition` reuses all existing source-wired Life row GameObjects and six existing UnityEvent-bearing buttons; it re-parents them into a `MobileScrollViewFactory` viewport and groups the header, progress and daily decisions in separate readable journal cards.
+- A flat geometric 2D desk/window/notebook composition is an original **layout staging sketch**, not final native-pixel environment artwork or a character. It cannot satisfy C03/rig or the mandatory device BeautyCell gate.
+- Top scroll padding reserves clearance for the existing Dashboard/Business anchored navigation. The primary visible action gets the theme accent, while the other actions remain discoverable and keep existing `interactable` authority from `LifeScreenViewController`.
+- A contextual daily sentence uses a shared localized catalog entry and updates only when the state changes; the game still needs complete review of historical hardcoded dynamic copy.
+- No changes to `GameState`, `FirstPlayableFlow`, event journal, CAS gateway, save path, command handlers, approval registry, art source or player preferences.
+
+**Unity QA to perform:** Pull exact head, open FirstPlayable on a test save and on a new run, verify the old Life controls are now children of `LifeHomeScroll/Viewport/Content`; scroll from journal to actions, click each available action, open/close dashboard and business, confirm save restore/cold restart and readable Vietnamese. Check 360×640/390×844/430×932 and enlarged text. Character and world animation remain BLOCKED; user visual approval is still missing. Source regression + PlayMode test are additional checks but not a substitute for Unity runtime screenshots.
