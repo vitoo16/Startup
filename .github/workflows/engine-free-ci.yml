@@ -117,6 +117,9 @@ jobs:
       - name: Guard opt-in Editor test-save diagnostics (no Unity Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_editor_save_diagnostics.py' -v
 
+      - name: Guard UI motion and Vietnamese copy source joins (no Unity Editor)
+        run: python3 -m unittest discover -s tools/tests -p 'test_presentation_motion_source.py' -v
+
       - name: Triage Unity Console diagnostics without suppressing unknown errors (no Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_unity_console_triage.py' -v
 
