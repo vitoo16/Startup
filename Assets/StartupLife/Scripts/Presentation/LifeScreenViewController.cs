@@ -155,8 +155,9 @@ namespace StartupLife.Presentation
 
         public void SetVisible(bool visible)
         {
-            if (root) root.SetActive(visible);
-            else gameObject.SetActive(visible);
+            var target = root ? root : gameObject;
+            if (visible) UiPanelReveal.Show(target);
+            else if (target.activeSelf) target.SetActive(false);
         }
 
         public void Refresh()
