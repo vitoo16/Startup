@@ -24,6 +24,20 @@ class HomeMenuContracts(unittest.TestCase):
         self.assertNotIn("PlayerPrefs.DeleteAll(", menu)
         self.assertNotIn("GameSession.NewState(", menu)
 
+    def test_all_menu_pages_use_shared_portrait_scroll_factory(self):
+        menu = MENU.read_text(encoding="utf-8")
+        playmode = (ROOT / "Assets/StartupLife/Tests/PlayMode/FirstPlayableMainMenuTests.cs").read_text(
+            encoding="utf-8")
+        self.assertIn('MobileScrollViewFactory.Create(panel.transform, name + "Scroll"', menu)
+        self.assertIn('Stretch((RectTransform)view.Scroll.transform)', menu)
+        self.assertIn('page.transform.Find(page.name + "Scroll/Viewport/Content")', menu)
+        for name in ("mainPage", "settingsPage", "confirmationPage"):
+            self.assertIn("ResetScroll(" + name + ")", menu)
+        self.assertIn('AllMenuPagesKeepScrollableContentAndTouchButtons', playmode)
+        self.assertIn('GetComponent<VerticalLayoutGroup>()', playmode)
+        self.assertIn('GetComponent<ContentSizeFitter>()', playmode)
+        self.assertNotIn('panel = Node(name, parent, typeof(Image), typeof(VerticalLayoutGroup))', menu)
+
     def test_runtime_and_editor_use_one_locked_archiver(self):
         bootstrap = BOOT.read_text(encoding="utf-8")
         archiver = ARCHIVE.read_text(encoding="utf-8")
