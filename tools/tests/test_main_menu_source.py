@@ -37,6 +37,15 @@ class HomeMenuContracts(unittest.TestCase):
         self.assertIn('GetComponent<VerticalLayoutGroup>()', playmode)
         self.assertIn('GetComponent<ContentSizeFitter>()', playmode)
         self.assertNotIn('panel = Node(name, parent, typeof(Image), typeof(VerticalLayoutGroup))', menu)
+        self.assertIn('var labelSize = theme.heading * 1.2f', menu)
+        self.assertIn('Mathf.Max(theme.touchTarget, labelSize * 2.3f)', menu)
+        matrix = (ROOT / "Assets/StartupLife/Tests/PlayMode/FirstPlayableMainMenuResponsiveTests.cs").read_text(
+            encoding="utf-8")
+        for resolution in ("360, 640", "390, 844", "430, 932"):
+            self.assertIn(resolution, matrix)
+        self.assertIn('Screen.SetResolution(size.x, size.y, false)', matrix)
+        self.assertIn('label.isTextOverflowing, Is.False', matrix)
+        self.assertIn('STARTUP_LIFE_MAIN_MENU_RESPONSIVE_EVIDENCE', matrix)
 
     def test_runtime_and_editor_use_one_locked_archiver(self):
         bootstrap = BOOT.read_text(encoding="utf-8")
