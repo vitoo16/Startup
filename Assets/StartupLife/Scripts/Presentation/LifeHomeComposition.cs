@@ -78,10 +78,8 @@ namespace StartupLife.Presentation
             stage.GetComponent<LayoutElement>().minHeight = 264f;
             BuildGeometricStage(stage.transform, font);
 
-            var progressCard = Card("LifeProgressCard", content, theme.panel, 12);
-            Label("LifeProgressHeading", "dashboard.life.home.progress", progressCard.transform, font, 36f, theme.accent);
-            foreach (var node in progress) node.SetParent(progressCard.transform, false);
-
+            // Make the next decision reachable before the long status ledger.
+            // Keep the progress card further down the same accessible scroll.
             var choices = Card("LifeActionCard", content, theme.panel, 12);
             Label("LifeActionHeading", "dashboard.life.home.actions", choices.transform, font, 36f, theme.accent);
             actions.SetParent(choices.transform, false);
@@ -101,6 +99,10 @@ namespace StartupLife.Presentation
                 button.colors = colors;
             }
 
+            var progressCard = Card("LifeProgressCard", content, theme.panel, 12);
+            Label("LifeProgressHeading", "dashboard.life.home.progress", progressCard.transform, font, 36f, theme.accent);
+            foreach (var node in progress) node.SetParent(progressCard.transform, false);
+
             built = true;
         }
 
@@ -112,9 +114,15 @@ namespace StartupLife.Presentation
             var primary = !string.IsNullOrEmpty(snapshot.CareerId) && snapshot.Instant.Minute < 17 * 60
                 ? workAction : snapshot.ActiveCourse != null ? studyAction :
                   string.IsNullOrEmpty(snapshot.CareerId) ? acceptAction : advanceAction;
-            if (primary == null || !primary.interactable) primary = advanceAction;
+            if (primary == null || !primary.interactable)
+                primary = Array.Find(actionButtons, button => button && button.interactable);
+            // The highest-value available choice stays at the top of the
+            // original VerticalLayoutGroup. Reordering is not a command.
+            if (primary && primary.transform.GetSiblingIndex() != 0)
+                primary.transform.SetAsFirstSibling();
             foreach (var button in actionButtons)
             {
+                if (!button) continue;
                 var background = button.targetGraphic as Image;
                 if (background) background.color = button == primary ? theme.accent : theme.ink;
             }
