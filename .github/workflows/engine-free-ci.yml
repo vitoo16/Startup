@@ -120,6 +120,9 @@ jobs:
       - name: Guard UI motion and Vietnamese copy source joins (no Unity Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_presentation_motion_source.py' -v
 
+      - name: Guard Life journal composition and approved-art boundary (no Unity Editor)
+        run: python3 -m unittest discover -s tools/tests -p 'test_life_journal_source.py' -v
+
       - name: Triage Unity Console diagnostics without suppressing unknown errors (no Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_unity_console_triage.py' -v
 
