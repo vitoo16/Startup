@@ -56,6 +56,18 @@ class LifeJournalSourceTests(unittest.TestCase):
         self.assertIn('momentLabel.SetKey(key)', source)
         self.assertIn('if (key == activeMomentKey) return;', source)
 
+    def test_daily_actions_precede_stats_and_prioritize_enabled_buttons(self):
+        source = SCENE.read_text(encoding="utf-8")
+        tests = (ROOT / "Assets/StartupLife/Tests/PlayMode/LifeHomeCompositionTests.cs").read_text(
+            encoding="utf-8")
+        self.assertLess(source.index('Card("LifeActionCard"'),
+                        source.index('Card("LifeProgressCard"'))
+        self.assertIn('button && button.interactable', source)
+        self.assertIn('primary.transform.SetAsFirstSibling()', source)
+        self.assertIn('button == primary ? theme.accent : theme.ink', source)
+        self.assertIn('LifeActionCard").GetSiblingIndex()', tests)
+        self.assertIn('ProfileOffersReducedMotionToggleWithoutChangingGameState', tests)
+
     def test_idempotent_and_preserves_scroll_on_refresh(self):
         source = SCENE.read_text(encoding="utf-8")
         self.assertIn('if (!component.built)', source)
