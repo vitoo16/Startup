@@ -59,36 +59,39 @@ namespace StartupLife.Presentation
             screen.GetComponent<Image>().color = theme.background;
             screen.GetComponent<Image>().raycastTarget = true;
             mainPage = Page("StartupMainMenuHome", screen.transform);
-            Text("StartupMainMenuTitle", "dashboard.menu.title", mainPage.transform, theme.title);
+            var homeBody = PageBody(mainPage);
+            Text("StartupMainMenuTitle", "dashboard.menu.title", homeBody, theme.title);
             continueButton = Button("StartupMainMenuContinueButton", "dashboard.menu.continue",
-                mainPage.transform, Close).GetComponent<Button>();
+                homeBody, Close).GetComponent<Button>();
             Button("StartupMainMenuNewGameButton", "dashboard.menu.new",
-                mainPage.transform, RequestNewGame);
+                homeBody, RequestNewGame);
             Button("StartupMainMenuSettingsButton", "dashboard.menu.settings",
-                mainPage.transform, OpenSettings);
+                homeBody, OpenSettings);
             Button("StartupMainMenuBackButton", "dashboard.menu.back",
-                mainPage.transform, Close);
+                homeBody, Close);
 
             settingsPage = Page("StartupMainMenuSettings", screen.transform);
+            var settingsBody = PageBody(settingsPage);
             Text("StartupMainMenuSettingsTitle", "dashboard.menu.settings",
-                settingsPage.transform, theme.heading);
+                settingsBody, theme.heading);
             motionStatus = Text("StartupMainMenuMotionState", "dashboard.menu.motion.enabled",
-                settingsPage.transform, theme.body).GetComponent<LocalizedKeyLabel>();
+                settingsBody, theme.body).GetComponent<LocalizedKeyLabel>();
             Button("StartupMainMenuMotionToggleButton", "dashboard.menu.motion.toggle",
-                settingsPage.transform, ToggleMotion);
+                settingsBody, ToggleMotion);
             Button("StartupMainMenuSettingsBackButton", "dashboard.menu.back",
-                settingsPage.transform, ShowHome);
+                settingsBody, ShowHome);
 
             confirmationPage = Page("StartupMainMenuNewGameConfirmation", screen.transform);
+            var confirmationBody = PageBody(confirmationPage);
             var warning = Text("StartupMainMenuWarning", "dashboard.menu.confirm",
-                confirmationPage.transform, theme.body);
-            warning.GetComponent<LayoutElement>().preferredHeight = theme.touchTarget * 2.5f;
+                confirmationBody, theme.body);
+            warning.GetComponent<LayoutElement>().preferredHeight = theme.touchTarget * 3.5f;
             Button("StartupMainMenuConfirmButton", "dashboard.menu.archive_new",
-                confirmationPage.transform, ConfirmNewGame);
+                confirmationBody, ConfirmNewGame);
             Button("StartupMainMenuCancelButton", "dashboard.menu.cancel",
-                confirmationPage.transform, ShowHome);
+                confirmationBody, ShowHome);
             feedback = Text("StartupMainMenuFeedback", "dashboard.menu.archive_failed",
-                confirmationPage.transform, theme.caption).GetComponent<LocalizedKeyLabel>();
+                confirmationBody, theme.caption).GetComponent<LocalizedKeyLabel>();
             feedback.gameObject.SetActive(false);
             screen.SetActive(false);
         }
@@ -114,6 +117,7 @@ namespace StartupLife.Presentation
             settingsPage.SetActive(false);
             confirmationPage.SetActive(false);
             feedback.gameObject.SetActive(false);
+            ResetScroll(mainPage);
         }
 
         private void OpenSettings()
@@ -121,6 +125,7 @@ namespace StartupLife.Presentation
             mainPage.SetActive(false);
             confirmationPage.SetActive(false);
             settingsPage.SetActive(true);
+            ResetScroll(settingsPage);
             RefreshMotionStatus();
         }
 
@@ -153,6 +158,7 @@ namespace StartupLife.Presentation
             settingsPage.SetActive(false);
             confirmationPage.SetActive(true);
             feedback.gameObject.SetActive(false);
+            ResetScroll(confirmationPage);
         }
 
         private void ConfirmNewGame()
@@ -165,21 +171,32 @@ namespace StartupLife.Presentation
 
         private GameObject Page(string name, Transform parent)
         {
-            var panel = Node(name, parent, typeof(Image), typeof(VerticalLayoutGroup));
+            var panel = Node(name, parent, typeof(Image));
             var bounds = (RectTransform)panel.transform;
             bounds.anchorMin = new Vector2(0.07f, 0.16f);
             bounds.anchorMax = new Vector2(0.93f, 0.85f);
             bounds.offsetMin = bounds.offsetMax = Vector2.zero;
             panel.GetComponent<Image>().color = theme.panel;
-            var layout = panel.GetComponent<VerticalLayoutGroup>();
-            layout.padding = new RectOffset(36, 36, 36, 36);
-            layout.spacing = 20f;
-            layout.childAlignment = TextAnchor.UpperCenter;
-            layout.childControlHeight = true;
-            layout.childControlWidth = true;
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = false;
+            // Each page owns an independent vertical scroll position. Its
+            // buttons retain their original GameObjects and listeners.
+            var view = MobileScrollViewFactory.Create(panel.transform, name + "Scroll",
+                theme.panel, new RectOffset(36, 36, 36, 36), 20f,
+                TextAnchor.UpperCenter, 34f);
+            Stretch((RectTransform)view.Scroll.transform);
             return panel;
+        }
+
+        private static Transform PageBody(GameObject page)
+        {
+            var body = page.transform.Find(page.name + "Scroll/Viewport/Content");
+            if (!body) throw new InvalidOperationException("Main menu scroll hierarchy is missing.");
+            return body;
+        }
+
+        private static void ResetScroll(GameObject page)
+        {
+            var scroll = page.GetComponentInChildren<ScrollRect>(true);
+            if (scroll) scroll.verticalNormalizedPosition = 1f;
         }
 
         private GameObject Button(string name, string key, Transform parent, Action callback)
