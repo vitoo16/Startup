@@ -142,9 +142,7 @@ namespace StartupLife.Presentation
                     DisplayCareer(x.CareerNameKey) + " · " + x.StartedIso + " – " +
                     (x.EndedIso ?? "hiện tại") + " · bậc " +
                     (x.RankIndex + 1).ToString(CultureInfo.InvariantCulture)));
-            salary.text = "Lương chờ nhận: " + Money(career.OutstandingSalary.FloorToInt64()) +
-                (career.OutstandingSalary.Denominator != System.Numerics.BigInteger.One
-                    ? "" : "");
+            salary.text = "Lương chờ nhận: " + Money(career.OutstandingSalary.FloorToInt64());
             accept.interactable = career.HasCharacter && !career.IsEmployed;
             work.interactable = career.IsEmployed;
             resign.interactable = career.IsEmployed;
