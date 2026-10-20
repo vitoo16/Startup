@@ -34,6 +34,20 @@ class UiMotionSourceTests(unittest.TestCase):
         self.assertIn("colors.pressedColor", dashboard)
         self.assertIn("button.colors = colors", dashboard)
 
+    def test_reduced_motion_setting_is_user_facing_and_localized(self):
+        overlay = OVERLAY.read_text(encoding="utf-8")
+        catalog = CATALOG.read_text(encoding="utf-8")
+        for text in ("Hiệu ứng chuyển cảnh: Bật", "Hiệu ứng chuyển cảnh: Tắt",
+                     "Đổi chế độ hiệu ứng"):
+            self.assertIn('"' + text + '"', catalog)
+            self.assertIn('"' + text + '"', overlay)
+        self.assertIn('UiPanelReveal.ReducedMotionPreference', overlay)
+        self.assertIn('PlayerPrefs.Save()', overlay)
+        self.assertIn('LifeMotionToggleButton', overlay)
+        self.assertIn('if (lastReducedMotion == reduced) return;', overlay)
+        self.assertIn('RefreshMotionPreference();', overlay)
+        self.assertNotIn('GameSession.NewState', overlay)
+
     def test_revised_vietnamese_headings_keep_authoritative_catalog_join(self):
         dashboard = OVERLAY.read_text(encoding="utf-8")
         catalog = CATALOG.read_text(encoding="utf-8")
