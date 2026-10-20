@@ -79,6 +79,9 @@ namespace StartupLife.Presentation
                         new StagedEventV4SaveSerializer(serializer, eventArchive));
                     var eventStore = new AtomicFileSaveStore(path, eventSerializer);
                     var loaded = eventStore.Read();
+#if UNITY_EDITOR
+                    LogEditorSaveRead(path, loaded);
+#endif
                     GameState initialV4 = null;
                     if (loaded.Status == LoadStatus.Missing)
                     {
@@ -116,9 +119,13 @@ namespace StartupLife.Presentation
                 else
                 {
                     var store = new AtomicFileSaveStore(path, serializer);
-                    if (!GameSession.TryRestore(content, serializer, store,
+                    var restored = GameSession.TryRestore(content, serializer, store,
                         out session, out var load, economicRules: economics,
-                        archivedRules: historical))
+                        archivedRules: historical);
+#if UNITY_EDITOR
+                    LogEditorSaveRead(path, load);
+#endif
+                    if (!restored)
                     {
                         if (load.Status != LoadStatus.Missing)
                         {
@@ -174,6 +181,21 @@ namespace StartupLife.Presentation
         }
 
         // Shared run creation across V3 and V4. No file is written here.
+#if UNITY_EDITOR
+        // Development-only evidence of the actual physical save read. Do not
+        // log character names or checkpoint payloads; this is not a save writer.
+        private static void LogEditorSaveRead(string path, LoadResult read)
+        {
+            Debug.Log("[StartupLife][SaveBoot] path=" + path +
+                " status=" + read.Status +
+                " primaryExists=" + File.Exists(path) +
+                " backupExists=" + File.Exists(path + ".backup") +
+                " revision=" + (read.State?.Revision.ToString() ?? "none") +
+                " characterPresent=" + (read.State != null &&
+                    !string.IsNullOrEmpty(read.State.Name)));
+        }
+#endif
+
         private GameState CreateInitialState()
         {
             var guid = Guid.NewGuid();
