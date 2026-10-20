@@ -1,5 +1,6 @@
 using System.Collections;
 using NUnit.Framework;
+using TMPro;
 using StartupLife.Presentation;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -32,6 +33,11 @@ namespace StartupLife.Tests.PlayMode
             Assert.That(content.Find("LifeProgressCard/CashRow"), Is.Not.Null);
             Assert.That(content.Find("LifeActionCard/Actions"), Is.Not.Null);
             Assert.That(content.Find("LifeNeighborhoodStage/StageMoment"), Is.Not.Null);
+            var title = content.Find("LifeJournalHeader/LifeTitle").GetComponent<TMP_Text>();
+            Assert.That(title.fontSize, Is.GreaterThanOrEqualTo(root.UiTheme.title));
+            var workText = content.Find("LifeActionCard/Actions/WorkButton")
+                .GetComponentInChildren<TMP_Text>(true);
+            Assert.That(workText.fontSize, Is.GreaterThanOrEqualTo(root.UiTheme.heading));
             Assert.That(life.Find("LifeHomeScroll").GetComponent<ScrollRect>(), Is.Not.Null);
 
             // Recompose must move the ORIGINAL persisted UnityEvent-bearing buttons,
