@@ -249,8 +249,8 @@ namespace StartupLife.Presentation
                 var archive = LocalCheckpointArchiver.Archive(SavePath);
                 if (archive.Length == 0)
                 {
-                    reason = "Expected committed checkpoint was not present.";
-                    lifecycle.SetPaused(false);
+                    reason = "Expected committed checkpoint was not present. Restart the scene to inspect the save.";
+                    IsReady = false;
                     return false;
                 }
                 Debug.Log("[StartupLife][Menu] Existing run archived at " + archive);
@@ -262,8 +262,11 @@ namespace StartupLife.Presentation
             catch (Exception error)
             {
                 Debug.LogException(error);
-                reason = "Unable to archive and reload safely; see Console for details.";
-                lifecycle.SetPaused(false);
+                // An interrupted archive or a failed scene reload must not
+                // resume the old in-memory session and recreate a checkpoint
+                // in the path reserved for the next run. Fail closed instead.
+                IsReady = false;
+                reason = "Unable to archive and reload safely. Restart the scene and inspect RunArchives.";
                 return false;
             }
         }
