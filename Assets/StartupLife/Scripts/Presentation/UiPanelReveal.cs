@@ -16,6 +16,7 @@ namespace StartupLife.Presentation
         public const string ReducedMotionPreference = "startup-life.ui.reduce-motion.v1";
         private CanvasGroup canvasGroup;
         private Coroutine running;
+        private bool playedSinceEnable;
 
         public static void Show(GameObject target)
         {
@@ -25,11 +26,12 @@ namespace StartupLife.Presentation
 
             var reveal = target.GetComponent<UiPanelReveal>();
             if (!reveal) reveal = target.AddComponent<UiPanelReveal>();
-            reveal.Play();
+            if (!reveal.playedSinceEnable) reveal.Play();
         }
 
         private void Play()
         {
+            playedSinceEnable = true;
             if (!canvasGroup)
             {
                 canvasGroup = GetComponent<CanvasGroup>();
@@ -69,6 +71,7 @@ namespace StartupLife.Presentation
 
         private void OnDisable()
         {
+            playedSinceEnable = false;
             if (running != null)
             {
                 StopCoroutine(running);
