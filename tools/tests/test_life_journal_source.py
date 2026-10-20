@@ -47,9 +47,9 @@ class LifeJournalSourceTests(unittest.TestCase):
     def test_life_moment_texts_are_localized_whole_sentences(self):
         catalog = CATALOG.read_text(encoding="utf-8")
         source = SCENE.read_text(encoding="utf-8")
-        keys = ["life.home.stage", "life.home.progress", "life.home.actions",
-                "life.home.newday", "life.home.work", "life.home.study",
-                "life.home.evening"]
+        keys = ["dashboard.life.home.stage", "dashboard.life.home.progress", "dashboard.life.home.actions",
+                "dashboard.life.home.newday", "dashboard.life.home.work", "dashboard.life.home.study",
+                "dashboard.life.home.evening"]
         for key in keys:
             self.assertIn('"' + key + '"', catalog)
             self.assertIn('"' + key + '"', source)
