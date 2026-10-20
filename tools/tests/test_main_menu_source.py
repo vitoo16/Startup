@@ -54,6 +54,8 @@ class HomeMenuContracts(unittest.TestCase):
         menu = MENU.read_text(encoding="utf-8")
         self.assertIn("FirstPlayableMainMenu.Install(this", bootstrap)
         self.assertIn('screen.SetActive(false)', menu)
+        self.assertIn('if (state != null && !string.IsNullOrEmpty(state.Name)) menu.Open();', menu)
+        self.assertIn('if (string.IsNullOrEmpty(state.Name))', menu)
         self.assertIn('lifecycle.SetPaused(true)', bootstrap)
         self.assertIn('if (archive.Length == 0)', bootstrap)
         self.assertIn('Fail("fatal.save_unavailable")', bootstrap)
