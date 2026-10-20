@@ -62,6 +62,8 @@ namespace StartupLife.Presentation
         private TMP_Text guideTitle = null!;
         private TMP_Text guideBody = null!;
         private TMP_Text textScaleLabel = null!;
+        private TMP_Text motionPreferenceLabel = null!;
+        private bool? lastReducedMotion;
         private Button previousGuide = null!;
         private Button nextGuide = null!;
         private Button finishGuide = null!;
@@ -194,6 +196,7 @@ namespace StartupLife.Presentation
             RefreshGuidance(model.Game.RunId);
             textScaleLabel.text = "Cỡ chữ giao diện: " +
                 Math.Round(textScale * 100f).ToString(CultureInfo.InvariantCulture) + "%";
+            RefreshMotionPreference();
         }
 
         private static string GuidePreference(string runId) =>
@@ -241,6 +244,24 @@ namespace StartupLife.Presentation
             PlayerPrefs.DeleteKey(GuidePreference(model.Game.RunId));
             PlayerPrefs.Save();
             Refresh();
+        }
+
+        private void ToggleReducedMotion()
+        {
+            var value = PlayerPrefs.GetInt(UiPanelReveal.ReducedMotionPreference, 0);
+            PlayerPrefs.SetInt(UiPanelReveal.ReducedMotionPreference, value == 0 ? 1 : 0);
+            PlayerPrefs.Save();
+            Refresh();
+        }
+
+        private void RefreshMotionPreference()
+        {
+            var reduced = PlayerPrefs.GetInt(UiPanelReveal.ReducedMotionPreference, 0) != 0;
+            if (lastReducedMotion == reduced) return;
+            lastReducedMotion = reduced;
+            ApplyStaticTranslation(motionPreferenceLabel, reduced
+                ? "Hiệu ứng chuyển cảnh: Tắt"
+                : "Hiệu ứng chuyển cảnh: Bật");
         }
 
         private void ChangeTextScale(float step)
@@ -420,6 +441,10 @@ namespace StartupLife.Presentation
                 profilePage, () => ChangeTextScale(-0.1f));
             ButtonNode("LifeTextLargerButton", "Chữ lớn hơn",
                 profilePage, () => ChangeTextScale(0.1f));
+            motionPreferenceLabel = TextNode("LifeMotionPreferenceValue", profilePage,
+                "Hiệu ứng chuyển cảnh: Bật", 30, Ink);
+            ButtonNode("LifeMotionToggleButton", "Đổi chế độ hiệu ứng",
+                profilePage, ToggleReducedMotion);
             Subheading(profilePage, "Hướng dẫn hành trình");
             guideTitle = TextNode("LifeGuideTitle", profilePage, "", 32, Accent);
             guideBody = TextNode("LifeGuideBody", profilePage, "", 29, Ink);
