@@ -18,6 +18,15 @@ namespace StartupLife.Presentation
             new KeyValuePair<string,string>("dashboard.tab.finance.short", "Tiền"),
             new KeyValuePair<string,string>("dashboard.tab.business.short", "Cửa hàng"),
             new KeyValuePair<string,string>("dashboard.open", "Tổng quan"),
+            // Localized full-sentence states for the Life journal stage.
+            // No debug terminology, raw simulation IDs or fragments.
+            new KeyValuePair<string,string>("life.home.stage", "Góc nhỏ hôm nay"),
+            new KeyValuePair<string,string>("life.home.progress", "Một chút về bạn"),
+            new KeyValuePair<string,string>("life.home.actions", "Hôm nay làm gì?"),
+            new KeyValuePair<string,string>("life.home.newday", "Một ngày mới, một cơ hội mới."),
+            new KeyValuePair<string,string>("life.home.work", "Một ngày làm việc đang đợi bạn."),
+            new KeyValuePair<string,string>("life.home.study", "Dành một lúc để học điều mới nhé."),
+            new KeyValuePair<string,string>("life.home.evening", "Tối nay, bạn muốn làm gì cho mình?"),
             new KeyValuePair<string,string>("dashboard.close", "Đóng"),
             new KeyValuePair<string,string>("dashboard.career.current", "Công việc của bạn"),
             new KeyValuePair<string,string>("dashboard.career.accept", "Nhận việc lập trình"),
