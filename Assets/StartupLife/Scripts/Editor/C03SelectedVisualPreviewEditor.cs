@@ -61,10 +61,25 @@ namespace StartupLife.Editor
                     "C03 reference SHA-256 does not match the owner's selected artwork. No preview opened.");
 
             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null)
+                throw new InvalidOperationException("C03 PNG has no Unity TextureImporter.");
+            // Persist the reference Sprite as an Editor-imported asset so its
+            // renderer stays visible when entering Play Mode. The original PNG
+            // bytes are unchanged and no approved prefab is created.
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Single;
+            importer.spritePixelsPerUnit = 350f;
+            importer.filterMode = FilterMode.Point;
+            importer.mipmapEnabled = false;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.SaveAndReimport();
             var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-            if (!texture || texture.width != reference.width || texture.height != reference.height)
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (!texture || !sprite ||
+                texture.width != reference.width || texture.height != reference.height)
                 throw new InvalidOperationException(
-                    "C03 original PNG was not imported at its verified full resolution.");
+                    "C03 original PNG was not imported as a full-resolution Sprite.");
 
             // Ask before closing an unsaved active scene. Never modify or save
             // FirstPlayable and never add the unapproved visual to a build scene.
@@ -82,9 +97,6 @@ namespace StartupLife.Editor
 
             var holder = new GameObject("C03_OPAQUE_REFERENCE_NOT_GAMEPLAY", typeof(SpriteRenderer));
             var renderer = holder.GetComponent<SpriteRenderer>();
-            var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height),
-                new Vector2(0.5f, 0.5f), 350f);
-            sprite.name = "C03_SELECTED_REFERENCE_TEMPORARY";
             renderer.sprite = sprite;
             renderer.sortingOrder = 0;
 
