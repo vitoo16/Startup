@@ -60,7 +60,7 @@ namespace StartupLife.Editor
             PlayerSettings.allowedAutorotateToLandscapeRight = false;
             PlayerSettings.defaultScreenWidth = 1080;
             PlayerSettings.defaultScreenHeight = 1920;
-            Application.targetFrameRate = 60;
+            UnityEngine.Application.targetFrameRate = 60;
 
             var sourceFont = AssetDatabase.LoadAssetAtPath<Font>(Root + "/UI/Fonts/NotoSans-Regular.ttf");
             if (!sourceFont) throw new InvalidOperationException("Licensed Noto Sans source is missing.");
