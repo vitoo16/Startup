@@ -18,7 +18,7 @@ namespace StartupLife.Editor
         [MenuItem("Startup Life/Debug/Show actual save location")]
         public static void ShowActualSaveLocation()
         {
-            var directory = Application.persistentDataPath;
+            var directory = UnityEngine.Application.persistentDataPath;
             var savePath = Path.Combine(directory, SaveFileName);
             var count = (File.Exists(savePath) ? 1 : 0) +
                 (File.Exists(savePath + ".backup") ? 1 : 0);
@@ -32,7 +32,7 @@ namespace StartupLife.Editor
                         ? "Play Mode character name is empty."
                         : "Play Mode already has a character (revision " + snapshot.Revision + ").";
 
-            Debug.Log("[StartupLifeSave] Application.persistentDataPath: " + directory +
+            Debug.Log("[StartupLifeSave] UnityEngine.Application.persistentDataPath: " + directory +
                 "\n[StartupLifeSave] Expected save: " + savePath +
                 "\n[StartupLifeSave] Matching local save files: " + count +
                 "\n[StartupLifeSave] " + runtimeState);
@@ -53,7 +53,7 @@ namespace StartupLife.Editor
                 return;
             }
 
-            var directory = Application.persistentDataPath;
+            var directory = UnityEngine.Application.persistentDataPath;
             var savePath = Path.Combine(directory, SaveFileName);
             var fileCount = (File.Exists(savePath) ? 1 : 0) +
                 (File.Exists(savePath + ".backup") ? 1 : 0);
