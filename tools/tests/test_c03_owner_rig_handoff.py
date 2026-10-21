@@ -83,6 +83,10 @@ class C03OwnerRigTests(unittest.TestCase):
                 body = b'fixture-' + name.encode('ascii')
                 path.write_bytes(body)
                 hashes[name] = hashlib.sha256(body).hexdigest()
+            canonical = ''.join(
+                filename + chr(0) + hashes[filename] + chr(10)
+                for filename in sorted(hashes))
+            packet_digest = hashlib.sha256(canonical.encode('utf-8')).hexdigest()
             manifest = {
                 'schema': mod.NATIVE_SCHEMA,
                 'status': mod.NATIVE_STATUS,
@@ -91,7 +95,7 @@ class C03OwnerRigTests(unittest.TestCase):
                 'native_canvas_px': contract['canvas_px'],
                 'pixels_per_unit': contract['pixel_per_unit'],
                 'file_sha256': hashes,
-                'source_packet_sha256': 'new-art-packet-not-historical',
+                'source_packet_sha256': packet_digest,
             }
             manifest_path = folder / mod.NATIVE_MANIFEST
             manifest_path.write_text(json.dumps(manifest), encoding='utf-8')
@@ -114,7 +118,14 @@ class C03OwnerRigTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'historical native packet'):
                 mod.verify_native_packet(contract, folder)
 
-            manifest['source_packet_sha256'] = 'new-art-packet-not-historical'
+            manifest['source_packet_sha256'] = packet_digest
+            manifest_path.write_text(json.dumps(manifest), encoding='utf-8')
+            self.assertTrue(mod.verify_native_packet(contract, folder))
+            manifest['source_packet_sha256'] = '0' * 64
+            manifest_path.write_text(json.dumps(manifest), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'aggregate SHA-256 mismatch'):
+                mod.verify_native_packet(contract, folder)
+            manifest['source_packet_sha256'] = packet_digest
             del manifest['file_sha256']['face.png']
             manifest_path.write_text(json.dumps(manifest), encoding='utf-8')
             with self.assertRaisesRegex(ValueError, 'missing, stale or incomplete'):
