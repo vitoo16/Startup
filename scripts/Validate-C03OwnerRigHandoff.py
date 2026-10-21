@@ -152,7 +152,7 @@ def verify_native_packet(contract, layers_dir):
     # Canonical packet fingerprint binds the declared 22 files together.
     # The manifest cannot choose an arbitrary label and call it a new rig.
     canonical = ''.join(
-        filename + '\\0' + declared_files[filename] + '\\n'
+        filename + chr(0) + declared_files[filename] + chr(10)
         for filename in sorted(expected_files))
     packet_sha256 = hashlib.sha256(canonical.encode('utf-8')).hexdigest()
     if manifest.get('source_packet_sha256') != packet_sha256:
