@@ -30,6 +30,32 @@ class C03OwnerRigTests(unittest.TestCase):
         self.assertFalse(contract['production_registry_approval'])
         self.assertEqual(contract['occlusion']['covered_part_ids_to_hide_entirely'], [])
 
+    def test_native_rig_contract_must_match_current_owner_reference(self):
+        contract = json.loads(CONTRACT.read_text(encoding='utf-8'))
+        reference = json.loads(mod.REFERENCE_RECORD.read_text(encoding='utf-8'))['latest_reference']
+        self.assertEqual(reference['sha256'], contract['selected_concept']['image_sha256'])
+        self.assertEqual(reference['expected_repo_draft_path'],
+                         contract['selected_concept']['repo_target'])
+        self.assertTrue(mod.validate_contract(contract))
+
+        # Historical Oct 16 SHA, uncommitted metadata and moved source paths
+        # must not validate a handoff for the Oct 21 canonical reference.
+        stale = json.loads(CONTRACT.read_text(encoding='utf-8'))
+        stale['selected_concept']['image_sha256'] = (
+            'd2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e')
+        with self.assertRaisesRegex(ValueError, 'latest owner-selected reference'):
+            mod.validate_contract(stale)
+
+        missing = json.loads(CONTRACT.read_text(encoding='utf-8'))
+        missing['selected_concept']['image_committed'] = False
+        with self.assertRaisesRegex(ValueError, 'latest owner-selected reference'):
+            mod.validate_contract(missing)
+
+        wrong_path = json.loads(CONTRACT.read_text(encoding='utf-8'))
+        wrong_path['selected_concept']['repo_target'] = 'Assets/other.png'
+        with self.assertRaisesRegex(ValueError, 'latest owner-selected reference'):
+            mod.validate_contract(wrong_path)
+
     def test_partial_hand_covered_and_skin_below(self):
         result=mod.inspect_masked_occlusion(*layers())
         self.assertEqual(result['overlap_covered_px'],20)
