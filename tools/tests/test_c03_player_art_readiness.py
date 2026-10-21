@@ -84,7 +84,7 @@ class C03ReadinessTests(unittest.TestCase):
         self.assertIn("reference.expected_repo_draft_path", source)
         self.assertIn("TextureImporterType.Sprite", source)
         self.assertIn("importer.SaveAndReimport()", source)
-        self.assertIn("AssetDatabase.LoadAssetAtPath<Sprite>(path)", source)
+        self.assertIn("AssetDatabase.LoadAssetAtPath<Sprite>(ReferencePath)", source)
         self.assertIn("SaveCurrentModifiedScenesIfUserWantsTo()", source)
         self.assertIn("NewSceneSetup.EmptyScene", source)
         self.assertIn("C03_OPAQUE_REFERENCE_NOT_GAMEPLAY", source)
@@ -92,6 +92,28 @@ class C03ReadinessTests(unittest.TestCase):
         self.assertNotIn("PrefabUtility.SaveAsPrefabAsset", source)
         self.assertNotIn("Art/Approved/registry.json", source)
         self.assertNotIn("File.Write", source)
+
+    def test_reference_importer_qa_is_read_only_and_preserves_guid(self):
+        source = (REPO / "Assets/StartupLife/Scripts/Editor/C03SelectedVisualPreviewEditor.cs").read_text(encoding="utf-8")
+        self.assertIn("Verify imported selected reference (read only)", source)
+        self.assertIn('ReferenceGuid = "0eb68713039bb3f40d6ad5c2a6bb0309"', source)
+        self.assertIn("AssetDatabase.AssetPathToGUID(ReferencePath)", source)
+        self.assertIn("ReferencePreviewPpu", source)
+        self.assertIn("TextureImporterCompression.Uncompressed", source)
+        self.assertIn("importer.mipmapEnabled", source)
+        self.assertIn("importer.filterMode", source)
+        self.assertIn("VerifyImportedReferenceSprite(reference)", source)
+
+        verification = source.split("public static void VerifyImportedReference()", 1)[1]
+        verification = verification.split("private static LatestReference ReadVerifiedReference()", 1)[0]
+        self.assertNotIn("SaveAndReimport", verification)
+        self.assertNotIn("NewScene(", verification)
+        self.assertNotIn("File.Write", verification)
+
+        # Canceling the scene-save prompt must not reimport or mutate texture settings.
+        self.assertLess(source.index("SaveCurrentModifiedScenesIfUserWantsTo()"),
+                        source.index("importer.SaveAndReimport()"))
+        self.assertEqual(1, source.count("SaveCurrentModifiedScenesIfUserWantsTo()"))
 
     def test_actual_repository_has_no_shipping_registration(self):
         result = module.diagnose(REPO)
