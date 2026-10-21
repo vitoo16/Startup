@@ -32,58 +32,115 @@ namespace StartupLife.Editor
             public LatestReference latest_reference;
         }
 
-        [MenuItem("Startup Life/Art/C03/Open selected visual reference in Game View")]
-        public static void OpenReferenceStage()
+        // This stable source path/GUID belongs to the selected reference, not the
+        // production sprite rig. Retain the GUID when Unity serializes the importer.
+        private const string ReferencePath =
+            "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png";
+        private const string ReferenceGuid = "0eb68713039bb3f40d6ad5c2a6bb0309";
+        private const float ReferencePreviewPpu = 350f;
+
+        // Read-only verification does not configure importers or create scenes.
+        // It deliberately fails on the checked-in identity-only .meta until the
+        // actual Unity Editor has serialized the appropriate TextureImporter.
+        [MenuItem("Startup Life/Art/C03/Verify imported selected reference (read only)")]
+        public static void VerifyImportedReference()
         {
+            var reference = ReadVerifiedReference();
+            VerifyImportedReferenceSprite(reference);
+            Debug.Log("[StartupLife][C03] Selected source SHA, GUID, TextureImporter, " +
+                "sprite dimensions and QA preview settings verified in this Unity Editor. " +
+                "No runtime sprite, rig, IP or device approval is implied.");
+        }
+
+        private static LatestReference ReadVerifiedReference()
+        {
+            if (!File.Exists(Record))
+                throw new FileNotFoundException("C03 owner reference record is missing.", Record);
+
             var record = JsonUtility.FromJson<ReferenceRecord>(File.ReadAllText(Record));
             var reference = record != null ? record.latest_reference : null;
             if (reference == null ||
-                string.IsNullOrEmpty(reference.expected_repo_draft_path) ||
-                !reference.expected_repo_draft_path.StartsWith(
-                    "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/",
-                    StringComparison.Ordinal) ||
-                !reference.expected_repo_draft_path.EndsWith(".png", StringComparison.Ordinal))
+                !string.Equals(reference.expected_repo_draft_path, ReferencePath, StringComparison.Ordinal) ||
+                reference.width <= 0 || reference.height <= 0 ||
+                string.IsNullOrEmpty(reference.sha256))
                 throw new InvalidOperationException("C03 selected reference record is invalid.");
 
-            var path = reference.expected_repo_draft_path;
-            if (!File.Exists(path))
+            if (!File.Exists(ReferencePath))
                 throw new FileNotFoundException(
-                    "Exact owner-selected C03 PNG has not been staged. This QA stage cannot use the old draft instead.",
-                    path);
+                    "Exact owner-selected C03 PNG is missing or Git LFS is not hydrated. " +
+                    "Never substitute an earlier draft.", ReferencePath);
 
-            byte[] bytes = File.ReadAllBytes(path);
+            byte[] bytes = File.ReadAllBytes(ReferencePath);
             string actual;
             using (var sha = SHA256.Create())
                 actual = BitConverter.ToString(sha.ComputeHash(bytes))
                     .Replace("-", "").ToLowerInvariant();
             if (!string.Equals(actual, reference.sha256, StringComparison.Ordinal))
                 throw new InvalidOperationException(
-                    "C03 reference SHA-256 does not match the owner's selected artwork. No preview opened.");
+                    "C03 reference SHA-256 does not match the owner-selected record.");
 
-            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
-            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            return reference;
+        }
+
+        private static Sprite VerifyImportedReferenceSprite(LatestReference reference)
+        {
+            var importer = AssetImporter.GetAtPath(ReferencePath) as TextureImporter;
             if (importer == null)
                 throw new InvalidOperationException("C03 PNG has no Unity TextureImporter.");
-            // Persist the reference Sprite as an Editor-imported asset so its
-            // renderer stays visible when entering Play Mode. The original PNG
-            // bytes are unchanged and no approved prefab is created.
+
+            var guid = AssetDatabase.AssetPathToGUID(ReferencePath);
+            if (!string.Equals(guid, ReferenceGuid, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException(
+                    "C03 reference Unity GUID changed. Restore the tracked .meta; do not approve this import.");
+
+            if (importer.textureType != TextureImporterType.Sprite ||
+                importer.spriteImportMode != SpriteImportMode.Single ||
+                !Mathf.Approximately(importer.spritePixelsPerUnit, ReferencePreviewPpu) ||
+                importer.filterMode != FilterMode.Point ||
+                importer.mipmapEnabled ||
+                importer.textureCompression != TextureImporterCompression.Uncompressed)
+                throw new InvalidOperationException(
+                    "C03 QA reference importer is not serialized with required preview settings.");
+
+            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(ReferencePath);
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(ReferencePath);
+            if (!texture || !sprite ||
+                texture.width != reference.width || texture.height != reference.height)
+                throw new InvalidOperationException(
+                    "C03 selected reference is not an imported full-resolution Sprite.");
+            return sprite;
+        }
+
+        [MenuItem("Startup Life/Art/C03/Open selected visual reference in Game View")]
+        public static void OpenReferenceStage()
+        {
+            var reference = ReadVerifiedReference();
+
+            // Honor cancellation BEFORE touching the importer or the active scene.
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+
+            AssetDatabase.ImportAsset(ReferencePath, ImportAssetOptions.ForceSynchronousImport);
+            var importer = AssetImporter.GetAtPath(ReferencePath) as TextureImporter;
+            if (importer == null)
+                throw new InvalidOperationException("C03 PNG has no Unity TextureImporter.");
+            if (!string.Equals(AssetDatabase.AssetPathToGUID(ReferencePath),
+                    ReferenceGuid, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException(
+                    "C03 reference GUID changed; refusing to reserialize the importer.");
+
+            // Unity writes its own complete TextureImporter .meta. Do not hand
+            // manufacture or re-GUID a texture asset. This PPU is for the
+            // full-resolution opaque QA reference ONLY, not native pixel art.
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
-            importer.spritePixelsPerUnit = 350f;
+            importer.spritePixelsPerUnit = ReferencePreviewPpu;
             importer.filterMode = FilterMode.Point;
             importer.mipmapEnabled = false;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.SaveAndReimport();
-            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
-            if (!texture || !sprite ||
-                texture.width != reference.width || texture.height != reference.height)
-                throw new InvalidOperationException(
-                    "C03 original PNG was not imported as a full-resolution Sprite.");
+            var sprite = VerifyImportedReferenceSprite(reference);
 
-            // Ask before closing an unsaved active scene. Never modify or save
-            // FirstPlayable and never add the unapproved visual to a build scene.
-            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            // Never modify or save FirstPlayable. Keep this QA scene isolated.
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             var camera = new GameObject("C03_REFERENCE_ONLY_Camera", typeof(Camera))
@@ -100,7 +157,7 @@ namespace StartupLife.Editor
             renderer.sprite = sprite;
             renderer.sortingOrder = 0;
 
-            Debug.Log("[StartupLife][C03] Verified original owner-selected reference " + actual +
+            Debug.Log("[StartupLife][C03] Verified original owner-selected reference " + reference.sha256 +
                 ". This scene is UNSAVED; the illustration has an opaque background and no character rig. " +
                 "No production sprite/animation approved or bound to FirstPlayable.");
             EditorUtility.DisplayDialog("C03 selected visual · reference only",
