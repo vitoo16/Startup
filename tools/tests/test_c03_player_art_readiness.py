@@ -76,6 +76,23 @@ class C03ReadinessTests(unittest.TestCase):
         self.assertFalse(result["source_dimensions_match"])
         self.assertFalse(result["reference_verified"])
 
+    def test_isolated_editor_preview_uses_exact_hash_and_never_touches_gameplay(self):
+        source = (REPO / "Assets/StartupLife/Scripts/Editor/C03SelectedVisualPreviewEditor.cs").read_text(encoding="utf-8")
+        self.assertIn("Startup Life/Art/C03/Open selected visual reference in Game View", source)
+        self.assertIn("SHA256.Create()", source)
+        self.assertIn("reference.sha256", source)
+        self.assertIn("reference.expected_repo_draft_path", source)
+        self.assertIn("TextureImporterType.Sprite", source)
+        self.assertIn("importer.SaveAndReimport()", source)
+        self.assertIn("AssetDatabase.LoadAssetAtPath<Sprite>(path)", source)
+        self.assertIn("SaveCurrentModifiedScenesIfUserWantsTo()", source)
+        self.assertIn("NewSceneSetup.EmptyScene", source)
+        self.assertIn("C03_OPAQUE_REFERENCE_NOT_GAMEPLAY", source)
+        self.assertNotIn("FirstPlayable.unity", source)
+        self.assertNotIn("PrefabUtility.SaveAsPrefabAsset", source)
+        self.assertNotIn("Art/Approved/registry.json", source)
+        self.assertNotIn("File.Write", source)
+
     def test_actual_repository_has_no_shipping_registration(self):
         result = module.diagnose(REPO)
         self.assertEqual(0, result["approved_asset_count"],
