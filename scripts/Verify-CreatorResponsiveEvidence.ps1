@@ -22,7 +22,8 @@ $pages = if ($Mode -eq 'Creator') {
 } else {
     @('StartupMainMenuHome', 'StartupMainMenuSettings', 'StartupMainMenuNewGameConfirmation')
 }
-$scales = if ($Mode -eq 'Creator') { @(100, 150, 200) } else { @(0) }
+$scales = @(100, 150, 200)
+if ($Mode -eq 'MainMenu') { $scales = @(0) }
 $prefix = if ($Mode -eq 'Creator') { 'creator-' } else { 'main-menu-' }
 $expectedCount = $dimensions.Count * $scales.Count * $pages.Count
 $expected = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
@@ -77,7 +78,9 @@ foreach ($file in $actual) {
         throw "Unknown responsive screenshot: $($file.Name)"
     }
 }
-if ($inspected.Count -ne $expectedCount) {
+if ($Mode -eq 'Creator') {
+    if ($inspected.Count -ne 36) { throw "Not all 36 configurations produced valid PNGs." }
+} elseif ($inspected.Count -ne $expectedCount) {
     throw "Not all $expectedCount $Mode configurations produced valid PNGs."
 }
 
