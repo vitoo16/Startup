@@ -169,6 +169,25 @@ def verify_native_packet(contract, layers_dir):
     return True
 
 
+def inspect_required_native_layers(contract, layers):
+    """Reject empty/non-native part buffers before joint/mask checks."""
+    width, height = contract['canvas_px']
+    size = width * height * 4
+    required = contract['rig_parts_back_to_front']
+    if set(layers) != set(required):
+        raise ValueError('C03 native layer set is missing an authored semantic part')
+    for name in required:
+        buffer = layers[name]
+        if len(buffer) != size:
+            raise ValueError('C03 layer RGBA byte count differs from native grid: ' + name)
+        alpha = buffer[3::4]
+        if not any(alpha):
+            raise ValueError('C03 required native layer is empty: ' + name)
+        if any(pixel not in (0, 255) for pixel in alpha):
+            raise ValueError('C03 layer has non-binary native alpha: ' + name)
+    return True
+
+
 def verify(contract_path, layers_dir):
     contract=json.loads(Path(contract_path).read_text(encoding='utf8'))
     validate_contract(contract)
@@ -187,6 +206,7 @@ def verify(contract_path, layers_dir):
         w,h,pixels=decode(path.read_bytes())
         if (w,h)!=tuple(contract['canvas_px']):raise ValueError('Wrong pixel layer dimensions: '+name)
         layers[name]=pixels
+    inspect_required_native_layers(contract, layers)
     mask_path=Path(layers_dir)/contract['occlusion']['bag_body_mask_filename']
     w,h,mask=decode(mask_path.read_bytes())
     if (w,h)!=tuple(contract['canvas_px']):raise ValueError('Wrong bag mask dimensions')
