@@ -3,6 +3,7 @@
 Does NOT run Unity, exercise filesystem moves, or validate user data.
 """
 from pathlib import Path
+import json
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -20,6 +21,19 @@ class EditorSaveDiagnosticsContractTests(unittest.TestCase):
         self.assertIn('UnityEngine.Application.persistentDataPath', bootstrap)
         self.assertIn('"Startup Life/Debug/Show actual save location"', editor)
         self.assertIn('"Startup Life/Debug/Archive test save for new character"', editor)
+
+    def test_editor_assembly_references_archiver_assembly_directly(self):
+        # Unity asmdef dependencies are explicit, not transitive: referencing
+        # StartupLife.Presentation does not expose StartupLife.Infrastructure.
+        editor_asmdef = json.loads((ROOT / "Assets/StartupLife/Scripts/Editor/StartupLife.Editor.asmdef").read_text(encoding="utf-8"))
+        infrastructure_asmdef = json.loads((ROOT / "Assets/StartupLife/Scripts/Infrastructure/StartupLife.Infrastructure.asmdef").read_text(encoding="utf-8"))
+        editor = EDITOR.read_text(encoding="utf-8")
+        source = (ROOT / "Assets/StartupLife/Scripts/Infrastructure/LocalCheckpointArchiver.cs").read_text(encoding="utf-8")
+        self.assertIn("using StartupLife.Infrastructure;", editor)
+        self.assertEqual("StartupLife.Infrastructure", infrastructure_asmdef["name"])
+        self.assertIn("StartupLife.Infrastructure", editor_asmdef["references"])
+        self.assertEqual(["Editor"], editor_asmdef["includePlatforms"])
+        self.assertIn("public static class LocalCheckpointArchiver", source)
 
     def test_archiving_is_opt_in_and_fails_closed_in_play_mode(self):
         editor = EDITOR.read_text(encoding="utf-8")
