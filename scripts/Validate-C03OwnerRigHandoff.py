@@ -13,6 +13,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONTRACT = ROOT / 'docs/evidence/production-art/source/c03-authoring/C03-owner-front-rig-contract.json'
 DECODER = ROOT / 'scripts/Validate-GoldenCharacterC03R1.py'
+REFERENCE_RECORD = ROOT / 'docs/evidence/production-art/C03-LATEST-MINOR-POLISH-REFERENCE.json'
 CANONICAL_PARTS = frozenset(('hair_back','accessory_back','foot_l','foot_r',
     'lower_leg_l','lower_leg_r','upper_leg_l','upper_leg_r','pelvis','torso',
     'upper_arm_l','upper_arm_r','forearm_l','forearm_r','hand_l','hand_r',
@@ -86,6 +87,18 @@ def validate_contract(contract):
         raise ValueError('Unknown C03 rig contract version')
     if contract.get('view') != 'front' or contract.get('canvas_px') != [128,160]:
         raise ValueError('Owner-only front native-grid contract changed')
+    # The 2026-10-16 native proof is not the selected 2026-10-21 image.
+    # Refuse any handoff contract still naming an outdated source, even if its
+    # 21 part IDs and synthetic overlap checks are otherwise valid. This is a
+    # metadata consistency gate; exact PNG bytes are checked separately.
+    latest = json.loads(REFERENCE_RECORD.read_text(encoding='utf-8'))['latest_reference']
+    selected = contract.get('selected_concept', {})
+    if (selected.get('image_sha256') != latest.get('sha256') or
+            selected.get('repo_target') != latest.get('expected_repo_draft_path') or
+            selected.get('image_committed') is not True or
+            latest.get('exact_binary_committed_to_git') is not True or
+            selected.get('opaque_reference_not_native_sprite') is not True):
+        raise ValueError('C03 rig handoff source does not match latest owner-selected reference')
     names = contract['rig_parts_back_to_front']
     if len(names) != 21 or len(set(names)) != 21 or set(names) != CANONICAL_PARTS:
         raise ValueError('Need precisely the 21 existing semantic rig parts')
