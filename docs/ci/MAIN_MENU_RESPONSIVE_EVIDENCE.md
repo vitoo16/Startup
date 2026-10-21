@@ -37,3 +37,16 @@ The verifier checks PNG signatures/IHDR, expected dimensions, filenames, count a
 Review `main-menu-evidence-report.json`, Unity PlayMode NUnit XML, the Unity Editor console, the 9 PNGs and portrait touch interactions. Mark **FAIL** on cropped warning/confirmation actions, broken scroll, untranslated Vietnamese, text truncation or inaccessible buttons. Keep `VISUAL_PENDING` if any image/device evidence is missing.
 
 **Scope:** menu UI/evidence tooling only. No change to save serialization, gameplay time, approved sprite registry or C03 Idle V3 owner-approved motion direction.
+
+## 2026-10-21 Unity compiler recovery (before screenshot capture)
+
+Actual Windows Unity 6000.3.25f1 log reported `CS0234` in `UiPanelReveal.cs` on `Application.isPlaying`. The game's `StartupLife.Application` namespace shadowed `UnityEngine.Application`; source now explicitly uses `UnityEngine.Application.isPlaying`. Editor diagnostics and mobile baseline helpers likewise use fully qualified Unity Application properties. This was **a source compile failure**, not a failed visual or gameplay assertion.
+
+- **Skills:** startup-life-session-orchestrator, unity-cli, ui-ugui; active production roadmap and project workflow read.
+- **Files:** `UiPanelReveal.cs`, `MobileBaselineBuilder.cs`, `StartupLifeLocalSaveDiagnostics.cs`, `tools/UiPanelRevealCompileChecks/*`, `tools/tests/test_presentation_motion_source.py`, `engine-free-ci.yml`, this document.
+- **CI acceptance:** Roslyn must compile the real `UiPanelReveal.cs` against a fixture intentionally declaring `StartupLife.Application`; reduced-motion and outside-Play paths must pass. This is **not** full Unity compilation.
+- **Unity acceptance:** after updating HEAD, first open Editor and wait for C# compilation; ensure Console has no errors. Only then rerun graphical PlayMode matrix. Exact-head CI and Unity results must be recorded separately.
+- **Visual evidence:** none created in this fix. UI visual/device approval remains pending.
+- **Save impact:** none. No save or state changes.
+- **Known limits:** the compile check only covers the linked reveal source; Unity still compiles the full project and may expose independent errors on the next run.
+
