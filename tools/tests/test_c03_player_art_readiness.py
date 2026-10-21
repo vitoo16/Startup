@@ -1,0 +1,89 @@
+"""Identity-only C03 art readiness checks; never auto-approve or import drafts."""
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import struct
+import tempfile
+import unittest
+
+REPO = Path(__file__).resolve().parents[2]
+SCRIPT = REPO / "scripts/Check-C03PlayerArtReadiness.py"
+spec = importlib.util.spec_from_file_location("c03_readiness", SCRIPT)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
+
+def fake_png():
+    # Small PNG identity fixture. We test SHA-256 and PNG header; actual pixel
+    # decoding/import/BeautyCell remains exclusively Unity's responsibility.
+    header = b"\x89PNG\r\n\x1a\n"
+    return header + struct.pack(">I", 13) + b"IHDR" + struct.pack(">II", 1171, 1343) + b"\x08\x02\x00\x00\x00"
+
+
+class C03ReadinessTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix="c03-asset-gate-")
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        record = {
+            "latest_reference": {
+                "filename": "pixel_art_boy_with_brown_satchel.png",
+                "sha256": hashlib.sha256(fake_png()).hexdigest(),
+                "width": 1171, "height": 1343,
+                "expected_repo_draft_path": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png",
+            }
+        }
+        reference = self.root / module.REFERENCE
+        reference.parent.mkdir(parents=True, exist_ok=True)
+        reference.write_text(json.dumps(record), encoding="utf-8")
+        registry = self.root / module.REGISTRY
+        registry.parent.mkdir(parents=True, exist_ok=True)
+        registry.write_text(json.dumps({"approved_entries": []}), encoding="utf-8")
+        self.target = self.root / record["latest_reference"]["expected_repo_draft_path"]
+        self.target.parent.mkdir(parents=True, exist_ok=True)
+
+    def test_missing_selected_original_is_explicitly_blocked(self):
+        result = module.diagnose(self.root)
+        self.assertFalse(result["reference_verified"])
+        self.assertFalse(result["gameplay_character_ready"])
+        self.assertEqual("MISSING_OR_INCORRECT_REFERENCE", result["status"])
+        self.assertIn("no shipping character assets", " ".join(result["blocking_reasons"]))
+
+    def test_exact_source_hash_only_verifies_reference_not_runtime(self):
+        self.target.write_bytes(fake_png())
+        result = module.diagnose(self.root)
+        self.assertTrue(result["source_sha256_matches"])
+        self.assertTrue(result["source_dimensions_match"])
+        self.assertTrue(result["reference_verified"])
+        self.assertEqual("REFERENCE_VERIFIED_NOT_GAMEPLAY_READY", result["status"])
+        self.assertFalse(result["gameplay_character_ready"])
+        self.assertEqual(0, result["approved_asset_count"])
+
+    def test_changed_png_same_resolution_must_fail(self):
+        self.target.write_bytes(fake_png() + b"modified-visual-content")
+        result = module.diagnose(self.root)
+        self.assertFalse(result["source_sha256_matches"])
+        self.assertTrue(result["source_dimensions_match"])
+        self.assertFalse(result["reference_verified"])
+        self.assertIn("SHA-256 differs", " ".join(result["blocking_reasons"]))
+
+    def test_wrong_png_dimensions_must_fail(self):
+        image = bytearray(fake_png())
+        image[16:24] = struct.pack(">II", 1122, 1402)
+        self.target.write_bytes(image)
+        result = module.diagnose(self.root)
+        self.assertFalse(result["source_dimensions_match"])
+        self.assertFalse(result["reference_verified"])
+
+    def test_actual_repository_has_no_shipping_registration(self):
+        result = module.diagnose(REPO)
+        self.assertEqual(0, result["approved_asset_count"],
+            "An approval is a separate review gate; update this check only with art evidence.")
+        self.assertFalse(result["gameplay_character_ready"])
+        self.assertFalse(result["reference_verified"],
+            "The original visual binary is not currently committed to the repository.")
+
+
+if __name__ == "__main__":
+    unittest.main()
