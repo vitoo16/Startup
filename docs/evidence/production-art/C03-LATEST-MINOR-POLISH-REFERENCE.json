@@ -91,7 +91,7 @@
   },
   "owner_approval_scope": "2026-10-21 owner-selected visual REFERENCE ONLY; native rig/animation, independent IP, Unity/device art approval remain pending",
   "owner_approval_recorded_on": "2026-10-21",
-  "production_rig_handoff_contract": "docs/evidence/production-art/source/c03-authoring/C03-owner-front-rig-contract.json",
+  "production_rig_handoff_contract": "docs/evidence/production-art/C03-ACTIVE-OWNER-FRONT-RIG-CONTRACT.json",
   "production_occlusion_validation": "scripts/Validate-C03OwnerRigHandoff.py",
   "next_stage": "Import existing Git LFS reference in Unity 6.3 Editor and serialize full .meta, review image in isolated Game View, then produce native 21-part rig, motion and independent visual/IP/device QA",
   "superseded_owner_reference_2026_10_16": {
