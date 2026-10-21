@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import unittest
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SCRIPT=ROOT/'scripts/Validate-C03OwnerRigHandoff.py'
 CONTRACT=ROOT/'docs/evidence/production-art/source/c03-authoring/C03-owner-front-rig-contract.json'
 modspec=importlib.util.spec_from_file_location('occlusion',SCRIPT)
