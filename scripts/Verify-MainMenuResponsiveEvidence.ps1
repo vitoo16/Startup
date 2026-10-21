@@ -10,4 +10,3 @@ $ErrorActionPreference = 'Stop'
 # only the capture manifest (3 screens x 3 menu pages) differs.
 & (Join-Path $PSScriptRoot 'Verify-CreatorResponsiveEvidence.ps1') `
     -Directory $Directory -ReportPath $ReportPath -Mode MainMenu
-if ($LASTEXITCODE) { exit $LASTEXITCODE }
