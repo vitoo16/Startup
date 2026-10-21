@@ -116,6 +116,11 @@ jobs:
       - name: Diagnose selected C03 reference presence and isolate Editor preview source
         run: python3 -m unittest discover -s tools/tests -p 'test_c03_player_art_readiness.py' -v
 
+      - name: Guard current C03 native rig contract and archived source integrity
+        run: |
+          python3 -m unittest discover -s tools/tests -p 'test_c03_authoring_source_migration.py' -v
+          python3 -m unittest discover -s tools/tests -p 'test_c03_owner_rig_handoff.py' -v
+
       - name: Guard Unity 6.3 sprite import and responsive PlayMode compile contracts (no Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_unity63_local_compile_contract.py' -v
 
