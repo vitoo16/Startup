@@ -18,7 +18,7 @@ def fake_png():
     # Small PNG identity fixture. We test SHA-256 and PNG header; actual pixel
     # decoding/import/BeautyCell remains exclusively Unity's responsibility.
     header = b"\x89PNG\r\n\x1a\n"
-    return header + struct.pack(">I", 13) + b"IHDR" + struct.pack(">II", 1171, 1343) + b"\x08\x02\x00\x00\x00"
+    return header + struct.pack(">I", 13) + b"IHDR" + struct.pack(">II", 1122, 1402) + b"\x08\x02\x00\x00\x00"
 
 
 class C03ReadinessTests(unittest.TestCase):
@@ -28,9 +28,9 @@ class C03ReadinessTests(unittest.TestCase):
         self.root = Path(self.tmp.name)
         record = {
             "latest_reference": {
-                "filename": "pixel_art_boy_with_brown_satchel.png",
+                "filename": "image(20261021-124610).png",
                 "sha256": hashlib.sha256(fake_png()).hexdigest(),
-                "width": 1171, "height": 1343,
+                "width": 1122, "height": 1402,
                 "expected_repo_draft_path": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png",
             }
         }
@@ -70,7 +70,7 @@ class C03ReadinessTests(unittest.TestCase):
 
     def test_wrong_png_dimensions_must_fail(self):
         image = bytearray(fake_png())
-        image[16:24] = struct.pack(">II", 1122, 1402)
+        image[16:24] = struct.pack(">II", 1171, 1343)
         self.target.write_bytes(image)
         result = module.diagnose(self.root)
         self.assertFalse(result["source_dimensions_match"])
@@ -98,8 +98,11 @@ class C03ReadinessTests(unittest.TestCase):
         self.assertEqual(0, result["approved_asset_count"],
             "An approval is a separate review gate; update this check only with art evidence.")
         self.assertFalse(result["gameplay_character_ready"])
-        self.assertFalse(result["reference_verified"],
-            "The original visual binary is not currently committed to the repository.")
+        if result["source_file_present"]:
+            self.assertTrue(result["reference_verified"],
+                "The current owner-selected reference in Git must match its exact hash.")
+        else:
+            self.assertFalse(result["reference_verified"])
 
 
 if __name__ == "__main__":

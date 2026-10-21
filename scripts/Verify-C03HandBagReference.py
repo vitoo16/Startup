@@ -11,8 +11,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PNG = ROOT / 'Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png'
-EXPECTED_SHA256 = 'd2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e'
-WIDTH, HEIGHT = 1171, 1343
+EXPECTED_SHA256 = '1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa'
+WIDTH, HEIGHT = 1122, 1402
 
 
 def verify(path=PNG):
@@ -26,8 +26,8 @@ def verify(path=PNG):
     if source[:8] != b'\x89PNG\r\n\x1a\n' or source[12:16] != b'IHDR':
         raise ValueError('Not a PNG with IHDR')
     width,height,depth,mode,*_=struct.unpack('>IIBBBBB',source[16:29])
-    if (width,height,depth,mode) != (WIDTH,HEIGHT,8,2):
-        raise ValueError('Unexpected format; expected 1171x1343, RGB 8-bit PNG')
+    if (width,height,depth,mode) != (WIDTH,HEIGHT,8,6):
+        raise ValueError('Unexpected format; expected 1122x1402, RGBA 8-bit PNG')
     print('PASS exact C03 hand-behind-bag reference binary SHA-256 and PNG dimensions')
     print('NOT APPROVED: opaque illustration, no native pixel source, rig, Unity/IP/device QA')
     return True

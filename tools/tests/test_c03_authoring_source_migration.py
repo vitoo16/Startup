@@ -32,7 +32,7 @@ class C03AuthoringSourceMigrationTests(unittest.TestCase):
             with self.subTest(file=name):
                 path=ARCHIVE/name
                 self.assertTrue(path.is_file())
-                body=path.read_bytes()
+                body=path.read_bytes().replace(b'\r\n', b'\n')
                 object_bytes=b'blob '+str(len(body)).encode('ascii')+b'\0'+body
                 self.assertEqual(hashlib.sha1(object_bytes).hexdigest(),original)
                 self.assertFalse((UNITY/name).exists(),'Non-Unity file needs no import into Assets')

@@ -1,5 +1,7 @@
 # C03 — Approved front visual → real production rig handoff
 
+> **2026-10-21 supersession:** Owner chose a new 1122×1402 RGBA visual reference (SHA-256 `1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa`). The hash/size below record **historical 2026-10-16** approval only. The current `C03-LATEST-MINOR-POLISH-REFERENCE.json` supersedes this concept; the old mask/cutout, native draft and any screenshot evidence do NOT prove the new image has a Unity rig. The exact new binary is pending Git transfer and import.
+
 **Date:** 2026-10-16  
 **Owner decision:** **APPROVE** the latest front-facing C03 illustration with the near-side hand **behind and partly below** the brown satchel.  
 **Visual reference:** `pixel_art_boy_with_brown_satchel.png`, SHA-256 `d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e` (1171×1343 RGB).  

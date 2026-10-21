@@ -1,5 +1,7 @@
 # C03 — Modern Vietnamese pixel chibi: corrective art direction
 
+> **Owner updated C03 visual (2026-10-21):** Current canonical reference is `image(20261021-124610).png`, 1122×1402 RGBA, SHA-256 `1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa`. Mentions of `pixel_art_boy_with_brown_satchel.png` or `d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e` below are frozen historical 2026-10-16 process records, NOT today's art input. No Golden/runtime registration or Unity BeautyCell is implied.
+
 **Status:** ART REDIRECTION / PROPOSAL; **no asset approved**.  
 **Date:** 2026-10-16. **Authority:** product owner feedback.  
 **Supersedes:** C02 character silhouette recommendation. C01 and C02 are quarantined draft history.
