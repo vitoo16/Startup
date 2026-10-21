@@ -1,7 +1,7 @@
 {
   "suite": "Provisional first playable \u2014 .NET, not Unity",
   "runtime": "8.0.31",
-  "passed": 35,
+  "passed": 71,
   "failed": 0,
   "tests": [
     {
@@ -10,6 +10,70 @@
     },
     {
       "name": "independent event stream leaves scheduler unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "M15 event definitions enforce unique choices, disjoint tags and valid windows",
+      "status": "passed"
+    },
+    {
+      "name": "M15 authored event rewards are immutable specifications, not wallet mutations",
+      "status": "passed"
+    },
+    {
+      "name": "M15 overtime requires completed career shift and fingerprints its policy",
+      "status": "passed"
+    },
+    {
+      "name": "M15 native time-cost plans honor actual free minutes and retain legacy fingerprints",
+      "status": "passed"
+    },
+    {
+      "name": "M15 payout plan binds exact pending V4 ticket, authored choice, and V3 frontier",
+      "status": "passed"
+    },
+    {
+      "name": "M15 ineligible events never consume RNG, with window, tags, stage and max-use gates",
+      "status": "passed"
+    },
+    {
+      "name": "M15 event cooldown is inclusive at the eligible boundary",
+      "status": "passed"
+    },
+    {
+      "name": "M15 weighted selection ignores author ordering and cannot change scheduler RNG",
+      "status": "passed"
+    },
+    {
+      "name": "M15 event catalog fingerprint is deterministic and binds selection plus effects",
+      "status": "passed"
+    },
+    {
+      "name": "M15 journal pending choice survives serialized cold read and resolves exactly once",
+      "status": "passed"
+    },
+    {
+      "name": "M15 journal uses committed history for category cooldown and frequency",
+      "status": "passed"
+    },
+    {
+      "name": "M15 journal rejects replay drift, stale revisions and duplicated choices without mutation",
+      "status": "passed"
+    },
+    {
+      "name": "M15 cold journal replay verifies the entire RNG and choice trace",
+      "status": "passed"
+    },
+    {
+      "name": "M15 explicit event offer receipt ID makes retries idempotent across cold restores",
+      "status": "passed"
+    },
+    {
+      "name": "M15 large journal cold replay shares one selection history without RNG drift",
+      "status": "passed"
+    },
+    {
+      "name": "M15 category window handles maximum configured duration without overflow",
       "status": "passed"
     },
     {
@@ -41,11 +105,31 @@
       "status": "passed"
     },
     {
+      "name": "course prerequisites and single-active-course gate reject without mutation",
+      "status": "passed"
+    },
+    {
+      "name": "active course snapshot survives cold restore without checkpoint inspection",
+      "status": "passed"
+    },
+    {
+      "name": "course outcome distinguishes progress and study completion",
+      "status": "passed"
+    },
+    {
+      "name": "career grant course completion has explicit target-already-met reason",
+      "status": "passed"
+    },
+    {
       "name": "LearningSpeed changes duration and study never overlaps work/sleep",
       "status": "passed"
     },
     {
       "name": "career XP remains separate from skills; promotion milestone idempotent",
+      "status": "passed"
+    },
+    {
+      "name": "skill levels cover 0-5 boundaries and weaker grants cannot lower earned strength",
       "status": "passed"
     },
     {
@@ -61,6 +145,10 @@
       "status": "passed"
     },
     {
+      "name": "employment-free planner covers founder-equivalent availability and clamps allocated minutes",
+      "status": "passed"
+    },
+    {
       "name": "full month salary, expenses, payday and batch retry",
       "status": "passed"
     },
@@ -69,7 +157,23 @@
       "status": "passed"
     },
     {
+      "name": "M10 biography projection preserves employment and exact deferred pay",
+      "status": "passed"
+    },
+    {
+      "name": "M12 onboarding topics are stable, ordered, unique and complete",
+      "status": "passed"
+    },
+    {
+      "name": "M12 dashboard projects six authored skills, course costs and financial claims without writes",
+      "status": "passed"
+    },
+    {
       "name": "oldest arrears settle before spending and employment recovers",
+      "status": "passed"
+    },
+    {
+      "name": "repeated zero-cash shortfalls accumulate arrears without negative cash",
       "status": "passed"
     },
     {
@@ -101,6 +205,34 @@
       "status": "passed"
     },
     {
+      "name": "committed outcome exposes transactions and survives old retry after restore",
+      "status": "passed"
+    },
+    {
+      "name": "career boundary outcome exposes activity interval progression and reached instant",
+      "status": "passed"
+    },
+    {
+      "name": "playback outcome changes cursor only and snapshot publishes it",
+      "status": "passed"
+    },
+    {
+      "name": "root playback cue and cursor forgery are corrupt before restore publication",
+      "status": "passed"
+    },
+    {
+      "name": "playback provenance does not mask unsupported content",
+      "status": "passed"
+    },
+    {
+      "name": "candidate serialization validation is contained as state invalid",
+      "status": "passed"
+    },
+    {
+      "name": "committed non-boundary cue forgery is corrupt before outcome publication",
+      "status": "passed"
+    },
+    {
       "name": "synthetic v0 migration and current continuation",
       "status": "passed"
     },
@@ -110,6 +242,18 @@
     },
     {
       "name": "atomic storage before-replace failure retains state and backup",
+      "status": "passed"
+    },
+    {
+      "name": "M11 pre-promotion disk faults retain exact primary and clean own temp",
+      "status": "passed"
+    },
+    {
+      "name": "M11 both invalid checkpoints refuse recovery and retain original bytes",
+      "status": "passed"
+    },
+    {
+      "name": "M11 invalid primary never downgrades a future-version backup",
       "status": "passed"
     },
     {
