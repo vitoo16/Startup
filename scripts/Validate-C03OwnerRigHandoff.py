@@ -5,6 +5,7 @@ Uses the existing strict RGBA PNG decoder from Validate-GoldenCharacterC03R1.
 Works only with truly authored native layers, never the opaque concept PNG.
 """
 import argparse
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -115,9 +116,61 @@ def validate_contract(contract):
     return True
 
 
+# The active current-image handoff is intentionally separate from the frozen
+# 2026-10-16 21-part rig proof. A JSON source hash on the contract alone does
+# NOT establish that PNG layers were actually re-authored from that image.
+NATIVE_MANIFEST = 'C03-selected-native-source-manifest.json'
+NATIVE_SCHEMA = 'startup-life.c03.selected-native-source-handoff.v1'
+NATIVE_STATUS = 'DRAFT_PENDING_VISUAL_AND_IP_REVIEW'
+
+
+def verify_native_packet(contract, layers_dir):
+    """Integrity gate for 21 newly submitted native layers; NOT an art approval."""
+    selected = contract.get('selected_concept', {})
+    if selected.get('native_rig_from_selected_image') != 'ARTIST_AUTHORED_LAYERS_SUBMITTED':
+        raise ValueError('C03 selected-reference native rig is not authored yet')
+
+    layers_dir = Path(layers_dir)
+    manifest = json.loads((layers_dir / NATIVE_MANIFEST).read_text(encoding='utf-8'))
+    latest = json.loads(REFERENCE_RECORD.read_text(encoding='utf-8'))['latest_reference']
+    expected_files = {name + '.png' for name in contract['rig_parts_back_to_front']}
+    expected_files.add(contract['occlusion']['bag_body_mask_filename'])
+    declared_files = manifest.get('file_sha256', {})
+    if (manifest.get('schema') != NATIVE_SCHEMA or
+            manifest.get('status') != NATIVE_STATUS or
+            manifest.get('selected_reference_sha256') != latest['sha256'] or
+            manifest.get('selected_reference_path') != latest['expected_repo_draft_path'] or
+            manifest.get('native_canvas_px') != contract['canvas_px'] or
+            manifest.get('pixels_per_unit') != contract['pixel_per_unit'] or
+            set(declared_files) != expected_files):
+        raise ValueError('C03 native packet manifest is missing, stale or incomplete')
+    # Explicitly reject the known historical proof packet, even when a
+    # mistakenly relabelled manifest claims that it belongs to the new image.
+    if manifest.get('source_packet_sha256') == contract.get('native_front_source_packet_sha256'):
+        raise ValueError('C03 historical native packet is not current-image production art')
+
+    for filename in sorted(expected_files):
+        expected = declared_files[filename]
+        if (not isinstance(expected, str) or len(expected) != 64 or
+                any(c not in '0123456789abcdef' for c in expected)):
+            raise ValueError('Invalid C03 native layer SHA-256: ' + filename)
+        actual = hashlib.sha256((layers_dir / filename).read_bytes()).hexdigest()
+        if actual != expected:
+            raise ValueError('C03 native layer SHA-256 mismatch: ' + filename)
+    return True
+
+
 def verify(contract_path, layers_dir):
     contract=json.loads(Path(contract_path).read_text(encoding='utf8'))
     validate_contract(contract)
+    # An absent/incorrect source cannot be compensated by self-declared layer
+    # hashes. Require the actual owner PNG bytes from a hydrated LFS checkout.
+    latest = json.loads(REFERENCE_RECORD.read_text(encoding='utf-8'))['latest_reference']
+    source = ROOT / latest['expected_repo_draft_path']
+    if (not source.is_file() or
+            hashlib.sha256(source.read_bytes()).hexdigest() != latest['sha256']):
+        raise ValueError('C03 exact selected reference PNG is absent or differs from its SHA-256')
+    verify_native_packet(contract, layers_dir)
     decode=rgba_decoder()
     layers={}
     for name in contract['rig_parts_back_to_front']:
