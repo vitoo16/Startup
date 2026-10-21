@@ -68,7 +68,7 @@ foreach ($d in $dimensions) {
         }
     }
 }
-$actual = @(Get-ChildItem -LiteralPath $Directory -Filter "$prefix*.png" -File)
+$actual = @(Get-ChildItem -LiteralPath $Directory -Filter "${prefix}*.png" -File)
 if ($actual.Count -ne $expected.Count) {
     throw "Unexpected count of responsive captures: expected $($expected.Count), found $($actual.Count)."
 }
@@ -81,12 +81,13 @@ if ($inspected.Count -ne $expectedCount) {
     throw "Not all $expectedCount $Mode configurations produced valid PNGs."
 }
 
+$suiteName = if ($Mode -eq 'Creator') {
+    'Startup Life Character Creator native screenshot provenance'
+} else {
+    'Startup Life Main Menu native screenshot provenance'
+}
 $report = [ordered]@{
-    suite = if ($Mode -eq 'Creator') {
-        'Startup Life Character Creator native screenshot provenance'
-    } else {
-        'Startup Life Main Menu native screenshot provenance'
-    }
+    suite = $suiteName
     success = $true
     count = $inspected.Count
     note = 'PNG native-size/byte integrity only. Human layout and physical device review remain required.'
