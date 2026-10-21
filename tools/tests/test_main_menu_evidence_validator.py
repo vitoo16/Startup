@@ -84,6 +84,22 @@ class MainMenuEvidenceVerifierTests(unittest.TestCase):
             self.assertNotEqual(0, extra.returncode, "Extra pages must fail verification")
 
     @unittest.skipUnless(shutil.which("pwsh"), "PowerShell 7 is not available")
+    def test_existing_creator_default_still_requires_36_files(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for width, height in SIZES:
+                for scale in (100, 150, 200):
+                    for page in ("CreatorIdentityPage", "CreatorLookPage",
+                                 "CreatorWardrobePage", "CreatorTraitsPage"):
+                        (root / f"creator-{width}x{height}-text{scale}-{page}.png").write_bytes(
+                            png(width, height))
+            checked = subprocess.run(
+                ["pwsh", "-NoProfile", "-File", str(ORIGINAL), "-Directory", str(root)],
+                text=True, capture_output=True, check=False)
+            self.assertEqual(0, checked.returncode, checked.stderr)
+            self.assertIn("PASS 36", checked.stdout)
+
+    @unittest.skipUnless(shutil.which("pwsh"), "PowerShell 7 is not available")
     def test_missing_directory_is_not_success(self):
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder) / "missing-directory"
