@@ -111,6 +111,54 @@ vietnam-art-direction. **Visual evidence:** NOT RUN in this session.
 proof remain pending. **Files changed:** C03SelectedVisualPreviewEditor.cs,
 test_c03_player_art_readiness.py, this diagnosis.
 
+## Native 21-layer current-image handoff (2026-10-22)
+
+The archived October 16 rig contract remains immutable. The **active**
+2026-10-21 handoff contract is
+`docs/evidence/production-art/C03-ACTIVE-OWNER-FRONT-RIG-CONTRACT.json`.
+Its `selected_concept.native_rig_from_selected_image` is `NOT_AUTHORED`.
+The previous experimental 21-layer V3 sprite pack is **not** acceptable as
+the newer image's production rig, regardless of whether its silhouette
+and synthetic joint tests pass.
+
+After an artist has genuinely reconstructed native pixel layers from the
+**1122×1402** owner-selected reference (not a resized raster), stage the
+following in one **draft-only** directory outside `Assets`:
+
+- All **21 canonical part IDs** named `<part_id>.png` and an independent
+  `masks/bag_body.png`, each on the same 128×160 native RGBA grid.
+- A `C03-selected-native-source-manifest.json` recording
+  `schema: startup-life.c03.selected-native-source-handoff.v1`,
+  `status: DRAFT_PENDING_VISUAL_AND_IP_REVIEW`,
+  `selected_reference_sha256`, `selected_reference_path`,
+  `native_canvas_px: [128,160]`, `pixels_per_unit: 32`,
+  `file_sha256` mapping all 22 relative file paths to their exact
+  lowercase SHA-256, and `source_packet_sha256`.
+- Compute the packet digest as SHA-256 over UTF-8 concatenation, for
+  each sorted filename, of `filename` + NUL + `file_sha256` + LF.
+  This checksum binds the entire proposed layer set rather than merely
+  labeling an arbitrary source packet as new art. Never reuse the frozen
+  October 16 `native_front_source_packet_sha256`.
+
+Only **after actual art is submitted**, update the *active contract's*
+`native_rig_from_selected_image` to `ARTIST_AUTHORED_LAYERS_SUBMITTED`
+and run:
+
+```bash
+git lfs pull
+python scripts/Verify-C03HandBagReference.py
+python scripts/Validate-C03OwnerRigHandoff.py --layers-dir /path/to/artist/current-c03-native-layers
+python -m unittest discover -s tools/tests -p 'test_c03_owner_rig_handoff.py' -v
+```
+
+The validator checks exact reference SHA, manifest completeness, current
+reference identity, 22 file hashes + canonical packet digest, nonempty
+binary-alpha layer pixels and hand-behind-bag mask overlap. It never
+manufactures sprites, trusts metadata as evidence of visual likeness,
+imports an Editor prefab, approves IP or modifies gameplay. Image-specific
+layer artwork, authored joint pivots, actual animation, Unity graphical
+and mobile BeautyCell, and human owner/IP review remain **PENDING**.
+
 ## Separately test the existing native C03 Idle V3 draft
 
 The original 21-layer C03 native experimental rig can be staged and imported
