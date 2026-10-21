@@ -649,4 +649,362 @@ namespace StartupLife.Editor
                 throw new InvalidOperationException("C03 import grid is not 128x160: " + path);
         }
     }
+
+    // Separate 2026-10-21 owner-image pipeline, never derived from the
+    // archived 2026-10-16 V3 quarantine rig. No FirstPlayable/Approved writes.
+    public static class C03SelectedNativeRigBuilder
+    {
+        private const string Input = "artifacts/C03-selected-native-rig/input";
+        private const string Output =
+            "Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-Selected-Quarantine";
+        private const string Handoff = Input + "/C03-selected-native-unity-handoff.json";
+        private const string Contract =
+            "docs/evidence/production-art/C03-ACTIVE-OWNER-FRONT-RIG-CONTRACT.json";
+        private const string Reference =
+            "docs/evidence/production-art/C03-LATEST-MINOR-POLISH-REFERENCE.json";
+
+        [Serializable] private sealed class ImageRef
+        {
+            public string sha256 = "", expected_repo_draft_path = "";
+        }
+        [Serializable] private sealed class ReferenceRecord
+        {
+            public ImageRef latest_reference;
+        }
+        [Serializable] private sealed class SourceConcept
+        {
+            public string image_sha256 = "", native_rig_from_selected_image = "";
+        }
+        [Serializable] private sealed class ActiveContract
+        {
+            public int pixel_per_unit;
+            public int[] canvas_px = Array.Empty<int>();
+            public string[] rig_parts_back_to_front = Array.Empty<string>();
+            public SourceConcept selected_concept;
+        }
+        [Serializable] private sealed class InputFile
+        {
+            public string path = "", sha256 = "";
+        }
+        [Serializable] private sealed class Joint
+        {
+            public string id = "", parent = "";
+            public float[] local_xy_unity_units = Array.Empty<float>();
+        }
+        [Serializable] private sealed class Part
+        {
+            public string part_id = "", bone = "", path = "";
+            public int sort_order;
+            public float[] local_xy_unity_units = Array.Empty<float>();
+        }
+        [Serializable] private sealed class MotionKey
+        {
+            public float time_seconds, angle_degrees;
+        }
+        [Serializable] private sealed class MotionTrack
+        {
+            public string joint_id = "";
+            public MotionKey[] keys = Array.Empty<MotionKey>();
+        }
+        [Serializable] private sealed class Motion
+        {
+            public string id = "";
+            public float duration_seconds;
+            public MotionTrack[] tracks = Array.Empty<MotionTrack>();
+        }
+        [Serializable] private sealed class HandoffRecord
+        {
+            public string schema = "", status = "", selected_reference_sha256 = "";
+            public string native_source_packet_sha256 = "";
+            public bool approved_for_gameplay;
+            public int[] native_grid = Array.Empty<int>();
+            public int pixels_per_unit;
+            public InputFile[] files = Array.Empty<InputFile>();
+            public Joint[] joints = Array.Empty<Joint>();
+            public Part[] sprite_renderers = Array.Empty<Part>();
+            public Motion[] motions = Array.Empty<Motion>();
+        }
+
+        // All file checks happen before ANY Unity assets are copied/imported.
+        private static HandoffRecord LoadCheckedHandoff()
+        {
+            if (!File.Exists(Handoff) || !File.Exists(Contract) || !File.Exists(Reference))
+                throw new FileNotFoundException(
+                    "Run Stage-C03SelectedNativeRig.py with actual owner-matched artist layers first.");
+            var doc = JsonUtility.FromJson<HandoffRecord>(File.ReadAllText(Handoff));
+            var contract = JsonUtility.FromJson<ActiveContract>(File.ReadAllText(Contract));
+            var record = JsonUtility.FromJson<ReferenceRecord>(File.ReadAllText(Reference));
+            if (doc == null || contract == null || record == null ||
+                contract.selected_concept == null || record.latest_reference == null ||
+                doc.schema != "startup-life.c03.selected-native-unity-handoff.v1" ||
+                doc.status != "QUARANTINED_EDITOR_IMPORT_ONLY" || doc.approved_for_gameplay ||
+                contract.selected_concept.native_rig_from_selected_image !=
+                    "ARTIST_AUTHORED_LAYERS_SUBMITTED" ||
+                !string.Equals(doc.selected_reference_sha256,
+                    contract.selected_concept.image_sha256, StringComparison.Ordinal) ||
+                !string.Equals(doc.selected_reference_sha256,
+                    record.latest_reference.sha256, StringComparison.Ordinal) ||
+                doc.selected_reference_sha256.Length != 64 ||
+                doc.native_source_packet_sha256.Length != 64 ||
+                doc.native_grid.Length != 2 || contract.canvas_px.Length != 2 ||
+                doc.native_grid[0] != contract.canvas_px[0] ||
+                doc.native_grid[1] != contract.canvas_px[1] ||
+                doc.native_grid[0] != 128 || doc.native_grid[1] != 160 ||
+                doc.pixels_per_unit != contract.pixel_per_unit ||
+                doc.pixels_per_unit != PixelWorldCameraSetup.AssetsPpu ||
+                doc.joints.Length != 16 || doc.files.Length != 21 ||
+                doc.sprite_renderers.Length != 21 || doc.motions.Length == 0 ||
+                contract.rig_parts_back_to_front.Length != 21)
+                throw new InvalidOperationException("C03 owner-selected native Unity input is not authorized.");
+
+            // Source image must be the exact Git LFS binary, not a pointer.
+            var source = record.latest_reference.expected_repo_draft_path;
+            if (!source.StartsWith(
+                    "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/",
+                    StringComparison.Ordinal) || !File.Exists(source) ||
+                !string.Equals(Sha256(File.ReadAllBytes(source)),
+                    doc.selected_reference_sha256, StringComparison.Ordinal))
+                throw new InvalidOperationException("C03 owner reference source is absent or wrong.");
+
+            var expected = new HashSet<string>(contract.rig_parts_back_to_front, StringComparer.Ordinal);
+            var files = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var file in doc.files)
+            {
+                if (file == null || !file.path.StartsWith("layers/", StringComparison.Ordinal) ||
+                    !file.path.EndsWith(".png", StringComparison.Ordinal) ||
+                    file.path.IndexOf('/', "layers/".Length) >= 0 ||
+                    !expected.Contains(Path.GetFileNameWithoutExtension(file.path)) ||
+                    !files.Add(file.path) || file.sha256.Length != 64 ||
+                    !string.Equals(Sha256(File.ReadAllBytes(Input + "/" + file.path)),
+                        file.sha256, StringComparison.Ordinal))
+                    throw new InvalidOperationException("C03 native layer absent or checksum changed.");
+            }
+            if (files.Count != expected.Count) throw new InvalidOperationException("C03 missing native layers.");
+
+            var joints = new Dictionary<string, Joint>(StringComparer.Ordinal);
+            foreach (var joint in doc.joints)
+            {
+                if (joint == null || string.IsNullOrWhiteSpace(joint.id) ||
+                    joint.local_xy_unity_units.Length != 2 || !joints.TryAdd(joint.id, joint))
+                    throw new InvalidOperationException("C03 duplicate or malformed authored joint.");
+            }
+            if (!joints.TryGetValue("root", out var root) ||
+                !string.IsNullOrEmpty(root.parent) ||
+                root.local_xy_unity_units[0] != 0f || root.local_xy_unity_units[1] != 0f)
+                throw new InvalidOperationException("C03 root joint invalid.");
+
+            var pending = new HashSet<string>(joints.Keys, StringComparer.Ordinal);
+            pending.Remove("root");
+            var visited = new HashSet<string>(StringComparer.Ordinal) { "root" };
+            for (var pass = 0; pass < doc.joints.Length; pass++)
+            {
+                foreach (var name in pending.ToArray())
+                    if (visited.Contains(joints[name].parent))
+                    {
+                        pending.Remove(name);
+                        visited.Add(name);
+                    }
+            }
+            if (pending.Count > 0)
+                throw new InvalidOperationException("C03 rig contains cyclic or orphaned joints.");
+
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var part in doc.sprite_renderers)
+            {
+                if (part == null || !expected.Contains(part.part_id) || !seen.Add(part.part_id) ||
+                    !joints.ContainsKey(part.bone) ||
+                    part.local_xy_unity_units.Length != 2 ||
+                    part.sort_order < 0 || part.sort_order >= expected.Count ||
+                    part.part_id != contract.rig_parts_back_to_front[part.sort_order] ||
+                    part.path != "layers/" + part.part_id + ".png")
+                    throw new InvalidOperationException("C03 invalid source-authored semantic renderer.");
+            }
+            var byPart = doc.sprite_renderers.ToDictionary(p => p.part_id, StringComparer.Ordinal);
+            if (byPart["accessory_front"].sort_order <= byPart["hand_r"].sort_order ||
+                byPart["hand_r"].bone != "wrist_r" ||
+                byPart["accessory_front"].bone != "spine")
+                throw new InvalidOperationException("C03 bag/hand sorting or articulation is invalid.");
+
+            var clips = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var motion in doc.motions)
+            {
+                if (motion == null || !clips.Add(motion.id) || motion.id.Length == 0 ||
+                    motion.duration_seconds < .2f || motion.duration_seconds > 10f ||
+                    motion.tracks.Length == 0)
+                    throw new InvalidOperationException("C03 invalid authored motion clip.");
+                var tracks = new HashSet<string>(StringComparer.Ordinal);
+                var moved = 0;
+                foreach (var track in motion.tracks)
+                {
+                    if (track == null || track.joint_id == "root" ||
+                        !joints.ContainsKey(track.joint_id) ||
+                        !tracks.Add(track.joint_id) || track.keys.Length < 3)
+                        throw new InvalidOperationException("C03 motion must animate real authored joints.");
+                    var last = -1f;
+                    var changing = false;
+                    foreach (var frame in track.keys)
+                    {
+                        if (frame == null || float.IsNaN(frame.time_seconds) ||
+                            float.IsNaN(frame.angle_degrees) ||
+                            frame.time_seconds <= last ||
+                            frame.time_seconds > motion.duration_seconds + .00001f ||
+                            Mathf.Abs(frame.angle_degrees) > 45f)
+                            throw new InvalidOperationException("C03 invalid joint motion keyframe.");
+                        if (Mathf.Abs(frame.angle_degrees) > .001f) changing = true;
+                        last = frame.time_seconds;
+                    }
+                    if (Mathf.Abs(track.keys[0].time_seconds) > .00001f ||
+                        Mathf.Abs(last - motion.duration_seconds) > .00001f ||
+                        Mathf.Abs(track.keys[0].angle_degrees) > .00001f ||
+                        Mathf.Abs(track.keys[track.keys.Length - 1].angle_degrees) > .00001f)
+                        throw new InvalidOperationException("C03 motion has an open loop seam.");
+                    if (changing) moved++;
+                }
+                if (moved < 2) throw new InvalidOperationException(
+                    "C03 motion cannot fake a living character with one rotating joint.");
+                if (motion.id == "walk" &&
+                    tracks.Count(t => t == "hip_l" || t == "hip_r" ||
+                                      t == "knee_l" || t == "knee_r") < 2)
+                    throw new InvalidOperationException("C03 walk needs moving leg joints.");
+            }
+            if (!clips.Contains("idle"))
+                throw new InvalidOperationException("C03 requires artist-keyframed idle.");
+            return doc;
+        }
+
+        private static string Sha256(byte[] bytes)
+        {
+            using (var hash = System.Security.Cryptography.SHA256.Create())
+                return BitConverter.ToString(hash.ComputeHash(bytes))
+                    .Replace("-", "").ToLowerInvariant();
+        }
+
+        private static Vector3 Position(float[] xy)
+        {
+            return new Vector3(xy[0], xy[1], 0f);
+        }
+
+        [MenuItem("Startup Life/Art/C03/Build selected native articulated rig (quarantine)")]
+        public static void Build()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                throw new InvalidOperationException("Stop Play Mode before authoring C03 Unity assets.");
+            if (Directory.Exists(Output) || AssetDatabase.IsValidFolder(Output))
+                throw new InvalidOperationException(
+                    "Selected C03 quarantine rig already exists; do not overwrite artist revisions.");
+
+            var doc = LoadCheckedHandoff();
+            Directory.CreateDirectory(Output + "/layers");
+            foreach (var file in doc.files)
+                File.Copy(Input + "/" + file.path, Output + "/" + file.path);
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            foreach (var file in doc.files)
+            {
+                var assetPath = Output + "/" + file.path;
+                var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
+                if (importer == null) throw new InvalidOperationException("Missing C03 TextureImporter.");
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                importer.spritePixelsPerUnit = doc.pixels_per_unit;
+                importer.filterMode = FilterMode.Point;
+                importer.mipmapEnabled = false;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.alphaIsTransparency = true;
+                NativeSpriteImportSettings.ConfigurePivot(importer, SpriteAlignment.Center,
+                    new Vector2(.5f, .5f));
+                importer.SaveAndReimport();
+                var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+                if (!texture || !sprite || texture.width != doc.native_grid[0] ||
+                    texture.height != doc.native_grid[1])
+                    throw new InvalidOperationException("C03 imported sprite has incorrect native dimensions.");
+            }
+
+            GameObject root = null;
+            try
+            {
+                root = new GameObject("C03_SELECTED_NATIVE_QUARANTINE_NOT_GAMEPLAY");
+                var joints = new Dictionary<string, Transform>(StringComparer.Ordinal)
+                {
+                    { "root", root.transform }
+                };
+                var pending = new List<Joint>(doc.joints.Where(j => j.id != "root"));
+                for (var pass = 0; pending.Count > 0 && pass < doc.joints.Length; pass++)
+                {
+                    var progressed = false;
+                    for (var i = pending.Count - 1; i >= 0; i--)
+                    {
+                        var joint = pending[i];
+                        if (!joints.TryGetValue(joint.parent, out var parent)) continue;
+                        var node = new GameObject(joint.id);
+                        node.transform.SetParent(parent, false);
+                        node.transform.localPosition = Position(joint.local_xy_unity_units);
+                        joints.Add(joint.id, node.transform);
+                        pending.RemoveAt(i);
+                        progressed = true;
+                    }
+                    if (!progressed)
+                        throw new InvalidOperationException("C03 authored joint hierarchy is incomplete.");
+                }
+                foreach (var part in doc.sprite_renderers)
+                {
+                    var node = new GameObject(part.part_id);
+                    node.transform.SetParent(joints[part.bone], false);
+                    node.transform.localPosition = Position(part.local_xy_unity_units);
+                    var renderer = node.AddComponent<SpriteRenderer>();
+                    renderer.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(Output + "/" + part.path);
+                    renderer.sortingOrder = part.sort_order;
+                    if (!renderer.sprite) throw new InvalidOperationException("Missing C03 part " + part.part_id);
+                }
+
+                var controller = AnimatorController.CreateAnimatorControllerAtPath(
+                    Output + "/C03_Selected_Native_QA.controller");
+                var machine = controller.layers[0].stateMachine;
+                foreach (var motion in doc.motions)
+                {
+                    var clip = new AnimationClip
+                    {
+                        name = "C03_Selected_" + motion.id + "_ARTIST_QA",
+                        frameRate = 60f,
+                        wrapMode = WrapMode.Loop
+                    };
+                    foreach (var track in motion.tracks)
+                    {
+                        var keys = track.keys.Select(frame =>
+                            new Keyframe(frame.time_seconds, frame.angle_degrees)).ToArray();
+                        var curve = new AnimationCurve(keys);
+                        var path = AnimationUtility.CalculateTransformPath(
+                            joints[track.joint_id], root.transform);
+                        AnimationUtility.SetEditorCurve(clip,
+                            EditorCurveBinding.FloatCurve(
+                                path, typeof(Transform), "localEulerAnglesRaw.z"), curve);
+                    }
+                    AssetDatabase.CreateAsset(clip,
+                        Output + "/C03_Selected_" + motion.id + "_QA.anim");
+                    var state = machine.AddState("Review_" + motion.id);
+                    state.motion = clip;
+                    if (motion.id == "idle") machine.defaultState = state;
+                }
+                root.AddComponent<Animator>().runtimeAnimatorController = controller;
+                PrefabUtility.SaveAsPrefabAsset(root, Output + "/C03_SELECTED_NATIVE_QA.prefab");
+                AssetDatabase.SaveAssets();
+
+                var saved = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    Output + "/C03_SELECTED_NATIVE_QA.prefab");
+                if (!saved || saved.GetComponentsInChildren<SpriteRenderer>(true).Length != 21 ||
+                    saved.GetComponentsInChildren<Transform>(true).Length != 37)
+                    throw new InvalidOperationException(
+                        "C03 serialized rig lost its 16 joints or 21 visible layer slots.");
+                Debug.Log("[StartupLife][C03] Authored selected-image rig staged with " +
+                    doc.joints.Length + " joints, " + doc.sprite_renderers.Length +
+                    " renderers and " + doc.motions.Length + " keyframed motions. " +
+                    "QUARANTINED: Unity PlayMode, art/IP and device QA NOT APPROVED.");
+            }
+            finally
+            {
+                if (root != null) UnityEngine.Object.DestroyImmediate(root);
+            }
+        }
+    }
+
 }
