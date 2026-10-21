@@ -1,6 +1,8 @@
 """Native overlap negative/positive tests without Unity; fixture pixels are synthetic."""
+import hashlib
 import importlib.util
 import json
+import tempfile
 from pathlib import Path
 import unittest
 
@@ -55,6 +57,68 @@ class C03OwnerRigTests(unittest.TestCase):
         wrong_path['selected_concept']['repo_target'] = 'Assets/other.png'
         with self.assertRaisesRegex(ValueError, 'latest owner-selected reference'):
             mod.validate_contract(wrong_path)
+
+    def test_active_contract_rejects_unreconstructed_legacy_native_art(self):
+        contract = json.loads(CONTRACT.read_text(encoding='utf-8'))
+        self.assertEqual('NOT_AUTHORED',
+                         contract['selected_concept']['native_rig_from_selected_image'])
+        with self.assertRaisesRegex(ValueError, 'not authored yet'):
+            mod.verify_native_packet(contract, ROOT / 'not-a-valid-layer-folder')
+
+    def test_current_native_layer_packet_hashes_and_source_are_required(self):
+        contract = json.loads(CONTRACT.read_text(encoding='utf-8'))
+        contract['selected_concept']['native_rig_from_selected_image'] = (
+            'ARTIST_AUTHORED_LAYERS_SUBMITTED')
+        current = json.loads(mod.REFERENCE_RECORD.read_text(encoding='utf-8'))['latest_reference']
+        with tempfile.TemporaryDirectory(prefix='c03-native-gate-') as tmp:
+            folder = Path(tmp)
+            # Integrity-only fixture: real PNG decoding/occlusion is checked by
+            # the separate production verify() path, not these placeholder bytes.
+            names = {part + '.png' for part in contract['rig_parts_back_to_front']}
+            names.add(contract['occlusion']['bag_body_mask_filename'])
+            hashes = {}
+            for name in sorted(names):
+                path = folder / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                body = b'fixture-' + name.encode('ascii')
+                path.write_bytes(body)
+                hashes[name] = hashlib.sha256(body).hexdigest()
+            manifest = {
+                'schema': mod.NATIVE_SCHEMA,
+                'status': mod.NATIVE_STATUS,
+                'selected_reference_sha256': current['sha256'],
+                'selected_reference_path': current['expected_repo_draft_path'],
+                'native_canvas_px': contract['canvas_px'],
+                'pixels_per_unit': contract['pixel_per_unit'],
+                'file_sha256': hashes,
+                'source_packet_sha256': 'new-art-packet-not-historical',
+            }
+            manifest_path = folder / mod.NATIVE_MANIFEST
+            manifest_path.write_text(json.dumps(manifest), encoding='utf-8')
+            self.assertTrue(mod.verify_native_packet(contract, folder))
+
+            (folder / 'hand_r.png').write_bytes(b'tampered')
+            with self.assertRaisesRegex(ValueError, 'SHA-256 mismatch'):
+                mod.verify_native_packet(contract, folder)
+            (folder / 'hand_r.png').write_bytes(b'fixture-hand_r.png')
+
+            manifest['selected_reference_sha256'] = (
+                'd2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e')
+            manifest_path.write_text(json.dumps(manifest), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'missing, stale or incomplete'):
+                mod.verify_native_packet(contract, folder)
+
+            manifest['selected_reference_sha256'] = current['sha256']
+            manifest['source_packet_sha256'] = contract['native_front_source_packet_sha256']
+            manifest_path.write_text(json.dumps(manifest), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'historical native packet'):
+                mod.verify_native_packet(contract, folder)
+
+            manifest['source_packet_sha256'] = 'new-art-packet-not-historical'
+            del manifest['file_sha256']['face.png']
+            manifest_path.write_text(json.dumps(manifest), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'missing, stale or incomplete'):
+                mod.verify_native_packet(contract, folder)
 
     def test_partial_hand_covered_and_skin_below(self):
         result=mod.inspect_masked_occlusion(*layers())
