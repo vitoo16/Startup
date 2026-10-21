@@ -12,7 +12,7 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parents[1]
 RELATIVE=Path('Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png')
-EXPECTED='d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e'
+EXPECTED='1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa'
 
 
 def stage(source, repo_root=ROOT):

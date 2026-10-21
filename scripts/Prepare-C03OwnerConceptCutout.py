@@ -19,11 +19,12 @@ except ImportError as exc:
 
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCE = ROOT / 'Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png'
-SOURCE_SHA256 = 'd2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e'
-CANVAS = (1171, 1343)
+SOURCE_SHA256 = '1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa'
+CANVAS = (1122, 1402)
 BEIGE = (253, 251, 244)
 DISTANCE_THRESHOLD = 28
-EXPECTED_BBOX = (330, 156, 817, 1172)
+EXPECTED_BBOX = (307, 180, 855, 1256)
+EXPECTED_OPAQUE_PIXELS = 405998
 
 
 def isolate(rgb, background=BEIGE, threshold=DISTANCE_THRESHOLD, seed=None):
@@ -57,10 +58,13 @@ def produce(source, output_dir):
     if hashlib.sha256(content).hexdigest() != SOURCE_SHA256:
         raise ValueError('Not the exact C03 owner-approved hand-behind-bag PNG')
     with Image.open(source) as original:
-        if original.format != 'PNG' or original.mode != 'RGB' or original.size != CANVAS:
+        if original.format != 'PNG' or original.mode != 'RGBA' or original.size != CANVAS:
             raise ValueError('Unrecognized C03 owner reference image format')
-        cutout = isolate(original.copy())
-    if cutout.getchannel('A').getbbox() != EXPECTED_BBOX:
+        if original.getchannel('A').getextrema() != (255, 255):
+            raise ValueError('C03 selected source has unexpected transparency')
+        cutout = isolate(original.convert('RGB'))
+    if (cutout.getchannel('A').getbbox() != EXPECTED_BBOX or
+        cutout.getchannel('A').histogram()[255] != EXPECTED_OPAQUE_PIXELS):
         raise ValueError('The generated draft mask changed unexpectedly')
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)

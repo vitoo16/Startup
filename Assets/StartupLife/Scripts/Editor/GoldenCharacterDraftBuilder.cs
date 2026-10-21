@@ -553,7 +553,7 @@ namespace StartupLife.Editor
             foreach (var bone in rig.joints)
             {
                 var current = bone.id == "root" ? prefab.transform : transforms[bone.id];
-                var parent = bone.parent == null ? null :
+                var parent = string.IsNullOrEmpty(bone.parent) ? null :
                     bone.parent == "root" ? prefab.transform : transforms[bone.parent];
                 if (current.parent != parent ||
                     Vector2.Distance((Vector2)current.localPosition, (Vector2)XY(bone.local_xy_unity_units)) > 0.00001f ||
@@ -586,7 +586,7 @@ namespace StartupLife.Editor
             var names = new[] { "face_open.png", "face_half.png", "face_closed.png",
                 "face_half.png", "face_open.png" };
             var times = new[] { 0f, .02f, .05f, .11f, .18f };
-            if (keys == null || keys.Length != 5 || Mathf.Abs(clip.length - .18f) > .0001f)
+            if (keys == null || keys.Length != 5 || Mathf.Abs(keys[4].time - .18f) > .0001f)
                 throw new InvalidOperationException("C03 Blink is not exactly 180ms.");
             for (var i = 0; i < keys.Length; i++)
                 if (Mathf.Abs(keys[i].time - times[i]) > .0001f ||

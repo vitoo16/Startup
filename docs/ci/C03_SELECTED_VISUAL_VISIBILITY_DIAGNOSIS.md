@@ -5,15 +5,16 @@
 This is not a texture missing randomly at runtime. The active art registry
 `Assets/StartupLife/Art/Approved/registry.json` has **zero approved entries**,
 `CharacterCreatorVisualPreviewBridge` has **no rig/configuration attached** in
-`FirstPlayable`, and the exact owner-approved final C03 front visual PNG is
-**not committed to GitHub**. The existing C03 native 21-part source and Idle V3
-blink are deliberately quarantined proofs, **not the selected shipping visual**.
+`FirstPlayable`. The owner's exact current visual reference is now committed as a
+**Git LFS-tracked source PNG**; however, the source is opaque and is not a game-ready
+articulated character. The existing C03 native 21-part source and Idle V3 blink
+are deliberately quarantined proofs, **not the selected shipping visual**.
 
 ## Which original image?
 
 The latest owner-approved *visual reference* is
-`pixel_art_boy_with_brown_satchel.png`, **1171×1343 RGB**,
-SHA-256 `d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e`,
+`image(20261021-124610).png`, **1122×1402 RGBA (fully opaque)**,
+SHA-256 `1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa`,
 with the satchel in front of the near-side hand. This version supersedes the
 older chosen illustration and the C03 procedural draft look. Source of truth:
 `docs/evidence/production-art/C03-LATEST-MINOR-POLISH-REFERENCE.json` and
@@ -28,9 +29,11 @@ cd C:\Users\viett\Startup
 python scripts/Check-C03PlayerArtReadiness.py
 ```
 
-Before staging the original PNG, expected status is
-`MISSING_OR_INCORRECT_REFERENCE` and process exit code **2**. This means
-**art input is blocked**, not a Unity compiler failure. The tool makes no
+With Git LFS hydrated and the exact owner PNG present, expected status is
+`REFERENCE_VERIFIED_NOT_GAMEPLAY_READY` and exit code **0**. A pointer-only
+checkout (without LFS hydration) or missing PNG deliberately returns
+`MISSING_OR_INCORRECT_REFERENCE` (exit code **2**). These are input-integrity
+results, not a Unity gameplay acceptance gate. The tool makes no
 changes to files, saves, Unity scenes or the approval registry.
 
 If the original owner-selected PNG or handoff ZIP is available, use the
@@ -62,7 +65,7 @@ file. Do not put it under `Art/Approved`.
 6. Record a screenshot, compare the visible bag/hand and face against the
    owner's selected image, and report Unity Console errors if any.
 
-This **is not gameplay integration**. The image is a flat high-resolution RGB
+This **is not gameplay integration**. The image is a flat high-resolution RGBA (fully opaque)
 reference with its background baked in; putting it directly in
 `FirstPlayable` would violate the production pixel-art, cutout and rig gates.
 
@@ -79,9 +82,8 @@ this quarantined prefab as a new approved gameplay asset.
 
 ## Acceptance/remaining work
 
-- Exact selected original image in repository: **MISSING** (until user stages it).
-- Selected image SHA-256 / dimension check: source tool implemented; actual
-  user's PNG **NOT YET TESTED**.
+- Exact new selected image in repository: **COMMITTED AS GIT LFS** since `20aad88` (pointer SHA-256 `1999322a...`, 1,406,695 bytes); engine-free C03 reference identity check passes with LFS checkout enabled.
+- Selected image SHA-256/dimensions: **PASS** for exact owner-uploaded source checked on an LFS-hydrated CI checkout; graphical Unity asset import remains **NOT VERIFIED**.
 - Isolated Unity original-image Game View menu: implementation committed;
   actual local Unity Editor/PlayMode **NOT RUN HERE**.
 - Original transparency + 21 articulated native parts derived from **this
@@ -96,5 +98,15 @@ this quarantined prefab as a new approved gameplay asset.
 **Skills:** startup-life-session-orchestrator, unity-cli, 2d-pixel-perfect,
 sprite-editor, startup-life-asset-quality-gate, vietnam-art-direction.
 **Visual evidence:** existing references only, no current Unity screenshot.
-**Known limitation:** current GitHub connector cannot run the user's local
-Unity Editor or read an unuploaded binary PNG on their computer.
+**Known limitation:** this chat runner cannot run the user's local Unity Editor.
+The committed PNG has minimal identity `.meta` sidecars; actual Unity 6000.3.25f1
+must import and fully serialize the TextureImporter without changing GUID. This
+is still not a real rig, animation or phone proof.
+
+## New owner selection (2026-10-21)
+
+Owner selected a NEW canonical image, `image(20261021-124610).png`, 1122×1402 RGBA
+(all alpha = 255), SHA-256 `1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa`. This replaces the earlier 2026-10-16 concept
+whose SHA-256 was `d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e`. Former concepts and the native Idle V3 are
+historical drafts, not substitutes. The exact binary has since been committed via Git LFS and source-checked in CI;
+that does NOT mean Unity has imported it or it is approved for gameplay.
