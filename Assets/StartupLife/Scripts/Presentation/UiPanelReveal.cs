@@ -44,7 +44,7 @@ namespace StartupLife.Presentation
             }
 
             if (PlayerPrefs.GetInt(ReducedMotionPreference, 0) != 0 ||
-                !Application.isPlaying)
+                !UnityEngine.Application.isPlaying)
             {
                 canvasGroup.alpha = 1f;
                 return;
