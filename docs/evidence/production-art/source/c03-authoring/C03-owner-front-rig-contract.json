@@ -14,12 +14,10 @@
   "pixel_per_unit": 32,
   "grid_is_provisional_until_native_reconstruction": false,
   "selected_concept": {
-    "image_sha256": "1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa",
+    "image_sha256": "d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e",
     "repo_target": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png",
-    "image_committed": true,
-    "opaque_reference_not_native_sprite": true,
-    "owner_reference_revision": "C03-OWNER-REFERENCE-2026-10-21",
-    "native_rig_from_selected_image": "NOT_AUTHORED"
+    "image_committed": false,
+    "opaque_reference_not_native_sprite": true
   },
   "rig_parts_back_to_front": [
     "hair_back",
@@ -62,10 +60,11 @@
     "no_runtime_generated_masks": true,
     "no_procedural_redrawing_of_owner_illustration": true,
     "no_production_binding_before_golden_approval": true,
-    "authoring_stage": "Historical native rig is a quarantined directional proof, NOT reconstructed from the 2026-10-21 owner-selected reference; all 21 native layers and joint positions require review/reauthoring in real Unity."
+    "authoring_stage": "Owner-approved native FRONT source with existing 21 layers; joint positions are draft, not verified by Unity Editor and phone"
   },
   "open_gates": [
     "independently_review_real_pivot_joint_motion_and_hand_bag_overlap",
+    "commit_exact_original_concept_binary",
     "21_native_rgba_layer_sources_and_pivots",
     "independent_originality_IP",
     "unity_joint_animation_and_layer_sorting",
