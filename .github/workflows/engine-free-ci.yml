@@ -120,6 +120,9 @@ jobs:
       - name: Guard UI motion and Vietnamese copy source joins (no Unity Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_presentation_motion_source.py' -v
 
+      - name: Compile actual UiPanelReveal against colliding StartupLife.Application namespace
+        run: dotnet run --project tools/UiPanelRevealCompileChecks/UiPanelRevealCompileChecks.csproj -c Release --nologo
+
       - name: Guard Life journal composition and approved-art boundary (no Unity Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_life_journal_source.py' -v
 
