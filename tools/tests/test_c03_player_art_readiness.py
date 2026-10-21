@@ -28,9 +28,9 @@ class C03ReadinessTests(unittest.TestCase):
         self.root = Path(self.tmp.name)
         record = {
             "latest_reference": {
-                "filename": "pixel_art_boy_with_brown_satchel.png",
+                "filename": "image(20261021-124610).png",
                 "sha256": hashlib.sha256(fake_png()).hexdigest(),
-                "width": 1171, "height": 1343,
+                "width": 1122, "height": 1402,
                 "expected_repo_draft_path": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png",
             }
         }
