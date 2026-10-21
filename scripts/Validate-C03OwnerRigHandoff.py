@@ -149,6 +149,15 @@ def verify_native_packet(contract, layers_dir):
     if manifest.get('source_packet_sha256') == contract.get('native_front_source_packet_sha256'):
         raise ValueError('C03 historical native packet is not current-image production art')
 
+    # Canonical packet fingerprint binds the declared 22 files together.
+    # The manifest cannot choose an arbitrary label and call it a new rig.
+    canonical = ''.join(
+        filename + '\\0' + declared_files[filename] + '\\n'
+        for filename in sorted(expected_files))
+    packet_sha256 = hashlib.sha256(canonical.encode('utf-8')).hexdigest()
+    if manifest.get('source_packet_sha256') != packet_sha256:
+        raise ValueError('C03 native packet aggregate SHA-256 mismatch')
+
     for filename in sorted(expected_files):
         expected = declared_files[filename]
         if (not isinstance(expected, str) or len(expected) != 64 or
