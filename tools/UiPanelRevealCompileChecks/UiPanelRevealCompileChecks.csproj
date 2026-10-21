@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Link the exact Unity source so C# name binding is checked by Roslyn. -->
+    <Compile Include="../../Assets/StartupLife/Scripts/Presentation/UiPanelReveal.cs" Link="UiPanelReveal.cs" />
+    <Compile Include="UnityStubs.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>
