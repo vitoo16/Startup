@@ -69,6 +69,48 @@ This **is not gameplay integration**. The image is a flat high-resolution RGBA (
 reference with its background baked in; putting it directly in
 `FirstPlayable` would violate the production pixel-art, cutout and rig gates.
 
+## C03 reference importer gate (2026-10-22)
+
+The selected LFS-tracked 1122×1402 image has a **minimal identity-only
+`.meta`** on `main`; the current shell/GitHub connector did **not** run
+Unity 6000.3.25f1 or record an imported `TextureImporter` from the Editor.
+Do not mark this gate PASS based on a script review or GitHub CI alone.
+
+After fetching the exact image through Git LFS, in the **actual Unity Editor**:
+
+1. Run `Startup Life → Art → C03 → Open selected visual reference in Game View`.
+   The command verifies the owner-selected source SHA before showing a
+   save/discard/cancel prompt for the current scene. **Cancel** makes no
+   importer or scene changes; continuing lets Unity serialize the source
+   `TextureImporter` while retaining GUID
+   `0eb68713039bb3f40d6ad5c2a6bb0309`.
+2. Run `Startup Life → Art → C03 → Verify imported selected reference (read only)`.
+   The verifier fails closed on a wrong image/path/hash, changed GUID,
+   missing Sprite, incorrect dimensions, or mismatched reference-only
+   Sprite/Point/350 PPU/no-mips/uncompressed import settings.
+3. Inspect `git diff -- <reference>.meta` and commit **the Unity-authored
+   serialized importer file**, preserving the tracked GUID. Do not manually
+   fabricate importer YAML. Record the Unity console result and Game View
+   screenshot at an actual portrait viewport.
+4. Keep `Art/Approved/registry.json`, `FirstPlayable.unity`, production
+   character bindings and saved player profiles untouched. These checks
+   concern the **opaque QA reference**, not a native sprite rig, gameplay
+   character, device BeautyCell or independent IP approval.
+
+Engine-free structural test coverage:
+`tools/tests/test_c03_player_art_readiness.py` checks the new menu's
+read-only behavior, GUID guard, importer settings and the requirement that
+the scene-save prompt precede reimport. Such tests **cannot** confirm that
+the code compiled or ran inside the Unity Editor.
+
+**Owner:** GPT-6 · **Skills used:** startup-life-session-orchestrator,
+unity-cli, 2d-pixel-perfect, sprite-editor, startup-life-asset-quality-gate,
+vietnam-art-direction. **Visual evidence:** NOT RUN in this session.
+**Save impact:** NONE. **Known limitations:** native 21-part reconstruction,
+16-joint motion, Creator/Life integration, independent review and device
+proof remain pending. **Files changed:** C03SelectedVisualPreviewEditor.cs,
+test_c03_player_art_readiness.py, this diagnosis.
+
 ## Separately test the existing native C03 Idle V3 draft
 
 The original 21-layer C03 native experimental rig can be staged and imported
