@@ -126,6 +126,10 @@ jobs:
       - name: Verify player main-menu safety contracts (no Unity Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_main_menu_source.py' -v
 
+      - name: Reject missing or mismatched main-menu screenshot evidence (synthetic fixtures only)
+        run: python3 -m unittest discover -s tools/tests -p 'test_main_menu_evidence_validator.py' -v
+
+
       - name: Compile and exercise locked save archiver with real temporary files
         run: dotnet run --project tools/SaveArchiveChecks/SaveArchiveChecks.csproj -c Release
 
