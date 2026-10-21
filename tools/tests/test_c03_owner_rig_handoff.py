@@ -131,6 +131,28 @@ class C03OwnerRigTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'missing, stale or incomplete'):
                 mod.verify_native_packet(contract, folder)
 
+    def test_all_twenty_one_parts_need_real_binary_alpha_pixels(self):
+        contract = json.loads(CONTRACT.read_text(encoding='utf-8'))
+        width, height = contract['canvas_px']
+        count = width * height * 4
+        parts = {}
+        for part in contract['rig_parts_back_to_front']:
+            pixels = bytearray(count)
+            pixels[3] = 255  # synthetic one-pixel authored fixture
+            parts[part] = pixels
+        self.assertTrue(mod.inspect_required_native_layers(contract, parts))
+        parts['torso'][:] = bytes(count)
+        with self.assertRaisesRegex(ValueError, 'is empty: torso'):
+            mod.inspect_required_native_layers(contract, parts)
+        parts['torso'][3] = 255
+        parts['head'][3] = 128
+        with self.assertRaisesRegex(ValueError, 'non-binary native alpha: head'):
+            mod.inspect_required_native_layers(contract, parts)
+        parts['head'][3] = 255
+        del parts['foot_r']
+        with self.assertRaisesRegex(ValueError, 'missing an authored semantic part'):
+            mod.inspect_required_native_layers(contract, parts)
+
     def test_partial_hand_covered_and_skin_below(self):
         result=mod.inspect_masked_occlusion(*layers())
         self.assertEqual(result['overlap_covered_px'],20)
