@@ -1,0 +1,50 @@
+name: C03 Selected Visual vs Existing Rig
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/Review-C03SelectedVsExistingRig.py
+      - .github/workflows/c03-selected-visual-review.yml
+      - docs/evidence/production-art/source/c03-authoring/C03-native-front-source.json
+      - docs/evidence/production-art/source/c03-authoring/C03-native-front-pixel-runs.lzma.b64
+      - Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png
+      - Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-V3-Quarantine/layers/**
+      - Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-V3-Quarantine/C03_IDLE_V3_QUARANTINED.prefab
+
+permissions:
+  contents: read
+
+concurrency:
+  group: c03-owner-visual-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    name: Side-by-side owner reference and preserved 21-sprite rig
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact owner art and existing native rig (Git LFS)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: true
+
+      - name: Pillow for visual-only comparison
+        run: python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0
+
+      - name: Validate exact selected C03 image
+        run: python3 scripts/Verify-C03HandBagReference.py
+
+      - name: Generate side-by-side sheet, layer contact sheet and factual JSON
+        run: python3 scripts/Review-C03SelectedVsExistingRig.py --output-dir "$RUNNER_TEMP/c03-owner-v3-review"
+
+      - name: Upload C03 comparison for human owner review
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: c03-selected-vs-existing-rig-review
+          path: ${{ runner.temp }}/c03-owner-v3-review/
+          if-no-files-found: warn
+          retention-days: 30
