@@ -159,6 +159,87 @@ imports an Editor prefab, approves IP or modifies gameplay. Image-specific
 layer artwork, authored joint pivots, actual animation, Unity graphical
 and mobile BeautyCell, and human owner/IP review remain **PENDING**.
 
+## Build image-matched C03 articulated QA rig (new pipeline, 2026-10-22)
+
+This is a **new independent staging/Editor import path** for art reconstructed
+from the owner-selected **1122×1402 RGBA image**. It is not a rename of the
+October 16 V3 sprites, rig, rejected sinusoidal Idle or masked concept.
+The stage deliberately fails until current-image artist-authored layers exist.
+
+**Source art prerequisites:** 21 transparent 128×160 native-grid semantic PNG
+layers, `masks/bag_body.png`, the SHA-256 manifest specified above and the
+hydrated owner reference. Do not downsample the opaque illustration into
+fake native pixel source. The 128×160 / 32 PPU values are QA authoring
+assumptions; any later approved production style migration must update the
+contract and importer together, not silently diverge.
+
+A separately **artist-authored** joint/motion file is required, using
+`startup-life.c03.selected-native-joint-motion.v1` with
+`status: ARTIST_AUTHORED_PENDING_UNITY_REVIEW`,
+`character_id: C03`, `view: front`, `selected_reference_sha256`,
+`source_packet_sha256`, `native_grid: [128,160]`,
+`pixels_per_unit: 32`, and:
+
+- `joints`: exactly 16 entries `{id, parent, pivot_px:[x,y], parts:[...]}`.
+  Joint IDs/parent hierarchy follow the existing front rig topology; each
+  of the 21 semantic parts belongs to exactly one joint. **Pivots are
+  newly authored for the current image**; reusing the historical 16-pivot
+  set verbatim is rejected.
+- `motions`: authored `idle` plus optional `walk`, `work`, `study`
+  clips, each with `id`, `duration_seconds` and `tracks`.
+  A track is `{joint_id, keys:[[time_seconds,angle_degrees],...]}`.
+  A clip needs at least two genuinely moving non-root joints; the root
+  cannot move, loop start/end return to bind pose, and `walk` must move
+  at least two leg joints. No automatic cosine keyframes, whole-body
+  translation or generic procedural motion are generated.
+
+Once source art and pivot/animation authorship are real and reviewed as
+a draft, update **only the active contract** `native_rig_from_selected_image`
+to `ARTIST_AUTHORED_LAYERS_SUBMITTED`. Do not modify the frozen archive,
+set registry approval, or claim this metadata alone proves image likeness.
+
+```bash
+git lfs pull
+python scripts/Stage-C03SelectedNativeRig.py \
+  --layers-dir /path/to/artist/current-native-layers \
+  --rig-plan /path/to/artist/C03-selected-joint-motion.json \
+  --output artifacts/C03-selected-native-rig/input
+python -m unittest discover -s tools/tests -p 'test_c03_selected_native_stage.py' -v
+```
+
+Staging revalidates the actual owner PNG, 22-file native packet,
+hand-behind-bag overlap, new joints and authored motion **before** copying
+any of the 21 sprite layers. It writes an Editor-readable SHA-checked
+`C03-selected-native-unity-handoff.json`; refuse overwriting an existing
+stage to protect artist changes.
+
+In **Unity 6000.3.25f1 with no Play Mode active**, select:
+
+`Startup Life → Art → C03 → Build selected native articulated rig (quarantine)`
+
+The Editor validates the selected source again, imports the 21 PNGs as
+full-resolution Single Sprite, Point/no-mip/uncompressed with 32 PPU and
+center pivot, generates authored 16-joint hierarchy/21 renderers,
+creates actual keyframed `localEulerAnglesRaw.z` AnimationClips and a
+manually reviewable Animator, then saves:
+
+`Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-Selected-Quarantine/C03_SELECTED_NATIVE_QA.prefab`
+
+It does **not** approve, register, or bind anything to a production scene,
+and does **not** overwrite previous Quarantine or artist outputs.
+Review the real Unity Console, hierarchy, sprite imports, independent
+hand-bag overlap, limb articulation, visible pixel seams and mobile
+BeautyCell. Actual Game View / PlayMode/device testing is still required;
+Engine-free CI source checks are not proof of Unity compilation or art
+quality. Existing runtime `CharacterVisualAssembler` and creator bridge
+remain the planned integration boundary **after** human visual/IP approval.
+
+**Implementation owner:** GPT-6; **skills:** startup-life-session-orchestrator,
+unity-cli, sprite-editor, 2d-pixel-perfect, vietnam-art-direction and
+startup-life-asset-quality-gate. **Save/economy impact:** none.
+**Art/device/IP evidence:** pending. **Files:** staging script,
+GoldenCharacterDraftBuilder.cs, source contract tests and CI workflow.
+
 ## Separately test the existing native C03 Idle V3 draft
 
 The original 21-layer C03 native experimental rig can be staged and imported
