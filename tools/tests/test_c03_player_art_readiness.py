@@ -98,6 +98,10 @@ class C03ReadinessTests(unittest.TestCase):
         self.assertIn("Verify imported selected reference (read only)", source)
         self.assertIn('ReferenceGuid = "0eb68713039bb3f40d6ad5c2a6bb0309"', source)
         self.assertIn("AssetDatabase.AssetPathToGUID(ReferencePath)", source)
+        self.assertIn('var metaPath = ReferencePath + ".meta";', source)
+        self.assertIn("File.ReadAllLines(metaPath)", source)
+        self.assertLess(source.index("File.ReadAllLines(metaPath)"),
+                        source.index("AssetDatabase.ImportAsset(ReferencePath"))
         self.assertIn("ReferencePreviewPpu", source)
         self.assertIn("TextureImporterCompression.Uncompressed", source)
         self.assertIn("importer.mipmapEnabled", source)
