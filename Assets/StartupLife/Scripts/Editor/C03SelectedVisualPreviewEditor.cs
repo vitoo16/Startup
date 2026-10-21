@@ -70,6 +70,18 @@ namespace StartupLife.Editor
                     "Exact owner-selected C03 PNG is missing or Git LFS is not hydrated. " +
                     "Never substitute an earlier draft.", ReferencePath);
 
+            // ImportAsset can auto-create a new Unity GUID if the sidecar is
+            // absent. Fail before calling it; never silently replace identity.
+            var metaPath = ReferencePath + ".meta";
+            if (!File.Exists(metaPath))
+                throw new FileNotFoundException(
+                    "C03 reference .meta is missing. Restore the tracked GUID before import.", metaPath);
+            var metaLines = File.ReadAllLines(metaPath);
+            if (!Array.Exists(metaLines, line => string.Equals(
+                    line.Trim(), "guid: " + ReferenceGuid, StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException(
+                    "C03 tracked .meta GUID differs from the selected reference. Refusing import.");
+
             byte[] bytes = File.ReadAllBytes(ReferencePath);
             string actual;
             using (var sha = SHA256.Create())
