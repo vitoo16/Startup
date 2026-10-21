@@ -355,6 +355,910 @@ MonoBehaviour:
     m_Key: status.business.closed
     m_Metadata:
       m_Items: []
+  - m_Id: 3390964609409024
+    m_Key: dashboard.tab.career
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574848
+    m_Key: dashboard.tab.skills
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574849
+    m_Key: dashboard.tab.finance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574850
+    m_Key: dashboard.tab.business
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574851
+    m_Key: dashboard.tab.profile
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574852
+    m_Key: dashboard.tab.career.short
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574853
+    m_Key: dashboard.tab.finance.short
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574854
+    m_Key: dashboard.tab.business.short
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574855
+    m_Key: dashboard.open
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574856
+    m_Key: dashboard.close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574857
+    m_Key: dashboard.career.current
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574858
+    m_Key: dashboard.career.accept
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574859
+    m_Key: dashboard.career.work
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574860
+    m_Key: dashboard.career.resign
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574861
+    m_Key: dashboard.career.history
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574862
+    m_Key: dashboard.skills.progress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574863
+    m_Key: dashboard.skills.courses
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574864
+    m_Key: dashboard.skills.purchase
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574865
+    m_Key: dashboard.skills.study
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574866
+    m_Key: dashboard.finance.heading
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574867
+    m_Key: dashboard.finance.arrears
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574868
+    m_Key: dashboard.business.heading
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574869
+    m_Key: dashboard.business.manage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574870
+    m_Key: dashboard.profile.heading
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574871
+    m_Key: dashboard.profile.help
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574872
+    m_Key: dashboard.settings.heading
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574873
+    m_Key: dashboard.settings.smaller
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574874
+    m_Key: dashboard.settings.larger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574875
+    m_Key: dashboard.guide.heading
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574876
+    m_Key: dashboard.guide.previous
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574877
+    m_Key: dashboard.guide.next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574878
+    m_Key: dashboard.guide.done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574879
+    m_Key: dashboard.guide.replay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574880
+    m_Key: dashboard.guide.completed-title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574881
+    m_Key: dashboard.guide.completed-body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574882
+    m_Key: dashboard.guide.skills.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574883
+    m_Key: dashboard.guide.skills.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574884
+    m_Key: dashboard.guide.study.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574885
+    m_Key: dashboard.guide.study.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574886
+    m_Key: dashboard.guide.compatibility.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574887
+    m_Key: dashboard.guide.compatibility.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574888
+    m_Key: dashboard.guide.time.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574889
+    m_Key: dashboard.guide.time.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574890
+    m_Key: dashboard.guide.resign.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574891
+    m_Key: dashboard.guide.resign.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574892
+    m_Key: event.choice.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574893
+    m_Key: event.choice.prompt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574894
+    m_Key: event.choice.retry
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574895
+    m_Key: event.choice.changed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574896
+    m_Key: event.choice.unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574897
+    m_Key: event.story.welcome-neighbor.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574898
+    m_Key: event.story.welcome-neighbor.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574899
+    m_Key: event.story.welcome-neighbor.choice.join
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574900
+    m_Key: event.story.welcome-neighbor.choice.decline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574901
+    m_Key: event.story.coffee-connection.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574902
+    m_Key: event.story.coffee-connection.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574903
+    m_Key: event.story.coffee-connection.choice.listen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574904
+    m_Key: event.story.coffee-connection.choice.later
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574905
+    m_Key: event.story.mentor-introduction.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574906
+    m_Key: event.story.mentor-introduction.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574907
+    m_Key: event.story.mentor-introduction.choice.ask
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574908
+    m_Key: event.story.mentor-introduction.choice.thank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574909
+    m_Key: event.story.workplace-lunch.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574910
+    m_Key: event.story.workplace-lunch.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574911
+    m_Key: event.story.workplace-lunch.choice.connect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574912
+    m_Key: event.story.workplace-lunch.choice.rest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574913
+    m_Key: event.story.salary-reflection.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574914
+    m_Key: event.story.salary-reflection.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574915
+    m_Key: event.story.salary-reflection.choice.plan
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574916
+    m_Key: event.story.salary-reflection.choice.reflect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574917
+    m_Key: event.story.weekend-study.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574918
+    m_Key: event.story.weekend-study.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574919
+    m_Key: event.story.weekend-study.choice.join
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574920
+    m_Key: event.story.weekend-study.choice.solo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574921
+    m_Key: event.story.study-friend.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574922
+    m_Key: event.story.study-friend.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574923
+    m_Key: event.story.study-friend.choice.share
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574924
+    m_Key: event.story.study-friend.choice.keep
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574925
+    m_Key: event.story.first-market-day.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574926
+    m_Key: event.story.first-market-day.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574927
+    m_Key: event.story.first-market-day.choice.visit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574928
+    m_Key: event.story.first-market-day.choice.skip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574929
+    m_Key: event.story.supplier-chat.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574930
+    m_Key: event.story.supplier-chat.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574931
+    m_Key: event.story.supplier-chat.choice.learn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574932
+    m_Key: event.story.supplier-chat.choice.wait
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574933
+    m_Key: event.story.customer-feedback.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574934
+    m_Key: event.story.customer-feedback.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574935
+    m_Key: event.story.customer-feedback.choice.listen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574936
+    m_Key: event.story.customer-feedback.choice.later
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574937
+    m_Key: event.story.founder-community.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574938
+    m_Key: event.story.founder-community.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574939
+    m_Key: event.story.founder-community.choice.attend
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574940
+    m_Key: event.story.founder-community.choice.decline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574941
+    m_Key: event.story.pitch-practice.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574942
+    m_Key: event.story.pitch-practice.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574943
+    m_Key: event.story.pitch-practice.choice.practice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574944
+    m_Key: event.story.pitch-practice.choice.observe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574945
+    m_Key: event.story.mentor-follow-up.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574946
+    m_Key: event.story.mentor-follow-up.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574947
+    m_Key: event.story.mentor-follow-up.choice.prepare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574948
+    m_Key: event.story.mentor-follow-up.choice.listen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574949
+    m_Key: event.story.team-code-review.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574950
+    m_Key: event.story.team-code-review.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574951
+    m_Key: event.story.team-code-review.choice.share
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574952
+    m_Key: event.story.team-code-review.choice.observe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574953
+    m_Key: event.story.savings-checkin.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574954
+    m_Key: event.story.savings-checkin.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574955
+    m_Key: event.story.savings-checkin.choice.review
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574956
+    m_Key: event.story.savings-checkin.choice.postpone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574957
+    m_Key: event.story.study-presentation.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574958
+    m_Key: event.story.study-presentation.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574959
+    m_Key: event.story.study-presentation.choice.present
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574960
+    m_Key: event.story.study-presentation.choice.attend
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574961
+    m_Key: event.story.service-improvement.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574962
+    m_Key: event.story.service-improvement.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574963
+    m_Key: event.story.service-improvement.choice.discuss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574964
+    m_Key: event.story.service-improvement.choice.consider
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574965
+    m_Key: event.story.supplier-follow-up.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574966
+    m_Key: event.story.supplier-follow-up.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574967
+    m_Key: event.story.supplier-follow-up.choice.visit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574968
+    m_Key: event.story.supplier-follow-up.choice.later
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574969
+    m_Key: event.story.pitch-feedback.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574970
+    m_Key: event.story.pitch-feedback.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574971
+    m_Key: event.story.pitch-feedback.choice.revise
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574972
+    m_Key: event.story.pitch-feedback.choice.reflect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574973
+    m_Key: event.story.community-collaboration.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574974
+    m_Key: event.story.community-collaboration.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574975
+    m_Key: event.story.community-collaboration.choice.help
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3390964634574976
+    m_Key: event.story.community-collaboration.choice.observe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825559191552
+    m_Key: event.choice.reload
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163072
+    m_Key: event.choice.insufficient_funds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163073
+    m_Key: event.choice.reward_unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163074
+    m_Key: event.choice.time_unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163075
+    m_Key: event.choice.after_shift_required
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163076
+    m_Key: event.story.community-starter-grant.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163077
+    m_Key: event.story.community-starter-grant.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163078
+    m_Key: event.story.community-starter-grant.choice.accept
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163079
+    m_Key: event.story.community-starter-grant.choice.decline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163080
+    m_Key: event.story.peer-coaching.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163081
+    m_Key: event.story.peer-coaching.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163082
+    m_Key: event.story.peer-coaching.choice.mentor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163083
+    m_Key: event.story.peer-coaching.choice.observe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163084
+    m_Key: event.story.local-promotion-print.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163085
+    m_Key: event.story.local-promotion-print.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163086
+    m_Key: event.story.local-promotion-print.choice.print
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163087
+    m_Key: event.story.local-promotion-print.choice.wait
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163088
+    m_Key: event.story.mentor-workshop-materials.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163089
+    m_Key: event.story.mentor-workshop-materials.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163090
+    m_Key: event.story.mentor-workshop-materials.choice.contribute
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163091
+    m_Key: event.story.mentor-workshop-materials.choice.listen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163092
+    m_Key: event.story.supplier-quality-sample.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163093
+    m_Key: event.story.supplier-quality-sample.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163094
+    m_Key: event.story.supplier-quality-sample.choice.sample
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163095
+    m_Key: event.story.supplier-quality-sample.choice.compare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163096
+    m_Key: event.story.customer-trust-repair.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163097
+    m_Key: event.story.customer-trust-repair.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163098
+    m_Key: event.story.customer-trust-repair.choice.compensate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163099
+    m_Key: event.story.customer-trust-repair.choice.follow-up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163100
+    m_Key: event.story.customer-care-follow-up.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163101
+    m_Key: event.story.customer-care-follow-up.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163102
+    m_Key: event.story.customer-care-follow-up.choice.agree
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163103
+    m_Key: event.story.customer-care-follow-up.choice.review
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163104
+    m_Key: event.story.supplier-sample-review.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163105
+    m_Key: event.story.supplier-sample-review.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163106
+    m_Key: event.story.supplier-sample-review.choice.select
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163107
+    m_Key: event.story.supplier-sample-review.choice.revise
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163108
+    m_Key: event.story.mentor-workshop-reflection.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163109
+    m_Key: event.story.mentor-workshop-reflection.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163110
+    m_Key: event.story.mentor-workshop-reflection.choice.share
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163111
+    m_Key: event.story.mentor-workshop-reflection.choice.reflect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163112
+    m_Key: event.story.delivery-incident.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163113
+    m_Key: event.story.delivery-incident.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163114
+    m_Key: event.story.delivery-incident.choice.support
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163115
+    m_Key: event.story.delivery-incident.choice.coordinate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163116
+    m_Key: event.story.delivery-incident-follow-up.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163117
+    m_Key: event.story.delivery-incident-follow-up.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163118
+    m_Key: event.story.delivery-incident-follow-up.choice.schedule
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163119
+    m_Key: event.story.delivery-incident-follow-up.choice.review
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163120
+    m_Key: event.story.supplier-backorder.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163121
+    m_Key: event.story.supplier-backorder.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163122
+    m_Key: event.story.supplier-backorder.choice.reserve
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163123
+    m_Key: event.story.supplier-backorder.choice.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163124
+    m_Key: event.story.supplier-backorder-follow-up.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163125
+    m_Key: event.story.supplier-backorder-follow-up.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163126
+    m_Key: event.story.supplier-backorder-follow-up.choice.compare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163127
+    m_Key: event.story.supplier-backorder-follow-up.choice.defer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163128
+    m_Key: event.story.course-study-questions.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163129
+    m_Key: event.story.course-study-questions.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163130
+    m_Key: event.story.course-study-questions.choice.prepare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163131
+    m_Key: event.story.course-study-questions.choice.review
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163132
+    m_Key: event.story.course-question-follow-up.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163133
+    m_Key: event.story.course-question-follow-up.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163134
+    m_Key: event.story.course-question-follow-up.choice.organize
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163135
+    m_Key: event.story.course-question-follow-up.choice.clarify
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163136
+    m_Key: event.story.after-hours-colleague-support.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163137
+    m_Key: event.story.after-hours-colleague-support.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163138
+    m_Key: event.story.after-hours-colleague-support.choice.help
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163139
+    m_Key: event.story.after-hours-colleague-support.choice.defer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163140
+    m_Key: event.story.paid-overtime-request.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163141
+    m_Key: event.story.paid-overtime-request.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163142
+    m_Key: event.story.paid-overtime-request.choice.accept
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5668825580163143
+    m_Key: event.story.paid-overtime-request.choice.decline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338754379776
+    m_Key: dashboard.menu.open
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351296
+    m_Key: dashboard.menu.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351297
+    m_Key: dashboard.menu.continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351298
+    m_Key: dashboard.menu.new
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351299
+    m_Key: dashboard.menu.settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351300
+    m_Key: dashboard.menu.back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351301
+    m_Key: dashboard.menu.confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351302
+    m_Key: dashboard.menu.archive_new
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351303
+    m_Key: dashboard.menu.cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351304
+    m_Key: dashboard.menu.archive_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351305
+    m_Key: dashboard.menu.motion.enabled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351306
+    m_Key: dashboard.menu.motion.disabled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351307
+    m_Key: dashboard.menu.motion.toggle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351308
+    m_Key: dashboard.life.home.stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351309
+    m_Key: dashboard.life.home.progress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351310
+    m_Key: dashboard.life.home.actions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351311
+    m_Key: dashboard.life.home.newday
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351312
+    m_Key: dashboard.life.home.work
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351313
+    m_Key: dashboard.life.home.study
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351314
+    m_Key: dashboard.life.home.evening
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351315
+    m_Key: dashboard.settings.motion.enabled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351316
+    m_Key: dashboard.settings.motion.disabled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6323338775351317
+    m_Key: dashboard.settings.motion.toggle
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
