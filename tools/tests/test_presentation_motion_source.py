@@ -23,6 +23,17 @@ class UiMotionSourceTests(unittest.TestCase):
         self.assertNotIn("anchoredPosition =", source)
         self.assertNotIn("Time.timeScale =", source)
 
+    def test_unity_application_type_is_explicit_in_runtime_and_editor(self):
+        reveal = REVEAL.read_text(encoding="utf-8")
+        diagnostics = (ROOT / "Assets/StartupLife/Scripts/Editor/StartupLifeLocalSaveDiagnostics.cs").read_text(encoding="utf-8")
+        baseline = (ROOT / "Assets/StartupLife/Scripts/Editor/MobileBaselineBuilder.cs").read_text(encoding="utf-8")
+        self.assertIn("!UnityEngine.Application.isPlaying", reveal)
+        self.assertNotIn("!Application.isPlaying", reveal)
+        self.assertIn("UnityEngine.Application.persistentDataPath", diagnostics)
+        self.assertIn("UnityEngine.Application.targetFrameRate", baseline)
+        self.assertNotIn("var directory = Application.persistentDataPath;", diagnostics)
+        self.assertNotIn("            Application.targetFrameRate =", baseline)
+
     def test_screen_entry_and_dashboard_reuse_one_component(self):
         creator = (UI / "CharacterCreationViewController.cs").read_text(encoding="utf-8")
         life = (UI / "LifeScreenViewController.cs").read_text(encoding="utf-8")
