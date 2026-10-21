@@ -2,24 +2,25 @@
   "schema": "startup-life.c03.visual-reference-update.v1",
   "character_id": "C03",
   "character_name": "Sáng Ngõ Nhỏ",
-  "date": "2026-10-16",
-  "latest_owner_request": "Keep the latest C03 character; correct only bag/hand occlusion: bag must cover the near-side hand, which remains partly visible beneath the lower edge.",
+  "date": "2026-10-21",
+  "latest_owner_request": "Use the PNG uploaded by the product owner on 2026-10-21 as the NEW canonical C03 front visual reference. The superseded 2026-10-16 concept is historical only; do not require its former hash for new uploads.",
   "previous_owner_selection": "docs/evidence/production-art/C03-OWNER-SELECTION.json",
-  "stage": "OWNER_REQUESTED_VISUAL_POLISH",
+  "stage": "OWNER_RESELECTED_VISUAL_REFERENCE_PENDING_REPOSITORY_BINARY_AND_PRODUCTION",
   "visual_status": "OWNER_APPROVED_FRONT_VISUAL_REFERENCE_PENDING_BINARY_AND_PRODUCTION",
   "latest_reference": {
-    "filename": "pixel_art_boy_with_brown_satchel.png",
-    "sha256": "d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e",
-    "width": 1171,
-    "height": 1343,
+    "filename": "image(20261021-124610).png",
+    "sha256": "1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa",
+    "width": 1122,
+    "height": 1402,
     "mime": "image/png",
-    "color_mode": "RGB",
-    "background": "light cream, opaque, baked into illustration",
-    "source": "assistant-generated edit of the previously selected C03 front visual, at owner request",
+    "color_mode": "RGBA",
+    "background": "light cream, fully opaque",
+    "source": "Owner-uploaded exact reference image in ChatGPT on 2026-10-21; owner explicitly selected as new canonical 2026-10-21",
     "exact_binary_committed_to_git": false,
     "expected_repo_draft_path": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png",
-    "repo_status": "EXACT_PNG_NOT_YET_COMMITTED",
-    "art_state": "OWNER_APPROVED_VISUAL_REFERENCE_NOT_NATIVE_OR_PRODUCTION"
+    "repo_status": "OWNER_UPLOADED_BINARY_VERIFIED_IN_CHAT_BUT_NOT_YET_COMMITTED",
+    "art_state": "OWNER_APPROVED_VISUAL_REFERENCE_NOT_NATIVE_OR_PRODUCTION",
+    "alpha": "all pixels alpha=255; background is baked in"
   },
   "comparison_input": {
     "filename": "friendly_pixel_messenger_character.png",
@@ -51,8 +52,8 @@
     "approved_registry": "UNMODIFIED",
     "native_art_approval": "NOT_APPROVED"
   },
-  "required_follow_up": "Commit exact unmodified 1171x1343 PNG bytes to draft reference path, verify its SHA-256, then isolate native artwork by deliberate source authoring; keep approved registry untouched.",
-  "latest_reference_revision": "C03-HAND-BAG-OCCLUSION-01",
+  "required_follow_up": "Transfer exact original 1122x1402 RGBA PNG (SHA-256 1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa) into draft reference repo path; verify unchanged SHA and import in live Unity; never auto-register in Art/Approved.",
+  "latest_reference_revision": "C03-OWNER-REFERENCE-2026-10-21",
   "previous_reference": {
     "filename": "chibi_pixel_traveler_with_satchel.png",
     "sha256": "64bb3520c38537d8b0ebaed1daac9a879215b81564642eee088d9e0cbf98807b",
@@ -83,9 +84,23 @@
     ],
     "rig_translation": "render accessory_front above affected hand only within bag-overlap region; verify Unity sort/pivot independently"
   },
-  "owner_approval_scope": "OWNER_APPROVED_DIRECTION of exact hand-behind-bag C03 front reference; NOT Golden/runtime authorization",
-  "owner_approval_recorded_on": "2026-10-16",
+  "owner_approval_scope": "2026-10-21 owner-selected visual REFERENCE ONLY; native rig/animation, independent IP, Unity/device art approval remain pending",
+  "owner_approval_recorded_on": "2026-10-21",
   "production_rig_handoff_contract": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/C03-owner-front-rig-contract.json",
   "production_occlusion_validation": "scripts/Validate-C03OwnerRigHandoff.py",
-  "next_stage": "After committing exact reference bytes, independently author native semantic layers, prove partial occlusion in composited pixels, then run Unity/device/IP Golden gates"
+  "next_stage": "Transfer exact current owner-uploaded binary to Git branch, validate source identity, then independently author native rig for owner review, Unity/device/IP Golden gates",
+  "superseded_owner_reference_2026_10_16": {
+    "filename": "pixel_art_boy_with_brown_satchel.png",
+    "sha256": "d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e",
+    "width": 1171,
+    "height": 1343,
+    "mime": "image/png",
+    "color_mode": "RGB",
+    "background": "light cream, opaque, baked into illustration",
+    "source": "assistant-generated edit of the previously selected C03 front visual, at owner request",
+    "exact_binary_committed_to_git": false,
+    "expected_repo_draft_path": "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png",
+    "repo_status": "EXACT_PNG_NOT_YET_COMMITTED",
+    "art_state": "OWNER_APPROVED_VISUAL_REFERENCE_NOT_NATIVE_OR_PRODUCTION"
+  }
 }
