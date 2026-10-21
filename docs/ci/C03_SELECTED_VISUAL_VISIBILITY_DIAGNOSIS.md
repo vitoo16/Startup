@@ -6,14 +6,14 @@ This is not a texture missing randomly at runtime. The active art registry
 `Assets/StartupLife/Art/Approved/registry.json` has **zero approved entries**,
 `CharacterCreatorVisualPreviewBridge` has **no rig/configuration attached** in
 `FirstPlayable`, and the exact owner-approved final C03 front visual PNG is
-**not committed to GitHub**. The existing C03 native 21-part source and Idle V3
+**not yet committed to GitHub** (owner-uploaded original was SHA-verified separately). The existing C03 native 21-part source and Idle V3
 blink are deliberately quarantined proofs, **not the selected shipping visual**.
 
 ## Which original image?
 
 The latest owner-approved *visual reference* is
-`pixel_art_boy_with_brown_satchel.png`, **1171×1343 RGB**,
-SHA-256 `d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e`,
+`image(20261021-124610).png`, **1122×1402 RGBA (fully opaque)**,
+SHA-256 `1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa`,
 with the satchel in front of the near-side hand. This version supersedes the
 older chosen illustration and the C03 procedural draft look. Source of truth:
 `docs/evidence/production-art/C03-LATEST-MINOR-POLISH-REFERENCE.json` and
@@ -79,9 +79,8 @@ this quarantined prefab as a new approved gameplay asset.
 
 ## Acceptance/remaining work
 
-- Exact selected original image in repository: **MISSING** (until user stages it).
-- Selected image SHA-256 / dimension check: source tool implemented; actual
-  user's PNG **NOT YET TESTED**.
+- Exact new selected image in repository: **BINARY TRANSFER PENDING**; original supplied by owner and hash-verified in chat, not yet committed to this PR.
+- Selected image SHA-256/dimensions: owner-uploaded source verified. Git and Unity import checks pending.
 - Isolated Unity original-image Game View menu: implementation committed;
   actual local Unity Editor/PlayMode **NOT RUN HERE**.
 - Original transparency + 21 articulated native parts derived from **this
@@ -98,3 +97,11 @@ sprite-editor, startup-life-asset-quality-gate, vietnam-art-direction.
 **Visual evidence:** existing references only, no current Unity screenshot.
 **Known limitation:** current GitHub connector cannot run the user's local
 Unity Editor or read an unuploaded binary PNG on their computer.
+
+## New owner selection (2026-10-21)
+
+Owner selected a NEW canonical image, `image(20261021-124610).png`, 1122×1402 RGBA
+(all alpha = 255), SHA-256 `1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa`. This replaces the earlier 2026-10-16 concept
+whose SHA-256 was `d2e7e9a79672e23408c0a48626ef3968af84f5564f44e14eac41e4add38cb25e`. Former concepts and the native Idle V3 are
+historical drafts, not substitutes. The binary remains pending Git transfer;
+changing source-of-truth JSON and checks does not mean Unity has imported it.
