@@ -123,6 +123,7 @@ jobs:
         run: |
           python3 -m unittest discover -s tools/tests -p 'test_c03_selected_native_stage.py' -v
           python3 -m unittest discover -s tools/tests -p 'test_c03_selected_native_editor_builder.py' -v
+          python3 -m unittest discover -s tools/tests -p 'test_c03_owner_selected_cutout_unity_qa.py' -v
 
       - name: Guard Unity 6.3 sprite import and responsive PlayMode compile contracts (no Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_unity63_local_compile_contract.py' -v
