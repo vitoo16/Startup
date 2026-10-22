@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - scripts/Verify-C03CommittedRefined.py
+      - scripts/Verify-C03RefinedQaCrop.py
       - .github/workflows/c03-committed-refined-qa.yml
       - docs/evidence/production-art/drafts/c03-owner-selected-layer-refined/**
       - docs/evidence/production-art/drafts/c03-owner-selected-layer-study/**
@@ -32,3 +33,5 @@ jobs:
         run: python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0
       - name: Validate each refined sprite SHA, mask, provenance and exact visible composite
         run: python3 scripts/Verify-C03CommittedRefined.py
+      - name: Verify trimmed QA sprites reconstruct exact C03 static pose with reduced memory
+        run: python3 scripts/Verify-C03RefinedQaCrop.py
