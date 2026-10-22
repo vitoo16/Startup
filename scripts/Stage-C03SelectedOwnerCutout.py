@@ -134,7 +134,11 @@ def extract(source, contract):
     for name in order:
         sprite = source.copy()
         sprite.putalpha(masks[name])
-        layers[name] = sprite
+        # Clear hidden RGB under alpha=0; this is a source-preserving
+        # transparency normalization, not repainting or resampling.
+        normalized = Image.new("RGBA", source.size)
+        normalized.alpha_composite(sprite)
+        layers[name] = normalized
     merged = Image.new("RGBA", source.size)
     for name in order:
         merged.alpha_composite(layers[name])
@@ -175,6 +179,54 @@ def preview(merged, layers, order):
     return matte, sheet
 
 
+# Anatomy landmarks estimated against the selected reference; not validated
+# deform pivots. Same 16-joint parent topology and 21 semantic part slots
+# as the original V3 rig, but no old V3 sprite pixels are used.
+JOINTS = (
+    ("root", None, (67, 115), ()),
+    ("hips", "root", (67, 114), ("pelvis",)),
+    ("spine", "hips", (67, 111), ("torso", "outfit_torso", "accessory_back", "accessory_front")),
+    ("neck", "spine", (66, 78), ("head", "hair_back", "hair_front", "face")),
+    ("shoulder_l", "spine", (47, 86), ("upper_arm_l",)),
+    ("elbow_l", "shoulder_l", (42, 103), ("forearm_l",)),
+    ("wrist_l", "elbow_l", (41, 115), ("hand_l",)),
+    ("shoulder_r", "spine", (85, 87), ("upper_arm_r",)),
+    ("elbow_r", "shoulder_r", (90, 104), ("forearm_r",)),
+    ("wrist_r", "elbow_r", (89, 115), ("hand_r",)),
+    ("hip_l", "hips", (58, 121), ("upper_leg_l",)),
+    ("knee_l", "hip_l", (58, 139), ("lower_leg_l",)),
+    ("ankle_l", "knee_l", (58, 149), ("foot_l",)),
+    ("hip_r", "hips", (78, 121), ("upper_leg_r",)),
+    ("knee_r", "hip_r", (80, 140), ("lower_leg_r",)),
+    ("ankle_r", "knee_r", (82, 150), ("foot_r",)),
+)
+
+
+def draft_joint_plan(contract):
+    names = contract["rig_parts_back_to_front"]
+    assigned = [part for _,_,_, parts in JOINTS for part in parts]
+    if len(JOINTS) != 16 or len(assigned) != len(names) or set(assigned) != set(names):
+        raise ValueError("C03 topology no longer matches 16 joints and 21 semantic layers")
+    return {
+        "schema": "startup-life.c03.visual-joint-guide.v1",
+        "status": "PIVOT_ESTIMATES_ONLY_NOT_NATIVE_NOT_ANIMATABLE",
+        "reference_sha256": SHA,
+        "source_canvas_px": [W, H],
+        "candidate_native_grid_for_future_redraw": [128, 160],
+        "candidate_pixels_per_unit": 32,
+        "joint_count": 16,
+        "rig_approval": False,
+        "joints": [
+            {"id": name, "parent": parent, "pivot_native_estimate_xy": list(pivot),
+             "parts": list(parts)}
+            for name, parent, pivot, parts in JOINTS
+        ],
+        "motion_clips": [],
+        "remaining": ["native 128x160 redraw", "layer cleanup and hidden anatomy",
+                      "pivot movement and joint seams", "motion authoring", "Unity/device QA"]
+    }
+
+
 def stage(output_dir):
     output_dir = Path(output_dir)
     if output_dir.exists():
@@ -194,6 +246,9 @@ def stage(output_dir):
     main, sheet = preview(merged, layers, contract["rig_parts_back_to_front"])
     main.save(output_dir/"C03-selected-cutout-preview-DRAFT.png")
     sheet.save(output_dir/"C03-selected-21-layer-contact-sheet-DRAFT.png")
+    pivot_guide = draft_joint_plan(contract)
+    (output_dir/"C03-selected-16-joint-guide-DRAFT.json").write_text(
+        json.dumps(pivot_guide, indent=2, ensure_ascii=False)+"\n", encoding="utf-8")
     pixelcount = sum(bool(v) for v in foreground.getdata())
     receipt = {
         "schema": "startup-life.c03.selected-image-cutout-study.v1",
