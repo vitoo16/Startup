@@ -69,8 +69,9 @@ class C03OwnerSelectedCutoutUnityQA(unittest.TestCase):
         self.assertIn("expected_composite", s)
         self.assertIn("joint_count", s)
         flow = WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("git lfs push origin HEAD", flow)
-        self.assertIn("docs/evidence/production-art/drafts/c03-owner-selected-layer-study", flow)
+        self.assertIn("permissions:\n  contents: read", flow)
+        self.assertNotIn("git lfs push origin HEAD", flow)
+        self.assertNotIn("git push origin", flow)
         self.assertIn("assert receipt['layer_count']==21", flow)
 
 
