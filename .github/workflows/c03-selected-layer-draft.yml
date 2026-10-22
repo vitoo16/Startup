@@ -11,7 +11,7 @@ on:
       - docs/evidence/production-art/C03-ACTIVE-OWNER-FRONT-RIG-CONTRACT.json
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: c03-selected-layer-draft-${{ github.ref }}
@@ -33,6 +33,48 @@ jobs:
         run: python3 scripts/Verify-C03HandBagReference.py
       - name: Export 21 source-pixel layer drafts and bag mask
         run: python3 scripts/Stage-C03SelectedOwnerCutout.py --output-dir "$RUNNER_TEMP/C03-selected-cutout-draft"
+      - name: Validate source-exact draft receipt and 16 joints
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          p=Path(os.environ['RUNNER_TEMP'])/'C03-selected-cutout-draft'
+          receipt=json.loads((p/'C03-selected-cutout-receipt.json').read_text())
+          guide=json.loads((p/'C03-selected-16-joint-guide-DRAFT.json').read_text())
+          assert receipt['status']=='REVIEW_ONLY_OPAQUE_IMAGE_EXTRACTION_NOT_NATIVE_RIG'
+          assert receipt['reference_sha256']=='1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa'
+          assert receipt['layer_count']==21
+          assert receipt['composite_matches_visible_source_pixels'] is True
+          assert receipt['approved_for_gameplay'] is False
+          assert receipt['native_pixel_128x160'] is False
+          assert guide['joint_count']==16 and guide['motion_clips']==[]
+          assert guide['rig_approval'] is False
+          assert len(receipt['file_sha256'])==22
+          for name,sha in receipt['file_sha256'].items():
+              assert hashlib.sha256((p/name).read_bytes()).hexdigest()==sha
+          assert receipt['unassigned_foreground_fallback_px'] < .05*receipt['foreground_opaque_pixels']
+          print('PASS C03 21 layer+mask, 16 joint study, no game/Unity approval')
+          PY
+
+      - name: Publish actual draft PNGs to isolated Git LFS review branch
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="c03/owner-selected-layer-study-${{ github.run_id }}"
+          dest="docs/evidence/production-art/drafts/c03-owner-selected-layer-study"
+          git switch -c "$branch"
+          mkdir -p "$dest"
+          cp -a "$RUNNER_TEMP/C03-selected-cutout-draft/." "$dest/"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git lfs install --local
+          git add -- "$dest"
+          git commit -m "art(c03): source selected owner image cutout 21-layer draft"
+          git lfs push origin HEAD
+          git push origin "HEAD:refs/heads/$branch"
+          echo "C03_OWNER_DRAFT_BRANCH=$branch" >> "$GITHUB_STEP_SUMMARY"
+          echo "Not native/Unity-ready, not approved, not merged to main" >> "$GITHUB_STEP_SUMMARY"
       - name: Archive actual PNG layer sources for manual editing and review
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
