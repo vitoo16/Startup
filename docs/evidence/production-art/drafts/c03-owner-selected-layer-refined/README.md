@@ -1,0 +1,52 @@
+# C03 Owner-Selected Visual — Source-Faithful 21-Layer Refined Draft
+
+**Status:** `DRAFT / ART CORRECTION REQUIRED / NOT UNITY-ANIMATION-READY / NOT APPROVED`
+
+## 1. Nguồn ảnh chuẩn C03 & SHA-256 gốc
+- **Tệp nguồn chuẩn:** `Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png`
+- **Kích thước:** `1122×1402` RGBA
+- **SHA-256 gốc:** `1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa`
+
+## 2. Mục đích bộ refined
+Bộ refined này sửa chữa lỗi phân bổ layer (layer ownership defect) trong bản cutout ban đầu (`c03-owner-selected-layer-study`), trong đó 14.025 pixel foreground nhìn thấy được đã bị gán nhầm vào `torso` dưới dạng fallback.
+
+Toàn bộ quá trình phân bổ lại được thực hiện tự động bằng thuật toán lân cận trên mặt nạ ngữ nghĩa (nearest semantic mask reassignment) thông qua script `scripts/Refine-C03SelectedLayerOwnership.py`, đã được xác minh độc lập qua GitHub Actions run 39745979598.
+
+## 3. Các lỗi layer đã sửa
+- **Tái phân bổ chính xác 14.025 pixel fallback:**
+  - `upper_arm_l`: +3.950 px
+  - `forearm_l`: +4.876 px
+  - `head`: +2.275 px
+  - `lower_leg_r`: +724 px
+  - `foot_l`: +689 px
+  - `hand_l`: +663 px
+  - `upper_leg_r`: +388 px
+  - `torso`: +329 px (thuộc vùng thân hợp lệ)
+  - `lower_leg_l`: +117 px
+  - `foot_r`: +14 px
+- **Sửa bounding box của `torso`:**
+  - Trước: `[308, 481, 790, 1256]` (vươn sâu xuống chân/giày)
+  - Sau: `[438, 661, 790, 947]` (giới hạn chuẩn xác ở thân trên)
+- **Bảo toàn 100% composite hiển thị:**
+  - Ghép chồng 21 layer refined cho ra ảnh trùng khớp từng pixel (`raw_pixel_diff = False`) so với composite gốc đã kiểm chứng.
+  - Không thay đổi màu sắc bất kỳ pixel nào.
+- **Giữ nguyên quan hệ che phủ túi/tay:**
+  - `hand_r` (11.040 pixel) nằm hoàn toàn phía sau `accessory_front` và `masks/bag_body.png`.
+
+## 4. Cấu trúc tệp
+- `layers/*.png`: 21 semantic RGBA layers (`1122×1402`)
+- `layers/masks/bag_body.png`: Mặt nạ thân túi trước
+- `C03-refined-layer-ownership-composite.png`: Ảnh ghép kiểm chứng 21 layer
+- `C03-refined-ownership-before-after-stress.png`: Ảnh so sánh biến dạng khớp trước/sau khi sửa
+- `C03-refined-layer-ownership-receipt.json`: Biên lai kỹ thuật chứa SHA-256 từng tệp và thông số audit
+- `README.md`: Tài liệu hướng dẫn và trạng thái này
+
+## 5. Giới hạn còn lại — Chưa sẵn sàng cho Unity Runtime / Production Animation
+1. **Hidden anatomy:** Đây là bản cutout độ phân giải cao từ tranh minh họa phẳng (opaque 2D illustration). Các phần cơ thể bị che khuất (khuỷu tay, cổ tay, mắt cá, khớp gối, chân tóc phía sau mặt) chưa được vẽ mở rộng (occluded anatomy chưa author). Khi xoay khớp ở biên độ lớn sẽ xuất hiện vệt rách/khoảng hở (seam gaps).
+2. **Chưa phải native pixel art:** Không phải pixel art vẽ tay 128×160 / 32 PPU.
+3. **Pivots & Rig:** 16 pivot points hiện tại là ước lượng hình học phục vụ stress test, chưa được tác giả nghệ thuật căn chỉnh và phê duyệt cho gameplay runtime.
+4. **Trạng thái:** DRAFT nội bộ phục vụ review nghệ thuật và kỹ thuật. KHÔNG được tham chiếu vào `Art/Approved`, `FirstPlayable.unity`, runtime prefabs hay hệ thống gameplay.
+
+---
+**Technical Owner:** GPT-6  
+**Pipeline Review:** Senior Unity Technical Artist + Pixel Art Pipeline Engineer  
