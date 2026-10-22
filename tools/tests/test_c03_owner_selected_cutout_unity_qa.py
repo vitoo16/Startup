@@ -118,6 +118,28 @@ class C03OwnerSelectedCutoutUnityQA(unittest.TestCase):
         self.assertIn("DestroyImmediate(source)", cropper)
         self.assertIn("guid: dd9bd043bd96471a8daaf6232693c08a", meta)
 
+    def test_pivot_preview_is_isolated_from_scene_and_contains_no_production_animation(self):
+        path = ROOT / "Assets/StartupLife/Scripts/Editor/C03RefinedRigPosePreviewWindow.cs"
+        src = path.read_text(encoding="utf-8")
+        meta = path.with_suffix(".cs.meta").read_text(encoding="utf-8")
+        self.assertIn("PreviewRenderUtility()", src)
+        self.assertIn("preview.AddSingleGO(instance)", src)
+        self.assertIn("preview.Cleanup()", src)
+        self.assertIn("instance.hideFlags = HideFlags.HideAndDontSave", src)
+        self.assertIn("Generated-Owner-Refined-Cutout-QA", src)
+        self.assertIn("editableJoints.Length != 15", src)
+        self.assertIn("GetComponentsInChildren<SpriteRenderer>(true).Length != 21", src)
+        self.assertIn("joint.localRotation = Quaternion.Euler(0f, 0f, nextAngle)", src)
+        self.assertIn("joint.localRotation = Quaternion.identity", src)
+        self.assertIn("preview.camera.Render()", src)
+        self.assertIn("guid: ffc71a74bea64e169cb9b5d96f41975d", meta)
+        self.assertNotIn("PrefabUtility.SaveAsPrefabAsset", src)
+        self.assertNotIn("EditorSceneManager.SaveScene", src)
+        self.assertNotIn("AnimationClip", src)
+        self.assertNotIn("AnimatorController", src)
+        self.assertNotIn("FirstPlayable", src)
+        self.assertNotIn("Art/Approved", src)
+
     def test_real_selected_image_cutout_source_provenance_and_review_branch(self):
         s = self.authoring
         self.assertIn("SHA = \"1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa\"", s)
