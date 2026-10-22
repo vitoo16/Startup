@@ -1,0 +1,34 @@
+name: C03 Committed Refined 21-Source Gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/Verify-C03CommittedRefined.py
+      - .github/workflows/c03-committed-refined-qa.yml
+      - docs/evidence/production-art/drafts/c03-owner-selected-layer-refined/**
+      - docs/evidence/production-art/drafts/c03-owner-selected-layer-study/**
+      - Assets/StartupLife/Scripts/Editor/GoldenCharacterDraftBuilder.cs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: c03-committed-refined-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-integrity:
+    name: Verify source-faithful refined C03 files tracked on main
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout real C03 Git LFS PNG bytes
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: true
+      - name: Install pinned PNG decoder
+        run: python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0
+      - name: Validate each refined sprite SHA, mask, provenance and exact visible composite
+        run: python3 scripts/Verify-C03CommittedRefined.py
