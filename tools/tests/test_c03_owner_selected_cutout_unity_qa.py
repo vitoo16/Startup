@@ -92,6 +92,32 @@ class C03OwnerSelectedCutoutUnityQA(unittest.TestCase):
         self.assertFalse(refined["approved_for_gameplay"])
         self.assertFalse(refined["native_128x160_art"])
 
+    def test_refined_qa_import_crops_transparent_texture_area_without_shifting_pose(self):
+        importer = self.body
+        cropper_path = ROOT / "Assets/StartupLife/Scripts/Editor/C03RefinedSpriteCropper.cs"
+        cropper = cropper_path.read_text(encoding="utf-8")
+        meta = (ROOT / "Assets/StartupLife/Scripts/Editor/C03RefinedSpriteCropper.cs.meta").read_text(encoding="utf-8")
+
+        self.assertIn("C03RefinedSpriteCropper.CropToSprite(", importer)
+        self.assertIn("var trimOffsets = new Dictionary<string, Vector2>", importer)
+        self.assertIn("var trimOffset = trimOffsets[part];", importer)
+        self.assertIn("(64-center[0])/32f + trimOffset.x", importer)
+        self.assertIn("(center[1]-80)/32f + trimOffset.y", importer)
+        self.assertNotIn("File.Copy(Input + \"/layers/\" + part + \".png\"", importer)
+
+        self.assertIn("SourceWidth = 1122", cropper)
+        self.assertIn("SourceHeight = 1402", cropper)
+        self.assertIn("TransparentPaddingPixels = 2", cropper)
+        self.assertIn("pixels[y * SourceWidth + x].a == 0", cropper)
+        self.assertIn("Array.Copy(pixels, (bottom + y) * SourceWidth + left", cropper)
+        self.assertIn("ImageConversion.EncodeToPNG(trimmed)", cropper)
+        self.assertIn("File.WriteAllBytes(assetDestination, encoded)", cropper)
+        self.assertIn("(left + width * .5f - SourceWidth * .5f) / pixelsPerUnit", cropper)
+        self.assertIn("(bottom + height * .5f - SourceHeight * .5f) / pixelsPerUnit", cropper)
+        self.assertIn("DestroyImmediate(trimmed)", cropper)
+        self.assertIn("DestroyImmediate(source)", cropper)
+        self.assertIn("guid: dd9bd043bd96471a8daaf6232693c08a", meta)
+
     def test_real_selected_image_cutout_source_provenance_and_review_branch(self):
         s = self.authoring
         self.assertIn("SHA = \"1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa\"", s)
