@@ -1,0 +1,43 @@
+name: C03 Selected Image 21-Layer Draft
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/Stage-C03SelectedOwnerCutout.py
+      - .github/workflows/c03-selected-layer-draft.yml
+      - docs/evidence/production-art/C03-LATEST-MINOR-POLISH-REFERENCE.json
+      - docs/evidence/production-art/C03-ACTIVE-OWNER-FRONT-RIG-CONTRACT.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: c03-selected-layer-draft-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  draft:
+    name: Reproducible non-shipping owner-image layer study
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact C03 owner-selected source via Git LFS
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: true
+      - name: Install pinned draft authoring dependency
+        run: python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0
+      - name: Validate exact selected source is present
+        run: python3 scripts/Verify-C03HandBagReference.py
+      - name: Export 21 source-pixel layer drafts and bag mask
+        run: python3 scripts/Stage-C03SelectedOwnerCutout.py --output-dir "$RUNNER_TEMP/C03-selected-cutout-draft"
+      - name: Archive actual PNG layer sources for manual editing and review
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: c03-selected-owner-21-layer-draft-NOT-UNITY-READY
+          path: ${{ runner.temp }}/C03-selected-cutout-draft/
+          if-no-files-found: error
+          retention-days: 30
