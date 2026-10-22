@@ -1014,9 +1014,11 @@ namespace StartupLife.Editor
     public static class C03OwnerSelectedCutoutRigQA
     {
         private const string Input =
+            "docs/evidence/production-art/drafts/c03-owner-selected-layer-refined";
+        private const string GuideInput =
             "docs/evidence/production-art/drafts/c03-owner-selected-layer-study";
         private const string Output =
-            "Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-Owner-Cutout-QA";
+            "Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-Owner-Refined-Cutout-QA";
         private const string SourceImage =
             "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png";
         private const string SelectedSha =
@@ -1027,9 +1029,24 @@ namespace StartupLife.Editor
         {
             public string schema = "", status = "", reference_sha256 = "";
             public string[] semantic_order = Array.Empty<string>();
-            public int layer_count, joint_topology_slots_preserved;
+            public int layer_count, joint_topology_slots_preserved, unassigned_foreground_fallback_px;
             public bool composite_matches_visible_source_pixels;
             public bool native_pixel_128x160, approved_for_gameplay;
+        }
+
+        // Separately SHA-checked receipt created by the Codex merged PR #59.
+        // The old receipt still supplies the frozen 21-slot ordering, not PNGs.
+        [Serializable] private sealed class RefinedReceipt
+        {
+            public string schema = "", status = "", canonical_selected_sha256 = "";
+            public int preserved_semantic_layers, preserved_joint_topology, original_fallback_px;
+            public int[] selected_source_grid = Array.Empty<int>();
+            public int[] torso_bbox_before = Array.Empty<int>();
+            public int[] torso_bbox_after = Array.Empty<int>();
+            public bool composite_identical_to_original_selected_source_cutout;
+            public bool pixel_colors_changed, native_128x160_art;
+            public bool painted_hidden_limb_pixels, motion_or_unity_verified;
+            public bool owner_approved, approved_for_gameplay;
         }
 
         [Serializable] private sealed class Joint
@@ -1056,16 +1073,21 @@ namespace StartupLife.Editor
 
         private static (Receipt, Guide) ValidateDraft()
         {
-            if (!File.Exists(Input + "/C03-selected-cutout-receipt.json") ||
-                !File.Exists(Input + "/C03-selected-16-joint-guide-DRAFT.json"))
+            if (!File.Exists(Input + "/C03-refined-layer-ownership-receipt.json") ||
+                !File.Exists(GuideInput + "/C03-selected-cutout-receipt.json") ||
+                !File.Exists(GuideInput + "/C03-selected-16-joint-guide-DRAFT.json"))
                 throw new InvalidOperationException(
-                    "C03 selected cutout evidence missing; hydrate Git LFS on main.");
+                    "C03 refined cutout and joint guide missing; hydrate Git LFS on main.");
 
-            var raw = File.ReadAllText(Input + "/C03-selected-cutout-receipt.json");
-            var receipt = JsonUtility.FromJson<Receipt>(raw);
+            // Every SHA below belongs to the NEW refined layer files on main.
+            // Never fetch old study layers just because their part names match.
+            var raw = File.ReadAllText(Input + "/C03-refined-layer-ownership-receipt.json");
+            var refined = JsonUtility.FromJson<RefinedReceipt>(raw);
+            var receipt = JsonUtility.FromJson<Receipt>(
+                File.ReadAllText(GuideInput + "/C03-selected-cutout-receipt.json"));
             var guide = JsonUtility.FromJson<Guide>(
-                File.ReadAllText(Input + "/C03-selected-16-joint-guide-DRAFT.json"));
-            if (receipt == null || guide == null ||
+                File.ReadAllText(GuideInput + "/C03-selected-16-joint-guide-DRAFT.json"));
+            if (receipt == null || refined == null || guide == null ||
                 receipt.schema != "startup-life.c03.selected-image-cutout-study.v1" ||
                 receipt.status != "REVIEW_ONLY_OPAQUE_IMAGE_EXTRACTION_NOT_NATIVE_RIG" ||
                 receipt.reference_sha256 != SelectedSha ||
@@ -1076,9 +1098,24 @@ namespace StartupLife.Editor
                 guide.schema != "startup-life.c03.visual-joint-guide.v1" ||
                 guide.status != "PIVOT_ESTIMATES_ONLY_NOT_NATIVE_NOT_ANIMATABLE" ||
                 guide.reference_sha256 != SelectedSha ||
-                guide.rig_approval || guide.joint_count != 16 || guide.joints.Length != 16)
+                guide.rig_approval || guide.joint_count != 16 || guide.joints.Length != 16 ||
+                refined.schema != "startup-life.c03.source-visible-layer-ownership-refinement.v1" ||
+                refined.status != "DRAFT_SOURCE_CORRECTION_NOT_NATIVE_OR_ANIMATABLE" ||
+                refined.canonical_selected_sha256 != SelectedSha ||
+                refined.preserved_semantic_layers != receipt.layer_count ||
+                refined.preserved_joint_topology != receipt.joint_topology_slots_preserved ||
+                refined.original_fallback_px != receipt.unassigned_foreground_fallback_px ||
+                refined.selected_source_grid.Length != 2 ||
+                refined.selected_source_grid[0] != 1122 ||
+                refined.selected_source_grid[1] != 1402 ||
+                refined.torso_bbox_before.Length != 4 || refined.torso_bbox_after.Length != 4 ||
+                refined.torso_bbox_after[3] >= refined.torso_bbox_before[3] ||
+                !refined.composite_identical_to_original_selected_source_cutout ||
+                refined.pixel_colors_changed || refined.native_128x160_art ||
+                refined.painted_hidden_limb_pixels || refined.motion_or_unity_verified ||
+                refined.owner_approved || refined.approved_for_gameplay)
                 throw new InvalidOperationException(
-                    "C03 source cutout is NOT an approved native/animated rig.");
+                    "C03 refined cutout is not a verified nonshipping owner-image draft.");
 
             if (!File.Exists(SourceImage) || Digest(SourceImage) != SelectedSha)
                 throw new InvalidOperationException(
@@ -1108,7 +1145,7 @@ namespace StartupLife.Editor
             var entries = System.Text.RegularExpressions.Regex.Matches(raw,
                 "\"(?<file>layers/(?:[a-z0-9_]+|masks/bag_body)\\.png)\"\\s*:\\s*\"(?<sha>[0-9a-f]{64})\"");
             if (entries.Count != 22)
-                throw new InvalidOperationException("Missing C03 native source cutout receipt entries.");
+                throw new InvalidOperationException("Missing C03 refined source layer checksum entries.");
             var fileSha = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (System.Text.RegularExpressions.Match match in entries)
                 if (!fileSha.TryAdd(match.Groups["file"].Value, match.Groups["sha"].Value))
@@ -1155,7 +1192,7 @@ namespace StartupLife.Editor
             return (receipt, guide);
         }
 
-        [MenuItem("Startup Life/Art/C03/Build selected-owner cutout QA rig (NOT motion ready)")]
+        [MenuItem("Startup Life/Art/C03/Build selected-owner REFINED cutout QA rig (NOT motion ready)")]
         public static void Build()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -1198,7 +1235,7 @@ namespace StartupLife.Editor
             GameObject root = null;
             try
             {
-                root = new GameObject("C03_OWNER_SELECTED_CUTOUT_QA_NOT_ANIMATABLE");
+                root = new GameObject("C03_OWNER_SELECTED_REFINED_CUTOUT_QA_NOT_ANIMATABLE");
                 var joints = new Dictionary<string, Transform>(StringComparer.Ordinal)
                 {
                     {"root", root.transform}
@@ -1249,7 +1286,7 @@ namespace StartupLife.Editor
                 }
                 // Deliberately no Animator/clip: opaque-image cutouts lack
                 // hidden limbs, motion will reveal unpainted seams.
-                var dest = Output + "/C03_OWNER_SELECTED_CUTOUT_QA.prefab";
+                var dest = Output + "/C03_OWNER_SELECTED_REFINED_CUTOUT_QA.prefab";
                 PrefabUtility.SaveAsPrefabAsset(root,dest);
                 AssetDatabase.SaveAssets();
                 var saved = AssetDatabase.LoadAssetAtPath<GameObject>(dest);
@@ -1258,7 +1295,7 @@ namespace StartupLife.Editor
                     saved.GetComponentsInChildren<SpriteRenderer>(true).Length != 21 ||
                     saved.GetComponent<Animator>() != null)
                     throw new InvalidOperationException("C03 persisted QA joint hierarchy differs.");
-                Debug.Log("[StartupLife][C03] Owner-image 21-layer / 16-joint QA cutout " +
+                Debug.Log("[StartupLife][C03] REFINED owner-image 21-layer / 16-joint QA cutout " +
                     "imported without animation or runtime binding. Correct layer seams, " +
                     "hidden anatomy, and native redraw before approving animation.");
             }
