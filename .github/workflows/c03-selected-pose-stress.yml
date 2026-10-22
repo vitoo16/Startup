@@ -1,0 +1,45 @@
+name: C03 Selected Rig Pose Stress Review
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/Preview-C03OwnerCutoutArticulation.py
+      - tools/tests/test_c03_selected_cutout_stress_math.py
+      - .github/workflows/c03-selected-pose-stress.yml
+      - docs/evidence/production-art/drafts/c03-owner-selected-layer-study/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: c03-selected-pose-stress-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  stress:
+    name: 21 PNG pose stress evidence without production animation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout approved owner reference and quarantined cutout PNG files
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: true
+      - name: Install Pillow
+        run: python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0
+      - name: Test joint transforms and sprite-only articulation
+        run: python3 -m unittest discover -s tools/tests -p 'test_c03_selected_cutout_stress_math.py' -v
+      - name: Validate owner source PNG SHA
+        run: python3 scripts/Verify-C03HandBagReference.py
+      - name: Generate pose-stress images and JSON evidence
+        run: python3 scripts/Preview-C03OwnerCutoutArticulation.py --output-dir "$RUNNER_TEMP/c03-selected-pose-stress"
+      - name: Upload diagnostic poses for art cleanup
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: c03-selected-cutout-pose-stress-NOT-APPROVED
+          path: ${{ runner.temp }}/c03-selected-pose-stress/
+          if-no-files-found: warn
+          retention-days: 30
