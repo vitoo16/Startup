@@ -1,0 +1,206 @@
+{
+  "schema": "startup-life.c03.visual-joint-guide.v1",
+  "status": "PIVOT_ESTIMATES_ONLY_NOT_NATIVE_NOT_ANIMATABLE",
+  "reference_sha256": "1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa",
+  "source_canvas_px": [
+    1122,
+    1402
+  ],
+  "candidate_native_grid_for_future_redraw": [
+    128,
+    160
+  ],
+  "candidate_pixels_per_unit": 32,
+  "joint_count": 16,
+  "rig_approval": false,
+  "joints": [
+    {
+      "id": "root",
+      "parent": null,
+      "pivot_native_estimate_xy": [
+        67,
+        115
+      ],
+      "parts": []
+    },
+    {
+      "id": "hips",
+      "parent": "root",
+      "pivot_native_estimate_xy": [
+        67,
+        114
+      ],
+      "parts": [
+        "pelvis"
+      ]
+    },
+    {
+      "id": "spine",
+      "parent": "hips",
+      "pivot_native_estimate_xy": [
+        67,
+        111
+      ],
+      "parts": [
+        "torso",
+        "outfit_torso",
+        "accessory_back",
+        "accessory_front"
+      ]
+    },
+    {
+      "id": "neck",
+      "parent": "spine",
+      "pivot_native_estimate_xy": [
+        66,
+        78
+      ],
+      "parts": [
+        "head",
+        "hair_back",
+        "hair_front",
+        "face"
+      ]
+    },
+    {
+      "id": "shoulder_l",
+      "parent": "spine",
+      "pivot_native_estimate_xy": [
+        47,
+        86
+      ],
+      "parts": [
+        "upper_arm_l"
+      ]
+    },
+    {
+      "id": "elbow_l",
+      "parent": "shoulder_l",
+      "pivot_native_estimate_xy": [
+        42,
+        103
+      ],
+      "parts": [
+        "forearm_l"
+      ]
+    },
+    {
+      "id": "wrist_l",
+      "parent": "elbow_l",
+      "pivot_native_estimate_xy": [
+        41,
+        115
+      ],
+      "parts": [
+        "hand_l"
+      ]
+    },
+    {
+      "id": "shoulder_r",
+      "parent": "spine",
+      "pivot_native_estimate_xy": [
+        85,
+        87
+      ],
+      "parts": [
+        "upper_arm_r"
+      ]
+    },
+    {
+      "id": "elbow_r",
+      "parent": "shoulder_r",
+      "pivot_native_estimate_xy": [
+        90,
+        104
+      ],
+      "parts": [
+        "forearm_r"
+      ]
+    },
+    {
+      "id": "wrist_r",
+      "parent": "elbow_r",
+      "pivot_native_estimate_xy": [
+        89,
+        115
+      ],
+      "parts": [
+        "hand_r"
+      ]
+    },
+    {
+      "id": "hip_l",
+      "parent": "hips",
+      "pivot_native_estimate_xy": [
+        58,
+        121
+      ],
+      "parts": [
+        "upper_leg_l"
+      ]
+    },
+    {
+      "id": "knee_l",
+      "parent": "hip_l",
+      "pivot_native_estimate_xy": [
+        58,
+        139
+      ],
+      "parts": [
+        "lower_leg_l"
+      ]
+    },
+    {
+      "id": "ankle_l",
+      "parent": "knee_l",
+      "pivot_native_estimate_xy": [
+        58,
+        149
+      ],
+      "parts": [
+        "foot_l"
+      ]
+    },
+    {
+      "id": "hip_r",
+      "parent": "hips",
+      "pivot_native_estimate_xy": [
+        78,
+        121
+      ],
+      "parts": [
+        "upper_leg_r"
+      ]
+    },
+    {
+      "id": "knee_r",
+      "parent": "hip_r",
+      "pivot_native_estimate_xy": [
+        80,
+        140
+      ],
+      "parts": [
+        "lower_leg_r"
+      ]
+    },
+    {
+      "id": "ankle_r",
+      "parent": "knee_r",
+      "pivot_native_estimate_xy": [
+        82,
+        150
+      ],
+      "parts": [
+        "foot_r"
+      ]
+    }
+  ],
+  "motion_clips": [],
+  "remaining": [
+    "native 128x160 redraw",
+    "layer cleanup and hidden anatomy",
+    "pivot movement and joint seams",
+    "motion authoring",
+    "Unity/device QA"
+  ]
+}
