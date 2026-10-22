@@ -1,0 +1,64 @@
+name: C03 Selected Layer Ownership Refinement
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/Refine-C03SelectedLayerOwnership.py
+      - scripts/Preview-C03OwnerCutoutArticulation.py
+      - .github/workflows/c03-selected-layer-refinement.yml
+      - docs/evidence/production-art/drafts/c03-owner-selected-layer-study/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: c03-source-refine-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  refine:
+    name: Correct erroneous torso fallback without replacing owner artwork
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact C03 owner PNG and all 21 draft sprites
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: true
+      - name: Set up Pillow
+        run: python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0
+      - name: Verify canonical owner C03 image SHA
+        run: python3 scripts/Verify-C03HandBagReference.py
+      - name: Reassign source-visible fallback to semantic owner layers
+        run: python3 scripts/Refine-C03SelectedLayerOwnership.py --output-dir "$RUNNER_TEMP/c03-owner-cutout-refined"
+      - name: Verify no source pixels changed and no false art approval
+        run: |
+          python3 - <<'PY'
+          import json,hashlib,os
+          from pathlib import Path
+          folder=Path(os.environ['RUNNER_TEMP'])/'c03-owner-cutout-refined'
+          r=json.loads((folder/'C03-refined-layer-ownership-receipt.json').read_text())
+          assert r['original_fallback_px']==14025, 'Unexpected original contamination count'
+          assert sum(r['fallback_px_assigned_by_semantic_part'].values())==14025
+          assert r['torso_bbox_before'][3]>1200
+          assert r['torso_bbox_after'][3]<1000
+          assert r['composite_identical_to_original_selected_source_cutout'] is True
+          assert r['pixel_colors_changed'] is False
+          assert r['native_128x160_art'] is False and r['motion_or_unity_verified'] is False
+          assert r['approved_for_gameplay'] is False and r['owner_approved'] is False
+          assert len(r['per_file_sha256'])==22
+          for name,sha in r['per_file_sha256'].items():
+              assert hashlib.sha256((folder/name).read_bytes()).hexdigest()==sha
+          assert (folder/'C03-refined-ownership-before-after-stress.png').is_file()
+          print('PASS C03 selected-source source-visible correction; not native/animated')
+          PY
+      - name: Export refined source layer package for non-shipping art review
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: c03-source-owner-layer-refinement-NOT-UNITY-READY
+          path: ${{ runner.temp }}/c03-owner-cutout-refined/
+          if-no-files-found: warn
+          retention-days: 30
