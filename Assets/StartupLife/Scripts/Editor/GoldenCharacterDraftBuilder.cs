@@ -1206,9 +1206,17 @@ namespace StartupLife.Editor
             var guide = inputs.Item2;
             Directory.CreateDirectory(Output + "/layers");
             Directory.CreateDirectory(Output + "/layers/masks");
+            // Source PNGs and their exact SHA are verified above. Preserve
+            // originals in docs/Git LFS, but import compact alpha-bounded QA
+            // PNGs so 21 huge transparent canvases do not consume 120+ MB.
+            var trimOffsets = new Dictionary<string, Vector2>(StringComparer.Ordinal);
             foreach (var part in receipt.semantic_order.Concat(new[] {"masks/bag_body"}))
-                File.Copy(Input + "/layers/" + part + ".png",
-                    Output + "/layers/" + part + ".png");
+            {
+                var offset = C03RefinedSpriteCropper.CropToSprite(
+                    Input + "/layers/" + part + ".png",
+                    Output + "/layers/" + part + ".png", Ppu);
+                trimOffsets.Add(part, offset);
+            }
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
             foreach (var part in receipt.semantic_order.Concat(new[] {"masks/bag_body"}))
@@ -1228,8 +1236,11 @@ namespace StartupLife.Editor
                     SpriteAlignment.Center, new Vector2(.5f,.5f));
                 importer.SaveAndReimport();
                 var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-                if (texture == null || texture.width != 1122 || texture.height != 1402)
-                    throw new InvalidOperationException("C03 QA cutout PNG lost source resolution.");
+                if (texture == null || texture.width < 1 || texture.height < 1 ||
+                    texture.width >= C03RefinedSpriteCropper.SourceWidth ||
+                    texture.height >= C03RefinedSpriteCropper.SourceHeight)
+                    throw new InvalidOperationException(
+                        "C03 QA sprite crop did not reduce source alpha canvas.");
             }
 
             GameObject root = null;
@@ -1275,8 +1286,10 @@ namespace StartupLife.Editor
                     var center = coords[boneName].pivot_native_estimate_xy;
                     var node = new GameObject(part);
                     node.transform.SetParent(joints[boneName],false);
+                    var trimOffset = trimOffsets[part];
                     node.transform.localPosition = new Vector3(
-                        (64-center[0])/32f, (center[1]-80)/32f,0f);
+                        (64-center[0])/32f + trimOffset.x,
+                        (center[1]-80)/32f + trimOffset.y,0f);
                     var sprite = node.AddComponent<SpriteRenderer>();
                     sprite.sortingOrder = i;
                     sprite.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(
