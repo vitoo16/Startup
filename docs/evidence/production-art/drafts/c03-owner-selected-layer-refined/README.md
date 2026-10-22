@@ -76,3 +76,31 @@ Git LFS integrity gate cho nguồn đã commit:
 GitHub Actions: `.github/workflows/c03-committed-refined-qa.yml`.
 Gate chỉ xác minh ảnh, checksum và bảo toàn composite, **không duyệt mỹ thuật**.
 
+
+## 7. Tối ưu QA import và kiểm tra khớp trong Unity
+
+**PNG refined nguồn đã commit trong Git LFS không thay đổi**. Khi dựng prefab QA,
+`C03RefinedSpriteCropper` lấy alpha bounding box + padding 2 pixel,
+giữ nguyên toàn bộ texel, và `C03OwnerSelectedCutoutRigQA` bù offset tâm
+texture vào từng `SpriteRenderer`. Kiểm tra từ 22 ảnh RGBA nguồn:
+
+- Full-canvas 22 textures: xấp xỉ **132,0 MiB** nếu lưu RGBA32 chưa nén.
+- Alpha-bounded 22 textures: xấp xỉ **5,3 MiB** RGBA32 chưa nén.
+- Tiết kiệm xấp xỉ **96%** trong tính toán diện tích texture, chưa bao gồm
+  Unity memory overhead, GPU padding, batching hay đo profiler trên thiết bị.
+- `scripts/Verify-C03RefinedQaCrop.py` và workflow
+  `.github/workflows/c03-committed-refined-qa.yml` kiểm chứng vị trí crop và
+  composite tĩnh khớp từng pixel. Đây không phải chứng nhận Unity runtime.
+
+**Hai lệnh trên Unity Editor:**
+
+1. `Startup Life → Art → C03 → Build selected-owner REFINED cutout QA rig (NOT motion ready)` —
+   import 21 layer refined crop trong prefab QA riêng, vẫn 16 khớp, không Animator.
+2. `Startup Life → Art → C03 → Preview refined joint rotation (QA only)` —
+   mở cửa sổ preview Scene **cách ly**, chỉnh từng joint trong giới hạn ±20°
+   để quan sát rách ở mép áo, tóc, tay/túi và cổ chân. Đóng cửa sổ sẽ cleanup
+   đối tượng preview; không ghi scene/prefab, không tạo animation clip.
+
+**Cảnh báo:** Những nét rách/joint thiếu hình khi xoay vẫn còn. Không
+được sử dụng công cụ preview làm bằng chứng đủ điều kiện animation.
+Unity Editor/PlayMode và device capture vẫn chưa được chạy ở phiên này.
