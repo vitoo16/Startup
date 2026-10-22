@@ -47,7 +47,7 @@ def redistribute(existing,order,canonical,receipt):
     """Only touch proven torso-fallback pixels, preserving RGBA bind composite."""
     if canonical.size!=(W,H) or len(order)!=21 or len(set(order))!=21:
         raise ValueError("Selected C03 authored image/part grid drift")
-    if tuple(existing)!={} and set(existing)!=set(order):
+    if set(existing)!=set(order):
         raise ValueError("C03 source semantic layers differ from declared contract")
     pixels=W*H
     fg=canonical.getchannel("A").tobytes()
