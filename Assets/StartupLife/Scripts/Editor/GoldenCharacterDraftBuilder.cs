@@ -1007,4 +1007,265 @@ namespace StartupLife.Editor
         }
     }
 
+
+    // Builds a read-only concept QA rig from the exact owner-selected source
+    // cutout study. The 21 source PNGs are 1122x1402, NOT native 128x160 art.
+    // Visual seams/hidden anatomy and animation need manual artist cleanup.
+    public static class C03OwnerSelectedCutoutRigQA
+    {
+        private const string Input =
+            "docs/evidence/production-art/drafts/c03-owner-selected-layer-study";
+        private const string Output =
+            "Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-Owner-Cutout-QA";
+        private const string SourceImage =
+            "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png";
+        private const string SelectedSha =
+            "1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa";
+        private const float Ppu = 280.5f; // 1122 source px / 4 native world units
+
+        [Serializable] private sealed class Receipt
+        {
+            public string schema = "", status = "", reference_sha256 = "";
+            public string[] semantic_order = Array.Empty<string>();
+            public int layer_count, joint_topology_slots_preserved;
+            public bool composite_matches_visible_source_pixels;
+            public bool native_pixel_128x160, approved_for_gameplay;
+        }
+
+        [Serializable] private sealed class Joint
+        {
+            public string id = "", parent = "";
+            public int[] pivot_native_estimate_xy = Array.Empty<int>();
+            public string[] parts = Array.Empty<string>();
+        }
+
+        [Serializable] private sealed class Guide
+        {
+            public string schema = "", status = "", reference_sha256 = "";
+            public int joint_count;
+            public bool rig_approval;
+            public Joint[] joints = Array.Empty<Joint>();
+        }
+
+        private static string Digest(string path)
+        {
+            using (var hash = System.Security.Cryptography.SHA256.Create())
+                return BitConverter.ToString(hash.ComputeHash(File.ReadAllBytes(path)))
+                    .Replace("-", "").ToLowerInvariant();
+        }
+
+        private static (Receipt, Guide) ValidateDraft()
+        {
+            if (!File.Exists(Input + "/C03-selected-cutout-receipt.json") ||
+                !File.Exists(Input + "/C03-selected-16-joint-guide-DRAFT.json"))
+                throw new InvalidOperationException(
+                    "C03 selected cutout evidence missing; hydrate Git LFS on main.");
+
+            var raw = File.ReadAllText(Input + "/C03-selected-cutout-receipt.json");
+            var receipt = JsonUtility.FromJson<Receipt>(raw);
+            var guide = JsonUtility.FromJson<Guide>(
+                File.ReadAllText(Input + "/C03-selected-16-joint-guide-DRAFT.json"));
+            if (receipt == null || guide == null ||
+                receipt.schema != "startup-life.c03.selected-image-cutout-study.v1" ||
+                receipt.status != "REVIEW_ONLY_OPAQUE_IMAGE_EXTRACTION_NOT_NATIVE_RIG" ||
+                receipt.reference_sha256 != SelectedSha ||
+                receipt.layer_count != 21 || receipt.joint_topology_slots_preserved != 16 ||
+                receipt.semantic_order.Length != 21 ||
+                !receipt.composite_matches_visible_source_pixels ||
+                receipt.native_pixel_128x160 || receipt.approved_for_gameplay ||
+                guide.schema != "startup-life.c03.visual-joint-guide.v1" ||
+                guide.status != "PIVOT_ESTIMATES_ONLY_NOT_NATIVE_NOT_ANIMATABLE" ||
+                guide.reference_sha256 != SelectedSha ||
+                guide.rig_approval || guide.joint_count != 16 || guide.joints.Length != 16)
+                throw new InvalidOperationException(
+                    "C03 source cutout is NOT an approved native/animated rig.");
+
+            if (!File.Exists(SourceImage) || Digest(SourceImage) != SelectedSha)
+                throw new InvalidOperationException(
+                    "Canonical 2026-10-21 source is missing/incorrect (Git LFS).");
+
+            var expected = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var part in receipt.semantic_order)
+            {
+                if (string.IsNullOrEmpty(part) ||
+                    !System.Text.RegularExpressions.Regex.IsMatch(part, "^[a-z0-9_]+$") ||
+                    !expected.Add(part))
+                    throw new InvalidOperationException("Malformed or duplicate C03 part ID.");
+            }
+            // Enforce exact old 21 semantic slots without copying its old art.
+            var required = new [] {
+                "hair_back", "accessory_back", "foot_l", "foot_r",
+                "lower_leg_l", "lower_leg_r", "upper_leg_l", "upper_leg_r",
+                "pelvis", "torso", "upper_arm_l", "upper_arm_r",
+                "forearm_l", "forearm_r", "hand_l", "hand_r", "outfit_torso",
+                "head", "face", "hair_front", "accessory_front"
+            };
+            if (!receipt.semantic_order.SequenceEqual(required))
+                throw new InvalidOperationException("C03 legacy sorting slots changed.");
+
+            // JsonUtility does not deserialize dictionaries. Parse only the
+            // exact 22 canonical filename+SHA pairs with an anchored pattern.
+            var entries = System.Text.RegularExpressions.Regex.Matches(raw,
+                "\"(?<file>layers/(?:[a-z0-9_]+|masks/bag_body)\\.png)\"\\s*:\\s*\"(?<sha>[0-9a-f]{64})\"");
+            if (entries.Count != 22)
+                throw new InvalidOperationException("Missing C03 native source cutout receipt entries.");
+            var fileSha = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (System.Text.RegularExpressions.Match match in entries)
+                if (!fileSha.TryAdd(match.Groups["file"].Value, match.Groups["sha"].Value))
+                    throw new InvalidOperationException("Duplicate C03 cutout file digest.");
+            foreach (var part in receipt.semantic_order.Concat(new[] {"masks/bag_body"}))
+            {
+                var rel = "layers/" + part + ".png";
+                var source = Input + "/" + rel;
+                if (!fileSha.TryGetValue(rel, out var sha) ||
+                    !File.Exists(source) || Digest(source) != sha)
+                    throw new InvalidOperationException("C03 source layer LFS SHA mismatch: " + rel);
+            }
+
+            var bones = new Dictionary<string, Joint>(StringComparer.Ordinal);
+            var attached = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var joint in guide.joints)
+            {
+                if (joint == null || string.IsNullOrEmpty(joint.id) ||
+                    !System.Text.RegularExpressions.Regex.IsMatch(joint.id, "^[a-z_]+$") ||
+                    joint.pivot_native_estimate_xy.Length != 2 ||
+                    joint.pivot_native_estimate_xy[0] < 0 ||
+                    joint.pivot_native_estimate_xy[0] >= 128 ||
+                    joint.pivot_native_estimate_xy[1] < 0 ||
+                    joint.pivot_native_estimate_xy[1] >= 160 ||
+                    !bones.TryAdd(joint.id, joint))
+                    throw new InvalidOperationException("Malformed C03 joint guide.");
+                foreach (var part in joint.parts)
+                    if (!expected.Contains(part) || !attached.Add(part))
+                        throw new InvalidOperationException("Duplicate or unknown C03 bound part.");
+            }
+            if (attached.Count != 21 || !bones.ContainsKey("root") ||
+                !string.IsNullOrEmpty(bones["root"].parent))
+                throw new InvalidOperationException("C03 complete 16-joint rig binding absent.");
+
+            // Validate ancestry before copying any file: no cycles/orphans.
+            var reached = new HashSet<string>(StringComparer.Ordinal) {"root"};
+            for (var pass = 0; pass < 16; pass++)
+                foreach (var pair in bones)
+                    if (reached.Contains(pair.Value.parent))
+                        reached.Add(pair.Key);
+            if (reached.Count != 16)
+                throw new InvalidOperationException("Orphaned/cyclic C03 rig guide.");
+
+            return (receipt, guide);
+        }
+
+        [MenuItem("Startup Life/Art/C03/Build selected-owner cutout QA rig (NOT motion ready)")]
+        public static void Build()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                throw new InvalidOperationException("Stop Play Mode before importing a C03 QA rig.");
+            if (Directory.Exists(Output) || AssetDatabase.IsValidFolder(Output))
+                throw new InvalidOperationException(
+                    "C03 QA rig exists already. Do not overwrite an artist's Unity work.");
+
+            var inputs = ValidateDraft();
+            var receipt = inputs.Item1;
+            var guide = inputs.Item2;
+            Directory.CreateDirectory(Output + "/layers");
+            Directory.CreateDirectory(Output + "/layers/masks");
+            foreach (var part in receipt.semantic_order.Concat(new[] {"masks/bag_body"}))
+                File.Copy(Input + "/layers/" + part + ".png",
+                    Output + "/layers/" + part + ".png");
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+
+            foreach (var part in receipt.semantic_order.Concat(new[] {"masks/bag_body"}))
+            {
+                var path = Output + "/layers/" + part + ".png";
+                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (importer == null)
+                    throw new InvalidOperationException("Missing C03 QA sprite importer.");
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                importer.spritePixelsPerUnit = Ppu;
+                importer.filterMode = FilterMode.Point;
+                importer.mipmapEnabled = false;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.alphaIsTransparency = true;
+                NativeSpriteImportSettings.ConfigurePivot(importer,
+                    SpriteAlignment.Center, new Vector2(.5f,.5f));
+                importer.SaveAndReimport();
+                var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                if (texture == null || texture.width != 1122 || texture.height != 1402)
+                    throw new InvalidOperationException("C03 QA cutout PNG lost source resolution.");
+            }
+
+            GameObject root = null;
+            try
+            {
+                root = new GameObject("C03_OWNER_SELECTED_CUTOUT_QA_NOT_ANIMATABLE");
+                var joints = new Dictionary<string, Transform>(StringComparer.Ordinal)
+                {
+                    {"root", root.transform}
+                };
+                var coords = guide.joints.ToDictionary(j => j.id, StringComparer.Ordinal);
+                var pending = new List<Joint>(guide.joints.Where(j => j.id != "root"));
+                for (var pass = 0; pending.Count > 0 && pass < 16; pass++)
+                {
+                    var advanced = false;
+                    for (var i = pending.Count - 1; i >= 0; i--)
+                    {
+                        var joint = pending[i];
+                        if (!joints.TryGetValue(joint.parent, out var parent)) continue;
+                        var parentPivot = coords[joint.parent].pivot_native_estimate_xy;
+                        var pivot = joint.pivot_native_estimate_xy;
+                        var node = new GameObject(joint.id);
+                        node.transform.SetParent(parent, false);
+                        node.transform.localPosition = new Vector3(
+                            (pivot[0]-parentPivot[0])/32f,
+                            (parentPivot[1]-pivot[1])/32f,0f);
+                        joints.Add(joint.id,node.transform);
+                        pending.RemoveAt(i);
+                        advanced = true;
+                    }
+                    if (!advanced) throw new InvalidOperationException("C03 joint ancestry drift.");
+                }
+                if (joints.Count != 16)
+                    throw new InvalidOperationException("C03 QA rig missing bones.");
+
+                var ownerByPart = guide.joints
+                    .SelectMany(j => j.parts.Select(p => new {Part=p, Bone=j.id}))
+                    .ToDictionary(x => x.Part,x => x.Bone,StringComparer.Ordinal);
+                for (var i = 0; i < receipt.semantic_order.Length; i++)
+                {
+                    var part = receipt.semantic_order[i];
+                    var boneName = ownerByPart[part];
+                    var center = coords[boneName].pivot_native_estimate_xy;
+                    var node = new GameObject(part);
+                    node.transform.SetParent(joints[boneName],false);
+                    node.transform.localPosition = new Vector3(
+                        (64-center[0])/32f, (center[1]-80)/32f,0f);
+                    var sprite = node.AddComponent<SpriteRenderer>();
+                    sprite.sortingOrder = i;
+                    sprite.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(
+                        Output + "/layers/" + part + ".png");
+                    if (sprite.sprite == null)
+                        throw new InvalidOperationException("C03 QA sprite import missing: " + part);
+                }
+                // Deliberately no Animator/clip: opaque-image cutouts lack
+                // hidden limbs, motion will reveal unpainted seams.
+                var dest = Output + "/C03_OWNER_SELECTED_CUTOUT_QA.prefab";
+                PrefabUtility.SaveAsPrefabAsset(root,dest);
+                AssetDatabase.SaveAssets();
+                var saved = AssetDatabase.LoadAssetAtPath<GameObject>(dest);
+                if (saved == null ||
+                    saved.GetComponentsInChildren<Transform>(true).Length != 37 ||
+                    saved.GetComponentsInChildren<SpriteRenderer>(true).Length != 21 ||
+                    saved.GetComponent<Animator>() != null)
+                    throw new InvalidOperationException("C03 persisted QA joint hierarchy differs.");
+                Debug.Log("[StartupLife][C03] Owner-image 21-layer / 16-joint QA cutout " +
+                    "imported without animation or runtime binding. Correct layer seams, " +
+                    "hidden anatomy, and native redraw before approving animation.");
+            }
+            finally
+            {
+                if (root != null) UnityEngine.Object.DestroyImmediate(root);
+            }
+        }
+    }
 }
