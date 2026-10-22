@@ -140,7 +140,12 @@ def extract(source, contract):
         merged.alpha_composite(layers[name])
     exact_foreground = source.copy()
     exact_foreground.putalpha(foreground)
-    if merged.tobytes() != exact_foreground.tobytes():
+    # Invisible RGB values are deliberately discarded by alpha-compositing
+    # BOTH sides over the same transparent canvas. Visible RGBA must match
+    # exactly, not merely approximate the author's image colors.
+    expected_composite = Image.new("RGBA", source.size)
+    expected_composite.alpha_composite(exact_foreground)
+    if merged.tobytes() != expected_composite.tobytes():
         raise AssertionError("Cutout compositor cannot reconstruct selected source-visible RGB pixels")
     for name, image in layers.items():
         if image.getbbox() is None:
