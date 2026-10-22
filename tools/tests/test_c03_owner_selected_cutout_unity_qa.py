@@ -55,7 +55,7 @@ class C03OwnerSelectedCutoutUnityQA(unittest.TestCase):
     def test_cutout_is_not_false_native_or_animated(self):
         s = self.body
         self.assertIn("PIVOT_ESTIMATES_ONLY_NOT_NATIVE_NOT_ANIMATABLE", s)
-        self.assertIn("sprite.spritePixelsPerUnit = Ppu", s.replace("importer.spritePixelsPerUnit", "sprite.spritePixelsPerUnit"))
+        self.assertIn("importer.spritePixelsPerUnit = Ppu;", s)
         self.assertIn("FilterMode.Point", s)
         self.assertIn("TextureImporterCompression.Uncompressed", s)
         self.assertIn("GetComponent<Animator>() != null", s)
