@@ -41,10 +41,12 @@ are incomplete production source.
   [Actions run 39745979598](https://github.com/vitoo16/Startup/actions/runs/39745979598)
   passed per-PNG SHA-256 validation (21 RGBA + 1 mask), exact bind-pose
   pixel-composite identity and positive error-preservation assertions.
-  Download artifact `c03-source-owner-layer-refinement-NOT-UNITY-READY`
-  (ID `12410733807`) for all revised PNGs, receipt and paired
-  arm/walk diagnostic previews. The improved files are **review
-  artifacts**, NOT replacements for the V1 source PNGs on main.
+  The improved files are committed as review evidence in
+  `docs/evidence/production-art/drafts/c03-owner-selected-layer-refined/`,
+  matching artifact `c03-source-owner-layer-refinement-NOT-UNITY-READY`
+  (ID `12410733807`) with full receipt and paired arm/walk diagnostic
+  previews. The improved files are **review artifacts**, NOT replacements
+  for the V1 source PNGs on main.
 
 ## Visual defects blocking actual animation
 
