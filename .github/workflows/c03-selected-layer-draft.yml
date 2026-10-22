@@ -11,7 +11,7 @@ on:
       - docs/evidence/production-art/C03-ACTIVE-OWNER-FRONT-RIG-CONTRACT.json
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: c03-selected-layer-draft-${{ github.ref }}
@@ -56,25 +56,6 @@ jobs:
           print('PASS C03 21 layer+mask, 16 joint study, no game/Unity approval')
           PY
 
-      - name: Publish actual draft PNGs to isolated Git LFS review branch
-        if: github.event_name == 'push'
-        shell: bash
-        run: |
-          set -euo pipefail
-          branch="c03/owner-selected-layer-study-${{ github.run_id }}"
-          dest="docs/evidence/production-art/drafts/c03-owner-selected-layer-study"
-          git switch -c "$branch"
-          mkdir -p "$dest"
-          cp -a "$RUNNER_TEMP/C03-selected-cutout-draft/." "$dest/"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git lfs install --local
-          git add -- "$dest"
-          git commit -m "art(c03): source selected owner image cutout 21-layer draft"
-          git lfs push origin HEAD
-          git push origin "HEAD:refs/heads/$branch"
-          echo "C03_OWNER_DRAFT_BRANCH=$branch" >> "$GITHUB_STEP_SUMMARY"
-          echo "Not native/Unity-ready, not approved, not merged to main" >> "$GITHUB_STEP_SUMMARY"
       - name: Archive actual PNG layer sources for manual editing and review
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
