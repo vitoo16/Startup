@@ -50,3 +50,29 @@ Toàn bộ quá trình phân bổ lại được thực hiện tự động bằ
 ---
 **Technical Owner:** GPT-6  
 **Pipeline Review:** Senior Unity Technical Artist + Pixel Art Pipeline Engineer  
+
+## 6. Unity Editor QA — dùng bản refined đã merge
+
+Lệnh kiểm tra QA (không tích hợp runtime):
+
+`Startup Life → Art → C03 → Build selected-owner REFINED cutout QA rig (NOT motion ready)`
+
+Builder `C03OwnerSelectedCutoutRigQA` đọc **PNG refined của chính thư mục này**
+và SHA-256 từ `C03-refined-layer-ownership-receipt.json`, đồng thời dùng
+`C03-selected-16-joint-guide-DRAFT.json` của folder study cũ cho topology.
+Nó đối chiếu ảnh C03 owner-selected chuẩn, nguồn/refined receipt,
+21 semantic slots và 16 khớp trước khi copy hay Unity import.
+
+Prefab QA được tạo riêng tại:
+
+`Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-Owner-Refined-Cutout-QA/C03_OWNER_SELECTED_REFINED_CUTOUT_QA.prefab`
+
+Không ghi đè `Generated-V3-Quarantine` hay prefab cutout QA đời đầu;
+cũng không có Animator, clip, `Art/Approved` hoặc gameplay binding.
+Không ghi rằng Unity chạy PASS khi chưa có Console/Hierarchy/screenshot thật.
+
+Git LFS integrity gate cho nguồn đã commit:
+`python scripts/Verify-C03CommittedRefined.py` (Pillow 11.3).
+GitHub Actions: `.github/workflows/c03-committed-refined-qa.yml`.
+Gate chỉ xác minh ảnh, checksum và bảo toàn composite, **không duyệt mỹ thuật**.
+
