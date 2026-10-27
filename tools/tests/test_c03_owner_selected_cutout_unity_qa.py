@@ -19,10 +19,10 @@ class C03OwnerSelectedCutoutUnityQA(unittest.TestCase):
 
     def test_preserves_old_rig_and_imports_new_lfs_art(self):
         s = self.body
-        self.assertIn("Generated-Owner-Refined-Cutout-QA", s)
+        self.assertIn("Generated-Owner-Refined-Calibration-QA", s)
         self.assertIn("docs/evidence/production-art/drafts/c03-owner-selected-layer-refined", s)
         self.assertIn("docs/evidence/production-art/drafts/c03-owner-selected-layer-study", s)
-        self.assertIn("C03_OWNER_SELECTED_REFINED_CUTOUT_QA.prefab", s)
+        self.assertIn("C03_OWNER_SELECTED_REFINED_OVERLAP_PIVOT_QA.prefab", s)
         self.assertIn("C03-hand-behind-bag-reference.png", s)
         self.assertIn("1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa", s)
         self.assertNotIn("Generated-V3-Quarantine", s)
@@ -42,6 +42,9 @@ class C03OwnerSelectedCutoutUnityQA(unittest.TestCase):
         self.assertIn("C03-refined-layer-ownership-receipt.json", s)
         self.assertIn("DRAFT_SOURCE_CORRECTION_NOT_NATIVE_OR_ANIMATABLE", s)
         self.assertIn("guide.rig_approval", s)
+        self.assertIn("C03-selected-overlap-pivot-guide-QA.json", s)
+        self.assertIn("var guide = JsonUtility.FromJson<Guide>", s)
+        self.assertIn("startup-life.c03.owner-source-overlap-pivot-qa.v1", s)
         self.assertIn("var raw = File.ReadAllText(Input + \"/C03-refined-layer-ownership-receipt.json\")", s)
         self.assertIn("File.ReadAllText(GuideInput + \"/C03-selected-cutout-receipt.json\")", s)
         self.assertIn("var source = Input + \"/\" + rel;", s)
@@ -66,8 +69,8 @@ class C03OwnerSelectedCutoutUnityQA(unittest.TestCase):
 
     def test_cutout_is_not_false_native_or_animated(self):
         s = self.body
-        self.assertIn("PIVOT_ESTIMATES_ONLY_NOT_NATIVE_NOT_ANIMATABLE", s)
-        self.assertIn("REFINED cutout QA rig (NOT motion ready)", s)
+        self.assertIn("OVERLAP_CENTER_ESTIMATE_QA_ONLY_NOT_NATIVE_OR_ANIMATABLE", s)
+        self.assertIn("refined overlap-pivot QA rig (NOT motion ready)", s)
         self.assertIn("importer.spritePixelsPerUnit = Ppu;", s)
         self.assertIn("FilterMode.Point", s)
         self.assertIn("TextureImporterCompression.Uncompressed", s)
@@ -126,7 +129,7 @@ class C03OwnerSelectedCutoutUnityQA(unittest.TestCase):
         self.assertIn("preview.AddSingleGO(instance)", src)
         self.assertIn("preview.Cleanup()", src)
         self.assertIn("instance.hideFlags = HideFlags.HideAndDontSave", src)
-        self.assertIn("Generated-Owner-Refined-Cutout-QA", src)
+        self.assertIn("Generated-Owner-Refined-Calibration-QA", src)
         self.assertIn("editableJoints.Length != 15", src)
         self.assertIn("GetComponentsInChildren<SpriteRenderer>(true).Length != 21", src)
         self.assertIn("joint.localRotation = Quaternion.Euler(0f, 0f, nextAngle)", src)
