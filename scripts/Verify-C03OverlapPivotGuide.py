@@ -94,9 +94,10 @@ def run(root=ROOT):
             folder / "layers" / (part_b + ".png")) as i2:
             qty, (x, y) = alpha_centroid(i1.convert("RGBA"), i2.convert("RGBA"))
         native = [round(x * 128 / WIDTH), round(y * 160 / HEIGHT)]
-        if (qty != record["source_overlap_pixels"] or
-                abs(native[0] - pivot[0]) > 1 or abs(native[1] - pivot[1]) > 1):
-            raise ValueError("C03 pivot lies away from source pixel overlap: " + name)
+        # Require the exact rounded centroid, not +/- 1. A single native
+        # pixel misalignment is large enough to show a visible joint seam.
+        if qty != record["source_overlap_pixels"] or native != pivot:
+            raise ValueError("C03 pivot/count differs from measured overlap: " + name)
         report[name] = {
             "original_native_xy": legacy["pivot_native_estimate_xy"],
             "candidate_native_xy": pivot,
