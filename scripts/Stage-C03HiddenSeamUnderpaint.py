@@ -13,7 +13,7 @@ import importlib.util
 import json
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 DRAFT = ROOT / "docs/evidence/production-art/drafts/c03-owner-selected-layer-refined"
@@ -202,6 +202,28 @@ def stage(output):
     if len(joints) != 16 or set(owner) != set(names):
         raise ValueError("C03 16/21 joint guide changed")
     stress = read_module(POSES, "c03_underpaint_stress")
+    pose_deltas = {}
+    # Report changes in the actual diagnostic silhouettes, not a vague
+    # assertion that filling hidden pixels makes movement aesthetically good.
+    for pose in ("bind_exact", "left_arm_bend", "right_arm_bend", "walk_leg_A"):
+        angles = stress.POSES[pose]
+        before_pose = stress.render(names, before, joints, owner, angles)
+        after_pose = stress.render(names, after, joints, owner, angles)
+        channels = ImageChops.difference(before_pose, after_pose).split()
+        changed = channels[0]
+        for component in channels[1:]:
+            changed = ImageChops.lighter(changed, component)
+        exposed = ImageChops.subtract(after_pose.getchannel("A"),
+                                      before_pose.getchannel("A"))
+        lost = ImageChops.subtract(before_pose.getchannel("A"),
+                                   after_pose.getchannel("A"))
+        pose_deltas[pose] = {
+            "changed_rgba_pixels": sum(v != 0 for v in changed.tobytes()),
+            "newly_visible_alpha_pixels": sum(v != 0 for v in exposed.tobytes()),
+            "lost_visible_alpha_pixels": sum(v != 0 for v in lost.tobytes())
+        }
+    if pose_deltas["bind_exact"]["changed_rgba_pixels"] != 0:
+        raise AssertionError("C03 selected static pose cannot change")
     output.mkdir(parents=True)
     (output / "layers" / "masks").mkdir(parents=True)
     hashes = {}
@@ -228,6 +250,8 @@ def stage(output):
         "mask_count": 1,
         "new_hidden_pixel_count": sum(z["hidden_pixels_extended"] for z in changes.values()),
         "underpaint_pairs": changes,
+        "pose_deltas": pose_deltas,
+        "pose_deltas_are_technical_not_artistic_quality_scores": True,
         "static_composite_exact_rgba": True,
         "same_source_palette_for_hidden_extension": True,
         "new_face_or_character": False,
