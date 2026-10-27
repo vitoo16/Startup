@@ -43,6 +43,9 @@ jobs:
           assert r['status']=='ARTIST_REVIEW_REQUIRED_NOT_ANIMATABLE_OR_APPROVED'
           assert r['semantic_layer_count']==21 and r['joint_topology_count']==16
           assert r['static_composite_exact_rgba'] is True
+          assert r['pose_deltas']['bind_exact']['changed_rgba_pixels']==0
+          assert any(r['pose_deltas'][name]['changed_rgba_pixels']>0 for name in ('left_arm_bend','right_arm_bend','walk_leg_A'))
+          assert r['pose_deltas_are_technical_not_artistic_quality_scores'] is True
           assert r['new_face_or_character'] is False and r['native_128x160_art'] is False
           assert r['approved_for_gameplay'] is False
           assert r['rig_and_motion_verified_in_Unity'] is False
