@@ -1017,8 +1017,10 @@ namespace StartupLife.Editor
             "docs/evidence/production-art/drafts/c03-owner-selected-layer-refined";
         private const string GuideInput =
             "docs/evidence/production-art/drafts/c03-owner-selected-layer-study";
+        private const string QaPivotInput =
+            "docs/evidence/production-art/drafts/c03-owner-selected-layer-refined";
         private const string Output =
-            "Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-Owner-Refined-Cutout-QA";
+            "Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-Owner-Refined-Calibration-QA";
         private const string SourceImage =
             "Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png";
         private const string SelectedSha =
@@ -1075,7 +1077,7 @@ namespace StartupLife.Editor
         {
             if (!File.Exists(Input + "/C03-refined-layer-ownership-receipt.json") ||
                 !File.Exists(GuideInput + "/C03-selected-cutout-receipt.json") ||
-                !File.Exists(GuideInput + "/C03-selected-16-joint-guide-DRAFT.json"))
+                !File.Exists(QaPivotInput + "/C03-selected-overlap-pivot-guide-QA.json"))
                 throw new InvalidOperationException(
                     "C03 refined cutout and joint guide missing; hydrate Git LFS on main.");
 
@@ -1086,7 +1088,7 @@ namespace StartupLife.Editor
             var receipt = JsonUtility.FromJson<Receipt>(
                 File.ReadAllText(GuideInput + "/C03-selected-cutout-receipt.json"));
             var guide = JsonUtility.FromJson<Guide>(
-                File.ReadAllText(GuideInput + "/C03-selected-16-joint-guide-DRAFT.json"));
+                File.ReadAllText(QaPivotInput + "/C03-selected-overlap-pivot-guide-QA.json"));
             if (receipt == null || refined == null || guide == null ||
                 receipt.schema != "startup-life.c03.selected-image-cutout-study.v1" ||
                 receipt.status != "REVIEW_ONLY_OPAQUE_IMAGE_EXTRACTION_NOT_NATIVE_RIG" ||
@@ -1095,8 +1097,8 @@ namespace StartupLife.Editor
                 receipt.semantic_order.Length != 21 ||
                 !receipt.composite_matches_visible_source_pixels ||
                 receipt.native_pixel_128x160 || receipt.approved_for_gameplay ||
-                guide.schema != "startup-life.c03.visual-joint-guide.v1" ||
-                guide.status != "PIVOT_ESTIMATES_ONLY_NOT_NATIVE_NOT_ANIMATABLE" ||
+                guide.schema != "startup-life.c03.owner-source-overlap-pivot-qa.v1" ||
+                guide.status != "OVERLAP_CENTER_ESTIMATE_QA_ONLY_NOT_NATIVE_OR_ANIMATABLE" ||
                 guide.reference_sha256 != SelectedSha ||
                 guide.rig_approval || guide.joint_count != 16 || guide.joints.Length != 16 ||
                 refined.schema != "startup-life.c03.source-visible-layer-ownership-refinement.v1" ||
@@ -1192,7 +1194,7 @@ namespace StartupLife.Editor
             return (receipt, guide);
         }
 
-        [MenuItem("Startup Life/Art/C03/Build selected-owner REFINED cutout QA rig (NOT motion ready)")]
+        [MenuItem("Startup Life/Art/C03/Build selected-owner refined overlap-pivot QA rig (NOT motion ready)")]
         public static void Build()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -1246,7 +1248,7 @@ namespace StartupLife.Editor
             GameObject root = null;
             try
             {
-                root = new GameObject("C03_OWNER_SELECTED_REFINED_CUTOUT_QA_NOT_ANIMATABLE");
+                root = new GameObject("C03_OWNER_SELECTED_REFINED_OVERLAP_PIVOT_QA_NOT_ANIMATABLE");
                 var joints = new Dictionary<string, Transform>(StringComparer.Ordinal)
                 {
                     {"root", root.transform}
@@ -1299,7 +1301,7 @@ namespace StartupLife.Editor
                 }
                 // Deliberately no Animator/clip: opaque-image cutouts lack
                 // hidden limbs, motion will reveal unpainted seams.
-                var dest = Output + "/C03_OWNER_SELECTED_REFINED_CUTOUT_QA.prefab";
+                var dest = Output + "/C03_OWNER_SELECTED_REFINED_OVERLAP_PIVOT_QA.prefab";
                 PrefabUtility.SaveAsPrefabAsset(root,dest);
                 AssetDatabase.SaveAssets();
                 var saved = AssetDatabase.LoadAssetAtPath<GameObject>(dest);
@@ -1308,7 +1310,7 @@ namespace StartupLife.Editor
                     saved.GetComponentsInChildren<SpriteRenderer>(true).Length != 21 ||
                     saved.GetComponent<Animator>() != null)
                     throw new InvalidOperationException("C03 persisted QA joint hierarchy differs.");
-                Debug.Log("[StartupLife][C03] REFINED owner-image 21-layer / 16-joint QA cutout " +
+                Debug.Log("[StartupLife][C03] REFINED owner-image 21-layer / 16-joint OVERLAP-CALIBRATED QA " +
                     "imported without animation or runtime binding. Correct layer seams, " +
                     "hidden anatomy, and native redraw before approving animation.");
             }
