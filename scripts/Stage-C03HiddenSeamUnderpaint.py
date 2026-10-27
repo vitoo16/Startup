@@ -69,11 +69,14 @@ def underpaint_pair(source, occluder, radius):
     if b is None or c is None:
         raise ValueError("C03 semantic source/occluder must have visible alpha")
 
-    left = max(0, b[0] - radius, c[0])
-    top = max(0, b[1] - radius, c[1])
-    right = min(w, b[2] + radius, c[2])
-    bottom = min(h, b[3] + radius, c[3])
-    if right <= left or bottom <= top:
+    # The scan must include ORIGINAL source pixels to seed the flood.
+    # Clipping the ROI to the occluder would discard edge seeds when two
+    # anatomy parts merely touch at a seam (e.g. cuff at wrist).
+    left = max(0, b[0] - radius)
+    top = max(0, b[1] - radius)
+    right = min(w, b[2] + radius)
+    bottom = min(h, b[3] + radius)
+    if right <= c[0] or left >= c[2] or bottom <= c[1] or top >= c[3]:
         return source.copy(), 0
 
     raw = bytearray(source.tobytes())
