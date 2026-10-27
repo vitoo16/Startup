@@ -55,17 +55,18 @@ Toàn bộ quá trình phân bổ lại được thực hiện tự động bằ
 
 Lệnh kiểm tra QA (không tích hợp runtime):
 
-`Startup Life → Art → C03 → Build selected-owner REFINED cutout QA rig (NOT motion ready)`
+`Startup Life → Art → C03 → Build selected-owner refined overlap-pivot QA rig (NOT motion ready)`
 
 Builder `C03OwnerSelectedCutoutRigQA` đọc **PNG refined của chính thư mục này**
 và SHA-256 từ `C03-refined-layer-ownership-receipt.json`, đồng thời dùng
-`C03-selected-16-joint-guide-DRAFT.json` của folder study cũ cho topology.
+`C03-selected-overlap-pivot-guide-QA.json` của thư mục này cho 10 pivot
+hiệu chỉnh; 6 pivot và topology gốc được giữ từ guide study cũ.
 Nó đối chiếu ảnh C03 owner-selected chuẩn, nguồn/refined receipt,
 21 semantic slots và 16 khớp trước khi copy hay Unity import.
 
 Prefab QA được tạo riêng tại:
 
-`Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-Owner-Refined-Cutout-QA/C03_OWNER_SELECTED_REFINED_CUTOUT_QA.prefab`
+`Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-Owner-Refined-Calibration-QA/C03_OWNER_SELECTED_REFINED_OVERLAP_PIVOT_QA.prefab`
 
 Không ghi đè `Generated-V3-Quarantine` hay prefab cutout QA đời đầu;
 cũng không có Animator, clip, `Art/Approved` hoặc gameplay binding.
@@ -94,9 +95,9 @@ texture vào từng `SpriteRenderer`. Kiểm tra từ 22 ảnh RGBA nguồn:
 
 **Hai lệnh trên Unity Editor:**
 
-1. `Startup Life → Art → C03 → Build selected-owner REFINED cutout QA rig (NOT motion ready)` —
+1. `Startup Life → Art → C03 → Build selected-owner refined overlap-pivot QA rig (NOT motion ready)` —
    import 21 layer refined crop trong prefab QA riêng, vẫn 16 khớp, không Animator.
-2. `Startup Life → Art → C03 → Preview refined joint rotation (QA only)` —
+2. `Startup Life → Art → C03 → Preview refined overlap-pivot rotation (QA only)` —
    mở cửa sổ preview Scene **cách ly**, chỉnh từng joint trong giới hạn ±20°
    để quan sát rách ở mép áo, tóc, tay/túi và cổ chân. Đóng cửa sổ sẽ cleanup
    đối tượng preview; không ghi scene/prefab, không tạo animation clip.
@@ -104,3 +105,27 @@ texture vào từng `SpriteRenderer`. Kiểm tra từ 22 ảnh RGBA nguồn:
 **Cảnh báo:** Những nét rách/joint thiếu hình khi xoay vẫn còn. Không
 được sử dụng công cụ preview làm bằng chứng đủ điều kiện animation.
 Unity Editor/PlayMode và device capture vẫn chưa được chạy ở phiên này.
+
+## 8. Pivot QA đo từ ảnh C03 thật (ngày 27/10/2026)
+
+Dữ liệu duy nhất dành cho prefab QA là
+`C03-selected-overlap-pivot-guide-QA.json`. Từ đúng 21 PNG refined
+1122×1402 đã xác minh SHA-256, giao nhau alpha của 10 cặp layer
+được đo để lấy tâm; hệ thống hierarchy 16 khớp và thứ tự 21 layer
+giữ nguyên. Hai pivot phải được sửa thêm 1 pixel lưới native so với
+bản đề xuất đầu tiên: `wrist_r = [91, 110]`,
+`hip_r = [79, 113]`. Những pivot còn lại không đổi sau phép đo.
+
+- `python scripts/Verify-C03OverlapPivotGuide.py` kiểm đúng **tọa độ
+  làm tròn**, số pixel giao nhau và quan hệ 16 bone; không cho sai số ±1.
+- `python scripts/Review-C03OverlapPivots.py --output-dir <empty-dir>`
+  so sánh các pose tay/chân trước/sau từ cùng PNG, xuất ảnh và báo cáo QA.
+- `.github/workflows/c03-committed-refined-qa.yml` tự kiểm hai script
+  với Git LFS và upload ảnh so sánh để review.
+
+**Đây là vị trí khớp theo overlap hình học, KHÔNG phải bằng chứng
+khớp với giải phẫu khi chạy animation.** Bộ underpaint ở
+`scripts/Stage-C03HiddenSeamUnderpaint.py` hiện chỉ là
+ứng viên QA chưa được duyệt và không thay thế art refined đã merge.
+
+**Unity Editor và device vẫn chưa được chạy tại phiên này.**
