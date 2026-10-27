@@ -122,7 +122,7 @@
       "parent": "elbow_r",
       "pivot_native_estimate_xy": [
         91,
-        111
+        110
       ],
       "parts": [
         "hand_r"
@@ -166,7 +166,7 @@
       "parent": "hips",
       "pivot_native_estimate_xy": [
         79,
-        114
+        113
       ],
       "parts": [
         "upper_leg_r"
@@ -203,7 +203,7 @@
     "Unity Editor + device BeautyCell QA"
   ],
   "source_folder": "docs/evidence/production-art/drafts/c03-owner-selected-layer-refined",
-  "revision_basis": "Original source-visible alpha intersection centroids rounded to integer coordinates in provisional 128x160 joint grid; source colors, 21 slots and hierarchy unchanged.",
+  "revision_basis": "Native-grid pixel coordinates are each component rounded from measured alpha-overlap centroid; no residual ±1 tolerance. Reference resolution and 21 semantic PNGs unchanged.",
   "calibrated_joint_count": 10,
   "pivot_change_provenance": {
     "elbow_l": {
@@ -258,7 +258,7 @@
       ],
       "candidate_native_xy": [
         91,
-        111
+        110
       ],
       "alpha_overlap_parts": [
         "forearm_r",
@@ -318,7 +318,7 @@
       ],
       "candidate_native_xy": [
         79,
-        114
+        113
       ],
       "alpha_overlap_parts": [
         "pelvis",
