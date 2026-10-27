@@ -95,6 +95,44 @@ class C03OwnerSelectedCutoutUnityQA(unittest.TestCase):
         self.assertFalse(refined["approved_for_gameplay"])
         self.assertFalse(refined["native_128x160_art"])
 
+    def test_ten_overlap_calibrated_qa_pivots_keep_topology_and_source_provenance(self):
+        import json
+        original = json.loads(
+            (GUIDE_SOURCE / "C03-selected-16-joint-guide-DRAFT.json").read_text(encoding="utf-8"))
+        calibrated = json.loads(
+            (SOURCE / "C03-selected-overlap-pivot-guide-QA.json").read_text(encoding="utf-8"))
+        self.assertEqual("startup-life.c03.owner-source-overlap-pivot-qa.v1",
+                         calibrated["schema"])
+        self.assertEqual("OVERLAP_CENTER_ESTIMATE_QA_ONLY_NOT_NATIVE_OR_ANIMATABLE",
+                         calibrated["status"])
+        self.assertEqual(original["reference_sha256"], calibrated["reference_sha256"])
+        self.assertEqual(16, len(calibrated["joints"]))
+        self.assertEqual(10, len(calibrated["pivot_change_provenance"]))
+        self.assertFalse(calibrated["rig_approval"])
+        self.assertEqual([], calibrated["motion_clips"])
+        old_joints = {x["id"]: x for x in original["joints"]}
+        corrected = {x["id"]: x for x in calibrated["joints"]}
+        self.assertEqual(set(old_joints), set(corrected))
+        for name, part in corrected.items():
+            baseline = old_joints[name]
+            self.assertEqual(baseline["parent"], part["parent"])
+            self.assertEqual(baseline["parts"], part["parts"])
+            if name in calibrated["pivot_change_provenance"]:
+                provenance = calibrated["pivot_change_provenance"][name]
+                self.assertEqual(provenance["candidate_native_xy"],
+                                 part["pivot_native_estimate_xy"])
+                self.assertEqual(provenance["previous_native_xy"],
+                                 baseline["pivot_native_estimate_xy"])
+                self.assertGreater(provenance["source_overlap_pixels"], 0)
+            else:
+                self.assertEqual(baseline["pivot_native_estimate_xy"],
+                                 part["pivot_native_estimate_xy"])
+        self.assertEqual([91, 110], corrected["wrist_r"]["pivot_native_estimate_xy"])
+        self.assertEqual([79, 113], corrected["hip_r"]["pivot_native_estimate_xy"])
+        self.assertIn("scripts/Verify-C03OverlapPivotGuide.py",
+                      (ROOT / ".github/workflows/c03-committed-refined-qa.yml")
+                      .read_text(encoding="utf-8"))
+
     def test_refined_qa_import_crops_transparent_texture_area_without_shifting_pose(self):
         importer = self.body
         cropper_path = ROOT / "Assets/StartupLife/Scripts/Editor/C03RefinedSpriteCropper.cs"
