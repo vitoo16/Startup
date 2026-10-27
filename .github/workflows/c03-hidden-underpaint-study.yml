@@ -1,0 +1,63 @@
+name: C03 Hidden Joint Underpaint Study
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/Stage-C03HiddenSeamUnderpaint.py
+      - tools/tests/test_c03_hidden_underpaint.py
+      - .github/workflows/c03-hidden-underpaint-study.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: c03-hidden-underpaint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  candidate:
+    name: Source-faithful hidden seam paint candidate (NOT ANIMATABLE)
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout original selected C03 and refined source from Git LFS
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: true
+      - name: Install Pillow
+        run: python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0
+      - name: Verify source-only underpaint invariants
+        run: python3 -m unittest discover -s tools/tests -p 'test_c03_hidden_underpaint.py' -v
+      - name: Stage source-palette hidden-pixel edits below later occluding layers
+        run: python3 scripts/Stage-C03HiddenSeamUnderpaint.py --output-dir "$RUNNER_TEMP/c03-hidden-underpaint-study"
+      - name: Enforce exact visible pose and no art approval
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          p=Path(os.environ['RUNNER_TEMP'])/'c03-hidden-underpaint-study'
+          r=json.loads((p/'C03-hidden-underpaint-candidate.json').read_text(encoding='utf-8'))
+          assert r['owner_selected_sha256']=='1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa'
+          assert r['status']=='ARTIST_REVIEW_REQUIRED_NOT_ANIMATABLE_OR_APPROVED'
+          assert r['semantic_layer_count']==21 and r['joint_topology_count']==16
+          assert r['static_composite_exact_rgba'] is True
+          assert r['new_face_or_character'] is False and r['native_128x160_art'] is False
+          assert r['approved_for_gameplay'] is False
+          assert r['rig_and_motion_verified_in_Unity'] is False
+          assert len(r['file_sha256'])==22
+          assert sum(x['hidden_pixels_extended'] for x in r['underpaint_pairs'].values()) == r['new_hidden_pixel_count']
+          for name,sha in r['file_sha256'].items():
+              assert hashlib.sha256((p/name).read_bytes()).hexdigest()==sha
+          assert (p/'C03-underpaint-pose-before-after-REVIEW.png').is_file()
+          print('PASS exact owner C03 static image + 21 hidden-seam candidate layers; NOT ART APPROVAL')
+          PY
+      - name: Archive QA candidate including 21 actual PNGs and pose visual
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: c03-hidden-underpaint-21-layer-CANDIDATE-not-approved
+          path: ${{ runner.temp }}/c03-hidden-underpaint-study/
+          if-no-files-found: warn
+          retention-days: 30
