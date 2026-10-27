@@ -13,7 +13,7 @@ namespace StartupLife.Editor
     {
         private const string QaPrefabPath =
             "Assets/StartupLife/Art/Source/Characters/golden-character-c03/" +
-            "Generated-Owner-Refined-Cutout-QA/C03_OWNER_SELECTED_REFINED_CUTOUT_QA.prefab";
+            "Generated-Owner-Refined-Calibration-QA/C03_OWNER_SELECTED_REFINED_OVERLAP_PIVOT_QA.prefab";
         private PreviewRenderUtility preview;
         private GameObject instance;
         private Transform[] editableJoints = Array.Empty<Transform>();
@@ -21,7 +21,7 @@ namespace StartupLife.Editor
             new Dictionary<Transform, float>();
         private Vector2 scroll;
 
-        [MenuItem("Startup Life/Art/C03/Preview refined joint rotation (QA only)")]
+        [MenuItem("Startup Life/Art/C03/Preview refined overlap-pivot rotation (QA only)")]
         private static void Open()
         {
             var window = GetWindow<C03RefinedRigPosePreviewWindow>("C03 Pivot & Seam QA");
@@ -96,7 +96,7 @@ namespace StartupLife.Editor
             {
                 EditorGUILayout.HelpBox(
                     "Build the separate QA prefab first: Startup Life / Art / C03 / " +
-                    "Build selected-owner REFINED cutout QA rig (NOT motion ready).",
+                    "Build selected-owner refined overlap-pivot QA rig (NOT motion ready).",
                     MessageType.Info);
                 if (GUILayout.Button("Reload QA prefab")) LoadPreview();
                 return;
