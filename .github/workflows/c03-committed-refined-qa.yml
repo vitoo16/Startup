@@ -7,6 +7,7 @@ on:
     paths:
       - scripts/Verify-C03CommittedRefined.py
       - scripts/Verify-C03RefinedQaCrop.py
+      - scripts/Verify-C03OverlapPivotGuide.py
       - .github/workflows/c03-committed-refined-qa.yml
       - docs/evidence/production-art/drafts/c03-owner-selected-layer-refined/**
       - docs/evidence/production-art/drafts/c03-owner-selected-layer-study/**
@@ -35,3 +36,5 @@ jobs:
         run: python3 scripts/Verify-C03CommittedRefined.py
       - name: Verify trimmed QA sprites reconstruct exact C03 static pose with reduced memory
         run: python3 scripts/Verify-C03RefinedQaCrop.py
+      - name: Verify ten QA bone pivots exactly match current refined PNG overlap centroids
+        run: python3 scripts/Verify-C03OverlapPivotGuide.py
