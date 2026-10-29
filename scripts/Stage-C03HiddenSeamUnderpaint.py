@@ -20,6 +20,7 @@ DRAFT = ROOT / "docs/evidence/production-art/drafts/c03-owner-selected-layer-ref
 STUDY = ROOT / "docs/evidence/production-art/drafts/c03-owner-selected-layer-study"
 VERIFY = ROOT / "scripts/Verify-C03CommittedRefined.py"
 POSES = ROOT / "scripts/Preview-C03OwnerCutoutArticulation.py"
+PIVOT_VERIFY = ROOT / "scripts/Verify-C03OverlapPivotGuide.py"
 SHA = "1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa"
 SIZE = (1122, 1402)
 
@@ -299,7 +300,6 @@ def stage(output, root=ROOT):
     pose_names = ("bind_exact", "left_arm_bend", "right_arm_bend",
                   "walk_leg_A", "walk_leg_B")
     pose_deltas = {}
-    before_poses = {}
     after_poses = {}
     delta_masks = {}
     # Evaluate underpaint against the current, source-verified overlap pivots.
@@ -308,7 +308,6 @@ def stage(output, root=ROOT):
         angles = stress.POSES[pose]
         before_pose = stress.render(names, before, joints, owner, angles)
         after_pose = stress.render(names, after, joints, owner, angles)
-        before_poses[pose] = before_pose
         after_poses[pose] = after_pose
         mask, changed_count, bbox = pixel_delta(before_pose, after_pose)
         delta_masks[pose] = mask
