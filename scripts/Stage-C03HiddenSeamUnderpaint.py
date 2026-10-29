@@ -324,7 +324,19 @@ def stage(output, root=ROOT):
         }
     if pose_deltas["bind_exact"]["changed_rgba_pixels"] != 0:
         raise AssertionError("C03 selected static pose cannot change")
-    output.mkdir(parents=True)
+    newly_visible_total = sum(
+        values["newly_visible_alpha_pixels"]
+        for pose, values in pose_deltas.items() if pose != "bind_exact")
+    lost_visible_total = sum(
+        values["lost_visible_alpha_pixels"]
+        for pose, values in pose_deltas.items() if pose != "bind_exact")
+    # Automatically extended colors are never motion-eligible: any exposed
+    # pixel is a seam/art-review failure until an artist paints real anatomy.
+    underpaint_motion_gate = (
+        "FAIL_AUTO_UNDERPAINT_EXPOSES_PIXELS"
+        if newly_visible_total > 0 or lost_visible_total > 0
+        else "NOT_APPROVED_HIDDEN_ANATOMY_NOT_AUTHORED")
+    output.mkdir(parents)
     (output / "layers" / "masks").mkdir(parents=True)
     hashes = {}
     for name in names:
@@ -358,6 +370,10 @@ def stage(output, root=ROOT):
         "underpaint_pairs": changes,
         "pose_deltas": pose_deltas,
         "pose_deltas_are_technical_not_artistic_quality_scores": True,
+        "newly_visible_alpha_total": newly_visible_total,
+        "lost_visible_alpha_total": lost_visible_total,
+        "underpaint_motion_gate": underpaint_motion_gate,
+        "underpaint_motion_eligible": False,
         "static_composite_exact_rgba": True,
         "same_source_palette_for_hidden_extension": True,
         "new_face_or_character": False,
