@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - scripts/Stage-C03HiddenSeamUnderpaint.py
+      - scripts/Verify-C03OverlapPivotGuide.py
+      - docs/evidence/production-art/drafts/c03-owner-selected-layer-refined/C03-selected-overlap-pivot-guide-QA.json
       - tools/tests/test_c03_hidden_underpaint.py
       - .github/workflows/c03-hidden-underpaint-study.yml
 
@@ -43,6 +45,12 @@ jobs:
           assert r['status']=='ARTIST_REVIEW_REQUIRED_NOT_ANIMATABLE_OR_APPROVED'
           assert r['semantic_layer_count']==21 and r['joint_topology_count']==16
           assert r['static_composite_exact_rgba'] is True
+          assert r['pivot_source_gate_status']=='PASS_TEN_SOURCE_OVERLAP_PIVOTS_NOT_MOTION_APPROVAL'
+          assert len(r['pivot_guide_sha256'])==64
+          assert r['pose_names']==['bind_exact','left_arm_bend','right_arm_bend','walk_leg_A','walk_leg_B']
+          assert r['pose_deltas']['bind_exact']['changed_rgba_pixels']==0
+          assert r['pose_deltas']['walk_leg_B']['changed_rgba_pixels']>=0
+          assert all('changed_bbox_source_px' in v for v in r['pose_deltas'].values())
           assert r['pose_deltas']['bind_exact']['changed_rgba_pixels']==0
           assert any(r['pose_deltas'][name]['changed_rgba_pixels']>0 for name in ('left_arm_bend','right_arm_bend','walk_leg_A'))
           assert r['pose_deltas_are_technical_not_artistic_quality_scores'] is True
@@ -54,6 +62,7 @@ jobs:
           for name,sha in r['file_sha256'].items():
               assert hashlib.sha256((p/name).read_bytes()).hexdigest()==sha
           assert (p/'C03-underpaint-pose-before-after-REVIEW.png').is_file()
+          assert (p/'C03-underpaint-changed-pixel-hotspots-REVIEW.png').is_file()
           print('PASS exact owner C03 static image + 21 hidden-seam candidate layers; NOT ART APPROVAL')
           PY
       - name: Archive QA candidate including 21 actual PNGs and pose visual
