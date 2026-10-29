@@ -129,3 +129,45 @@ khớp với giải phẫu khi chạy animation.** Bộ underpaint ở
 ứng viên QA chưa được duyệt và không thay thế art refined đã merge.
 
 **Unity Editor và device vẫn chưa được chạy tại phiên này.**
+
+## 9. Calibrated-pivot underpaint hotspot review (2026-10-29)
+
+The source-palette hidden-underpaint experiment is now evaluated using
+`C03-selected-overlap-pivot-guide-QA.json`, after the exact
+`Verify-C03OverlapPivotGuide.py` source-overlap gate. The old guide is used
+only to assert the same 16 joint IDs, parent hierarchy and 21-part ownership.
+The report records the SHA-256 of the actual pivot guide it used.
+
+Command (output directory must not exist):
+
+`python3 scripts/Stage-C03HiddenSeamUnderpaint.py --output-dir <new-empty-dir>`
+
+New artifact `C03-underpaint-changed-pixel-hotspots-REVIEW.png` paints only
+candidate-vs-source changed pixels in magenta and zooms the exact RGBA
+difference bounds. Both alternating walk poses are covered.
+
+**Current technical result — auto-underpaint FAILS motion eligibility:**
+
+| Pose | Changed RGBA pixels | Newly visible alpha | Changed source bbox (1122×1402) |
+| --- | ---: | ---: | --- |
+| bind_exact | 0 | 0 | none |
+| left_arm_bend | 374 | 374 | [307, 773, 353, 1001] |
+| right_arm_bend | 0 | 0 | none |
+| walk_leg_A | 1,219 | 1,066 | [386, 991, 815, 1259] |
+| walk_leg_B | 935 | 935 | [400, 1021, 777, 1250] |
+
+The candidate adds 51,707 underpaint pixels while preserving the standing
+composite exactly, but exposes 2,375 newly visible alpha pixels across the
+diagnostic arm/walk poses. That is **not** proof of correct anatomy; the
+magenta overlay shows protrusions at the left sleeve and pant/shoe seams.
+The script therefore records
+`underpaint_motion_gate=FAIL_AUTO_UNDERPAINT_EXPOSES_PIXELS` and
+`underpaint_motion_eligible=false`. CI passing means the failure is
+accurately measured and quarantined, not that the candidate is approved.
+
+Artifact workflow: [C03 Hidden Joint Underpaint Study](https://github.com/vitoo16/Startup/actions/runs/40889670532).
+The downloaded candidate contains 21 PNGs, the unchanged bag mask, bind
+composite, two visual review sheets and a SHA/metrics receipt. It remains
+outside Unity production, `Art/Approved`, `FirstPlayable` and gameplay.
+Real hidden anatomy must be hand-authored; do not increase radius or promote
+the copied-edge colors merely to make the CI gate green.
