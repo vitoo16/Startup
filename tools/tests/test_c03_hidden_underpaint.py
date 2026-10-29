@@ -83,6 +83,9 @@ class HiddenSeamUnderpaintTests(unittest.TestCase):
         self.assertIn('"pivot_guide_sha256": sha256(refined_guide_path)', source)
         self.assertIn('"rig_and_motion_verified_in_Unity": False', source)
         self.assertIn('"approved_for_gameplay": False', source)
+        self.assertIn('"underpaint_motion_eligible": False', source)
+        self.assertIn('"FAIL_AUTO_UNDERPAINT_EXPOSES_PIXELS"', source)
+        self.assertIn('"newly_visible_alpha_total": newly_visible_total', source)
 
     def test_preserves_21_slot_identity_and_occlusion_order(self):
         names = [
