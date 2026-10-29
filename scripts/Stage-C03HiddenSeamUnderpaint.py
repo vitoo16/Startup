@@ -336,7 +336,7 @@ def stage(output, root=ROOT):
         "FAIL_AUTO_UNDERPAINT_EXPOSES_PIXELS"
         if newly_visible_total > 0 or lost_visible_total > 0
         else "NOT_APPROVED_HIDDEN_ANATOMY_NOT_AUTHORED")
-    output.mkdir(parents)
+    output.mkdir(parents=True)
     (output / "layers" / "masks").mkdir(parents=True)
     hashes = {}
     for name in names:
