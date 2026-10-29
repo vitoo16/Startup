@@ -45,6 +45,10 @@ jobs:
           assert r['status']=='ARTIST_REVIEW_REQUIRED_NOT_ANIMATABLE_OR_APPROVED'
           assert r['semantic_layer_count']==21 and r['joint_topology_count']==16
           assert r['static_composite_exact_rgba'] is True
+          assert r['underpaint_motion_eligible'] is False
+          assert r['underpaint_motion_gate']=='FAIL_AUTO_UNDERPAINT_EXPOSES_PIXELS'
+          assert r['newly_visible_alpha_total']>0
+          assert r['lost_visible_alpha_total']==0
           assert r['pivot_source_gate_status']=='PASS_TEN_SOURCE_OVERLAP_PIVOTS_NOT_MOTION_APPROVAL'
           assert len(r['pivot_guide_sha256'])==64
           assert r['pose_names']==['bind_exact','left_arm_bend','right_arm_bend','walk_leg_A','walk_leg_B']
