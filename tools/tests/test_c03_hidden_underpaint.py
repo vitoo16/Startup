@@ -56,6 +56,34 @@ class HiddenSeamUnderpaintTests(unittest.TestCase):
         after, _ = module.underpaint_pair(a, b, 4)
         self.assertEqual(after.getpixel((9, 8))[3], 0)
 
+    def test_pixel_delta_reports_exact_changed_bbox_and_bind_identity(self):
+        before = Image.new("RGBA", (12, 10), (248, 242, 230, 255))
+        after = before.copy()
+        mask, count, bbox = module.pixel_delta(before, after)
+        self.assertEqual(0, count)
+        self.assertIsNone(bbox)
+        self.assertEqual(0, sum(mask.tobytes()))
+
+        after.putpixel((4, 3), (255, 0, 210, 255))
+        after.putpixel((6, 5), (255, 0, 210, 255))
+        mask, count, bbox = module.pixel_delta(before, after)
+        self.assertEqual(2, count)
+        self.assertEqual((4, 3, 7, 6), bbox)
+        self.assertEqual(255, mask.getpixel((4, 3)))
+        self.assertEqual(0, mask.getpixel((5, 4)))
+
+    def test_candidate_uses_calibrated_pivots_and_covers_both_walk_poses(self):
+        source = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('PIVOT_VERIFY = ROOT / "scripts/Verify-C03OverlapPivotGuide.py"', source)
+        self.assertIn('C03-selected-overlap-pivot-guide-QA.json', source)
+        self.assertIn('PASS_TEN_SOURCE_OVERLAP_PIVOTS_NOT_MOTION_APPROVAL', source)
+        self.assertIn('pose_names = ("bind_exact", "left_arm_bend", "right_arm_bend",', source)
+        self.assertIn('"walk_leg_A", "walk_leg_B")', source)
+        self.assertIn('"C03-underpaint-changed-pixel-hotspots-REVIEW.png"', source)
+        self.assertIn('"pivot_guide_sha256": sha256(refined_guide_path)', source)
+        self.assertIn('"rig_and_motion_verified_in_Unity": False', source)
+        self.assertIn('"approved_for_gameplay": False', source)
+
     def test_preserves_21_slot_identity_and_occlusion_order(self):
         names = [
             "hair_back", "accessory_back", "foot_l", "foot_r",
