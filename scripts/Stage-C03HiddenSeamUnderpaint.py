@@ -125,7 +125,7 @@ def underpaint_pair(source, occluder, radius):
 
 
 def review_sheet(before, after, names, joints, owner, stress):
-    pose_names = ("bind_exact", "left_arm_bend", "right_arm_bend", "walk_leg_A")
+    pose_names = ("bind_exact", "left_arm_bend", "right_arm_bend", "walk_leg_A", "walk_leg_B")
     tile_w, tile_h = 420, 450
     sheet = Image.new("RGB", (2 * tile_w + 36, len(pose_names) * (tile_h + 30) + 20),
                       (235, 231, 224))
@@ -147,27 +147,122 @@ def review_sheet(before, after, names, joints, owner, stress):
     return sheet
 
 
-def stage(output):
+def pixel_delta(before, after):
+    """Return a binary RGBA-difference mask, pixel count and exact source bbox."""
+    if before.mode != "RGBA" or after.mode != "RGBA" or before.size != after.size:
+        raise ValueError("C03 pose delta requires same-size RGBA frames")
+    channels = ImageChops.difference(before, after).split()
+    changed = channels[0]
+    for channel in channels[1:]:
+        changed = ImageChops.lighter(changed, channel)
+    mask = changed.point(lambda value: 255 if value else 0)
+    return mask, sum(value != 0 for value in mask.tobytes()), mask.getbbox()
+
+
+def pose_hotspot_sheet(pose_frames, masks, metrics):
+    """Highlight only candidate-vs-source changed pixels and magnify their region."""
+    tile_width, tile_height = 900, 242
+    sheet = Image.new("RGB", (tile_width, len(pose_frames) * tile_height + 18),
+                      (235, 231, 224))
+    draw = ImageDraw.Draw(sheet)
+    font = ImageFont.load_default(size=16)
+    small = ImageFont.load_default(size=13)
+
+    for row, pose in enumerate(pose_frames):
+        frame = pose_frames[pose]
+        mask = masks[pose]
+        box = metrics[pose]["changed_bbox_source_px"]
+        count = metrics[pose]["changed_rgba_pixels"]
+        y = 9 + row * tile_height
+        draw.text((12, y), f"{pose} — changed pixels: {count}; bbox: {box}",
+                  fill=(56, 54, 52), font=font)
+
+        background = Image.new("RGBA", frame.size, (248, 242, 230, 255))
+        composed = Image.alpha_composite(background, frame)
+        highlight = Image.new("RGBA", frame.size, (255, 0, 210, 0))
+        highlight.putalpha(mask)
+        highlighted = Image.alpha_composite(composed, highlight)
+
+        full = highlighted.copy()
+        full.thumbnail((190, 205), Image.Resampling.NEAREST)
+        sheet.paste(full.convert("RGB"), (12, y + 25))
+
+        zoom_x, zoom_y, zoom_w, zoom_h = 220, y + 26, 660, 202
+        if box is None:
+            draw.text((zoom_x + 10, zoom_y + 12),
+                      "No visible RGBA delta in this pose.",
+                      fill=(70, 70, 70), font=small)
+            continue
+
+        left, top, right, bottom = box
+        pad = 32
+        crop_box = (max(0, left - pad), max(0, top - pad),
+                    min(frame.width, right + pad), min(frame.height, bottom + pad))
+        crop = highlighted.crop(crop_box)
+        factor = max(1, int(min(12, zoom_w / crop.width, zoom_h / crop.height)))
+        if factor > 1:
+            crop = crop.resize((crop.width * factor, crop.height * factor),
+                               Image.Resampling.NEAREST)
+        if crop.width > zoom_w or crop.height > zoom_h:
+            crop.thumbnail((zoom_w, zoom_h), Image.Resampling.NEAREST)
+        panel = Image.new("RGB", (zoom_w, zoom_h), (248, 242, 230))
+        panel.paste(crop.convert("RGB"),
+                    ((zoom_w - crop.width) // 2, (zoom_h - crop.height) // 2))
+        sheet.paste(panel, (zoom_x, zoom_y))
+        draw.rectangle((zoom_x, zoom_y, zoom_x + zoom_w - 1, zoom_y + zoom_h - 1),
+                       outline=(171, 163, 150), width=1)
+
+    draw.text((12, sheet.height - 17),
+              "MAGENTA = changed pixels only; diagnostic evidence, not anatomy or art approval",
+              fill=(150, 45, 95), font=small)
+    return sheet
+
+
+def stage(output, root=ROOT):
     output = Path(output)
     if output.exists():
         raise FileExistsError("Refusing overwrite of C03 art correction evidence")
-    verifier = read_module(VERIFY, "c03_committed_hidden_gate")
-    source_gate = verifier.run()
+    root = Path(root)
+    draft = root / DRAFT.relative_to(ROOT)
+    study = root / STUDY.relative_to(ROOT)
+    refined_guide_path = draft / "C03-selected-overlap-pivot-guide-QA.json"
+
+    verifier = read_module(root / VERIFY.relative_to(ROOT), "c03_committed_hidden_gate")
+    source_gate = verifier.run(root)
     if source_gate["status"] != "PASS_REFINE_SOURCE_INTEGRITY_NOT_ART_APPROVAL":
         raise ValueError("C03 refined source Git LFS SHA gate not passed")
-    receipt = json.loads((DRAFT / "C03-refined-layer-ownership-receipt.json").read_text())
-    old_receipt = json.loads((STUDY / "C03-selected-cutout-receipt.json").read_text())
-    guide = json.loads((STUDY / "C03-selected-16-joint-guide-DRAFT.json").read_text())
+    pivot_verifier = read_module(
+        root / PIVOT_VERIFY.relative_to(ROOT), "c03_hidden_underpaint_pivot_gate")
+    pivot_gate = pivot_verifier.run(root)
+    if pivot_gate["status"] != "PASS_TEN_SOURCE_OVERLAP_PIVOTS_NOT_MOTION_APPROVAL":
+        raise ValueError("C03 exact source-overlap pivot gate not passed")
+
+    receipt = json.loads((draft / "C03-refined-layer-ownership-receipt.json").read_text())
+    old_receipt = json.loads((study / "C03-selected-cutout-receipt.json").read_text())
+    legacy_guide = json.loads(
+        (study / "C03-selected-16-joint-guide-DRAFT.json").read_text())
+    guide = json.loads(refined_guide_path.read_text(encoding="utf-8"))
     names = old_receipt["semantic_order"]
     if (len(names) != 21 or len(set(names)) != 21 or
-            receipt["canonical_selected_sha256"] != SHA):
-        raise ValueError("C03 selected owner and semantic topology drift")
+            receipt["canonical_selected_sha256"] != SHA or
+            guide.get("schema") != "startup-life.c03.owner-source-overlap-pivot-qa.v1" or
+            guide.get("status") != "OVERLAP_CENTER_ESTIMATE_QA_ONLY_NOT_NATIVE_OR_ANIMATABLE" or
+            guide.get("reference_sha256") != SHA or guide.get("rig_approval") is not False):
+        raise ValueError("C03 selected owner, refined source or calibrated guide drift")
+    old_joints = {j["id"]: j for j in legacy_guide["joints"]}
+    joints = {j["id"]: j for j in guide["joints"]}
+    if len(old_joints) != 16 or len(joints) != 16 or set(joints) != set(old_joints):
+        raise ValueError("C03 16-joint identity changed")
+    for joint_id, joint in joints.items():
+        old = old_joints[joint_id]
+        if joint["parent"] != old["parent"] or joint["parts"] != old["parts"]:
+            raise ValueError("C03 pivot QA must preserve hierarchy and sprite ownership")
     for behind, front, radius in PAIRS:
         if names.index(behind) >= names.index(front):
             raise ValueError("C03 hidden underpaint must remain under later sprite")
     before = {}
     for name in names:
-        with Image.open(DRAFT / "layers" / (name + ".png")) as im:
+        with Image.open(draft / "layers" / (name + ".png")) as im:
             before[name] = im.convert("RGBA")
             if before[name].size != SIZE:
                 raise ValueError("C03 refined sprite wrong source canvas")
@@ -193,34 +288,40 @@ def stage(output):
         raise AssertionError("Hidden seam study changed approved C03 standing appearance")
 
     owner = {}
-    joints = {j["id"]: j for j in guide["joints"]}
     for joint in guide["joints"]:
         for part in joint["parts"]:
             if part in owner:
                 raise ValueError("C03 rig guide duplicate owner")
             owner[part] = joint["id"]
-    if len(joints) != 16 or set(owner) != set(names):
+    if set(owner) != set(names):
         raise ValueError("C03 16/21 joint guide changed")
-    stress = read_module(POSES, "c03_underpaint_stress")
+    stress = read_module(root / POSES.relative_to(ROOT), "c03_underpaint_stress")
+    pose_names = ("bind_exact", "left_arm_bend", "right_arm_bend",
+                  "walk_leg_A", "walk_leg_B")
     pose_deltas = {}
-    # Report changes in the actual diagnostic silhouettes, not a vague
-    # assertion that filling hidden pixels makes movement aesthetically good.
-    for pose in ("bind_exact", "left_arm_bend", "right_arm_bend", "walk_leg_A"):
+    before_poses = {}
+    after_poses = {}
+    delta_masks = {}
+    # Evaluate underpaint against the current, source-verified overlap pivots.
+    # A stale pre-calibration guide would make the artifact misleading.
+    for pose in pose_names:
         angles = stress.POSES[pose]
         before_pose = stress.render(names, before, joints, owner, angles)
         after_pose = stress.render(names, after, joints, owner, angles)
-        channels = ImageChops.difference(before_pose, after_pose).split()
-        changed = channels[0]
-        for component in channels[1:]:
-            changed = ImageChops.lighter(changed, component)
+        before_poses[pose] = before_pose
+        after_poses[pose] = after_pose
+        mask, changed_count, bbox = pixel_delta(before_pose, after_pose)
+        delta_masks[pose] = mask
         exposed = ImageChops.subtract(after_pose.getchannel("A"),
                                       before_pose.getchannel("A"))
         lost = ImageChops.subtract(before_pose.getchannel("A"),
                                    after_pose.getchannel("A"))
         pose_deltas[pose] = {
-            "changed_rgba_pixels": sum(v != 0 for v in changed.tobytes()),
+            "diagnostic_angles_degrees": angles,
+            "changed_rgba_pixels": changed_count,
             "newly_visible_alpha_pixels": sum(v != 0 for v in exposed.tobytes()),
-            "lost_visible_alpha_pixels": sum(v != 0 for v in lost.tobytes())
+            "lost_visible_alpha_pixels": sum(v != 0 for v in lost.tobytes()),
+            "changed_bbox_source_px": list(bbox) if bbox else None
         }
     if pose_deltas["bind_exact"]["changed_rgba_pixels"] != 0:
         raise AssertionError("C03 selected static pose cannot change")
@@ -231,7 +332,7 @@ def stage(output):
         path = output / "layers" / (name + ".png")
         after[name].save(path)
         hashes["layers/" + name + ".png"] = sha256(path)
-    mask = DRAFT / "layers/masks/bag_body.png"
+    mask = draft / "layers/masks/bag_body.png"
     target = output / "layers/masks/bag_body.png"
     target.write_bytes(mask.read_bytes())
     hashes["layers/masks/bag_body.png"] = sha256(target)
@@ -240,14 +341,20 @@ def stage(output):
     candidate.save(output / "C03-hidden-underpaint-bind-composite.png")
     review_sheet(before, after, names, joints, owner, stress).save(
         output / "C03-underpaint-pose-before-after-REVIEW.png")
+    pose_hotspot_sheet(after_poses, delta_masks, pose_deltas).save(
+        output / "C03-underpaint-changed-pixel-hotspots-REVIEW.png")
     evidence = {
         "schema": "startup-life.c03.hidden-underpaint-candidate.v1",
         "status": "ARTIST_REVIEW_REQUIRED_NOT_ANIMATABLE_OR_APPROVED",
         "owner_selected_sha256": SHA,
         "refined_sha_receipt": "docs/evidence/production-art/drafts/c03-owner-selected-layer-refined/C03-refined-layer-ownership-receipt.json",
+        "pivot_guide": "docs/evidence/production-art/drafts/c03-owner-selected-layer-refined/C03-selected-overlap-pivot-guide-QA.json",
+        "pivot_guide_sha256": sha256(refined_guide_path),
+        "pivot_source_gate_status": pivot_gate["status"],
         "semantic_layer_count": 21,
         "joint_topology_count": 16,
         "mask_count": 1,
+        "pose_names": list(pose_names),
         "new_hidden_pixel_count": sum(z["hidden_pixels_extended"] for z in changes.values()),
         "underpaint_pairs": changes,
         "pose_deltas": pose_deltas,
@@ -260,13 +367,15 @@ def stage(output):
         "rig_and_motion_verified_in_Unity": False,
         "approved_for_gameplay": False,
         "file_sha256": hashes,
-        "caution": "Hidden colors are edge copies, not anatomy. Pose previews may introduce visible artifacts; independent artist review required."
+        "caution": "Hidden colors are edge copies, not anatomy. Magenta hotspots localize changed pixels only; independent artist review is required."
     }
     (output / "C03-hidden-underpaint-candidate.json").write_text(
         json.dumps(evidence, indent=2, ensure_ascii=False)+"\n", encoding="utf-8")
     print(json.dumps({"status": evidence["status"],
         "hidden_pixels": evidence["new_hidden_pixel_count"],
         "static_composite_exact": evidence["static_composite_exact_rgba"],
+        "pivot_guide_sha256": evidence["pivot_guide_sha256"],
+        "pose_delta_counts": {k: v["changed_rgba_pixels"] for k, v in pose_deltas.items()},
         "output": str(output)}, indent=2))
     return evidence
 
