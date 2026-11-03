@@ -62,6 +62,15 @@ namespace StartupLife.Editor
                 BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120);
             Verify(catalog.Businesses[FirstPlayableContentTemplate.HomeFoodPreorderId], BusinessType.HomeFoodPreorder,
                 BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120);
+            VerifyAffinityTags(catalog.Businesses[FirstPlayableContentTemplate.FreelanceId].BusinessAffinityTags,
+                new[] { "b2b-conversion", "customer-acquisition", "digital-product", "professional-services", "supplier-operations" },
+                "freelance-service");
+            VerifyAffinityTags(catalog.Businesses[FirstPlayableContentTemplate.CoffeeKioskId].BusinessAffinityTags,
+                new[] { "customer-experience", "food", "supplier-operations" }, "coffee-kiosk");
+            VerifyAffinityTags(catalog.Businesses[FirstPlayableContentTemplate.OnlineStoreId].BusinessAffinityTags,
+                new[] { "b2b-conversion", "customer-acquisition", "digital-product" }, "online-store");
+            VerifyAffinityTags(catalog.Businesses[FirstPlayableContentTemplate.HomeFoodPreorderId].BusinessAffinityTags,
+                new[] { "customer-acquisition", "food", "supplier-operations" }, "home-food-preorder");
 
             if (catalog.Careers.Count != 6)
                 throw new InvalidOperationException("Expected six initial professions from the GDD.");
@@ -94,16 +103,49 @@ namespace StartupLife.Editor
                 new[] { 20, 30, 20, 10, 10, 10 }, new long[] { 6500000, 9500000, 13000000 },
                 new long[] { 0, 1000, 3000 }, new[] { 0, 30, 90 },
                 new[] { "communication", "time-management", "networking" }, new[] { 0, 1, 2 });
+            VerifyAffinityTags(catalog.Careers["developer"].BusinessAffinityTags,
+                new[] { "digital-product", "professional-services" }, "developer");
+            VerifyAffinityTags(catalog.Careers["marketing"].BusinessAffinityTags,
+                new[] { "customer-acquisition", "professional-services" }, "marketing");
+            VerifyAffinityTags(catalog.Careers["sales"].BusinessAffinityTags,
+                new[] { "b2b-conversion", "professional-services" }, "sales");
+            VerifyAffinityTags(catalog.Careers["office-admin"].BusinessAffinityTags,
+                new[] { "professional-services", "supplier-operations" }, "office-admin");
+            VerifyAffinityTags(catalog.Careers["chef"].BusinessAffinityTags,
+                new[] { "food", "supplier-operations" }, "chef");
+            VerifyAffinityTags(catalog.Careers["barista"].BusinessAffinityTags,
+                new[] { "customer-experience", "food" }, "barista");
             if (catalog.Courses.Count != 6)
                 throw new InvalidOperationException("Expected six authored skill courses.");
+            VerifyCourse(catalog.Courses["communication-basics"], "communication", 1, 0, 360, 200000);
+            VerifyCourse(catalog.Courses["problem-course"], "problem-solving", 2, 0, 360, 200000);
+            VerifyCourse(catalog.Courses["negotiation-basics"], "negotiation", 1, 0, 420, 220000);
+            VerifyCourse(catalog.Courses["time-management-basics"], "time-management", 1, 0, 360, 180000);
+            VerifyCourse(catalog.Courses["networking-basics"], "networking", 1, 0, 480, 250000);
+            VerifyCourse(catalog.Courses["leadership-basics"], "leadership", 1, 0, 540, 300000);
             var trained = catalog.Courses.Values.Select(x => x.SkillId)
                 .ToHashSet(StringComparer.Ordinal);
             if (!catalog.Skills.Keys.All(trained.Contains))
                 throw new InvalidOperationException("Every transferable skill needs a study route.");
 
             Debug.Log("[M8-T02-Authoring] Loaded asset: Freelance 240/120; Kiosk 480/480; scheduled content verified.");
-            Debug.Log("[StartupLifeContent] Six careers and four business schedules validated.");
+            Debug.Log("[StartupLifeContent] Six careers, six skill courses, four business schedules and affinity tags validated.");
         }
+        private static void VerifyAffinityTags(IEnumerable<string> actual, string[] expected, string owner)
+        {
+            if (!actual.SequenceEqual(expected))
+                throw new InvalidOperationException("Business affinity tags differ from the authored contract: " + owner);
+        }
+
+        private static void VerifyCourse(CourseDefinition course, string skillId, int target,
+            int prerequisite, int minutes, long price)
+        {
+            if (course.SkillId != skillId || course.TargetLevel != target ||
+                course.PrerequisiteLevel != prerequisite || course.BaseMinutes != minutes ||
+                course.Price != price)
+                throw new InvalidOperationException("Study course differs from the authored contract: " + course.Id);
+        }
+
         private static void VerifyCareer(CareerDefinition career, int start, int end,
             int scenesPerShift, DayOfWeek[] workDays, int[] sceneWeights, long[] salaries,
             long[] requiredXp, int[] requiredServiceDays, string[] grantSkills, int[] grantLevels)
