@@ -46,6 +46,8 @@ class CareerContentBatchATests(unittest.TestCase):
         self.assertIn("VerifyCareer(", builder)
         self.assertIn("RequiredXp", builder)
         self.assertIn("RequiredServiceDays", builder)
+        self.assertIn("GrantSkillId", builder)
+        self.assertIn("GrantLevel", builder)
         self.assertIn("catalog.Businesses[FirstPlayableContentTemplate.OnlineStoreId]", builder)
         self.assertIn("catalog.Businesses[FirstPlayableContentTemplate.HomeFoodPreorderId]", builder)
 
