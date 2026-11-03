@@ -90,7 +90,9 @@ namespace StartupLife.Content
                     },
                     MarketingCareer(),
                     SalesCareer(),
-                    OfficeAdminCareer()
+                    OfficeAdminCareer(),
+                    ChefCareer(),
+                    BaristaCareer()
                 },
                 Courses = new[]
                 {
@@ -230,6 +232,68 @@ namespace StartupLife.Content
                 Rank("mid", 1000, 30, 10500000, "problem-solving", 1),
                 Rank("senior", 3000, 90, 14000000, "leadership", 2)
             }
+        };
+
+        // GDD production Batch B. Four deterministic beats per full shift,
+        // with the approved Chef distribution and distinct F&B service work.
+        private static CareerContentSource ChefCareer() => new CareerContentSource
+        {
+            Id = "chef",
+            Revision = "v1",
+            NameKey = "career.chef",
+            StartMinute = 600,
+            EndMinute = 1080,
+            ScenesPerShift = 4,
+            QuotaSlots = 20,
+            WorkDays = TuesdayToSunday(),
+            Scenes = new[]
+            {
+                ProfessionScene("chef-preparation", 25, "time-management", 1),
+                ProfessionScene("chef-cooking", 30, "problem-solving", 1),
+                ProfessionScene("chef-plating", 10, "time-management", 1),
+                ProfessionScene("chef-team-coordination", 10, "leadership", 1),
+                ProfessionScene("chef-supplier-discussion", 10, "negotiation", 1),
+                ProfessionScene("chef-rush-period", 15, "time-management", 2)
+            },
+            Ranks = new[]
+            {
+                Rank("junior", 0, 0, 8500000, "time-management", 0),
+                Rank("mid", 1000, 30, 12500000, "problem-solving", 1),
+                Rank("senior", 3000, 90, 17500000, "leadership", 2)
+            }
+        };
+
+        private static CareerContentSource BaristaCareer() => new CareerContentSource
+        {
+            Id = "barista",
+            Revision = "v1",
+            NameKey = "career.barista",
+            StartMinute = 480,
+            EndMinute = 960,
+            ScenesPerShift = 4,
+            QuotaSlots = 20,
+            WorkDays = TuesdayToSunday(),
+            Scenes = new[]
+            {
+                ProfessionScene("barista-opening-prep", 20, "time-management", 1),
+                ProfessionScene("barista-drink-preparation", 30, "time-management", 1),
+                ProfessionScene("barista-customer-orders", 20, "communication", 2),
+                ProfessionScene("barista-payment-handoff", 10, "communication", 1),
+                ProfessionScene("barista-restocking", 10, "problem-solving", 1),
+                ProfessionScene("barista-regulars", 10, "networking", 2)
+            },
+            Ranks = new[]
+            {
+                Rank("junior", 0, 0, 6500000, "communication", 0),
+                Rank("mid", 1000, 30, 9500000, "time-management", 1),
+                Rank("senior", 3000, 90, 13000000, "networking", 2)
+            }
+        };
+
+        private static DayOfWeek[] TuesdayToSunday() => new[]
+        {
+            DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday,
+            DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
         };
 
         private static DayOfWeek[] Weekdays() => new[]
