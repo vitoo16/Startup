@@ -52,9 +52,9 @@ class CareerContentBatchATests(unittest.TestCase):
         self.assertIn('"career.marketing" => "Chuyên viên Marketing"', ui)
         self.assertIn('"career.sales" => "Nhân viên kinh doanh"', ui)
         self.assertIn('"career.office-admin" => "Nhân viên hành chính"', ui)
-        table = read("Assets/StartupLife/Scripts/Editor/FirstPlayableShellBuilder.cs")
-        for key in ("career.marketing", "career.sales", "career.office-admin"):
-            self.assertIn(f'Add(table, "{key}"', table)
+        table = read("Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs")
+        for key in ("career.developer", "career.marketing", "career.sales", "career.office-admin"):
+            self.assertIn(f'new KeyValuePair<string,string>("{key}"', table)
         for key in (
             "scene.marketing-campaign-planning",
             "scene.marketing-content-review",
@@ -75,7 +75,8 @@ class CareerContentBatchATests(unittest.TestCase):
             "scene.office-record-keeping",
             "scene.office-team-briefing",
         ):
-            self.assertIn(f'Add(table, "{key}"', table)
+            self.assertIn(f'new KeyValuePair<string,string>("{key}"', table)
+        self.assertIn("public static bool TryFindValue(string key, out string value)", table)
 
     def test_engine_free_catalog_checks_and_unity_asset_gate_cover_batch_a(self):
         checks = read("tools/ContentCatalogChecks/Program.cs")
