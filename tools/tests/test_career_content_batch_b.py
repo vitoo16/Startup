@@ -111,6 +111,9 @@ class CareerContentBatchBTests(unittest.TestCase):
         shell = src("Assets/StartupLife/Scripts/Editor/FirstPlayableShellBuilder.cs")
         self.assertNotIn('Add(table, "course.communication"', shell)
         self.assertNotIn('Add(table, "course.problem"', shell)
+        self.assertIn('Add(table, "action.buy_course", "Mua khóa học")', shell)
+        self.assertIn('new KeyValuePair<string,string>("dashboard.skills.purchase", "Mua khóa học")',
+            catalog)
 
     def test_frozen_v2_fingerprint_still_filters_original_catalog_only(self):
         checks = src("tools/EconomicChecks/Program.cs")
