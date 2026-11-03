@@ -54,7 +54,15 @@ Add-Check 'Bootstrap builds approved save pipeline' (
 ) 'expected legacy v2 or complete replay-checked versioned v3 serializer'
 Add-Check 'Bootstrap uses atomic local store' ($bootstrap -match 'new\s+AtomicFileSaveStore') 'expected AtomicFileSaveStore'
 Add-Check 'Bootstrap restores before creating a new run' ($bootstrap -match 'GameSession\.TryRestore') 'expected TryRestore'
-Add-Check 'Bootstrap does not hardcode first playable catalog' (-not ($bootstrap -match 'FirstPlayableContentTemplate|new\s+ContentCatalog')) 'Presentation must consume Content asset'
+Add-Check 'Bootstrap keeps archived V2 seed and opt-in-only verified business catalog' (
+    ($bootstrap -match 'initialV2Content\s*=\s*contentAsset\.BuildCatalog\(\)') -and
+    ($bootstrap -match 'content\s*=\s*initialV2Content') -and
+    ($bootstrap -match 'FirstPlayableContentTemplate\.BuildBusinessBatchACatalog\(\)') -and
+    ($bootstrap -match 'enableBusinessBatchAForNewRuns\s*=\s*false') -and
+    ($bootstrap -match 'VerifiedBusinessContentSelector\.Select\(primary,\s*backup') -and
+    ($bootstrap -match 'GameSession\.NewState\(initialV2Content') -and
+    (-not ($bootstrap -match 'new\s+ContentCatalog'))
+) 'V2 seed from authoring asset, preview separately versioned and selected only after verified save'
 Add-Check 'M15 first playable event gateway is activated consistently' (
     ($bootstrap -match '\[SerializeField\]\s+private\s+bool\s+enableVerifiedEventV4\s*=\s*true\s*;') -and
     ($firstPlayableScene -match '(?m)^\s*enableVerifiedEventV4:\s*1\s*$') -and
