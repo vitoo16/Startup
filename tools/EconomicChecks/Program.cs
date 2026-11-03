@@ -233,6 +233,19 @@ internal static class Program
                 var saved = File.ReadAllBytes(filename);
                 Assert(serializer.DeserializeAndValidate(saved).Status == LoadStatus.Valid,
                     "cold V3 source replay must validate new business launch");
+                var oldReplay = new VersionedReceiptReplay(
+                    M9T02FunctionalEconomy.Create(), legacy);
+                var oldSerializer = new V3SaveCompatibilitySerializer(legacy,
+                    GameSession.CreateRestoreValidator(),
+                    new V2ToV3Migration(historical, oldReplay),
+                    new StagedV3SaveSerializer(historical, oldReplay));
+                Assert(VerifiedBusinessContentSelector.Select(saved, null,
+                    oldSerializer, serializer, false) ==
+                        BusinessContentTrack.BusinessBatchA &&
+                    VerifiedBusinessContentSelector.Select(new byte[] { 1, 2, 3 },
+                        saved, oldSerializer, serializer, false) ==
+                        BusinessContentTrack.BusinessBatchA,
+                    "verified business selector restores preview primary/backup without user toggle");
                 Assert(GameSession.TryRestore(expanded, serializer, store,
                     out var cold, out var outcome,
                     economicRules: economic, archivedRules: historical),
@@ -305,6 +318,21 @@ internal static class Program
                     launched.CoreCommand?.Status == CommandStatus.Committed,
                     "P04 agency launch flows through V4 journal-verified V3 core");
                 var saved = File.ReadAllBytes(filename);
+                var baselineReplay = new VersionedReceiptReplay(
+                    M9T02FunctionalEconomy.Create(), legacy);
+                var baselineV3 = new V3SaveCompatibilitySerializer(legacy,
+                    GameSession.CreateRestoreValidator(),
+                    new V2ToV3Migration(historical, baselineReplay),
+                    new StagedV3SaveSerializer(historical, baselineReplay));
+                var baselineV4 = new EventV4CompatibilitySerializer(
+                    new StagedEventV4SaveSerializer(baselineV3,
+                        ReleasedFirstPlayableEventCatalog.CreateArchive(
+                            FirstPlayableEventContent.Definitions,
+                            FirstPlayableEventContent.Policies)));
+                Assert(VerifiedBusinessContentSelector.Select(saved, null,
+                    baselineV4, serializer, false) ==
+                    BusinessContentTrack.BusinessBatchA,
+                    "V4 preview must select its independently replay-verified source, not an inspector guess");
                 var read = Cold().Read();
                 Assert(read.Status == LoadStatus.Valid && read.State!.SaveVersion == 4 &&
                     read.State.Receipts.Count == 2 &&
@@ -375,6 +403,25 @@ internal static class Program
                 var sourceBytes = File.ReadAllBytes(path);
                 Assert(oldSerializer.DeserializeAndValidate(sourceBytes).Status == LoadStatus.Valid,
                     "baseline V3 serializer must still accept own old receipt chain");
+                Assert(VerifiedBusinessContentSelector.Select(sourceBytes, null,
+                    oldSerializer, newSerializer, true) ==
+                        BusinessContentTrack.BaselineV1 &&
+                    VerifiedBusinessContentSelector.Select(null, null,
+                        oldSerializer, newSerializer, false) ==
+                        BusinessContentTrack.BaselineV1 &&
+                    VerifiedBusinessContentSelector.Select(null, null,
+                        oldSerializer, newSerializer, true) ==
+                        BusinessContentTrack.BusinessBatchA,
+                    "legacy saves remain baseline regardless opt-in and only genuinely new runs opt in");
+                var refused = false;
+                try
+                {
+                    _ = VerifiedBusinessContentSelector.Select(new byte[] { 99 },
+                        new byte[] { 88 }, oldSerializer, newSerializer, true);
+                }
+                catch (InvalidOperationException) { refused = true; }
+                Assert(refused && File.ReadAllBytes(path).SequenceEqual(sourceBytes),
+                    "invalid primary and backup must fail closed without rewriting old save");
                 var incompatible = newSerializer.DeserializeAndValidate(sourceBytes);
                 Assert(incompatible.Status == LoadStatus.UnsupportedContent &&
                     incompatible.Reason == "save.ruleset_revision" &&
