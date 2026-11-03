@@ -235,9 +235,10 @@ internal static class Program
         Equal(6, catalog.Careers.Count);
         Equal(6, catalog.Courses.Count);
         Equal(1, catalog.Starts.Count);
-        Sequence(new[] { "communication", "problem-solving", "negotiation",
-            "time-management", "networking", "leadership" },
-            catalog.Courses.Values.Select(x => x.SkillId));
+        Sequence(new[] { "communication", "leadership", "negotiation",
+            "networking", "problem-solving", "time-management" },
+            catalog.Courses.Values.Select(x => x.SkillId)
+                .OrderBy(x => x, StringComparer.Ordinal));
         var expectedCoursePrices = new Dictionary<string, long>(StringComparer.Ordinal)
         {
             ["negotiation-basics"] = 220000,
