@@ -25,9 +25,12 @@ namespace StartupLife.Application
         public long? MonthlySalaryAtRecordedRankVnd { get; }
         public int UnpaidClaimCount { get; }
         public RationalAmount OutstandingSalary { get; }
+        // Calendar tenure mirrors the same elapsed-day basis used by
+        // SimulationEngine.PromotionLimit. Null for incomplete legacy metadata.
+        public int? ElapsedCalendarDays { get; }
 
         internal CareerTenureSnapshot(EmploymentState employment, ContentCatalog content,
-            IReadOnlyDictionary<string, SalaryClaim[]> claims)
+            IReadOnlyDictionary<string, SalaryClaim[]> claims, string currentDateIso)
         {
             EmploymentId = employment.InstanceId;
             EmployerId = employment.EmployerId;
@@ -38,6 +41,16 @@ namespace StartupLife.Application
             EndedIso = employment.EndedIso.Length == 0 ? null : employment.EndedIso;
             CareerXp = employment.Xp;
             RankIndex = employment.Rank;
+
+            var untilIso = EndedIso ?? currentDateIso;
+            if (DateTime.TryParseExact(StartedIso, "yyyy-MM-dd",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out var start) &&
+                DateTime.TryParseExact(untilIso, "yyyy-MM-dd",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out var until) &&
+                until >= start)
+                ElapsedCalendarDays = (until - start).Days;
 
             // Never project a new revision's salary onto a historical job.
             if (content.Careers.TryGetValue(CareerId, out var definition) &&
@@ -83,6 +96,9 @@ namespace StartupLife.Application
         public CareerTenureSnapshot? CurrentEmployment { get; }
         public IReadOnlyList<CareerTenureSnapshot> PreviousEmployments { get; }
         public RationalAmount OutstandingSalary { get; }
+        public int EmploymentPeriodCount { get; }
+        public int DistinctProfessionCount { get; }
+        public int ProfessionChangeCount { get; }
 
         internal CareerBiographySnapshot(bool hasCharacter, CareerTenureSnapshot? current,
             CareerTenureSnapshot[] past, int activeBusinesses, RationalAmount outstanding)
@@ -94,6 +110,14 @@ namespace StartupLife.Application
             PreviousEmployments = Array.AsReadOnly(past);
             ActiveBusinessCount = activeBusinesses;
             OutstandingSalary = outstanding;
+            EmploymentPeriodCount = past.Length + (current == null ? 0 : 1);
+            var careerIds = past.Select(x => x.CareerId)
+                .Concat(current == null ? Array.Empty<string>() : new[] { current.CareerId })
+                .ToArray();
+            DistinctProfessionCount = careerIds.Distinct(StringComparer.Ordinal).Count();
+            for (var i = 1; i < careerIds.Length; i++)
+                if (!string.Equals(careerIds[i - 1], careerIds[i], StringComparison.Ordinal))
+                    ProfessionChangeCount++;
             Stage = !hasCharacter ? CareerJourneyStage.CharacterCreation :
                 current != null ? (activeBusinesses == 0
                     ? CareerJourneyStage.Employed : CareerJourneyStage.SideBusinessOwner) :
@@ -114,9 +138,9 @@ namespace StartupLife.Application
             var claims = state.Claims.GroupBy(x => x.EmploymentId, StringComparer.Ordinal)
                 .ToDictionary(x => x.Key, x => x.ToArray(), StringComparer.Ordinal);
             var current = state.Employment == null ? null :
-                new CareerTenureSnapshot(state.Employment, content, claims);
+                new CareerTenureSnapshot(state.Employment, content, claims, state.DateIso);
             var past = state.PreviousEmployment.Select(x =>
-                new CareerTenureSnapshot(x, content, claims)).ToArray();
+                new CareerTenureSnapshot(x, content, claims, state.DateIso)).ToArray();
             var total = RationalAmount.Zero;
             foreach (var claim in state.Claims)
                 total += SimulationEngine.ClaimAmount(claim);
