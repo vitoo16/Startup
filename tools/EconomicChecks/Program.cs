@@ -3923,6 +3923,20 @@ internal static class Program
                     freshReadiness.LaunchOptions.Count == 4 &&
                     freshReadiness.LaunchOptions.All(x => x.CanRequestLaunch),
                     "authoritative same-revision v3 launch projection exposes four openable businesses");
+                var expectedLaunchIds = content.Businesses.Values.OrderBy(x => x.Id,
+                    StringComparer.Ordinal).Select(x => x.Id).ToArray();
+                Assert(freshReadiness.LaunchOptions.Select(x => x.DefinitionId)
+                    .SequenceEqual(expectedLaunchIds),
+                    "launch option ordering comes from the content catalog");
+                foreach (var option in freshReadiness.LaunchOptions)
+                {
+                    var authored = content.Businesses[option.DefinitionId];
+                    Assert(option.Revision == authored.Revision &&
+                        option.NameKey == authored.NameKey &&
+                        option.OperationMode == authored.OperationMode &&
+                        option.MinimumInvestmentVnd == authored.MinimumStartupInvestment,
+                        "each launch offer projects immutable authored mode, title, revision and minimum investment");
+                }
                 var readOnlyBytes = File.ReadAllBytes(temp);
                 _ = session.ReadBusinessOperations();
                 Assert(File.ReadAllBytes(temp).SequenceEqual(readOnlyBytes),
