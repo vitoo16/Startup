@@ -473,7 +473,9 @@ internal static class Program
             CareerBusinessAffinityPolicy.ForCareer("sales", catalog));
         Sequence(new[] { "coffee-kiosk", "freelance-service", "home-food-preorder" },
             CareerBusinessAffinityPolicy.ForCareer("office-admin", catalog));
-        Sequence(new[] { "coffee-kiosk", "home-food-preorder" },
+        // Supplier-operations is shared with Freelance Service; affinity
+        // is an advisory tag intersection, not a culinary-only unlock.
+        Sequence(new[] { "coffee-kiosk", "freelance-service", "home-food-preorder" },
             CareerBusinessAffinityPolicy.ForCareer("chef", catalog));
         Sequence(new[] { "coffee-kiosk", "home-food-preorder" },
             CareerBusinessAffinityPolicy.ForCareer("barista", catalog));
