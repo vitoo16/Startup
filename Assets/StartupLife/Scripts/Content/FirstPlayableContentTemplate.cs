@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Linq;
 using StartupLife.Core;
 
 namespace StartupLife.Content
@@ -20,6 +21,9 @@ namespace StartupLife.Content
         public const string CoffeeKioskId = "coffee-kiosk";
         public const string OnlineStoreId = "online-store";
         public const string HomeFoodPreorderId = "home-food-preorder";
+        public const string MarketingAgencyId = "marketing-agency";
+        public const string SmallCafeId = "small-cafe";
+        public const string FashionStoreId = "fashion-store";
 
         public static ContentCatalogSource Create()
         {
@@ -159,6 +163,65 @@ namespace StartupLife.Content
         }
 
         public static ContentCatalog BuildCatalog() => Create().Build();
+
+        // P04-BIZ-02 preview is version-isolated. Do not silently change the
+        // active first-playable.v1 catalog or reinterpret persisted V3 receipts.
+        // Activating the new catalog in Unity requires versioned replay/restore
+        // evidence and a separately regenerated ScriptableObject.
+        public static ContentCatalogSource CreateBusinessBatchA()
+        {
+            var source = Create();
+            source.Version = "first-playable.biz-a.v1";
+            source.Businesses = source.Businesses.Concat(new[]
+            {
+                ProductionBusiness(MarketingAgencyId, BusinessType.MarketingAgency,
+                    BusinessOperationMode.SideHustleCompatible, 1200000, 20000000,
+                    100000, 5000000, 1080, 1320, 180,
+                    new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                        DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday },
+                    "customer-acquisition", "professional-services", "b2b-conversion"),
+                ProductionBusiness(SmallCafeId, BusinessType.SmallCafe,
+                    BusinessOperationMode.FullTimeRequired, 6000000, 80000000,
+                    250000, 10000000, 540, 1080, 480,
+                    TuesdayToSunday(), "food", "customer-experience", "supplier-operations"),
+                ProductionBusiness(FashionStoreId, BusinessType.FashionStore,
+                    BusinessOperationMode.FullTimeRequired, 4000000, 60000000,
+                    150000, 8000000, 600, 1140, 420,
+                    MondayToSaturday(), "customer-acquisition", "customer-experience",
+                    "supplier-operations")
+            }).ToArray();
+            return source;
+        }
+
+        public static ContentCatalog BuildBusinessBatchACatalog() =>
+            CreateBusinessBatchA().Build();
+
+        private static BusinessContentSource ProductionBusiness(
+            string id, BusinessType type, BusinessOperationMode mode,
+            long minCapital, long maxCapital, long minReinvestment,
+            long maxReinvestment, int openMinute, int closeMinute, int ownerMinutes,
+            DayOfWeek[] workDays, params string[] affinityTags) => new BusinessContentSource
+        {
+            Id = id,
+            Revision = "v1",
+            NameKey = "business." + id,
+            Type = type,
+            OperationMode = mode,
+            MinimumStartupInvestment = minCapital,
+            MaximumStartupInvestment = maxCapital,
+            AllowedPricingPostures = new[] {
+                PricingPosture.Budget, PricingPosture.Standard, PricingPosture.Premium
+            },
+            DefaultPricingPosture = PricingPosture.Standard,
+            MinimumReinvestment = minReinvestment,
+            MaximumReinvestment = maxReinvestment,
+            OperatingWindows = workDays.Select(day => new BusinessOperatingWindowContentSource
+            {
+                DayOfWeek = day, StartMinute = openMinute, EndMinute = closeMinute
+            }).ToArray(),
+            RequiredOwnerMinutes = ownerMinutes,
+            BusinessAffinityTags = affinityTags
+        };
 
         // Career batches A and B follow the original GDD's six-profession MVP catalog. New
         // definitions are additive: the shipped Developer definition above
