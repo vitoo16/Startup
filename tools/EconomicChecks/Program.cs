@@ -226,10 +226,11 @@ internal static class Program
                 Assert(launched.Status == CommandStatus.Committed,
                     "P04 agency launch must be committed with authored capital and rules: " + launched.ReasonKey);
                 var started = session.Snapshot();
-                Assert(started.Cash == 1800000 &&
+                Assert(started.Cash == 1740000 &&
                     session.ReadBusinesses().Businesses.Single().DefinitionId ==
                         FirstPlayableContentTemplate.MarketingAgencyId,
-                    "exact launch investment deducted once, no phantom credit");
+                    "launch charges 1.2m capital plus 60k mandatory opening fee once; cash=" +
+                    started.Cash);
                 var saved = File.ReadAllBytes(filename);
                 Assert(serializer.DeserializeAndValidate(saved).Status == LoadStatus.Valid,
                     "cold V3 source replay must validate new business launch");
@@ -309,7 +310,10 @@ internal static class Program
                         "fresh", 24, "P04 V4 Founder", "base.female")));
                 Assert(created.Status == EventCommitStatus.Committed &&
                     created.CoreCommand?.Status == CommandStatus.Committed,
-                    "P04 preview V4 creates its character through real V3 core CAS");
+                    "P04 preview V4 creates its character through real V3 core CAS: status=" +
+                    created.Status + "; reason=" + created.ReasonKey +
+                    "; inner=" + created.CoreCommand?.Status + "/" +
+                    created.CoreCommand?.ReasonKey);
                 var business = BusinessCommands.Launch(
                     FirstPlayableContentTemplate.MarketingAgencyId, "v1", 1200000);
                 var launched = Cold().ExecuteCore(new CommandEnvelope(
@@ -426,7 +430,8 @@ internal static class Program
                 Assert(incompatible.Status == LoadStatus.UnsupportedContent &&
                     incompatible.Reason == "save.ruleset_revision" &&
                     File.ReadAllBytes(path).SequenceEqual(sourceBytes),
-                    "incompatible V3 economy must return explicit unsupported content without rewriting source");
+                    "incompatible V3 economy must return explicit unsupported content without rewriting source: " +
+                    incompatible.Status + "/" + incompatible.Reason);
             }
             finally
             {
