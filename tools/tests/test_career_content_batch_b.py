@@ -3,6 +3,7 @@
 This source-level suite supplements the real .NET catalog/presentation checks,
 not a substitute for Unity Editor, PlayMode or economic replay approval.
 """
+import re
 import unittest
 from pathlib import Path
 
@@ -84,6 +85,10 @@ class CareerContentBatchBTests(unittest.TestCase):
 
     def test_localized_career_scenes_and_courses(self):
         catalog = src("Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs")
+        declared = re.findall(r'new KeyValuePair<string,string>\("([^"]+)"', catalog)
+        self.assertTrue(declared)
+        self.assertEqual(len(declared), len(set(declared)),
+                         "Duplicate Vietnamese dashboard localization keys")
         keys = [
             "career.chef", "career.barista",
             "scene.chef-preparation", "scene.chef-cooking", "scene.chef-plating",
