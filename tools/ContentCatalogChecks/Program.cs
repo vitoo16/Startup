@@ -286,6 +286,11 @@ internal static class Program
         Equal(4, office.ScenesPerShift);
         Sequence(new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
             DayOfWeek.Thursday, DayOfWeek.Friday }, office.WorkDays);
+        // The salary engine prorates over each profession's authored scheduled
+        // workdays, so six-day Sales must not use the five-day office divisor.
+        Equal(22, SimulationEngine.ScheduledDays(marketing, new SimDate(2026, 9, 1)));
+        Equal(26, SimulationEngine.ScheduledDays(sales, new SimDate(2026, 9, 1)));
+        Equal(22, SimulationEngine.ScheduledDays(office, new SimDate(2026, 9, 1)));
         Sequence(new[] { 25, 20, 20, 15, 10, 10 }, office.Scenes.Select(x => x.Weight));
         Sequence(new long[] { 7000000, 10500000, 14000000 },
             office.Ranks.Select(x => x.MonthlySalary));
