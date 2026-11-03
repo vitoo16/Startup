@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="../SimulationChecks/StartupLife.Core.csproj" />
     <ProjectReference Include="../SimulationChecks/StartupLife.Simulation.csproj" />
+    <ProjectReference Include="../SimulationChecks/StartupLife.Application.csproj" />
     <Compile Include="../../Assets/StartupLife/Scripts/Content/ContentCatalogSource.cs" Link="ContentCatalogSource.cs" />
     <Compile Include="../../Assets/StartupLife/Scripts/Content/FirstPlayableContentTemplate.cs" Link="FirstPlayableContentTemplate.cs" />
     <Compile Include="Program.cs" />
