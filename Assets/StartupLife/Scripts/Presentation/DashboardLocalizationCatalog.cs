@@ -100,7 +100,7 @@ namespace StartupLife.Presentation
             new KeyValuePair<string,string>("dashboard.career.history", "Lịch sử nghề nghiệp"),
             new KeyValuePair<string,string>("dashboard.skills.progress", "Tiến độ kỹ năng"),
             new KeyValuePair<string,string>("dashboard.skills.courses", "Các khóa học"),
-            new KeyValuePair<string,string>("dashboard.skills.purchase", "Mua khóa Giao tiếp"),
+            new KeyValuePair<string,string>("dashboard.skills.purchase", "Mua khóa học"),
             new KeyValuePair<string,string>("dashboard.skills.study", "Học 60 phút"),
             new KeyValuePair<string,string>("dashboard.finance.heading", "Thu chi của bạn"),
             new KeyValuePair<string,string>("dashboard.finance.arrears", "Các khoản nợ"),
