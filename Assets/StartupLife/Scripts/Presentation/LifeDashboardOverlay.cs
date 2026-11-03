@@ -53,6 +53,12 @@ namespace StartupLife.Presentation
         private Button resign = null!;
         private TMP_Text skills = null!;
         private TMP_Text courses = null!;
+        private Transform courseChoices = null!;
+        private TMP_Text selectedCourseStatus = null!;
+        private TMP_Text purchaseLabel = null!;
+        private string? selectedCourseId;
+        private readonly Dictionary<string, Button> courseButtons = new Dictionary<string, Button>(StringComparer.Ordinal);
+        private readonly Dictionary<string, TMP_Text> courseButtonLabels = new Dictionary<string, TMP_Text>(StringComparer.Ordinal);
         private Button purchase = null!;
         private Button study = null!;
         private TMP_Text finance = null!;
@@ -165,8 +171,24 @@ namespace StartupLife.Presentation
                     ? " · đang học " + (x.ProgressUnits!.Value * 100 / x.TargetUnits.Value)
                         .ToString(CultureInfo.InvariantCulture) + "%"
                     : "")));
-            purchase.interactable = model.Game.ActiveCourse == null &&
-                model.Finance.OutstandingArrearsVnd == 0;
+            // Catalog-driven selection, with affordability/prerequisite hints.
+            // Presentation only: SimulationEngine still rejects stale purchases.
+            selectedCourseId = CourseEnrollmentPolicy.ChooseCourseId(model, selectedCourseId);
+            SyncCourseOptions(model.Courses);
+            var selectedCourse = model.Courses.FirstOrDefault(x =>
+                string.Equals(x.CourseId, selectedCourseId, StringComparison.Ordinal));
+            var availability = selectedCourse == null
+                ? CoursePurchaseAvailability.MissingSkillDefinition
+                : CourseEnrollmentPolicy.Evaluate(model, selectedCourse);
+            purchase.interactable = selectedCourse != null &&
+                availability == CoursePurchaseAvailability.Available;
+            purchaseLabel.text = selectedCourse == null
+                ? "Không có khóa học"
+                : "Đăng ký: " + DisplayCourse(selectedCourse.NameKey);
+            selectedCourseStatus.text = selectedCourse == null
+                ? "Chưa có khóa học trong nội dung hiện tại."
+                : "Đang chọn: " + DisplayCourse(selectedCourse.NameKey) +
+                  "\n" + PurchaseHint(availability, selectedCourse.PrerequisiteLevel);
             study.interactable = model.Game.ActiveCourse != null;
 
             finance.text = "Tiền mặt: " + Money(model.Finance.CashVnd) +
@@ -198,6 +220,66 @@ namespace StartupLife.Presentation
                 Math.Round(textScale * 100f).ToString(CultureInfo.InvariantCulture) + "%";
             RefreshMotionPreference();
         }
+
+        private void SyncCourseOptions(IReadOnlyList<CourseDashboardItem> catalog)
+        {
+            // New games and content revisions can replace the catalog. Reuse
+            // existing buttons when IDs match; do not instantiate each refresh.
+            var valid = new HashSet<string>(catalog.Select(x => x.CourseId), StringComparer.Ordinal);
+            foreach (var oldId in courseButtons.Keys.Where(id => !valid.Contains(id)).ToArray())
+            {
+                var oldButton = courseButtons[oldId];
+                originalFontSizes.Remove(courseButtonLabels[oldId]);
+                courseButtonLabels.Remove(oldId);
+                courseButtons.Remove(oldId);
+                Destroy(oldButton.gameObject);
+            }
+
+            foreach (var item in catalog)
+            {
+                if (!courseButtons.TryGetValue(item.CourseId, out var button))
+                {
+                    var courseId = item.CourseId;
+                    button = ButtonNode("LifeCourseChoice_" + courseId,
+                        DisplayCourse(item.NameKey), courseChoices,
+                        () => SelectCourse(courseId)).GetComponent<Button>();
+                    courseButtons.Add(courseId, button);
+                    courseButtonLabels.Add(courseId, button.GetComponentInChildren<TMP_Text>(true));
+                }
+                var isSelected = string.Equals(item.CourseId, selectedCourseId, StringComparison.Ordinal);
+                button.GetComponent<Image>().color = isSelected ? Accent : Surface;
+                var label = courseButtonLabels[item.CourseId];
+                label.color = isSelected ? Color.white : Ink;
+                label.text = (isSelected ? "✓ " : "Chọn · ") + DisplayCourse(item.NameKey);
+            }
+        }
+
+        private void SelectCourse(string courseId)
+        {
+            selectedCourseId = courseId;
+            Refresh();
+        }
+
+        private void PurchaseSelectedCourse()
+        {
+            if (selectedCourseId == null) return;
+            // The command handler validates the catalog again and the engine
+            // alone decides whether funds/levels/time still permit purchase.
+            host.PurchaseCourse(selectedCourseId);
+        }
+
+        private static string PurchaseHint(CoursePurchaseAvailability availability,
+            int prerequisiteLevel) => availability switch
+        {
+            CoursePurchaseAvailability.Available => "Có thể đăng ký.",
+            CoursePurchaseAvailability.AnotherCourseActive => "Hãy hoàn thành khóa đang học trước.",
+            CoursePurchaseAvailability.PrerequisiteNotMet =>
+                "Cần kỹ năng cấp " + prerequisiteLevel.ToString(CultureInfo.InvariantCulture) + " trước.",
+            CoursePurchaseAvailability.TargetLevelReached => "Bạn đã đạt cấp kỹ năng mục tiêu.",
+            CoursePurchaseAvailability.OutstandingArrears => "Cần thanh toán khoản nợ trước.",
+            CoursePurchaseAvailability.InsufficientCash => "Chưa đủ tiền đăng ký.",
+            _ => "Khóa học chưa sẵn sàng."
+        };
 
         private static string GuidePreference(string runId) =>
             TutorialPreferencePrefix +
@@ -412,8 +494,17 @@ namespace StartupLife.Presentation
             skills = TextNode("LifeSkillsValue", skillPage, "", 30, Ink);
             Subheading(skillPage, "Các khóa học");
             courses = TextNode("LifeCoursesValue", skillPage, "", 29, Ink);
-            purchase = ButtonNode("LifeBuyCourseButton", "Mua khóa Giao tiếp",
-                skillPage, host.PurchaseCommunicationCourse).GetComponent<Button>();
+            courseChoices = Node("LifeCourseChoiceList", skillPage,
+                typeof(VerticalLayoutGroup)).transform;
+            var choicesLayout = courseChoices.GetComponent<VerticalLayoutGroup>();
+            choicesLayout.spacing = 10;
+            choicesLayout.childControlWidth = choicesLayout.childControlHeight = true;
+            choicesLayout.childForceExpandWidth = true;
+            choicesLayout.childForceExpandHeight = false;
+            selectedCourseStatus = TextNode("LifeSelectedCourseStatus", skillPage, "", 29, Ink);
+            purchase = ButtonNode("LifeBuyCourseButton", "Đăng ký khóa học",
+                skillPage, PurchaseSelectedCourse).GetComponent<Button>();
+            purchaseLabel = purchase.GetComponentInChildren<TMP_Text>(true);
             study = ButtonNode("LifeStudyButton", "Học 60 phút",
                 skillPage, host.Study60Minutes).GetComponent<Button>();
 
