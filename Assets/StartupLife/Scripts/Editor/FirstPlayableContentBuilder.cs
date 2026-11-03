@@ -68,6 +68,7 @@ namespace StartupLife.Editor
                 new[] { 20, 20, 15, 20, 15, 10 }, new long[] { 8000000, 12000000, 16000000 });
             VerifyCareer(catalog.Careers["office-admin"], 510, 1050, 4, weekdays,
                 new[] { 25, 20, 20, 15, 10, 10 }, new long[] { 7000000, 10500000, 14000000 });
+            Debug.Log("[M8-T02-Authoring] Loaded asset: Freelance 240/120; Kiosk 480/480; scheduled content verified.");
             Debug.Log("[StartupLifeContent] Four careers and four business schedules validated.");
         }
         private static void VerifyCareer(CareerDefinition career, int start, int end,
