@@ -826,6 +826,65 @@ internal static class Program
             var conflict = f.Session.Execute(new CommandEnvelope(state.RunId, receipt.CommandId, state.Revision, new GameCommand(CommandKind.Resign)));
             Equal("command.id_conflict", conflict.ReasonKey); Bytes(before, f.Session.ExportCheckpoint());
         });
+        Check("career chooser reads available jobs, salary and schedule without mutating state", () =>
+        {
+            var source = Catalog();
+            var developer = source.Careers["developer"];
+            var office = new CareerDefinition("office", "v1", "career.office",
+                600, 1020, 2, 20,
+                new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                    DayOfWeek.Thursday, DayOfWeek.Friday },
+                developer.Scenes,
+                new[] { new CareerRankDefinition("starter", 0, 0, 7000000, "communication", 0) });
+            var catalog = new ContentCatalog("fixture.career-chooser.v1",
+                source.Skills.Values, source.Careers.Values.Concat(new[] { office }),
+                source.Courses.Values, source.Starts.Values, source.Businesses.Values,
+                source.Economy, source.Schedule);
+            var f = new Fixture(catalog);
+            var noCharacter = LifeDashboardProjection.FromCommittedState(f.State(), catalog);
+            Equal(2, noCharacter.Careers.Count);
+            Equal("developer", CareerSelectionPolicy.ChooseCareerId(noCharacter, null));
+            Equal("office", CareerSelectionPolicy.ChooseCareerId(noCharacter, "office"));
+            Equal("developer", CareerSelectionPolicy.ChooseCareerId(noCharacter, "non-existent"));
+            var officeOffer = noCharacter.Careers.Single(x => x.CareerId == "office");
+            Equal("career.office", officeOffer.NameKey);
+            Equal(7000000L, officeOffer.StartingMonthlySalaryVnd);
+            Equal(600, officeOffer.StartMinute);
+            Equal(1020, officeOffer.EndMinute);
+            Equal(5, officeOffer.WorkDays.Count);
+            Equal(CareerAcceptanceAvailability.CharacterRequired,
+                CareerSelectionPolicy.Evaluate(noCharacter, officeOffer));
+
+            f.Create();
+            var fresh = LifeDashboardProjection.FromCommittedState(f.State(), catalog);
+            Equal(CareerAcceptanceAvailability.Available,
+                CareerSelectionPolicy.Evaluate(fresh, fresh.Careers.Single(x => x.CareerId == "office")));
+            var cashBefore = f.Session.Snapshot().Cash;
+            var hired = f.SendOk(new GameCommand(CommandKind.AcceptJob, "office"));
+            Equal(CommandStatus.Committed, hired.Status);
+            Equal(cashBefore, f.Session.Snapshot().Cash);
+            Equal("office", f.Session.Snapshot().CareerId);
+            var working = LifeDashboardProjection.FromCommittedState(f.State(), catalog);
+            Equal("office", CareerSelectionPolicy.ChooseCareerId(working, "developer"));
+            Equal(CareerAcceptanceAvailability.AlreadyEmployed,
+                CareerSelectionPolicy.Evaluate(working, working.Careers.Single(x => x.CareerId == "developer")));
+            var checkpoint = f.Session.ExportCheckpoint();
+            Equal("career.already_employed",
+                f.Send(new GameCommand(CommandKind.AcceptJob, "developer")).ReasonKey);
+            Bytes(checkpoint, f.Session.ExportCheckpoint());
+
+            f.SendOk(new GameCommand(CommandKind.Resign));
+            var resigned = LifeDashboardProjection.FromCommittedState(f.State(), catalog);
+            True(!resigned.Career.IsEmployed);
+            Equal("developer", CareerSelectionPolicy.ChooseCareerId(resigned, "developer"));
+            Equal(CareerAcceptanceAvailability.Available,
+                CareerSelectionPolicy.Evaluate(resigned,
+                    resigned.Careers.Single(x => x.CareerId == "developer")));
+            f.SendOk(new GameCommand(CommandKind.AcceptJob, "developer"));
+            Equal("developer", f.Session.Snapshot().CareerId);
+            True(f.Session.ReadCareerBiography().PreviousEmployments.Count > 0);
+        });
+
         Check("course chooser is catalog-driven, keeps selected IDs and mirrors purchase rules", () =>
         {
             var f = new Fixture(); f.Create();
