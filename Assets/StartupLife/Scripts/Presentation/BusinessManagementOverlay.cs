@@ -278,20 +278,11 @@ namespace StartupLife.Presentation
             Refresh();
         }
 
-        // Current MVP catalog has Vietnamese captions, while the authoring keys
-        // for business names have not yet been populated into FirstPlayableUI.
-        // Display localized player-facing labels rather than raw IDs/enum names.
-        internal static string DisplayBusinessName(BusinessSnapshot business)
-        {
-            return business.Type switch
-            {
-                BusinessType.OnlineStore => "Cửa hàng trực tuyến",
-                BusinessType.HomeFoodPreorder => "Bếp đặt trước",
-                BusinessType.FreelanceService => "Dịch vụ tự do",
-                BusinessType.CoffeeKiosk => "Quầy cà phê",
-                _ => "Doanh nghiệp"
-            };
-        }
+        // Use the same localized catalog key for owned businesses and launch
+        // offers, so new authored business types do not need a UI enum switch.
+        internal static string DisplayBusinessName(BusinessSnapshot business) =>
+            DashboardLocalizationCatalog.TryFindValue(business.NameKey, out var name)
+                ? name : "Doanh nghiệp";
 
         internal static string DisplayPricing(PricingPosture posture) => posture switch
         {
