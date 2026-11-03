@@ -30,29 +30,25 @@ namespace StartupLife.Application
     }
 
     // Advisory profession-to-business affinities from GDD §13.
-    // This is NOT an eligibility check, unlock, discount or revenue modifier.
-    // Gameplay economy must separately authorize and version such effects.
+    // Recommendations are derived only from immutable content tags; they are
+    // not eligibility checks, unlocks, discounts or revenue modifiers.
+    // Any future economic effect requires a separately versioned ruleset.
     public static class CareerBusinessAffinityPolicy
     {
-        private static readonly IReadOnlyDictionary<string, string[]> Preferred =
-            new Dictionary<string, string[]>(StringComparer.Ordinal)
-            {
-                ["developer"] = new[] { "freelance-service", "online-store" },
-                ["marketing"] = new[] { "online-store", "freelance-service" },
-                ["sales"] = new[] { "online-store" },
-                ["office-admin"] = new[] { "online-store" },
-                ["chef"] = new[] { "home-food-preorder" },
-                ["barista"] = new[] { "coffee-kiosk", "home-food-preorder" }
-            };
-
         public static IReadOnlyList<string> ForCareer(string careerId, ContentCatalog content)
         {
             if (careerId == null) throw new ArgumentNullException(nameof(careerId));
             if (content == null) throw new ArgumentNullException(nameof(content));
-            if (!content.Careers.ContainsKey(careerId) ||
-                !Preferred.TryGetValue(careerId, out var ids))
+            if (!content.Careers.TryGetValue(careerId, out var career) ||
+                career.BusinessAffinityTags.Count == 0)
                 return Array.Empty<string>();
-            return Array.AsReadOnly(ids.Where(content.Businesses.ContainsKey).ToArray());
+
+            var tags = new HashSet<string>(career.BusinessAffinityTags, StringComparer.Ordinal);
+            return Array.AsReadOnly(content.Businesses.Values
+                .Where(x => x.BusinessAffinityTags.Any(tags.Contains))
+                .Select(x => x.Id)
+                .OrderBy(x => x, StringComparer.Ordinal)
+                .ToArray());
         }
 
         public static bool IsPreferred(string careerId, string businessId, ContentCatalog content)
