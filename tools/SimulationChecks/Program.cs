@@ -887,6 +887,79 @@ internal static class Program
             True(f.Session.ReadCareerBiography().PreviousEmployments.Count > 0);
         });
 
+        Check("dashboard study estimates mirror authoritative learning speed and cold restore", () =>
+        {
+            var f = new Fixture(Catalog(speed: 15000));
+            f.Create();
+            var before = LifeDashboardProjection.FromCommittedState(f.State(), f.Content);
+            True(before.Courses.All(x => !x.StudyMinutesRemaining.HasValue &&
+                !x.Minimum60MinuteSessions.HasValue));
+            f.Buy();
+            var active = LifeDashboardProjection.FromCommittedState(f.State(), f.Content);
+            var course = active.Courses.Single(x => x.CourseId == "communication-basics");
+            True(course.IsActive);
+            Equal(240L, course.StudyMinutesRemaining!.Value);
+            Equal(4L, course.Minimum60MinuteSessions!.Value);
+            True(active.Courses.Where(x => !x.IsActive).All(x =>
+                !x.StudyMinutesRemaining.HasValue && !x.Minimum60MinuteSessions.HasValue));
+
+            f.Evening();
+            f.SendOk(new GameCommand(CommandKind.Study, amount: 60));
+            var cold = f.Serializer.DeserializeAndValidate(f.Session.ExportCheckpoint());
+            Equal(LoadStatus.Valid, cold.Status);
+            var restored = LifeDashboardProjection.FromCommittedState(cold.State!, f.Content)
+                .Courses.Single(x => x.CourseId == "communication-basics");
+            Equal(180L, restored.StudyMinutesRemaining!.Value);
+            Equal(3L, restored.Minimum60MinuteSessions!.Value);
+
+            // The same ceiling as SimulationEngine.Study: 15,001 units
+            // at 15,000 units/minute need two real minutes, not one.
+            var detached = f.State();
+            detached.Course!.ProgressUnits = 3600000 - 15001;
+            var partial = LifeDashboardProjection.FromCommittedState(detached, f.Content)
+                .Courses.Single(x => x.CourseId == "communication-basics");
+            Equal(2L, partial.StudyMinutesRemaining!.Value);
+            Equal(1L, partial.Minimum60MinuteSessions!.Value);
+            detached.LearningSpeed = 0;
+            var invalidSpeed = LifeDashboardProjection.FromCommittedState(detached, f.Content)
+                .Courses.Single(x => x.CourseId == "communication-basics");
+            True(!invalidSpeed.StudyMinutesRemaining.HasValue &&
+                !invalidSpeed.Minimum60MinuteSessions.HasValue);
+        });
+        Check("dashboard next rank mirrors XP and calendar tenure without modifying state", () =>
+        {
+            var f = new Fixture();
+            f.Create();
+            f.Accept();
+            var checkpoint = f.Session.ExportCheckpoint();
+            var starting = LifeDashboardProjection.FromCommittedState(f.State(), f.Content);
+            True(starting.CareerPromotion != null);
+            Equal(2, starting.CareerPromotion!.NextRankNumber);
+            Equal(15000000L, starting.CareerPromotion.NextMonthlySalaryVnd);
+            Equal(1000L, starting.CareerPromotion.MissingCareerXp);
+            Equal(30, starting.CareerPromotion.MissingCalendarDays);
+
+            var detached = f.State();
+            detached.DateIso = "2026-09-20";
+            detached.Employment!.Xp = 925;
+            var progress = LifeDashboardProjection.FromCommittedState(detached, f.Content);
+            Equal(75L, progress.CareerPromotion!.MissingCareerXp);
+            Equal(11, progress.CareerPromotion.MissingCalendarDays);
+            detached.DateIso = "2026-10-01";
+            detached.Employment.Xp = 1000;
+            var qualifies = LifeDashboardProjection.FromCommittedState(detached, f.Content);
+            Equal(0L, qualifies.CareerPromotion!.MissingCareerXp);
+            Equal(0, qualifies.CareerPromotion.MissingCalendarDays);
+            detached.Employment.Rank = 1;
+            True(LifeDashboardProjection.FromCommittedState(detached, f.Content).CareerPromotion == null);
+            detached.Employment.Rank = 0;
+            detached.Employment.DefinitionRevision = "old-v0";
+            True(LifeDashboardProjection.FromCommittedState(detached, f.Content).CareerPromotion == null);
+            detached.Employment = null;
+            True(LifeDashboardProjection.FromCommittedState(detached, f.Content).CareerPromotion == null);
+            Bytes(checkpoint, f.Session.ExportCheckpoint());
+        });
+
         Check("course chooser is catalog-driven, keeps selected IDs and mirrors purchase rules", () =>
         {
             var f = new Fixture(); f.Create();
