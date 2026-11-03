@@ -449,6 +449,7 @@ internal static class Program
 
     private static void AffinityTagsReject()
     {
+        Equal(7, ContentAffinityTags.KnownIds.Count);
         var careerSource = FirstPlayableContentTemplate.Create();
         careerSource.Careers.Single(x => x.Id == "chef").BusinessAffinityTags =
             new[] { "food", "food" };
@@ -456,7 +457,7 @@ internal static class Program
 
         var businessSource = FirstPlayableContentTemplate.Create();
         businessSource.Businesses.Single(x => x.Id == "coffee-kiosk").BusinessAffinityTags =
-            new[] { "invalid affinity tag" };
+            new[] { "unknown-affinity" };
         Throws(() => businessSource.Build());
     }
 
