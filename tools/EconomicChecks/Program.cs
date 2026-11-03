@@ -263,6 +263,79 @@ internal static class Program
             }
         });
 
+        Check("P04-BIZ-03 V4 source replay accepts seven-business fresh frontier and retries exactly once", () =>
+        {
+            var legacy = FirstPlayableContentTemplate.BuildCatalog();
+            var expanded = FirstPlayableContentTemplate.BuildBusinessBatchACatalog();
+            var economics = M9T02FunctionalEconomy.CreateBusinessBatchA();
+            var historical = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economics, expanded);
+            var v3 = new V3SaveCompatibilitySerializer(expanded,
+                GameSession.CreateRestoreValidator(),
+                new V2ToV3Migration(historical, replay),
+                new StagedV3SaveSerializer(historical, replay));
+            var definitions = FirstPlayableEventContent.Definitions;
+            var policies = FirstPlayableEventContent.Policies;
+            var serializer = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, definitions, policies));
+            var runner = new EventV4CoreCommandRunner(expanded, v3, economics, historical);
+            var initial = GameSession.NewState(legacy, "p04-preview-v4", 511704UL,
+                new SimDate(2026, 11, 4));
+            var filename = Path.Combine(Path.GetTempPath(),
+                "p04-preview-v4-" + Guid.NewGuid().ToString("N") + ".save");
+            try
+            {
+                File.WriteAllBytes(filename, JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(initial), 2, 0));
+                EventV4CommitGateway Cold() => new EventV4CommitGateway(
+                    serializer, new AtomicFileSaveStore(filename, serializer),
+                    definitions, policies, runner, automaticDailyChecks: false);
+                var created = Cold().ExecuteCore(new CommandEnvelope(
+                    initial.RunId, "create", 0,
+                    new GameCommand(CommandKind.CreateCharacter,
+                        "fresh", 24, "P04 V4 Founder", "base.female")));
+                Assert(created.Status == EventCommitStatus.Committed &&
+                    created.CoreCommand?.Status == CommandStatus.Committed,
+                    "P04 preview V4 creates its character through real V3 core CAS");
+                var business = BusinessCommands.Launch(
+                    FirstPlayableContentTemplate.MarketingAgencyId, "v1", 1200000);
+                var launched = Cold().ExecuteCore(new CommandEnvelope(
+                    initial.RunId, "launch", 1, business));
+                Assert(launched.Status == EventCommitStatus.Committed &&
+                    launched.CoreCommand?.Status == CommandStatus.Committed,
+                    "P04 agency launch flows through V4 journal-verified V3 core");
+                var saved = File.ReadAllBytes(filename);
+                var read = Cold().Read();
+                Assert(read.Status == LoadStatus.Valid && read.State!.SaveVersion == 4 &&
+                    read.State.Receipts.Count == 2 &&
+                    read.State.Businesses.Single().DefinitionId ==
+                        FirstPlayableContentTemplate.MarketingAgencyId &&
+                    read.State.EventV4?.Journal != null,
+                    "V4 cold replay must verify both receipts and persist the new business");
+                Assert(Cold().ExecuteCore(new CommandEnvelope(
+                    initial.RunId, "launch", 1, business)).Status ==
+                    EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(filename).SequenceEqual(saved),
+                    "V4 cold launch retry must never double-charge or rewrite bytes");
+                var step = Cold().ExecuteCore(new CommandEnvelope(initial.RunId,
+                    "advance", 2, new GameCommand(CommandKind.AdvanceBoundary)));
+                Assert(step.Status == EventCommitStatus.Committed &&
+                    Cold().Read().Status == LoadStatus.Valid,
+                    "V4 first agency operating boundary must be independently replayable");
+                var after = File.ReadAllBytes(filename);
+                Assert(Cold().ExecuteCore(new CommandEnvelope(initial.RunId,
+                    "advance", 2, new GameCommand(CommandKind.AdvanceBoundary))).Status ==
+                    EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(filename).SequenceEqual(after),
+                    "V4 cold boundary retry may not settle the same business twice");
+            }
+            finally
+            {
+                foreach (var suffix in new[] { "", ".backup", ".lock" })
+                    if (File.Exists(filename + suffix)) File.Delete(filename + suffix);
+            }
+        });
+
         Check("P04-BIZ-03 old V3 ruleset is not silently reinterpreted as new P04 economy", () =>
         {
             var baseContent = FirstPlayableContentTemplate.BuildCatalog();
