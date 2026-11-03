@@ -75,7 +75,7 @@ class CareerDashboardWiringTests(unittest.TestCase):
         self.assertIn("job.UnpaidClaimCount > 0", ui)
         self.assertIn("job.MonthlySalaryAtRecordedRankVnd.HasValue", ui)
         self.assertIn("CareerSelectionPolicy.TransitionContext(model, selectedOffer)", ui)
-        self.assertNotIn("state.Employment =", biography)
+        self.assertNotRegex(biography, r"state\.Employment\s*=(?!=)")
         self.assertNotIn("state.Employment =", policy)
         self.assertIn("state.PreviousEmployment.Add(state.Employment)", sim)
 
