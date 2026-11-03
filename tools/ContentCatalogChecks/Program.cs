@@ -232,7 +232,7 @@ internal static class Program
         var catalog = FirstPlayableContentTemplate.BuildCatalog();
         Equal("first-playable.v1", catalog.Version);
         Equal(6, catalog.Skills.Count);
-        Equal(1, catalog.Careers.Count);
+        Equal(4, catalog.Careers.Count);
         Equal(2, catalog.Courses.Count);
         Equal(1, catalog.Starts.Count);
 
@@ -241,6 +241,52 @@ internal static class Program
         Equal(4, developer.ScenesPerShift);
         Equal(100, developer.Scenes.Sum(x => x.Weight));
         Sequence(new[] { 40, 20, 15, 10, 10, 5 }, developer.Scenes.Select(x => x.Weight));
+
+        // GDD MVP Career Batch A. These are distinct profession distributions,
+        // schedules and rank salaries, not cosmetic aliases of Developer.
+        var marketing = catalog.Careers["marketing"];
+        Equal(540, marketing.StartMinute);
+        Equal(1020, marketing.EndMinute);
+        Equal(4, marketing.ScenesPerShift);
+        Sequence(new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+            DayOfWeek.Thursday, DayOfWeek.Friday }, marketing.WorkDays);
+        Sequence(new[] { 25, 20, 20, 15, 10, 10 }, marketing.Scenes.Select(x => x.Weight));
+        Sequence(new long[] { 9000000, 13500000, 18000000 },
+            marketing.Ranks.Select(x => x.MonthlySalary));
+        Sequence(new[] { "problem-solving", "communication", "problem-solving",
+            "leadership", "communication", "networking" }, marketing.Scenes.Select(x => x.SkillId));
+        Sequence(new[] { 5, 4, 4, 3, 2, 2 }, marketing.Scenes.Select(x =>
+            QuotaScheduler.Apportion(marketing.Scenes, marketing.QuotaSlots)[x.Id]));
+
+        var sales = catalog.Careers["sales"];
+        Equal(540, sales.StartMinute);
+        Equal(1080, sales.EndMinute);
+        Equal(4, sales.ScenesPerShift);
+        Sequence(new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+            DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday }, sales.WorkDays);
+        Sequence(new[] { 20, 20, 15, 20, 15, 10 }, sales.Scenes.Select(x => x.Weight));
+        Sequence(new long[] { 8000000, 12000000, 16000000 },
+            sales.Ranks.Select(x => x.MonthlySalary));
+        Sequence(new[] { 4, 4, 3, 4, 3, 2 }, sales.Scenes.Select(x =>
+            QuotaScheduler.Apportion(sales.Scenes, sales.QuotaSlots)[x.Id]));
+
+        var office = catalog.Careers["office-admin"];
+        Equal(510, office.StartMinute);
+        Equal(1050, office.EndMinute);
+        Equal(4, office.ScenesPerShift);
+        Sequence(new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+            DayOfWeek.Thursday, DayOfWeek.Friday }, office.WorkDays);
+        Sequence(new[] { 25, 20, 20, 15, 10, 10 }, office.Scenes.Select(x => x.Weight));
+        Sequence(new long[] { 7000000, 10500000, 14000000 },
+            office.Ranks.Select(x => x.MonthlySalary));
+        Sequence(new[] { 5, 4, 4, 3, 2, 2 }, office.Scenes.Select(x =>
+            QuotaScheduler.Apportion(office.Scenes, office.QuotaSlots)[x.Id]));
+
+        True(catalog.Careers.Values.SelectMany(x => x.Scenes)
+            .Select(x => x.Id).Distinct(StringComparer.Ordinal).Count() ==
+            catalog.Careers.Values.Sum(x => x.Scenes.Count));
+        True(catalog.Careers.Values.SelectMany(x => x.Scenes)
+            .All(x => catalog.Skills.ContainsKey(x.SkillId)));
         Sequence(new[] { "base.female", "base.male" }, catalog.Starts["fresh"].AppearanceIds);
         Equal(480, catalog.Schedule.WakeMinute);
         Equal(1320, catalog.Schedule.SleepMinute);
