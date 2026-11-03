@@ -48,6 +48,7 @@ namespace StartupLife.Presentation
             new KeyValuePair<string,string>("career.office-admin", "Nhân viên hành chính"),
             new KeyValuePair<string,string>("career.chef", "Đầu bếp"),
             new KeyValuePair<string,string>("career.barista", "Nhân viên pha chế"),
+            new KeyValuePair<string,string>("career.affinity.hint", "Gợi ý ngành kinh doanh (không bắt buộc)"),
             new KeyValuePair<string,string>("course.none", "Chưa học khóa nào"),
             new KeyValuePair<string,string>("course.communication", "Khóa Giao tiếp cơ bản"),
             new KeyValuePair<string,string>("course.problem", "Khóa Giải quyết vấn đề"),
