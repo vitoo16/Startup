@@ -172,10 +172,10 @@ namespace StartupLife.Presentation
             selectedCareerStatus.text = selectedOffer == null
                 ? "Chưa có nghề phù hợp trong nội dung hiện tại."
                 : "Đang chọn: " + DisplayCareer(selectedOffer.NameKey) +
-                  "\nLương khởi điểm: " + Money(selectedOffer.StartingMonthlySalaryVnd) +
-                  " · Ca " + Clock(selectedOffer.StartMinute) + "–" + Clock(selectedOffer.EndMinute) +
-                  " · " + selectedOffer.WorkDays.Count.ToString(CultureInfo.InvariantCulture) +
-                  " ngày/tuần\n" + CareerAvailabilityHint(careerAvailability);
+                  "\nLương theo bậc: " + string.Join(" → ", selectedOffer.MonthlySalariesVnd.Select(Money)) +
+                  "/tháng\nCa: " + Clock(selectedOffer.StartMinute) + "–" + Clock(selectedOffer.EndMinute) +
+                  " · " + FormatWorkDays(selectedOffer.WorkDays) +
+                  "\n" + CareerAvailabilityHint(careerAvailability);
             foreach (var option in careerButtons.Values)
                 option.interactable = !career.IsEmployed;
             work.interactable = career.IsEmployed;
@@ -308,6 +308,19 @@ namespace StartupLife.Presentation
             // Session is the sole authority; stale UI cannot force a hire.
             host.AcceptCareer(selectedCareerId);
         }
+
+        private static string FormatWorkDays(IReadOnlyList<DayOfWeek> days) =>
+            string.Join(" · ", days.Select(day => day switch
+            {
+                DayOfWeek.Monday => "T2",
+                DayOfWeek.Tuesday => "T3",
+                DayOfWeek.Wednesday => "T4",
+                DayOfWeek.Thursday => "T5",
+                DayOfWeek.Friday => "T6",
+                DayOfWeek.Saturday => "T7",
+                DayOfWeek.Sunday => "CN",
+                _ => "?"
+            }));
 
         private static string Clock(int minute) =>
             (minute / 60).ToString("00", CultureInfo.InvariantCulture) + ":" +
