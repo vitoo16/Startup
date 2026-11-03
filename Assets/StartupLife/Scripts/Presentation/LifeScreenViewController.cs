@@ -262,9 +262,18 @@ namespace StartupLife.Presentation
             Refresh();
         }
 
+        public void PurchaseCourse(string courseId)
+        {
+            if (content == null || !content.Courses.ContainsKey(courseId))
+                throw new ArgumentException("Course must exist in the active catalog.", nameof(courseId));
+            studyActions.PurchaseCourse(courseId);
+        }
+
+        // Existing scene-wired button remains backward compatible. The
+        // five-tab dashboard now passes the actual selected catalog ID.
         public void PurchaseCommunicationCourse()
         {
-            studyActions.PurchaseCommunicationCourse();
+            PurchaseCourse("communication-basics");
         }
 
         public void Study60Minutes()
