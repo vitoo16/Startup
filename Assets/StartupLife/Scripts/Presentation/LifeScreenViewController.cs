@@ -251,10 +251,17 @@ namespace StartupLife.Presentation
             eventChoiceOverlay?.Refresh();
         }
 
-        public void AcceptDeveloper()
+        public void AcceptCareer(string careerId)
         {
-            Publish(flow.AcceptJob("developer").Command, "status.career.accepted");
+            if (content == null || string.IsNullOrWhiteSpace(careerId) ||
+                !content.Careers.ContainsKey(careerId))
+                throw new ArgumentException("Career must exist in the active catalog.", nameof(careerId));
+            Publish(flow.AcceptJob(careerId).Command, "status.career.accepted");
         }
+
+        // Compatibility with UnityEvents in already serialized first-playable
+        // scenes. The five-tab dashboard sends the player's selected career.
+        public void AcceptDeveloper() => AcceptCareer("developer");
 
         public void RunWorkShift()
         {
