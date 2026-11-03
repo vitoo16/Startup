@@ -22,6 +22,11 @@ namespace StartupLife.Tests.EditMode
             Assert.That(catalog.Careers.ContainsKey("chef"), Is.True);
             Assert.That(catalog.Careers.ContainsKey("barista"), Is.True);
             Assert.That(catalog.Courses.ContainsKey("communication-basics"), Is.True);
+            Assert.That(catalog.Courses.Count, Is.EqualTo(6));
+            Assert.That(catalog.Courses.ContainsKey("negotiation-basics"), Is.True);
+            Assert.That(catalog.Courses.ContainsKey("time-management-basics"), Is.True);
+            Assert.That(catalog.Courses.ContainsKey("networking-basics"), Is.True);
+            Assert.That(catalog.Courses.ContainsKey("leadership-basics"), Is.True);
             Assert.That(catalog.Businesses.Count, Is.EqualTo(4));
             Assert.That(catalog.Businesses[FirstPlayableContentTemplate.FreelanceId].OperatingRequirements.RequiredOwnerMinutes, Is.EqualTo(120));
         }
@@ -42,6 +47,8 @@ namespace StartupLife.Tests.EditMode
             Assert.That(catalog.Careers["barista"].Scenes.Count, Is.EqualTo(6));
             Assert.That(catalog.Careers["chef"].WorkDays.Count, Is.EqualTo(6));
             Assert.That(catalog.Careers["barista"].WorkDays.Count, Is.EqualTo(6));
+            Assert.That(catalog.Courses.Count, Is.EqualTo(6),
+                "Unity authoring gate must regenerate the asset with new study offerings.");
             var freelance = catalog.Businesses[FirstPlayableContentTemplate.FreelanceId];
             var kiosk = catalog.Businesses[FirstPlayableContentTemplate.CoffeeKioskId];
             Assert.That(freelance.OperationMode, Is.EqualTo(BusinessOperationMode.SideHustleCompatible));
