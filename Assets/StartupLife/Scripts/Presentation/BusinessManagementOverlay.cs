@@ -41,8 +41,9 @@ namespace StartupLife.Presentation
         private Button close = null!;
         private readonly Dictionary<string, Button> launchButtons =
             new Dictionary<string, Button>(StringComparer.Ordinal);
-        private readonly Dictionary<string, string> launchCaptions =
-            new Dictionary<string, string>(StringComparer.Ordinal);
+        private readonly Dictionary<string, TMP_Text> launchLabels =
+            new Dictionary<string, TMP_Text>(StringComparer.Ordinal);
+        private Transform launchList = null!;
         private string selectedId = "";
         private bool closeArmed;
 
@@ -127,10 +128,18 @@ namespace StartupLife.Presentation
             founderGuidance = Label("FounderEligibilityGuidance",
                 "Điều kiện sở hữu và thời gian sẽ được kiểm tra trước khi mở",
                 content.transform, 26, 102);
-            AddLaunch(content.transform, "online-store", "Mở cửa hàng trực tuyến", host.LaunchOnlineStore);
-            AddLaunch(content.transform, "home-food-preorder", "Mở bếp đặt trước", host.LaunchHomeFoodPreorder);
-            AddLaunch(content.transform, "freelance-service", "Nhận việc tự do", host.LaunchFreelanceService);
-            AddLaunch(content.transform, "coffee-kiosk", "Mở quầy cà phê", host.LaunchCoffeeKiosk);
+            // Build from BusinessOperationsSnapshot.LaunchOptions, not a
+            // duplicate list of business IDs or view-specific callbacks.
+            var launchRoot = Node("BusinessLaunchOptionList", content.transform,
+                typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+            launchList = launchRoot.transform;
+            var launchLayout = launchRoot.GetComponent<VerticalLayoutGroup>();
+            launchLayout.spacing = 10;
+            launchLayout.childControlWidth = launchLayout.childControlHeight = true;
+            launchLayout.childForceExpandWidth = true;
+            launchLayout.childForceExpandHeight = false;
+            launchRoot.GetComponent<ContentSizeFitter>().verticalFit =
+                ContentSizeFitter.FitMode.PreferredSize;
 
             Label("ManageBusinessHeading", "Doanh nghiệp đang sở hữu",
                 content.transform, 30, 62);
@@ -173,16 +182,54 @@ namespace StartupLife.Presentation
             panel.SetActive(false);
         }
 
-        private void AddLaunch(Transform content, string id, string caption, Action callback)
+        private void SyncLaunchOptions(IReadOnlyList<BusinessLaunchReadiness> offers)
         {
-            var go = ButtonObject("Launch" + id.Replace("-", "") + "Button",
-                caption, content, () =>
+            var authored = new HashSet<string>(offers.Select(x => x.DefinitionId), StringComparer.Ordinal);
+            foreach (var removed in launchButtons.Keys.Where(x => !authored.Contains(x)).ToArray())
+            {
+                Destroy(launchButtons[removed].gameObject);
+                launchButtons.Remove(removed);
+                launchLabels.Remove(removed);
+            }
+
+            for (var index = 0; index < offers.Count; index++)
+            {
+                var offer = offers[index];
+                if (!launchButtons.TryGetValue(offer.DefinitionId, out var button))
                 {
-                    callback();
-                    Refresh();
-                }, ButtonHeight);
-            launchButtons.Add(id, go.GetComponent<Button>());
-            launchCaptions.Add(id, caption);
+                    var id = offer.DefinitionId;
+                    var go = ButtonObject("Launch" + id.Replace("-", "") + "Button",
+                        "Mở doanh nghiệp", launchList, () =>
+                        {
+                            // Current catalog and server-side commands remain
+                            // authoritative even if a displayed hint is stale.
+                            host.LaunchBusiness(id);
+                            Refresh();
+                        }, ButtonHeight);
+                    button = go.GetComponent<Button>();
+                    launchButtons.Add(id, button);
+                    launchLabels.Add(id, go.GetComponentInChildren<TMP_Text>(true));
+                }
+                button.transform.SetSiblingIndex(index);
+                button.interactable = offer.CanRequestLaunch;
+                launchLabels[offer.DefinitionId].text = FormatLaunchOption(offer);
+            }
+        }
+
+        private static string FormatLaunchOption(BusinessLaunchReadiness option)
+        {
+            var name = DashboardLocalizationCatalog.TryFindValue(option.NameKey, out var value)
+                ? value : "Loại hình kinh doanh";
+            var mode = option.OperationMode == BusinessOperationMode.SideHustleCompatible
+                ? "Có thể làm thêm" : option.OperationMode == BusinessOperationMode.FullTimeRequired
+                    ? "Cần toàn thời gian" : "Cần người quản lý";
+            var minutes = option.RequiredOwnerMinutes.HasValue
+                ? " · " + option.RequiredOwnerMinutes.Value.ToString(CultureInfo.InvariantCulture) + " phút chủ/ngày"
+                : "";
+            return name + " · vốn từ " +
+                option.MinimumInvestmentVnd.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) +
+                " ₫" + "\n" + mode + minutes +
+                (option.CanRequestLaunch ? "" : " · " + LaunchReason(option.Code));
         }
 
         private void RequestClose()
@@ -292,16 +339,7 @@ namespace StartupLife.Presentation
                         ? theme.ink
                         : theme.accent;
             }
-            foreach (var item in launchButtons)
-            {
-                var readiness = operations.LaunchOptions.FirstOrDefault(x => x.DefinitionId == item.Key);
-                item.Value.interactable = readiness != null && readiness.CanRequestLaunch;
-                var caption = item.Value.GetComponentInChildren<TMP_Text>(true);
-                if (caption != null)
-                    caption.text = launchCaptions[item.Key] +
-                        (readiness != null && !readiness.CanRequestLaunch ?
-                            " · " + LaunchReason(readiness.Code) : "");
-            }
+            SyncLaunchOptions(operations.LaunchOptions);
             var index = Array.FindIndex(list, x => x.InstanceId == selectedId);
             var current = index < 0 ? null : list[index];
             var active = current != null && current.IsActive;
