@@ -82,9 +82,9 @@ namespace StartupLife.Presentation
                 var batchEconomics = M9T02FunctionalEconomy.CreateBusinessBatchA();
                 var batchReplay = new VersionedReceiptReplay(batchEconomics, batchContent);
                 var batchMigration = new V2ToV3Migration(historical, batchReplay);
-                var batchSerializer = new V3SaveCompatibilitySerializer(batchContent,
+                var batchSerializer = new V3SaveCompatibilitySerializer(initialV2Content,
                     GameSession.CreateRestoreValidator(), batchMigration,
-                    new StagedV3SaveSerializer(historical, batchReplay));
+                    new StagedV3SaveSerializer(historical, batchReplay), batchContent);
                 var path = SavePath;
                 // Read-only probes: never write or recover a backup until the
                 // authoritative AtomicFileSaveStore has been selected.
