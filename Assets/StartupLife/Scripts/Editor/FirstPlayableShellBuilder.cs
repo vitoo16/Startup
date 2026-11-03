@@ -255,6 +255,8 @@ namespace StartupLife.Editor
             AddStrings(table);
             DashboardLocalizationEditorSync.Apply(table);
             EditorUtility.SetDirty(table);
+            EditorUtility.SetDirty(collection.SharedData);
+            EditorUtility.SetDirty(collection);
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             AssetDatabase.SaveAssets();
             FirstPlayableRuntimeGate.VerifyScene();
@@ -272,7 +274,8 @@ namespace StartupLife.Editor
             AddStrings(table);
             DashboardLocalizationEditorSync.Apply(table);
             EditorUtility.SetDirty(table);
-            EditorUtility.SetDirty(table.SharedData);
+            EditorUtility.SetDirty(collection.SharedData);
+            EditorUtility.SetDirty(collection);
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             AssetDatabase.SaveAssets();
         }
