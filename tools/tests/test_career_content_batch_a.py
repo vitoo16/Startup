@@ -51,6 +51,8 @@ class CareerContentBatchATests(unittest.TestCase):
         self.assertIn('"career.sales" => "Nhân viên kinh doanh"', ui)
         self.assertIn('"career.office-admin" => "Nhân viên hành chính"', ui)
         table = read("Assets/StartupLife/Scripts/Editor/FirstPlayableShellBuilder.cs")
+        for key in ("career.marketing", "career.sales", "career.office-admin"):
+            self.assertIn(f'Add(table, "{key}"', table)
         for key in (
             "scene.marketing-campaign-planning",
             "scene.marketing-content-review",
