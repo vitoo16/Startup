@@ -59,6 +59,7 @@ namespace StartupLife.Content
         public DayOfWeek[] WorkDays = Array.Empty<DayOfWeek>();
         public CareerSceneContentSource[] Scenes = Array.Empty<CareerSceneContentSource>();
         public CareerRankContentSource[] Ranks = Array.Empty<CareerRankContentSource>();
+        public string[] BusinessAffinityTags = Array.Empty<string>();
 
         public CareerDefinition Build() =>
             new CareerDefinition(
@@ -71,7 +72,8 @@ namespace StartupLife.Content
                 QuotaSlots,
                 Required(WorkDays, nameof(WorkDays)),
                 Required(Scenes, nameof(Scenes)).Select(Require).Select(x => x.Build()),
-                Required(Ranks, nameof(Ranks)).Select(Require).Select(x => x.Build()));
+                Required(Ranks, nameof(Ranks)).Select(Require).Select(x => x.Build()),
+                BusinessAffinityTags ?? Array.Empty<string>());
 
         private static T[] Required<T>(T[]? values, string field) =>
             values ?? throw new ArgumentException(field + " is required.");
@@ -155,6 +157,7 @@ namespace StartupLife.Content
         public long MaximumReinvestment;
         public BusinessOperatingWindowContentSource[] OperatingWindows = Array.Empty<BusinessOperatingWindowContentSource>();
         public int RequiredOwnerMinutes;
+        public string[] BusinessAffinityTags = Array.Empty<string>();
 
         public BusinessDefinition Build()
         {
@@ -162,7 +165,9 @@ namespace StartupLife.Content
             var windows = OperatingWindows.Select(x => (x ?? throw new ArgumentException("Business window entry cannot be null.")).Build());
             return new BusinessDefinition(Id, Revision, NameKey, Type, OperationMode,
                 MinimumStartupInvestment, MaximumStartupInvestment, AllowedPricingPostures, DefaultPricingPosture,
-                MinimumReinvestment, MaximumReinvestment, new BusinessOperatingRequirements(windows, RequiredOwnerMinutes));
+                MinimumReinvestment, MaximumReinvestment,
+                new BusinessOperatingRequirements(windows, RequiredOwnerMinutes),
+                BusinessAffinityTags ?? Array.Empty<string>());
         }
     }
 
