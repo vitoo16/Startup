@@ -263,7 +263,7 @@ internal static class Program
         Equal(100, developer.Scenes.Sum(x => x.Weight));
         Sequence(new[] { 40, 20, 15, 10, 10, 5 }, developer.Scenes.Select(x => x.Weight));
 
-        // GDD MVP Career Batch A. These are distinct profession distributions,
+        // GDD MVP Career Batches A and B. These are distinct profession distributions,
         // schedules and rank salaries, not cosmetic aliases of Developer.
         var marketing = catalog.Careers["marketing"];
         Equal(540, marketing.StartMinute);
