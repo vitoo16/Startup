@@ -233,8 +233,25 @@ internal static class Program
         Equal("first-playable.v1", catalog.Version);
         Equal(6, catalog.Skills.Count);
         Equal(6, catalog.Careers.Count);
-        Equal(2, catalog.Courses.Count);
+        Equal(6, catalog.Courses.Count);
         Equal(1, catalog.Starts.Count);
+        Sequence(new[] { "communication", "problem-solving", "negotiation",
+            "time-management", "networking", "leadership" },
+            catalog.Courses.Values.Select(x => x.SkillId));
+        var expectedCoursePrices = new Dictionary<string, long>(StringComparer.Ordinal)
+        {
+            ["negotiation-basics"] = 220000,
+            ["time-management-basics"] = 180000,
+            ["networking-basics"] = 250000,
+            ["leadership-basics"] = 300000
+        };
+        foreach (var pair in expectedCoursePrices)
+        {
+            var course = catalog.Courses[pair.Key];
+            Equal(pair.Value, course.Price);
+            Equal(1, course.TargetLevel);
+            Equal(0, course.PrerequisiteLevel);
+        }
 
         var developer = catalog.Careers["developer"];
         Equal(20, developer.QuotaSlots);
