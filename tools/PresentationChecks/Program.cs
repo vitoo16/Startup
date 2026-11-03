@@ -514,7 +514,8 @@ internal static class Program
         True(entries.All(x =>
             (x.Key.StartsWith("dashboard.", StringComparison.Ordinal) ||
              x.Key.StartsWith("career.", StringComparison.Ordinal) ||
-             x.Key.StartsWith("scene.", StringComparison.Ordinal)) &&
+             x.Key.StartsWith("scene.", StringComparison.Ordinal) ||
+             x.Key.StartsWith("business.", StringComparison.Ordinal)) &&
             !string.IsNullOrWhiteSpace(x.Value)));
         foreach (var text in new[] { "Nghề nghiệp", "Kỹ năng", "Tài chính", "Kinh doanh",
             "Hồ sơ", "Chữ nhỏ hơn", "Chữ lớn hơn", "Đã hiểu", "Xem lại hướng dẫn" })
