@@ -38,6 +38,14 @@ namespace StartupLife.Editor
             Debug.Log("[StartupLifeContent] First playable content validated at " + AssetPath);
         }
 
+        [MenuItem("Startup Life/Content/Refresh career catalog and Vietnamese localization")]
+        public static void RefreshCareerCatalogAndLocalization()
+        {
+            CreateOrUpdate();
+            DashboardLocalizationEditorSync.SyncVietnamese();
+            Debug.Log("[StartupLifeContent] Career catalog and Vietnamese strings refreshed without running tests.");
+        }
+
         // Authoring verification only; this is not the final Unity test/acceptance gate.
         public static void VerifyOperatingEligibilityContent()
         {
