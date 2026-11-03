@@ -657,6 +657,9 @@ namespace StartupLife.Editor
 
             Add(table, "career.none", "Chưa có việc");
             Add(table, "career.developer", "Lập trình viên");
+            Add(table, "career.marketing", "Chuyên viên Marketing");
+            Add(table, "career.sales", "Nhân viên kinh doanh");
+            Add(table, "career.office-admin", "Nhân viên hành chính");
             Add(table, "course.none", "Chưa học khóa nào");
             Add(table, "course.communication", "Giao tiếp cơ bản");
             Add(table, "course.problem", "Giải quyết vấn đề");
@@ -690,6 +693,27 @@ namespace StartupLife.Editor
             Add(table, "scene.client-discussion", "Trao đổi với khách hàng");
             Add(table, "scene.demo", "Trình bày bản demo");
             Add(table, "scene.documentation", "Viết tài liệu");
+
+            Add(table, "scene.marketing-campaign-planning", "Lên kế hoạch chiến dịch");
+            Add(table, "scene.marketing-content-review", "Duyệt nội dung truyền thông");
+            Add(table, "scene.marketing-analytics", "Phân tích hiệu quả chiến dịch");
+            Add(table, "scene.marketing-team-meeting", "Họp cùng đội ngũ");
+            Add(table, "scene.marketing-client-presentation", "Trình bày với khách hàng");
+            Add(table, "scene.marketing-partner-communication", "Trao đổi với đối tác");
+
+            Add(table, "scene.sales-prospecting", "Tìm kiếm khách hàng tiềm năng");
+            Add(table, "scene.sales-needs-discovery", "Tìm hiểu nhu cầu khách hàng");
+            Add(table, "scene.sales-product-demo", "Giới thiệu sản phẩm");
+            Add(table, "scene.sales-negotiation", "Đàm phán với khách hàng");
+            Add(table, "scene.sales-follow-up", "Chăm sóc sau tư vấn");
+            Add(table, "scene.sales-sales-report", "Cập nhật báo cáo bán hàng");
+
+            Add(table, "scene.office-document-processing", "Xử lý hồ sơ, giấy tờ");
+            Add(table, "scene.office-schedule-coordination", "Điều phối lịch làm việc");
+            Add(table, "scene.office-data-review", "Kiểm tra dữ liệu");
+            Add(table, "scene.office-internal-support", "Hỗ trợ các bộ phận");
+            Add(table, "scene.office-record-keeping", "Lưu trữ chứng từ");
+            Add(table, "scene.office-team-briefing", "Họp nhóm công việc");
 
             Add(table, "reason.career.required", "Bạn cần có công việc trước.");
             Add(table, "reason.character.invalid", "Thông tin nhân vật chưa hợp lệ.");
