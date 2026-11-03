@@ -255,8 +255,8 @@ internal static class Program
             marketing.Ranks.Select(x => x.MonthlySalary));
         Sequence(new[] { "problem-solving", "communication", "problem-solving",
             "leadership", "communication", "networking" }, marketing.Scenes.Select(x => x.SkillId));
-        Sequence(new[] { 5, 4, 4, 3, 2, 2 }, marketing.Scenes.Select(x =>
-            QuotaScheduler.Apportion(marketing.Scenes, marketing.QuotaSlots)[x.Id]));
+        var marketingQuotas = QuotaScheduler.Apportion(marketing.Scenes, marketing.QuotaSlots);
+        Sequence(new[] { 5, 4, 4, 3, 2, 2 }, marketing.Scenes.Select(x => marketingQuotas[x.Id]));
 
         var sales = catalog.Careers["sales"];
         Equal(540, sales.StartMinute);
@@ -267,8 +267,8 @@ internal static class Program
         Sequence(new[] { 20, 20, 15, 20, 15, 10 }, sales.Scenes.Select(x => x.Weight));
         Sequence(new long[] { 8000000, 12000000, 16000000 },
             sales.Ranks.Select(x => x.MonthlySalary));
-        Sequence(new[] { 4, 4, 3, 4, 3, 2 }, sales.Scenes.Select(x =>
-            QuotaScheduler.Apportion(sales.Scenes, sales.QuotaSlots)[x.Id]));
+        var salesQuotas = QuotaScheduler.Apportion(sales.Scenes, sales.QuotaSlots);
+        Sequence(new[] { 4, 4, 3, 4, 3, 2 }, sales.Scenes.Select(x => salesQuotas[x.Id]));
 
         var office = catalog.Careers["office-admin"];
         Equal(510, office.StartMinute);
@@ -279,13 +279,13 @@ internal static class Program
         Sequence(new[] { 25, 20, 20, 15, 10, 10 }, office.Scenes.Select(x => x.Weight));
         Sequence(new long[] { 7000000, 10500000, 14000000 },
             office.Ranks.Select(x => x.MonthlySalary));
-        Sequence(new[] { 5, 4, 4, 3, 2, 2 }, office.Scenes.Select(x =>
-            QuotaScheduler.Apportion(office.Scenes, office.QuotaSlots)[x.Id]));
+        var officeQuotas = QuotaScheduler.Apportion(office.Scenes, office.QuotaSlots);
+        Sequence(new[] { 5, 4, 4, 3, 2, 2 }, office.Scenes.Select(x => officeQuotas[x.Id]));
 
-        True(catalog.Careers.Values.SelectMany(x => x.Scenes)
-            .Select(x => x.Id).Distinct(StringComparer.Ordinal).Count() ==
-            catalog.Careers.Values.Sum(x => x.Scenes.Count));
-        True(catalog.Careers.Values.SelectMany(x => x.Scenes)
+        Equal(catalog.Careers.Values.Sum(x => x.Scenes.Count),
+            catalog.Careers.Values.SelectMany(x => x.Scenes)
+                .Select(x => x.Id).Distinct(StringComparer.Ordinal).Count());
+        Equal(true, catalog.Careers.Values.SelectMany(x => x.Scenes)
             .All(x => catalog.Skills.ContainsKey(x.SkillId)));
         foreach (var career in catalog.Careers.Values)
         {
@@ -295,7 +295,7 @@ internal static class Program
             {
                 var deck = QuotaScheduler.Order(expected, "", ref rng);
                 Equal(career.QuotaSlots, deck.Count);
-                True(deck.Zip(deck.Skip(1), (a, b) => a != b).All(x => x));
+                Equal(true, deck.Zip(deck.Skip(1), (a, b) => a != b).All(x => x));
                 foreach (var scene in career.Scenes)
                     Equal(expected[scene.Id], deck.Count(x => x == scene.Id));
             }
