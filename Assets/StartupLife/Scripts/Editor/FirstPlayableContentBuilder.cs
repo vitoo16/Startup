@@ -60,26 +60,33 @@ namespace StartupLife.Editor
             var weekdays = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
                 DayOfWeek.Thursday, DayOfWeek.Friday };
             VerifyCareer(catalog.Careers["developer"], 540, 1020, 4, weekdays,
-                new[] { 40, 20, 15, 10, 10, 5 }, new long[] { 10000000, 15000000 });
+                new[] { 40, 20, 15, 10, 10, 5 }, new long[] { 10000000, 15000000 },
+                new long[] { 0, 1000 }, new[] { 0, 30 });
             VerifyCareer(catalog.Careers["marketing"], 540, 1020, 4, weekdays,
-                new[] { 25, 20, 20, 15, 10, 10 }, new long[] { 9000000, 13500000, 18000000 });
+                new[] { 25, 20, 20, 15, 10, 10 }, new long[] { 9000000, 13500000, 18000000 },
+                new long[] { 0, 1000, 3000 }, new[] { 0, 30, 90 });
             VerifyCareer(catalog.Careers["sales"], 540, 1080, 4,
                 weekdays.Concat(new[] { DayOfWeek.Saturday }).ToArray(),
-                new[] { 20, 20, 15, 20, 15, 10 }, new long[] { 8000000, 12000000, 16000000 });
+                new[] { 20, 20, 15, 20, 15, 10 }, new long[] { 8000000, 12000000, 16000000 },
+                new long[] { 0, 1000, 3000 }, new[] { 0, 30, 90 });
             VerifyCareer(catalog.Careers["office-admin"], 510, 1050, 4, weekdays,
-                new[] { 25, 20, 20, 15, 10, 10 }, new long[] { 7000000, 10500000, 14000000 });
+                new[] { 25, 20, 20, 15, 10, 10 }, new long[] { 7000000, 10500000, 14000000 },
+                new long[] { 0, 1000, 3000 }, new[] { 0, 30, 90 });
             Debug.Log("[M8-T02-Authoring] Loaded asset: Freelance 240/120; Kiosk 480/480; scheduled content verified.");
             Debug.Log("[StartupLifeContent] Four careers and four business schedules validated.");
         }
         private static void VerifyCareer(CareerDefinition career, int start, int end,
-            int scenesPerShift, DayOfWeek[] workDays, int[] sceneWeights, long[] salaries)
+            int scenesPerShift, DayOfWeek[] workDays, int[] sceneWeights, long[] salaries,
+            long[] requiredXp, int[] requiredServiceDays)
         {
             if (career.StartMinute != start || career.EndMinute != end ||
                 career.ScenesPerShift != scenesPerShift || career.QuotaSlots != 20 ||
                 !career.WorkDays.SequenceEqual(workDays) ||
                 !career.Scenes.Select(x => x.Weight).SequenceEqual(sceneWeights) ||
-                !career.Ranks.Select(x => x.MonthlySalary).SequenceEqual(salaries))
-                throw new InvalidOperationException("Career content differs from the authored Batch A contract: " + career.Id);
+                !career.Ranks.Select(x => x.MonthlySalary).SequenceEqual(salaries) ||
+                !career.Ranks.Select(x => x.RequiredXp).SequenceEqual(requiredXp) ||
+                !career.Ranks.Select(x => x.RequiredServiceDays).SequenceEqual(requiredServiceDays))
+                throw new InvalidOperationException("Career content differs from the authored contract: " + career.Id);
         }
 
         private static void Verify(BusinessDefinition business, BusinessType type, BusinessOperationMode mode,
