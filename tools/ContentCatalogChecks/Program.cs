@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using StartupLife.Content;
+using StartupLife.Application;
 using StartupLife.Core;
 using StartupLife.Simulation;
 
@@ -26,6 +27,8 @@ internal static class Program
         Check("invalid appearance id rejects", InvalidAppearanceRejects);
         Check("career outside day schedule rejects", CareerOutsideScheduleRejects);
         Check("built catalog is detached from mutable source arrays", BuiltCatalogIsDetached);
+        Check("affinity tags reject invalid IDs and duplicates", AffinityTagsReject);
+        Check("career-to-business affinity recommendations derive from content tags", CareerBusinessAffinity);
         Check("null authoring entries reject explicitly", NullEntryRejects);
 
         Check("M8-T02 authored business definitions build with functional schedules", AuthoredBusinesses);
@@ -434,10 +437,48 @@ internal static class Program
         source.Skills[0].Thresholds[0] = 999999;
         source.Starts[0].AppearanceIds[0] = "forged.appearance";
         source.Careers[0].Scenes[0].Weight = 1;
+        source.Careers.Single(x => x.Id == "chef").BusinessAffinityTags[0] = "forged-tag";
+        source.Businesses.Single(x => x.Id == "coffee-kiosk").BusinessAffinityTags[0] = "forged-tag";
 
         Equal(100L, catalog.Skills["communication"].Thresholds[0]);
         Equal("base.female", catalog.Starts["fresh"].AppearanceIds[0]);
         Equal(40, catalog.Careers["developer"].Scenes[0].Weight);
+        Equal(true, catalog.Careers["chef"].BusinessAffinityTags.Contains("food"));
+        Equal(true, catalog.Businesses["coffee-kiosk"].BusinessAffinityTags.Contains("food"));
+    }
+
+    private static void AffinityTagsReject()
+    {
+        var careerSource = FirstPlayableContentTemplate.Create();
+        careerSource.Careers.Single(x => x.Id == "chef").BusinessAffinityTags =
+            new[] { "food", "food" };
+        Throws(() => careerSource.Build());
+
+        var businessSource = FirstPlayableContentTemplate.Create();
+        businessSource.Businesses.Single(x => x.Id == "coffee-kiosk").BusinessAffinityTags =
+            new[] { "invalid affinity tag" };
+        Throws(() => businessSource.Build());
+    }
+
+    private static void CareerBusinessAffinity()
+    {
+        var catalog = FirstPlayableContentTemplate.BuildCatalog();
+        Sequence(new[] { "freelance-service", "online-store" },
+            CareerBusinessAffinityPolicy.ForCareer("developer", catalog));
+        Sequence(new[] { "freelance-service", "home-food-preorder", "online-store" },
+            CareerBusinessAffinityPolicy.ForCareer("marketing", catalog));
+        Sequence(new[] { "freelance-service", "online-store" },
+            CareerBusinessAffinityPolicy.ForCareer("sales", catalog));
+        Sequence(new[] { "coffee-kiosk", "freelance-service", "home-food-preorder" },
+            CareerBusinessAffinityPolicy.ForCareer("office-admin", catalog));
+        Sequence(new[] { "coffee-kiosk", "home-food-preorder" },
+            CareerBusinessAffinityPolicy.ForCareer("chef", catalog));
+        Sequence(new[] { "coffee-kiosk", "home-food-preorder" },
+            CareerBusinessAffinityPolicy.ForCareer("barista", catalog));
+        Sequence(Array.Empty<string>(),
+            CareerBusinessAffinityPolicy.ForCareer("unknown-career", catalog));
+        Equal(true, CareerBusinessAffinityPolicy.IsPreferred("chef", "coffee-kiosk", catalog));
+        Equal(false, CareerBusinessAffinityPolicy.IsPreferred("developer", "coffee-kiosk", catalog));
     }
 
     private static void NullEntryRejects()
