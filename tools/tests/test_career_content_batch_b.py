@@ -54,18 +54,30 @@ class CareerContentBatchBTests(unittest.TestCase):
         self.assertIn('catalog.Careers["chef"]', builder)
         self.assertIn('catalog.Careers["barista"]', builder)
 
-    def test_advisory_affinity_is_read_only_not_a_hidden_economy_modifier(self):
+    def test_advisory_affinity_is_data_driven_and_does_not_change_economy(self):
         model = src("Assets/StartupLife/Scripts/Application/LifeDashboardProjection.cs")
         self.assertIn("public static class CareerBusinessAffinityPolicy", model)
-        self.assertIn('["chef"] = new[] { "home-food-preorder" }', model)
-        self.assertIn('["barista"] = new[] { "coffee-kiosk", "home-food-preorder" }', model)
-        self.assertIn("PreferredBusinessIds = CareerBusinessAffinityPolicy.ForCareer(definition.Id, content)", model)
-        self.assertIn("return Array.AsReadOnly(ids.Where(content.Businesses.ContainsKey).ToArray())", model)
-        self.assertIn("This is NOT an eligibility check, unlock, discount or revenue modifier", model)
+        self.assertIn("career.BusinessAffinityTags.Count == 0", model)
+        self.assertIn("x.BusinessAffinityTags.Any(tags.Contains)", model)
+        self.assertIn("OrderBy(x => x, StringComparer.Ordinal)", model)
+        self.assertNotIn("private static readonly IReadOnlyDictionary<string, string[]> Preferred", model)
+        source = src("Assets/StartupLife/Scripts/Content/FirstPlayableContentTemplate.cs")
+        self.assertIn('BusinessAffinityTags = new[] { "food", "supplier-operations" }', source)
+        self.assertIn('BusinessAffinityTags = new[] { "food", "customer-experience" }', source)
+        self.assertIn('BusinessAffinityTags = businessAffinityTags', source)
+        self.assertIn("BusinessAffinityTags = Array.Empty<string>()", src(
+            "Assets/StartupLife/Scripts/Content/ContentCatalogSource.cs"))
+        self.assertIn("ContentAffinityTags.Validate(businessAffinityTags", src(
+            "Assets/StartupLife/Scripts/Core/Definitions.cs"))
+        self.assertIn("ContentAffinityTags.Validate(businessAffinityTags", src(
+            "Assets/StartupLife/Scripts/Core/Business.cs"))
         ui = src("Assets/StartupLife/Scripts/Presentation/LifeDashboardOverlay.cs")
         self.assertIn("FormatPreferredBusinesses(selectedOffer.PreferredBusinessIds)", ui)
         self.assertNotIn("CareerBusinessAffinityPolicy", src(
             "Assets/StartupLife/Scripts/Simulation/SimulationEngine.cs"))
+        checks = src("tools/ContentCatalogChecks/Program.cs")
+        self.assertIn("CareerBusinessAffinityPolicy.ForCareer", checks)
+        self.assertIn("CareerBusinessAffinityPolicy.IsPreferred", checks)
 
     def test_localized_career_scenes_and_courses(self):
         catalog = src("Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs")
@@ -81,8 +93,16 @@ class CareerContentBatchBTests(unittest.TestCase):
         ]
         for key in keys:
             self.assertIn(f'new KeyValuePair<string,string>("{key}"', catalog)
-        self.assertIn("DashboardLocalizationCatalog.TryFindValue(key, out var text)",
-            src("Assets/StartupLife/Scripts/Presentation/LifeDashboardOverlay.cs"))
+        for key in ("course.none", "course.communication", "course.problem",
+                    "course.negotiation", "course.time-management", "course.networking",
+                    "course.leadership"):
+            self.assertIn(f'new KeyValuePair<string,string>("{key}"', catalog)
+        ui = src("Assets/StartupLife/Scripts/Presentation/LifeDashboardOverlay.cs")
+        self.assertIn("DashboardLocalizationCatalog.TryFindValue(key, out var text)", ui)
+        self.assertNotIn('"course.communication" =>', ui)
+        shell = src("Assets/StartupLife/Scripts/Editor/FirstPlayableShellBuilder.cs")
+        self.assertNotIn('Add(table, "course.communication"', shell)
+        self.assertNotIn('Add(table, "course.problem"', shell)
 
     def test_frozen_v2_fingerprint_still_filters_original_catalog_only(self):
         checks = src("tools/EconomicChecks/Program.cs")
