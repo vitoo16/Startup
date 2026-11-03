@@ -36,6 +36,8 @@ class CareerContentBatchATests(unittest.TestCase):
     def test_content_builder_rebuilds_asset_and_checks_career_and_business_catalogs(self):
         builder = read("Assets/StartupLife/Scripts/Editor/FirstPlayableContentBuilder.cs")
         self.assertIn("FirstPlayableContentTemplate.Create()", builder)
+        self.assertIn("RefreshCareerCatalogAndLocalization()", builder)
+        self.assertIn("DashboardLocalizationEditorSync.SyncVietnamese()", builder)
         self.assertIn("catalog.Businesses.Count != 4", builder)
         self.assertIn("catalog.Careers.Count != 4", builder)
         self.assertIn('catalog.Careers["marketing"]', builder)
