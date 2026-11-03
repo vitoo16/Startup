@@ -557,6 +557,7 @@ internal static class Program
              x.Key.StartsWith("career.", StringComparison.Ordinal) ||
              x.Key.StartsWith("scene.", StringComparison.Ordinal) ||
              x.Key.StartsWith("business.", StringComparison.Ordinal) ||
+             x.Key.StartsWith("helper.", StringComparison.Ordinal) ||
              x.Key.StartsWith("course.", StringComparison.Ordinal)) &&
             !string.IsNullOrWhiteSpace(x.Value)));
         foreach (var text in new[] { "Nghề nghiệp", "Kỹ năng", "Tài chính", "Kinh doanh",
@@ -578,7 +579,8 @@ internal static class Program
             "scene.office-document-processing", "scene.chef-preparation",
             "scene.barista-drink-preparation", "course.communication", "course.problem",
             "course.negotiation", "course.time-management", "course.networking",
-            "course.leadership", "business.coffee-kiosk" })
+            "course.leadership", "business.coffee-kiosk", "helper.cafe-assistant",
+            "business.marketing-agency", "business.small-cafe", "business.fashion-store" })
         {
             True(DashboardLocalizationCatalog.TryFindValue(key, out var value));
             True(entries.Any(x => x.Key == key && x.Value == value));
