@@ -569,7 +569,7 @@ internal static class Program
         }
         True(!DashboardLocalizationCatalog.TryFindKey("never-localized", out _));
         foreach (var key in new[] { "career.developer", "career.marketing", "career.sales",
-            "career.office-admin", "career.chef", "career.barista",
+            "career.office-admin", "career.chef", "career.barista", "career.affinity.hint",
             "scene.marketing-campaign-planning", "scene.sales-negotiation",
             "scene.office-document-processing", "scene.chef-preparation",
             "scene.barista-drink-preparation", "course.communication", "course.problem",
