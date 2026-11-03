@@ -83,6 +83,31 @@ namespace StartupLife.Application
         }
     }
 
+    // Informational promotion progress only. The simulation decides when a
+    // qualifying shift applies the next rank; calendar tenure is not a count
+    // of completed work shifts.
+    public sealed class CareerPromotionDashboardItem
+    {
+        public int NextRankNumber { get; }
+        public long NextMonthlySalaryVnd { get; }
+        public long MissingCareerXp { get; }
+        public int MissingCalendarDays { get; }
+
+        internal CareerPromotionDashboardItem(
+            EmploymentState employment, CareerDefinition definition, SimDate today)
+        {
+            var next = definition.Ranks[employment.Rank + 1];
+            NextRankNumber = employment.Rank + 2;
+            NextMonthlySalaryVnd = next.MonthlySalary;
+            MissingCareerXp = Math.Max(0L, next.RequiredXp - employment.Xp);
+            var elapsed = (DateTime.ParseExact(today.ToString(), "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture) -
+                DateTime.ParseExact(employment.StartedIso, "yyyy-MM-dd",
+                    System.Globalization.CultureInfo.InvariantCulture)).Days;
+            MissingCalendarDays = Math.Max(0, next.RequiredServiceDays - Math.Max(0, elapsed));
+        }
+    }
+
     public sealed class CourseDashboardItem
     {
         public string CourseId { get; }
@@ -95,8 +120,10 @@ namespace StartupLife.Application
         public bool IsActive { get; }
         public long? ProgressUnits { get; }
         public long? TargetUnits { get; }
+        public long? StudyMinutesRemaining { get; }
+        public long? Minimum60MinuteSessions { get; }
 
-        internal CourseDashboardItem(CourseDefinition definition, ActiveCourseSnapshot? active)
+        internal CourseDashboardItem(CourseDefinition definition, ActiveCourseSnapshot? active, int learningSpeed)
         {
             CourseId = definition.Id;
             NameKey = definition.NameKey;
@@ -108,6 +135,16 @@ namespace StartupLife.Application
             IsActive = active?.DefinitionId == CourseId;
             ProgressUnits = IsActive ? active!.ProgressUnits : (long?)null;
             TargetUnits = IsActive ? active!.TargetUnits : (long?)null;
+            if (IsActive && learningSpeed > 0 && TargetUnits.HasValue)
+            {
+                var unitsRemaining = Math.Max(0L, TargetUnits.Value - ProgressUnits!.Value);
+                // Same integer ceiling as SimulationEngine.Study, expressed in
+                // actual study minutes after the character's learning-speed modifier.
+                StudyMinutesRemaining = unitsRemaining == 0 ? 0 :
+                    1 + (unitsRemaining - 1) / learningSpeed;
+                Minimum60MinuteSessions = StudyMinutesRemaining.Value == 0 ? 0 :
+                    1 + (StudyMinutesRemaining.Value - 1) / 60;
+            }
         }
     }
 
@@ -154,17 +191,20 @@ namespace StartupLife.Application
     {
         public GameSnapshot Game { get; }
         public CareerBiographySnapshot Career { get; }
+        public CareerPromotionDashboardItem? CareerPromotion { get; }
         public IReadOnlyList<CareerDashboardItem> Careers { get; }
         public IReadOnlyList<SkillDashboardItem> Skills { get; }
         public IReadOnlyList<CourseDashboardItem> Courses { get; }
         public FinanceDashboardSnapshot Finance { get; }
 
         internal LifeDashboardSnapshot(GameSnapshot game, CareerBiographySnapshot career,
+            CareerPromotionDashboardItem? careerPromotion,
             IEnumerable<CareerDashboardItem> careers, IEnumerable<SkillDashboardItem> skills,
             IEnumerable<CourseDashboardItem> courses, FinanceDashboardSnapshot finance)
         {
             Game = game;
             Career = career;
+            CareerPromotion = careerPromotion;
             Careers = Array.AsReadOnly(careers.ToArray());
             Skills = Array.AsReadOnly(skills.ToArray());
             Courses = Array.AsReadOnly(courses.ToArray());
@@ -189,12 +229,18 @@ namespace StartupLife.Application
                 return new SkillDashboardItem(x, value);
             });
             var courses = content.Courses.Values.OrderBy(x => x.Id, StringComparer.Ordinal)
-                .Select(x => new CourseDashboardItem(x, game.ActiveCourse));
+                .Select(x => new CourseDashboardItem(x, game.ActiveCourse, state.LearningSpeed));
+            CareerPromotionDashboardItem? careerPromotion = null;
+            var current = state.Employment;
+            if (current != null && content.Careers.TryGetValue(current.CareerId, out var currentDefinition) &&
+                current.DefinitionRevision == currentDefinition.Revision &&
+                current.Rank >= 0 && current.Rank + 1 < currentDefinition.Ranks.Count)
+                careerPromotion = new CareerPromotionDashboardItem(current, currentDefinition, state.Date);
             var settled = state.SaveVersion == 3 || (state.SaveVersion == 4 &&
                 state.EventV4?.Journal != null)
                 ? BusinessFinanceProjection.FromCommittedState(state)
                 : Array.Empty<BusinessFinanceDaySnapshot>();
-            return new LifeDashboardSnapshot(game, career, careers, skills, courses,
+            return new LifeDashboardSnapshot(game, career, careerPromotion, careers, skills, courses,
                 new FinanceDashboardSnapshot(state, career, settled));
         }
     }
