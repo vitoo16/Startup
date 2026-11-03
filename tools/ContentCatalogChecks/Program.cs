@@ -253,6 +253,8 @@ internal static class Program
         Sequence(new[] { 25, 20, 20, 15, 10, 10 }, marketing.Scenes.Select(x => x.Weight));
         Sequence(new long[] { 9000000, 13500000, 18000000 },
             marketing.Ranks.Select(x => x.MonthlySalary));
+        Sequence(new long[] { 0, 1000, 3000 }, marketing.Ranks.Select(x => x.RequiredXp));
+        Sequence(new[] { 0, 30, 90 }, marketing.Ranks.Select(x => x.RequiredServiceDays));
         Sequence(new[] { "problem-solving", "communication", "problem-solving",
             "leadership", "communication", "networking" }, marketing.Scenes.Select(x => x.SkillId));
         var marketingQuotas = QuotaScheduler.Apportion(marketing.Scenes, marketing.QuotaSlots);
@@ -267,6 +269,8 @@ internal static class Program
         Sequence(new[] { 20, 20, 15, 20, 15, 10 }, sales.Scenes.Select(x => x.Weight));
         Sequence(new long[] { 8000000, 12000000, 16000000 },
             sales.Ranks.Select(x => x.MonthlySalary));
+        Sequence(new long[] { 0, 1000, 3000 }, sales.Ranks.Select(x => x.RequiredXp));
+        Sequence(new[] { 0, 30, 90 }, sales.Ranks.Select(x => x.RequiredServiceDays));
         var salesQuotas = QuotaScheduler.Apportion(sales.Scenes, sales.QuotaSlots);
         Sequence(new[] { 4, 4, 3, 4, 3, 2 }, sales.Scenes.Select(x => salesQuotas[x.Id]));
 
@@ -279,6 +283,8 @@ internal static class Program
         Sequence(new[] { 25, 20, 20, 15, 10, 10 }, office.Scenes.Select(x => x.Weight));
         Sequence(new long[] { 7000000, 10500000, 14000000 },
             office.Ranks.Select(x => x.MonthlySalary));
+        Sequence(new long[] { 0, 1000, 3000 }, office.Ranks.Select(x => x.RequiredXp));
+        Sequence(new[] { 0, 30, 90 }, office.Ranks.Select(x => x.RequiredServiceDays));
         var officeQuotas = QuotaScheduler.Apportion(office.Scenes, office.QuotaSlots);
         Sequence(new[] { 5, 4, 4, 3, 2, 2 }, office.Scenes.Select(x => officeQuotas[x.Id]));
 
