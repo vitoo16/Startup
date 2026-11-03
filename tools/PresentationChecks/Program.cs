@@ -568,8 +568,12 @@ internal static class Program
         }
         True(!DashboardLocalizationCatalog.TryFindKey("never-localized", out _));
         foreach (var key in new[] { "career.developer", "career.marketing", "career.sales",
-            "career.office-admin", "scene.marketing-campaign-planning", "scene.sales-negotiation",
-            "scene.office-document-processing" })
+            "career.office-admin", "career.chef", "career.barista",
+            "scene.marketing-campaign-planning", "scene.sales-negotiation",
+            "scene.office-document-processing", "scene.chef-preparation",
+            "scene.barista-drink-preparation", "course.communication", "course.problem",
+            "course.negotiation", "course.time-management", "course.networking",
+            "course.leadership", "business.coffee-kiosk" })
         {
             True(DashboardLocalizationCatalog.TryFindValue(key, out var value));
             True(entries.Any(x => x.Key == key && x.Value == value));
