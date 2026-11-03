@@ -90,14 +90,6 @@ namespace StartupLife.Core
             BusinessOperationMode operationMode, long minimumStartupInvestment, long maximumStartupInvestment,
             IEnumerable<PricingPosture> allowedPricingPostures, PricingPosture defaultPricingPosture,
             long minimumReinvestment, long maximumReinvestment)
-            : this(id, revision, nameKey, type, operationMode, minimumStartupInvestment, maximumStartupInvestment,
-                allowedPricingPostures, defaultPricingPosture, minimumReinvestment, maximumReinvestment,
-                Array.Empty<string>()) { }
-
-        public BusinessDefinition(string id, string revision, string nameKey, BusinessType type,
-            BusinessOperationMode operationMode, long minimumStartupInvestment, long maximumStartupInvestment,
-            IEnumerable<PricingPosture> allowedPricingPostures, PricingPosture defaultPricingPosture,
-            long minimumReinvestment, long maximumReinvestment, IEnumerable<string> businessAffinityTags)
         {
             _ = new ContentId(id);
             var pricing = allowedPricingPostures?.ToArray() ?? throw new ArgumentNullException(nameof(allowedPricingPostures));
@@ -114,7 +106,7 @@ namespace StartupLife.Core
             AllowedPricingPostures = Array.AsReadOnly((PricingPosture[])pricing.Clone());
             DefaultPricingPosture = defaultPricingPosture;
             MinimumReinvestment = minimumReinvestment; MaximumReinvestment = maximumReinvestment;
-            BusinessAffinityTags = ContentAffinityTags.Validate(businessAffinityTags, nameof(businessAffinityTags));
+            BusinessAffinityTags = ContentAffinityTags.Validate(Array.Empty<string>(), nameof(BusinessAffinityTags));
         }
 
         public BusinessDefinition(string id, string revision, string nameKey, BusinessType type,
@@ -122,8 +114,10 @@ namespace StartupLife.Core
             IEnumerable<PricingPosture> allowedPricingPostures, PricingPosture defaultPricingPosture,
             long minimumReinvestment, long maximumReinvestment, BusinessOperatingRequirements operatingRequirements)
             : this(id, revision, nameKey, type, operationMode, minimumStartupInvestment, maximumStartupInvestment,
-                allowedPricingPostures, defaultPricingPosture, minimumReinvestment, maximumReinvestment,
-                operatingRequirements, Array.Empty<string>()) { }
+                allowedPricingPostures, defaultPricingPosture, minimumReinvestment, maximumReinvestment)
+        {
+            OperatingRequirements = operatingRequirements ?? throw new ArgumentNullException(nameof(operatingRequirements));
+        }
 
         public BusinessDefinition(string id, string revision, string nameKey, BusinessType type,
             BusinessOperationMode operationMode, long minimumStartupInvestment, long maximumStartupInvestment,
@@ -131,10 +125,10 @@ namespace StartupLife.Core
             long minimumReinvestment, long maximumReinvestment, BusinessOperatingRequirements operatingRequirements,
             IEnumerable<string> businessAffinityTags)
             : this(id, revision, nameKey, type, operationMode, minimumStartupInvestment, maximumStartupInvestment,
-                allowedPricingPostures, defaultPricingPosture, minimumReinvestment, maximumReinvestment,
-                businessAffinityTags)
+                allowedPricingPostures, defaultPricingPosture, minimumReinvestment, maximumReinvestment)
         {
             OperatingRequirements = operatingRequirements ?? throw new ArgumentNullException(nameof(operatingRequirements));
+            BusinessAffinityTags = ContentAffinityTags.Validate(businessAffinityTags, nameof(businessAffinityTags));
         }
     }
 
