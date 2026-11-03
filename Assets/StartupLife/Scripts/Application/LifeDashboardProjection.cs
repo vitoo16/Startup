@@ -29,6 +29,28 @@ namespace StartupLife.Application
         }
     }
 
+    // Read-only catalog offer. No employment data, rank change or career
+    // prerequisites are invented by presentation; AcceptJob remains authoritative.
+    public sealed class CareerDashboardItem
+    {
+        public string CareerId { get; }
+        public string NameKey { get; }
+        public long StartingMonthlySalaryVnd { get; }
+        public int StartMinute { get; }
+        public int EndMinute { get; }
+        public IReadOnlyList<DayOfWeek> WorkDays { get; }
+
+        internal CareerDashboardItem(CareerDefinition definition)
+        {
+            CareerId = definition.Id;
+            NameKey = definition.NameKey;
+            StartingMonthlySalaryVnd = definition.Ranks[0].MonthlySalary;
+            StartMinute = definition.StartMinute;
+            EndMinute = definition.EndMinute;
+            WorkDays = Array.AsReadOnly(definition.WorkDays.ToArray());
+        }
+    }
+
     public sealed class CourseDashboardItem
     {
         public string CourseId { get; }
@@ -100,16 +122,18 @@ namespace StartupLife.Application
     {
         public GameSnapshot Game { get; }
         public CareerBiographySnapshot Career { get; }
+        public IReadOnlyList<CareerDashboardItem> Careers { get; }
         public IReadOnlyList<SkillDashboardItem> Skills { get; }
         public IReadOnlyList<CourseDashboardItem> Courses { get; }
         public FinanceDashboardSnapshot Finance { get; }
 
         internal LifeDashboardSnapshot(GameSnapshot game, CareerBiographySnapshot career,
-            IEnumerable<SkillDashboardItem> skills, IEnumerable<CourseDashboardItem> courses,
-            FinanceDashboardSnapshot finance)
+            IEnumerable<CareerDashboardItem> careers, IEnumerable<SkillDashboardItem> skills,
+            IEnumerable<CourseDashboardItem> courses, FinanceDashboardSnapshot finance)
         {
             Game = game;
             Career = career;
+            Careers = Array.AsReadOnly(careers.ToArray());
             Skills = Array.AsReadOnly(skills.ToArray());
             Courses = Array.AsReadOnly(courses.ToArray());
             Finance = finance;
@@ -124,6 +148,8 @@ namespace StartupLife.Application
             if (content == null) throw new ArgumentNullException(nameof(content));
             var game = new GameSnapshot(state, content);
             var career = CareerBiographyProjection.FromCommittedState(state, content);
+            var careers = content.Careers.Values.OrderBy(x => x.Id, StringComparer.Ordinal)
+                .Select(x => new CareerDashboardItem(x));
             var skillMap = state.Skills.ToDictionary(x => x.Id, StringComparer.Ordinal);
             var skills = content.Skills.Values.OrderBy(x => x.Id, StringComparer.Ordinal).Select(x =>
             {
@@ -136,7 +162,7 @@ namespace StartupLife.Application
                 state.EventV4?.Journal != null)
                 ? BusinessFinanceProjection.FromCommittedState(state)
                 : Array.Empty<BusinessFinanceDaySnapshot>();
-            return new LifeDashboardSnapshot(game, career, skills, courses,
+            return new LifeDashboardSnapshot(game, career, careers, skills, courses,
                 new FinanceDashboardSnapshot(state, career, settled));
         }
     }
