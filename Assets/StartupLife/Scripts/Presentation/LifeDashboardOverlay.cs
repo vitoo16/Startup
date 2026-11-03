@@ -292,7 +292,7 @@ namespace StartupLife.Presentation
                 button.GetComponent<Image>().color = isSelected ? Accent : Surface;
                 var label = labels[id];
                 label.color = isSelected ? Color.white : Ink;
-                label.text = (isSelected ? "✓ " : "Chọn · ") + title;
+                label.text = title;
             }
         }
 
