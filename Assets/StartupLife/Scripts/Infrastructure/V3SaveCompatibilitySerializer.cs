@@ -23,11 +23,14 @@ namespace StartupLife.Infrastructure
 
         public V3SaveCompatibilitySerializer(ContentCatalog historicalContent,
             IRestoreStateValidator originalRestoreValidator, V2ToV3Migration migration,
-            StagedV3SaveSerializer staged)
+            StagedV3SaveSerializer staged, ContentCatalog? liveContent = null)
         {
             if (historicalContent == null || originalRestoreValidator == null)
                 throw new ArgumentNullException(nameof(historicalContent));
-            Content = historicalContent;
+            // The V2 reader must use its original historical version while the
+            // V3/V4 command/read model may use a distinct, explicitly versioned
+            // live catalog. Existing four-argument construction is unchanged.
+            Content = liveContent ?? historicalContent;
             legacy = new JsonSaveSerializer(historicalContent, originalRestoreValidator,
                 new SyntheticV0Migration(), new V1ToV2Migration());
             this.migration = migration ?? throw new ArgumentNullException(nameof(migration));
