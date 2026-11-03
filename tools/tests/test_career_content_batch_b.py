@@ -77,6 +77,8 @@ class CareerContentBatchBTests(unittest.TestCase):
             "Assets/StartupLife/Scripts/Core/Business.cs"))
         ui = src("Assets/StartupLife/Scripts/Presentation/LifeDashboardOverlay.cs")
         self.assertIn("FormatPreferredBusinesses(selectedOffer.PreferredBusinessIds)", ui)
+        self.assertIn("DisplayCareerAffinityHint()", ui)
+        self.assertIn('"career.affinity.hint"', ui)
         self.assertNotIn("CareerBusinessAffinityPolicy", src(
             "Assets/StartupLife/Scripts/Simulation/SimulationEngine.cs"))
         checks = src("tools/ContentCatalogChecks/Program.cs")
@@ -90,7 +92,7 @@ class CareerContentBatchBTests(unittest.TestCase):
         self.assertEqual(len(declared), len(set(declared)),
                          "Duplicate Vietnamese dashboard localization keys")
         keys = [
-            "career.chef", "career.barista",
+            "career.chef", "career.barista", "career.affinity.hint",
             "scene.chef-preparation", "scene.chef-cooking", "scene.chef-plating",
             "scene.chef-team-coordination", "scene.chef-supplier-discussion",
             "scene.chef-rush-period", "scene.barista-opening-prep",
