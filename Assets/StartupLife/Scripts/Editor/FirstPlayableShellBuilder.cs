@@ -662,7 +662,7 @@ namespace StartupLife.Editor
 
             Add(table, "action.accept_developer", "Nhận việc Lập trình viên");
             Add(table, "action.work", "Đi làm");
-            Add(table, "action.buy_course", "Mua khóa Giao tiếp");
+            Add(table, "action.buy_course", "Mua khóa học");
             Add(table, "action.study_60", "Học 60 phút");
             Add(table, "action.advance_day", "Kết thúc ngày");
             Add(table, "action.resign", "Nghỉ việc");
