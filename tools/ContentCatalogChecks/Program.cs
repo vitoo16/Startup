@@ -255,6 +255,9 @@ internal static class Program
             marketing.Ranks.Select(x => x.MonthlySalary));
         Sequence(new long[] { 0, 1000, 3000 }, marketing.Ranks.Select(x => x.RequiredXp));
         Sequence(new[] { 0, 30, 90 }, marketing.Ranks.Select(x => x.RequiredServiceDays));
+        Sequence(new[] { "networking", "communication", "networking" },
+            marketing.Ranks.Select(x => x.GrantSkillId));
+        Sequence(new[] { 0, 1, 2 }, marketing.Ranks.Select(x => x.GrantLevel));
         Sequence(new[] { "problem-solving", "communication", "problem-solving",
             "leadership", "communication", "networking" }, marketing.Scenes.Select(x => x.SkillId));
         var marketingQuotas = QuotaScheduler.Apportion(marketing.Scenes, marketing.QuotaSlots);
@@ -271,6 +274,9 @@ internal static class Program
             sales.Ranks.Select(x => x.MonthlySalary));
         Sequence(new long[] { 0, 1000, 3000 }, sales.Ranks.Select(x => x.RequiredXp));
         Sequence(new[] { 0, 30, 90 }, sales.Ranks.Select(x => x.RequiredServiceDays));
+        Sequence(new[] { "negotiation", "communication", "negotiation" },
+            sales.Ranks.Select(x => x.GrantSkillId));
+        Sequence(new[] { 0, 1, 2 }, sales.Ranks.Select(x => x.GrantLevel));
         var salesQuotas = QuotaScheduler.Apportion(sales.Scenes, sales.QuotaSlots);
         Sequence(new[] { 4, 4, 3, 4, 3, 2 }, sales.Scenes.Select(x => salesQuotas[x.Id]));
 
@@ -285,6 +291,9 @@ internal static class Program
             office.Ranks.Select(x => x.MonthlySalary));
         Sequence(new long[] { 0, 1000, 3000 }, office.Ranks.Select(x => x.RequiredXp));
         Sequence(new[] { 0, 30, 90 }, office.Ranks.Select(x => x.RequiredServiceDays));
+        Sequence(new[] { "time-management", "problem-solving", "leadership" },
+            office.Ranks.Select(x => x.GrantSkillId));
+        Sequence(new[] { 0, 1, 2 }, office.Ranks.Select(x => x.GrantLevel));
         var officeQuotas = QuotaScheduler.Apportion(office.Scenes, office.QuotaSlots);
         Sequence(new[] { 5, 4, 4, 3, 2, 2 }, office.Scenes.Select(x => officeQuotas[x.Id]));
 
