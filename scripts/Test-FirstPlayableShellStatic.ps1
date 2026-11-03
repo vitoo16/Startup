@@ -102,7 +102,10 @@ Add-Check 'M9 Unity scene runtime business panel wiring' (
 Add-Check 'M9 business finance and controls are visible through overlay' (
     ($businessOverlay -match 'LastSettledFinanceValue') -and
     ($businessOverlay -match 'BusinessPortfolioValue') -and
-    ($businessOverlay -match 'AddLaunch\(content\.transform') -and
+    ($businessOverlay -match 'SyncLaunchOptions\(operations\.LaunchOptions\)') -and
+    ($businessOverlay -match 'launchButtons\.Add\(id') -and
+    ($businessOverlay -match 'host\.LaunchBusiness\(id\)') -and
+    ($businessOverlay -match 'option\.MinimumInvestmentVnd') -and
     ($businessOverlay -match 'PauseBusinessButton') -and
     ($businessOverlay -match 'ResumeBusinessButton') -and
     ($businessOverlay -match 'CloseBusinessButton')) 'Runtime controls dispatch canonical player commands'
