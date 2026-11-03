@@ -736,11 +736,13 @@ namespace StartupLife.Presentation
             _ => key
         };
 
-        private static string DisplayCourse(string key) => key switch
-        {
-            "course.communication" => "Khóa Giao tiếp",
-            "course.problem" => "Khóa Giải quyết vấn đề",
-            _ => key
-        };
+        private static string DisplayCourse(string key) =>
+            DashboardLocalizationCatalog.TryFindValue(key, out var text)
+                ? text : key switch
+                {
+                    "course.communication" => "Khóa Giao tiếp",
+                    "course.problem" => "Khóa Giải quyết vấn đề",
+                    _ => key
+                };
     }
 }
