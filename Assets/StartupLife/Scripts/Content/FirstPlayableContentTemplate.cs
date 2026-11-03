@@ -45,6 +45,7 @@ namespace StartupLife.Content
                         Id = "developer",
                         Revision = "v1",
                         NameKey = "career.developer",
+                        BusinessAffinityTags = new[] { "digital-product", "professional-services" },
                         StartMinute = 540,
                         EndMinute = 1020,
                         ScenesPerShift = 4,
@@ -133,10 +134,15 @@ namespace StartupLife.Content
                 },
                 Businesses = new[]
                 {
-                    FunctionalBusiness(FreelanceId, BusinessType.FreelanceService, BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120),
-                    FunctionalBusiness(CoffeeKioskId, BusinessType.CoffeeKiosk, BusinessOperationMode.FullTimeRequired, 540, 1020, 480),
-                    FunctionalBusiness(OnlineStoreId, BusinessType.OnlineStore, BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120),
-                    FunctionalBusiness(HomeFoodPreorderId, BusinessType.HomeFoodPreorder, BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120)
+                    FunctionalBusiness(FreelanceId, BusinessType.FreelanceService, BusinessOperationMode.SideHustleCompatible,
+                        1080, 1320, 120, "professional-services", "digital-product", "customer-acquisition",
+                        "supplier-operations", "b2b-conversion"),
+                    FunctionalBusiness(CoffeeKioskId, BusinessType.CoffeeKiosk, BusinessOperationMode.FullTimeRequired,
+                        540, 1020, 480, "food", "customer-experience", "supplier-operations"),
+                    FunctionalBusiness(OnlineStoreId, BusinessType.OnlineStore, BusinessOperationMode.SideHustleCompatible,
+                        1080, 1320, 120, "digital-product", "customer-acquisition", "b2b-conversion"),
+                    FunctionalBusiness(HomeFoodPreorderId, BusinessType.HomeFoodPreorder, BusinessOperationMode.SideHustleCompatible,
+                        1080, 1320, 120, "food", "customer-acquisition", "supplier-operations")
                 },
                 Economy = new EconomyContentSource
                 {
@@ -154,7 +160,7 @@ namespace StartupLife.Content
 
         public static ContentCatalog BuildCatalog() => Create().Build();
 
-        // Batch A follows the original GDD's MVP profession catalog. New
+        // Career batches A and B follow the original GDD's six-profession MVP catalog. New
         // definitions are additive: the shipped Developer definition above
         // stays byte-for-byte equivalent in its schedule, scene rewards and ranks.
         private static CareerContentSource MarketingCareer() => new CareerContentSource
@@ -162,6 +168,7 @@ namespace StartupLife.Content
             Id = "marketing",
             Revision = "v1",
             NameKey = "career.marketing",
+                        BusinessAffinityTags = new[] { "customer-acquisition", "professional-services" },
             StartMinute = 540,
             EndMinute = 1020,
             ScenesPerShift = 4,
@@ -189,6 +196,7 @@ namespace StartupLife.Content
             Id = "sales",
             Revision = "v1",
             NameKey = "career.sales",
+                        BusinessAffinityTags = new[] { "b2b-conversion", "professional-services" },
             StartMinute = 540,
             EndMinute = 1080,
             ScenesPerShift = 4,
@@ -216,6 +224,7 @@ namespace StartupLife.Content
             Id = "office-admin",
             Revision = "v1",
             NameKey = "career.office-admin",
+                        BusinessAffinityTags = new[] { "supplier-operations", "professional-services" },
             StartMinute = 510,
             EndMinute = 1050,
             ScenesPerShift = 4,
@@ -245,6 +254,7 @@ namespace StartupLife.Content
             Id = "chef",
             Revision = "v1",
             NameKey = "career.chef",
+                        BusinessAffinityTags = new[] { "food", "supplier-operations" },
             StartMinute = 600,
             EndMinute = 1080,
             ScenesPerShift = 4,
@@ -272,6 +282,7 @@ namespace StartupLife.Content
             Id = "barista",
             Revision = "v1",
             NameKey = "career.barista",
+                        BusinessAffinityTags = new[] { "food", "customer-experience" },
             StartMinute = 480,
             EndMinute = 960,
             ScenesPerShift = 4,
@@ -351,7 +362,7 @@ namespace StartupLife.Content
 
         // Provisional functional content only; capital/pricing are not final economy balance.
         private static BusinessContentSource FunctionalBusiness(string id, BusinessType type, BusinessOperationMode mode,
-            int start, int end, int required)
+            int start, int end, int required, params string[] businessAffinityTags)
         {
             var windows = new BusinessOperatingWindowContentSource[7];
             for (var day = 0; day < windows.Length; day++)
@@ -360,7 +371,8 @@ namespace StartupLife.Content
                 Type = type, OperationMode = mode, MinimumStartupInvestment = 100, MaximumStartupInvestment = 1000,
                 AllowedPricingPostures = new[] { PricingPosture.Budget, PricingPosture.Standard, PricingPosture.Premium },
                 DefaultPricingPosture = PricingPosture.Standard, MinimumReinvestment = 1, MaximumReinvestment = 1000,
-                OperatingWindows = windows, RequiredOwnerMinutes = required };
+                OperatingWindows = windows, RequiredOwnerMinutes = required,
+                BusinessAffinityTags = businessAffinityTags };
         }
 
         private static CareerSceneContentSource Scene(string id, int weight) =>
