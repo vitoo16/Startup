@@ -961,6 +961,92 @@ internal static class Program
             Bytes(checkpoint, f.Session.ExportCheckpoint());
         });
 
+        Check("career journey preserves completed employment stints and switch guidance", () =>
+        {
+            var baseCatalog = Catalog();
+            var developer = baseCatalog.Careers["developer"];
+            var office = new CareerDefinition("office", "v1", "career.office", 600, 1020, 4, 20,
+                developer.WorkDays, developer.Scenes, developer.Ranks);
+            var catalog = new ContentCatalog("fixture.switch-careers.v1",
+                baseCatalog.Skills.Values,
+                baseCatalog.Careers.Values.Concat(new[] { office }),
+                baseCatalog.Courses.Values, baseCatalog.Starts.Values,
+                baseCatalog.Businesses.Values, baseCatalog.Economy, baseCatalog.Schedule);
+            var f = new Fixture(catalog);
+            f.Create();
+            var fresh = LifeDashboardProjection.FromCommittedState(f.State(), catalog);
+            Equal(CareerTransitionContext.FirstEmployment,
+                CareerSelectionPolicy.TransitionContext(fresh,
+                    fresh.Careers.Single(x => x.CareerId == "developer")));
+            f.Accept();
+            var employed = LifeDashboardProjection.FromCommittedState(f.State(), catalog);
+            Equal(CareerTransitionContext.AlreadyEmployed,
+                CareerSelectionPolicy.TransitionContext(employed,
+                    employed.Careers.Single(x => x.CareerId == "office")));
+            Equal(1, employed.Career.EmploymentPeriodCount);
+            Equal(1, employed.Career.DistinctProfessionCount);
+            Equal(0, employed.Career.ProfessionChangeCount);
+            Equal(0, employed.Career.CurrentEmployment!.ElapsedCalendarDays!.Value);
+
+            f.Evening();
+            var earned = f.State();
+            Equal(40L, earned.Employment!.Xp);
+            Equal(1, earned.Claims.Count);
+            var bank = earned.Cash;
+            var personalLevel = f.Session.Snapshot().SkillLevels["communication"];
+            f.SendOk(new GameCommand(CommandKind.Resign));
+            var unemployed = LifeDashboardProjection.FromCommittedState(f.State(), catalog);
+            True(!unemployed.Career.IsEmployed);
+            Equal(CareerTransitionContext.ReturningProfession,
+                CareerSelectionPolicy.TransitionContext(unemployed,
+                    unemployed.Careers.Single(x => x.CareerId == "developer")));
+            Equal(CareerTransitionContext.ChangingProfession,
+                CareerSelectionPolicy.TransitionContext(unemployed,
+                    unemployed.Careers.Single(x => x.CareerId == "office")));
+            Equal(1, unemployed.Career.PreviousEmployments.Count);
+            Equal(40L, unemployed.Career.PreviousEmployments[0].CareerXp);
+            Equal(0, unemployed.Career.PreviousEmployments[0].ElapsedCalendarDays!.Value);
+            Equal(1, unemployed.Career.PreviousEmployments[0].UnpaidClaimCount);
+            True(unemployed.Career.PreviousEmployments[0].MonthlySalaryAtRecordedRankVnd.HasValue);
+            f.SendOk(new GameCommand(CommandKind.AcceptJob, "office"));
+            var switched = LifeDashboardProjection.FromCommittedState(f.State(), catalog);
+            Equal("office", switched.Career.CurrentEmployment!.CareerId);
+            Equal(0L, switched.Career.CurrentEmployment.CareerXp);
+            Equal(2, switched.Career.EmploymentPeriodCount);
+            Equal(2, switched.Career.DistinctProfessionCount);
+            Equal(1, switched.Career.ProfessionChangeCount);
+            Equal(40L, switched.Career.PreviousEmployments[0].CareerXp);
+            Equal(1, switched.Career.PreviousEmployments[0].UnpaidClaimCount);
+            Equal(bank, f.Session.Snapshot().Cash);
+            Equal(personalLevel, f.Session.Snapshot().SkillLevels["communication"]);
+
+            f.SendOk(new GameCommand(CommandKind.Resign));
+            f.Accept();
+            var returned = LifeDashboardProjection.FromCommittedState(f.State(), catalog);
+            Equal(3, returned.Career.EmploymentPeriodCount);
+            Equal(2, returned.Career.DistinctProfessionCount);
+            Equal(2, returned.Career.ProfessionChangeCount);
+            Equal(0L, returned.Career.CurrentEmployment!.CareerXp);
+            Equal(2, returned.Career.PreviousEmployments.Count);
+            var checkpoint = f.Session.ExportCheckpoint();
+            var detached = f.State();
+            detached.PreviousEmployment[0].DefinitionRevision = "obsolete";
+            detached.PreviousEmployment[0].StartedIso = "";
+            var oldRevision = LifeDashboardProjection.FromCommittedState(detached, catalog);
+            True(oldRevision.Career.PreviousEmployments[0].CareerNameKey == null);
+            True(!oldRevision.Career.PreviousEmployments[0].MonthlySalaryAtRecordedRankVnd.HasValue);
+            True(!oldRevision.Career.PreviousEmployments[0].ElapsedCalendarDays.HasValue);
+            Equal(40L, oldRevision.Career.PreviousEmployments[0].CareerXp);
+            Bytes(checkpoint, f.Session.ExportCheckpoint());
+
+            var same = new Fixture(); same.Create(); same.Accept();
+            same.SendOk(new GameCommand(CommandKind.Resign)); same.Accept();
+            var sameJob = LifeDashboardProjection.FromCommittedState(same.State(), same.Content);
+            Equal(2, sameJob.Career.EmploymentPeriodCount);
+            Equal(1, sameJob.Career.DistinctProfessionCount);
+            Equal(0, sameJob.Career.ProfessionChangeCount);
+        });
+
         Check("course chooser is catalog-driven, keeps selected IDs and mirrors purchase rules", () =>
         {
             var f = new Fixture(); f.Create();
