@@ -24,6 +24,8 @@ class CareerDashboardWiringTests(unittest.TestCase):
         self.assertIn("MonthlySalariesVnd = Array.AsReadOnly(definition.Ranks.Select(x => x.MonthlySalary).ToArray())", model)
         self.assertIn("string.Join(\" → \", selectedOffer.MonthlySalariesVnd.Select(Money))", ui)
         self.assertIn("FormatWorkDays(selectedOffer.WorkDays)", ui)
+        self.assertIn("CareerBusinessAffinityPolicy.ForCareer(definition.Id, content)", model)
+        self.assertIn("FormatPreferredBusinesses(selectedOffer.PreferredBusinessIds)", ui)
         self.assertIn("DashboardLocalizationCatalog.TryFindValue(key, out var value)", ui)
         self.assertIn("label.text = title;", ui)
         self.assertIn("private static string FormatWorkDays(IReadOnlyList<DayOfWeek> days)", ui)
