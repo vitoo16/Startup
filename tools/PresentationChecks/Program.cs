@@ -43,6 +43,8 @@ internal static class Program
         Check("M12 Vietnamese dashboard localization has stable keys and complete onboarding",
             DashboardTranslations);
         Check("M15 event choice localization keys are scoped, unique and immutable", EventChoiceTranslations);
+        Check("profession affinity is advisory, filtered, detached and not a business lock",
+            ProfessionAffinityAdvisory);
         Check("initial snapshot selects character creation and copies read model", InitialProjection);
         Check("create character dispatches current run revision and injected command id", CreateDispatch);
         Check("life actions dispatch frozen commands from latest snapshot revision", ActionDispatch);
@@ -503,6 +505,41 @@ internal static class Program
             True(entries.Any(x => x.Key == "event.choice." + key));
         ThrowsNotSupported(() =>
             ((IList<KeyValuePair<string,string>>)entries).Clear());
+    }
+
+    private static void ProfessionAffinityAdvisory()
+    {
+        var skill = new SkillDefinition("communication", "skill.communication", 100, 300, 600, 1000, 1500);
+        CareerDefinition Career(string id) => new CareerDefinition(
+            id, "v1", "career." + id, 540, 1020, 4, 20,
+            new[] { DayOfWeek.Monday },
+            new[] { new CareerSceneDefinition(id + "-scene", "scene." + id, 100, 10, "communication", 1) },
+            new[] { new CareerRankDefinition("junior", 0, 0, 1000, "communication", 0) });
+        BusinessDefinition Business(string id, BusinessType type) => new BusinessDefinition(
+            id, "v1", "business." + id, type,
+            BusinessOperationMode.SideHustleCompatible, 100, 1000,
+            new[] { PricingPosture.Standard }, PricingPosture.Standard, 1, 1000);
+        var catalog = new ContentCatalog("affinity-read-only.v1", new[] { skill },
+            new[] { Career("chef"), Career("barista"), Career("developer") },
+            Array.Empty<CourseDefinition>(),
+            new[] { new CharacterStartDefinition("fresh", 1000, 10000, "base.female") },
+            new[] { Business("home-food-preorder", BusinessType.HomeFoodPreorder),
+                Business("coffee-kiosk", BusinessType.CoffeeKiosk),
+                Business("online-store", BusinessType.OnlineStore) },
+            new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
+        var chef = CareerBusinessAffinityPolicy.ForCareer("chef", catalog);
+        Equal(1, chef.Count);
+        Equal("home-food-preorder", chef[0]);
+        True(CareerBusinessAffinityPolicy.IsPreferred("barista", "coffee-kiosk", catalog));
+        True(CareerBusinessAffinityPolicy.IsPreferred("barista", "home-food-preorder", catalog));
+        True(!CareerBusinessAffinityPolicy.IsPreferred("chef", "coffee-kiosk", catalog));
+        True(!CareerBusinessAffinityPolicy.IsPreferred("developer", "coffee-kiosk", catalog));
+        True(CareerBusinessAffinityPolicy.IsPreferred("developer", "online-store", catalog));
+        Equal(0, CareerBusinessAffinityPolicy.ForCareer("non-existent", catalog).Count);
+        // Direct affinity is NOT an unlock. Unmatched businesses remain in catalog.
+        True(catalog.Businesses.ContainsKey("coffee-kiosk"));
+        True(catalog.Businesses.ContainsKey("online-store"));
+        ThrowsNotSupported(() => ((IList<string>)chef).Add("coffee-kiosk"));
     }
 
     private static void DashboardTranslations()
