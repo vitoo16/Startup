@@ -29,6 +29,39 @@ namespace StartupLife.Application
         }
     }
 
+    // Advisory profession-to-business affinities from GDD §13.
+    // This is NOT an eligibility check, unlock, discount or revenue modifier.
+    // Gameplay economy must separately authorize and version such effects.
+    public static class CareerBusinessAffinityPolicy
+    {
+        private static readonly IReadOnlyDictionary<string, string[]> Preferred =
+            new Dictionary<string, string[]>(StringComparer.Ordinal)
+            {
+                ["developer"] = new[] { "freelance-service", "online-store" },
+                ["marketing"] = new[] { "online-store", "freelance-service" },
+                ["sales"] = new[] { "online-store" },
+                ["office-admin"] = new[] { "online-store" },
+                ["chef"] = new[] { "home-food-preorder" },
+                ["barista"] = new[] { "coffee-kiosk", "home-food-preorder" }
+            };
+
+        public static IReadOnlyList<string> ForCareer(string careerId, ContentCatalog content)
+        {
+            if (careerId == null) throw new ArgumentNullException(nameof(careerId));
+            if (content == null) throw new ArgumentNullException(nameof(content));
+            if (!content.Careers.ContainsKey(careerId) ||
+                !Preferred.TryGetValue(careerId, out var ids))
+                return Array.Empty<string>();
+            return Array.AsReadOnly(ids.Where(content.Businesses.ContainsKey).ToArray());
+        }
+
+        public static bool IsPreferred(string careerId, string businessId, ContentCatalog content)
+        {
+            if (businessId == null) throw new ArgumentNullException(nameof(businessId));
+            return ForCareer(careerId, content).Contains(businessId);
+        }
+    }
+
     // Read-only catalog offer. No employment data, rank change or career
     // prerequisites are invented by presentation; AcceptJob remains authoritative.
     public sealed class CareerDashboardItem
@@ -40,8 +73,9 @@ namespace StartupLife.Application
         public int StartMinute { get; }
         public int EndMinute { get; }
         public IReadOnlyList<DayOfWeek> WorkDays { get; }
+        public IReadOnlyList<string> PreferredBusinessIds { get; }
 
-        internal CareerDashboardItem(CareerDefinition definition)
+        internal CareerDashboardItem(CareerDefinition definition, ContentCatalog content)
         {
             CareerId = definition.Id;
             NameKey = definition.NameKey;
@@ -49,6 +83,7 @@ namespace StartupLife.Application
             StartMinute = definition.StartMinute;
             EndMinute = definition.EndMinute;
             WorkDays = Array.AsReadOnly(definition.WorkDays.ToArray());
+            PreferredBusinessIds = CareerBusinessAffinityPolicy.ForCareer(definition.Id, content);
         }
     }
 
@@ -150,7 +185,7 @@ namespace StartupLife.Application
             var game = new GameSnapshot(state, content);
             var career = CareerBiographyProjection.FromCommittedState(state, content);
             var careers = content.Careers.Values.OrderBy(x => x.Id, StringComparer.Ordinal)
-                .Select(x => new CareerDashboardItem(x));
+                .Select(x => new CareerDashboardItem(x, content));
             var skillMap = state.Skills.ToDictionary(x => x.Id, StringComparer.Ordinal);
             var skills = content.Skills.Values.OrderBy(x => x.Id, StringComparer.Ordinal).Select(x =>
             {
