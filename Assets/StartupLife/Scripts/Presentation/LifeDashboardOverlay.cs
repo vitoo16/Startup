@@ -713,14 +713,9 @@ namespace StartupLife.Presentation
 
         // Temporary Vietnamese display catalog for the first five-tab pass.
         // No gameplay IDs, skill math, price or economic balance are authored here.
-        private static string DisplayCareer(string? key) => key switch
-        {
-            "career.developer" => "Lập trình viên",
-            "career.marketing" => "Chuyên viên Marketing",
-            "career.sales" => "Nhân viên kinh doanh",
-            "career.office-admin" => "Nhân viên hành chính",
-            _ => key ?? "Chưa xác định"
-        };
+        private static string DisplayCareer(string? key) =>
+            key != null && DashboardLocalizationCatalog.TryFindValue(key, out var value)
+                ? value : key ?? "Chưa xác định";
 
         private static string DisplaySkill(string key) => key switch
         {
