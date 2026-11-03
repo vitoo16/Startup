@@ -149,7 +149,16 @@ namespace StartupLife.Presentation
                 : "Đang làm: " + DisplayCareer(current.CareerNameKey) +
                   "\nCấp nghề: " + (current.RankIndex + 1).ToString(CultureInfo.InvariantCulture) +
                   " · Kinh nghiệm: " + current.CareerXp.ToString("N0", CurrencyCulture) +
-                  "\nLương mỗi tháng: " + Money(current.MonthlySalaryAtRecordedRankVnd ?? 0);
+                  "\nLương mỗi tháng: " + Money(current.MonthlySalaryAtRecordedRankVnd ?? 0) +
+                  (model.CareerPromotion == null ? "" :
+                      "\nBậc tiếp theo: " +
+                      model.CareerPromotion.NextRankNumber.ToString(CultureInfo.InvariantCulture) +
+                      " · lương " + Money(model.CareerPromotion.NextMonthlySalaryVnd) + "/tháng" +
+                      "\nCần thêm " +
+                      model.CareerPromotion.MissingCareerXp.ToString("N0", CurrencyCulture) +
+                      " XP nghề và " +
+                      model.CareerPromotion.MissingCalendarDays.ToString(CultureInfo.InvariantCulture) +
+                      " ngày lịch");
             careerHistory.text = career.PreviousEmployments.Count == 0
                 ? "Chưa có công việc trước đây"
                 : string.Join("\n", career.PreviousEmployments.Select(x =>
@@ -195,10 +204,7 @@ namespace StartupLife.Presentation
                 x.TargetLevel.ToString(CultureInfo.InvariantCulture) +
                 "\n" + Money(x.PriceVnd) + " · khoảng " +
                 x.BaseStudyMinutes.ToString(CultureInfo.InvariantCulture) + " phút" +
-                (x.IsActive && x.TargetUnits.HasValue && x.TargetUnits.Value > 0
-                    ? " · đang học " + (x.ProgressUnits!.Value * 100 / x.TargetUnits.Value)
-                        .ToString(CultureInfo.InvariantCulture) + "%"
-                    : "")));
+                (x.IsActive ? "\n" + CourseStudyProgress(x) : "")));
             // Catalog-driven selection, with affordability/prerequisite hints.
             // Presentation only: SimulationEngine still rejects stale purchases.
             selectedCourseId = CourseEnrollmentPolicy.ChooseCourseId(model, selectedCourseId);
@@ -216,7 +222,8 @@ namespace StartupLife.Presentation
             selectedCourseStatus.text = selectedCourse == null
                 ? "Chưa có khóa học trong nội dung hiện tại."
                 : "Đang chọn: " + DisplayCourse(selectedCourse.NameKey) +
-                  "\n" + PurchaseHint(availability, selectedCourse.PrerequisiteLevel);
+                  "\n" + PurchaseHint(availability, selectedCourse.PrerequisiteLevel) +
+                  (selectedCourse.IsActive ? "\n" + CourseStudyProgress(selectedCourse) : "");
             study.interactable = model.Game.ActiveCourse != null;
 
             finance.text = "Tiền mặt: " + Money(model.Finance.CashVnd) +
@@ -360,6 +367,19 @@ namespace StartupLife.Presentation
             // The command handler validates the catalog again and the engine
             // alone decides whether funds/levels/time still permit purchase.
             host.PurchaseCourse(selectedCourseId);
+        }
+
+        private static string CourseStudyProgress(CourseDashboardItem course)
+        {
+            if (!course.StudyMinutesRemaining.HasValue || !course.Minimum60MinuteSessions.HasValue ||
+                !course.ProgressUnits.HasValue || !course.TargetUnits.HasValue || course.TargetUnits.Value <= 0)
+                return "Chưa thể ước tính thời gian học.";
+            var progress = (course.ProgressUnits.Value * 100 / course.TargetUnits.Value);
+            return "Đã học " + progress.ToString(CultureInfo.InvariantCulture) +
+                "% · còn " + course.StudyMinutesRemaining.Value.ToString("N0", CurrencyCulture) +
+                " phút học · tối thiểu " +
+                course.Minimum60MinuteSessions.Value.ToString("N0", CurrencyCulture) +
+                " lượt (tối đa 60 phút/lượt, tùy thời gian rảnh).";
         }
 
         private static string PurchaseHint(CoursePurchaseAvailability availability,
