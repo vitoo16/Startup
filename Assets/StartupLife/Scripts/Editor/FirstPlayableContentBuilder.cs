@@ -63,8 +63,8 @@ namespace StartupLife.Editor
             Verify(catalog.Businesses[FirstPlayableContentTemplate.HomeFoodPreorderId], BusinessType.HomeFoodPreorder,
                 BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120);
 
-            if (catalog.Careers.Count != 4)
-                throw new InvalidOperationException("Expected Developer plus Career Batch A (Marketing, Sales, Office/Admin).");
+            if (catalog.Careers.Count != 6)
+                throw new InvalidOperationException("Expected six initial professions from the GDD.");
             var weekdays = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
                 DayOfWeek.Thursday, DayOfWeek.Friday };
             VerifyCareer(catalog.Careers["developer"], 540, 1020, 4, weekdays,
@@ -84,8 +84,18 @@ namespace StartupLife.Editor
                 new[] { 25, 20, 20, 15, 10, 10 }, new long[] { 7000000, 10500000, 14000000 },
                 new long[] { 0, 1000, 3000 }, new[] { 0, 30, 90 },
                 new[] { "time-management", "problem-solving", "leadership" }, new[] { 0, 1, 2 });
+            var kitchenDays = new[] { DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
+            VerifyCareer(catalog.Careers["chef"], 600, 1080, 4, kitchenDays,
+                new[] { 25, 30, 10, 10, 10, 15 }, new long[] { 8500000, 12500000, 17500000 },
+                new long[] { 0, 1000, 3000 }, new[] { 0, 30, 90 },
+                new[] { "time-management", "problem-solving", "leadership" }, new[] { 0, 1, 2 });
+            VerifyCareer(catalog.Careers["barista"], 480, 960, 4, kitchenDays,
+                new[] { 20, 30, 20, 10, 10, 10 }, new long[] { 6500000, 9500000, 13000000 },
+                new long[] { 0, 1000, 3000 }, new[] { 0, 30, 90 },
+                new[] { "communication", "time-management", "networking" }, new[] { 0, 1, 2 });
             Debug.Log("[M8-T02-Authoring] Loaded asset: Freelance 240/120; Kiosk 480/480; scheduled content verified.");
-            Debug.Log("[StartupLifeContent] Four careers and four business schedules validated.");
+            Debug.Log("[StartupLifeContent] Six careers and four business schedules validated.");
         }
         private static void VerifyCareer(CareerDefinition career, int start, int end,
             int scenesPerShift, DayOfWeek[] workDays, int[] sceneWeights, long[] salaries,
