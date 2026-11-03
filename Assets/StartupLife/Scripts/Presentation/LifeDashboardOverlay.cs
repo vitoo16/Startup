@@ -48,6 +48,12 @@ namespace StartupLife.Presentation
         private TMP_Text careerSummary = null!;
         private TMP_Text careerHistory = null!;
         private TMP_Text salary = null!;
+        private Transform careerChoices = null!;
+        private TMP_Text selectedCareerStatus = null!;
+        private TMP_Text acceptCareerLabel = null!;
+        private string? selectedCareerId;
+        private readonly Dictionary<string, Button> careerButtons = new Dictionary<string, Button>(StringComparer.Ordinal);
+        private readonly Dictionary<string, TMP_Text> careerButtonLabels = new Dictionary<string, TMP_Text>(StringComparer.Ordinal);
         private Button accept = null!;
         private Button work = null!;
         private Button resign = null!;
@@ -151,7 +157,27 @@ namespace StartupLife.Presentation
                     (x.EndedIso ?? "hiện tại") + " · bậc " +
                     (x.RankIndex + 1).ToString(CultureInfo.InvariantCulture)));
             salary.text = "Lương chờ nhận: " + Money(career.OutstandingSalary.FloorToInt64());
-            accept.interactable = career.HasCharacter && !career.IsEmployed;
+            selectedCareerId = CareerSelectionPolicy.ChooseCareerId(model, selectedCareerId);
+            SyncCareerOptions(model.Careers);
+            var selectedOffer = model.Careers.FirstOrDefault(x =>
+                string.Equals(x.CareerId, selectedCareerId, StringComparison.Ordinal));
+            var careerAvailability = selectedOffer == null
+                ? CareerAcceptanceAvailability.CharacterRequired
+                : CareerSelectionPolicy.Evaluate(model, selectedOffer);
+            accept.interactable = selectedOffer != null &&
+                careerAvailability == CareerAcceptanceAvailability.Available;
+            acceptCareerLabel.text = selectedOffer == null
+                ? "Chưa có nghề trong nội dung"
+                : "Nhận việc: " + DisplayCareer(selectedOffer.NameKey);
+            selectedCareerStatus.text = selectedOffer == null
+                ? "Chưa có nghề phù hợp trong nội dung hiện tại."
+                : "Đang chọn: " + DisplayCareer(selectedOffer.NameKey) +
+                  "\nLương khởi điểm: " + Money(selectedOffer.StartingMonthlySalaryVnd) +
+                  " · Ca " + Clock(selectedOffer.StartMinute) + "–" + Clock(selectedOffer.EndMinute) +
+                  " · " + selectedOffer.WorkDays.Count.ToString(CultureInfo.InvariantCulture) +
+                  " ngày/tuần\n" + CareerAvailabilityHint(careerAvailability);
+            foreach (var option in careerButtons.Values)
+                option.interactable = !career.IsEmployed;
             work.interactable = career.IsEmployed;
             resign.interactable = career.IsEmployed;
 
@@ -221,38 +247,81 @@ namespace StartupLife.Presentation
             RefreshMotionPreference();
         }
 
-        private void SyncCourseOptions(IReadOnlyList<CourseDashboardItem> catalog)
+        private void SyncCareerOptions(IReadOnlyList<CareerDashboardItem> offers) =>
+            SyncSelectionOptions(offers, careerChoices, careerButtons, careerButtonLabels,
+                item => item.CareerId, item => DisplayCareer(item.NameKey),
+                selectedCareerId, SelectCareer, "LifeCareerChoice_");
+
+        private void SyncCourseOptions(IReadOnlyList<CourseDashboardItem> catalog) =>
+            SyncSelectionOptions(catalog, courseChoices, courseButtons, courseButtonLabels,
+                item => item.CourseId, item => DisplayCourse(item.NameKey),
+                selectedCourseId, SelectCourse, "LifeCourseChoice_");
+
+        // Reuse one list builder for careers and courses. Buttons survive
+        // refreshes; removed IDs are cleaned from the text-scale registry.
+        private void SyncSelectionOptions<T>(
+            IReadOnlyList<T> items, Transform parent,
+            Dictionary<string, Button> buttons,
+            Dictionary<string, TMP_Text> labels,
+            Func<T, string> getId, Func<T, string> getName,
+            string? selection, Action<string> select, string nodePrefix)
         {
-            // New games and content revisions can replace the catalog. Reuse
-            // existing buttons when IDs match; do not instantiate each refresh.
-            var valid = new HashSet<string>(catalog.Select(x => x.CourseId), StringComparer.Ordinal);
-            foreach (var oldId in courseButtons.Keys.Where(id => !valid.Contains(id)).ToArray())
+            var valid = new HashSet<string>(items.Select(getId), StringComparer.Ordinal);
+            foreach (var oldId in buttons.Keys.Where(id => !valid.Contains(id)).ToArray())
             {
-                var oldButton = courseButtons[oldId];
-                originalFontSizes.Remove(courseButtonLabels[oldId]);
-                courseButtonLabels.Remove(oldId);
-                courseButtons.Remove(oldId);
-                Destroy(oldButton.gameObject);
+                var previous = buttons[oldId];
+                originalFontSizes.Remove(labels[oldId]);
+                labels.Remove(oldId);
+                buttons.Remove(oldId);
+                Destroy(previous.gameObject);
             }
 
-            foreach (var item in catalog)
+            foreach (var item in items)
             {
-                if (!courseButtons.TryGetValue(item.CourseId, out var button))
+                var id = getId(item);
+                var title = getName(item);
+                if (!buttons.TryGetValue(id, out var button))
                 {
-                    var courseId = item.CourseId;
-                    button = ButtonNode("LifeCourseChoice_" + courseId,
-                        DisplayCourse(item.NameKey), courseChoices,
-                        () => SelectCourse(courseId)).GetComponent<Button>();
-                    courseButtons.Add(courseId, button);
-                    courseButtonLabels.Add(courseId, button.GetComponentInChildren<TMP_Text>(true));
+                    var capturedId = id;
+                    button = ButtonNode(nodePrefix + capturedId, title, parent,
+                        () => select(capturedId)).GetComponent<Button>();
+                    buttons.Add(capturedId, button);
+                    labels.Add(capturedId, button.GetComponentInChildren<TMP_Text>(true));
                 }
-                var isSelected = string.Equals(item.CourseId, selectedCourseId, StringComparison.Ordinal);
+                var isSelected = string.Equals(id, selection, StringComparison.Ordinal);
                 button.GetComponent<Image>().color = isSelected ? Accent : Surface;
-                var label = courseButtonLabels[item.CourseId];
+                var label = labels[id];
                 label.color = isSelected ? Color.white : Ink;
-                label.text = (isSelected ? "✓ " : "Chọn · ") + DisplayCourse(item.NameKey);
+                label.text = (isSelected ? "✓ " : "Chọn · ") + title;
             }
         }
+
+        private void SelectCareer(string careerId)
+        {
+            selectedCareerId = careerId;
+            Refresh();
+        }
+
+        private void AcceptSelectedCareer()
+        {
+            if (selectedCareerId == null) return;
+            // Session is the sole authority; stale UI cannot force a hire.
+            host.AcceptCareer(selectedCareerId);
+        }
+
+        private static string Clock(int minute) =>
+            (minute / 60).ToString("00", CultureInfo.InvariantCulture) + ":" +
+            (minute % 60).ToString("00", CultureInfo.InvariantCulture);
+
+        private static string CareerAvailabilityHint(CareerAcceptanceAvailability availability) =>
+            availability switch
+            {
+                CareerAcceptanceAvailability.Available => "Bạn có thể nhận công việc này.",
+                CareerAcceptanceAvailability.CharacterRequired => "Hãy tạo nhân vật trước.",
+                CareerAcceptanceAvailability.AlreadyEmployed =>
+                    "Bạn đang đi làm. Có thể nghỉ việc trước khi chọn nghề khác.",
+                _ => "Công việc chưa sẵn sàng."
+            };
 
         private void SelectCourse(string courseId)
         {
@@ -480,8 +549,18 @@ namespace StartupLife.Presentation
             Subheading(careerPage, "Công việc của bạn");
             careerSummary = TextNode("LifeCareerSummary", careerPage, "", 31, Ink);
             salary = TextNode("LifeUnpaidSalary", careerPage, "", 29, Ink);
-            accept = ButtonNode("LifeCareerAcceptButton", "Nhận việc lập trình",
-                careerPage, host.AcceptDeveloper).GetComponent<Button>();
+            Subheading(careerPage, "Chọn nghề nghiệp");
+            careerChoices = Node("LifeCareerChoiceList", careerPage,
+                typeof(VerticalLayoutGroup)).transform;
+            var careersLayout = careerChoices.GetComponent<VerticalLayoutGroup>();
+            careersLayout.spacing = 10;
+            careersLayout.childControlWidth = careersLayout.childControlHeight = true;
+            careersLayout.childForceExpandWidth = true;
+            careersLayout.childForceExpandHeight = false;
+            selectedCareerStatus = TextNode("LifeSelectedCareerStatus", careerPage, "", 29, Ink);
+            accept = ButtonNode("LifeCareerAcceptButton", "Nhận việc",
+                careerPage, AcceptSelectedCareer).GetComponent<Button>();
+            acceptCareerLabel = accept.GetComponentInChildren<TMP_Text>(true);
             work = ButtonNode("LifeCareerWorkButton", "Đi làm",
                 careerPage, host.RunWorkShift).GetComponent<Button>();
             resign = ButtonNode("LifeCareerResignButton", "Nghỉ việc",
