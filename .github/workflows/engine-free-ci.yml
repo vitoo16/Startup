@@ -137,6 +137,9 @@ jobs:
       - name: Compile actual UiPanelReveal against colliding StartupLife.Application namespace
         run: dotnet run --project tools/UiPanelRevealCompileChecks/UiPanelRevealCompileChecks.csproj -c Release --nologo
 
+      - name: Guard catalog-driven course dashboard selection (no Unity Editor)
+        run: python3 -m unittest discover -s tools/tests -p 'test_course_dashboard_wiring.py' -v
+
       - name: Guard Life journal composition and approved-art boundary (no Unity Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_life_journal_source.py' -v
 
