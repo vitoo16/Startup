@@ -817,6 +817,8 @@ internal static class Program
             var historicalAuthoring=FirstPlayableContentTemplate.Create();
             historicalAuthoring.Careers = historicalAuthoring.Careers.Where(x =>
                 x.Id=="developer").ToArray();
+            historicalAuthoring.Courses = historicalAuthoring.Courses.Where(x =>
+                x.Id=="communication-basics" || x.Id=="problem-course").ToArray();
             historicalAuthoring.Businesses = historicalAuthoring.Businesses.Where(x =>
                 x.Id=="freelance-service" || x.Id=="coffee-kiosk").ToArray();
             var template=historicalAuthoring.Build();
