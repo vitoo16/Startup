@@ -115,7 +115,11 @@ namespace StartupLife.Content
                         PrerequisiteLevel = 0,
                         BaseMinutes = 360,
                         Price = 200000
-                    }
+                    },
+                    StarterCourse("negotiation-basics", "negotiation", 420, 220000),
+                    StarterCourse("time-management-basics", "time-management", 360, 180000),
+                    StarterCourse("networking-basics", "networking", 480, 250000),
+                    StarterCourse("leadership-basics", "leadership", 540, 300000)
                 },
                 Starts = new[]
                 {
@@ -307,6 +311,19 @@ namespace StartupLife.Content
             DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
             DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday
         };
+
+        private static CourseContentSource StarterCourse(
+            string id, string skillId, int minutes, long price) =>
+            new CourseContentSource
+            {
+                Id = id,
+                NameKey = "course." + skillId,
+                SkillId = skillId,
+                TargetLevel = 1,
+                PrerequisiteLevel = 0,
+                BaseMinutes = minutes,
+                Price = price
+            };
 
         private static CareerRankContentSource Rank(
             string id, long requiredXp, int serviceDays, long monthlySalary,
