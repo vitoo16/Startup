@@ -94,6 +94,13 @@ namespace StartupLife.Editor
                 new[] { 20, 30, 20, 10, 10, 10 }, new long[] { 6500000, 9500000, 13000000 },
                 new long[] { 0, 1000, 3000 }, new[] { 0, 30, 90 },
                 new[] { "communication", "time-management", "networking" }, new[] { 0, 1, 2 });
+            if (catalog.Courses.Count != 6)
+                throw new InvalidOperationException("Expected six authored skill courses.");
+            var trained = catalog.Courses.Values.Select(x => x.SkillId)
+                .ToHashSet(StringComparer.Ordinal);
+            if (!catalog.Skills.Keys.All(trained.Contains))
+                throw new InvalidOperationException("Every transferable skill needs a study route.");
+
             Debug.Log("[M8-T02-Authoring] Loaded asset: Freelance 240/120; Kiosk 480/480; scheduled content verified.");
             Debug.Log("[StartupLifeContent] Six careers and four business schedules validated.");
         }
