@@ -63,6 +63,20 @@ namespace StartupLife.Core
             MonthlySalary = salary; GrantSkillId = skillId; GrantLevel = grantLevel;
         }
     }
+    public static class ContentAffinityTags
+    {
+        public static IReadOnlyList<string> Validate(IEnumerable<string>? values, string parameterName)
+        {
+            if (values == null) throw new ArgumentNullException(parameterName);
+            var tags = values.ToArray();
+            if (tags.Any(x => !ContentId.IsValid(x)) ||
+                tags.Distinct(StringComparer.Ordinal).Count() != tags.Length)
+                throw new ArgumentException("Affinity tags must be valid, unique content IDs.", parameterName);
+            Array.Sort(tags, StringComparer.Ordinal);
+            return Array.AsReadOnly(tags);
+        }
+    }
+
     public sealed class CareerDefinition
     {
         public string Id { get; }
@@ -75,9 +89,17 @@ namespace StartupLife.Core
         public IReadOnlyList<DayOfWeek> WorkDays { get; }
         public IReadOnlyList<CareerSceneDefinition> Scenes { get; }
         public IReadOnlyList<CareerRankDefinition> Ranks { get; }
+        public IReadOnlyList<string> BusinessAffinityTags { get; }
+
         public CareerDefinition(string id, string revision, string key, int start, int end, int scenesPerShift,
             int quotaSlots, IEnumerable<DayOfWeek> days, IEnumerable<CareerSceneDefinition> scenes,
             IEnumerable<CareerRankDefinition> ranks)
+            : this(id, revision, key, start, end, scenesPerShift, quotaSlots, days, scenes, ranks,
+                Array.Empty<string>()) { }
+
+        public CareerDefinition(string id, string revision, string key, int start, int end, int scenesPerShift,
+            int quotaSlots, IEnumerable<DayOfWeek> days, IEnumerable<CareerSceneDefinition> scenes,
+            IEnumerable<CareerRankDefinition> ranks, IEnumerable<string> businessAffinityTags)
         {
             _ = new ContentId(id);
             var sceneArray = scenes.ToArray(); var rankArray = ranks.ToArray(); var dayArray = days.ToArray();
@@ -92,6 +114,7 @@ namespace StartupLife.Core
             Id = id; Revision = revision; NameKey = key; StartMinute = start; EndMinute = end;
             ScenesPerShift = scenesPerShift; QuotaSlots = quotaSlots;
             WorkDays = Array.AsReadOnly(dayArray); Scenes = Array.AsReadOnly(sceneArray); Ranks = Array.AsReadOnly(rankArray);
+            BusinessAffinityTags = ContentAffinityTags.Validate(businessAffinityTags, nameof(businessAffinityTags));
         }
         public bool WorksOn(SimDate date) => WorkDays.Contains(date.DayOfWeek);
     }
