@@ -232,7 +232,7 @@ internal static class Program
         var catalog = FirstPlayableContentTemplate.BuildCatalog();
         Equal("first-playable.v1", catalog.Version);
         Equal(6, catalog.Skills.Count);
-        Equal(4, catalog.Careers.Count);
+        Equal(6, catalog.Careers.Count);
         Equal(2, catalog.Courses.Count);
         Equal(1, catalog.Starts.Count);
 
@@ -301,6 +301,48 @@ internal static class Program
         Sequence(new[] { 0, 1, 2 }, office.Ranks.Select(x => x.GrantLevel));
         var officeQuotas = QuotaScheduler.Apportion(office.Scenes, office.QuotaSlots);
         Sequence(new[] { 5, 4, 4, 3, 2, 2 }, office.Scenes.Select(x => officeQuotas[x.Id]));
+
+        var chef = catalog.Careers["chef"];
+        Equal(600, chef.StartMinute);
+        Equal(1080, chef.EndMinute);
+        Sequence(new[] { DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday,
+            DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday }, chef.WorkDays);
+        Sequence(new[] { 25, 30, 10, 10, 10, 15 }, chef.Scenes.Select(x => x.Weight));
+        Sequence(new[] { "time-management", "problem-solving", "time-management",
+            "leadership", "negotiation", "time-management" }, chef.Scenes.Select(x => x.SkillId));
+        Sequence(new[] { 5, 6, 2, 2, 2, 3 },
+            chef.Scenes.Select(x => QuotaScheduler.Apportion(chef.Scenes, 20)[x.Id]));
+        Sequence(new long[] { 8500000, 12500000, 17500000 },
+            chef.Ranks.Select(x => x.MonthlySalary));
+        Sequence(new[] { "time-management", "problem-solving", "leadership" },
+            chef.Ranks.Select(x => x.GrantSkillId));
+
+        var barista = catalog.Careers["barista"];
+        Equal(480, barista.StartMinute);
+        Equal(960, barista.EndMinute);
+        Sequence(chef.WorkDays, barista.WorkDays);
+        Sequence(new[] { 20, 30, 20, 10, 10, 10 },
+            barista.Scenes.Select(x => x.Weight));
+        Sequence(new[] { "time-management", "time-management", "communication",
+            "communication", "problem-solving", "networking" },
+            barista.Scenes.Select(x => x.SkillId));
+        Sequence(new[] { 4, 6, 4, 2, 2, 2 },
+            barista.Scenes.Select(x => QuotaScheduler.Apportion(barista.Scenes, 20)[x.Id]));
+        Sequence(new long[] { 6500000, 9500000, 13000000 },
+            barista.Ranks.Select(x => x.MonthlySalary));
+        Sequence(new[] { "communication", "time-management", "networking" },
+            barista.Ranks.Select(x => x.GrantSkillId));
+        foreach (var career in new[] { chef, barista })
+        {
+            Equal(4, career.ScenesPerShift);
+            Equal(20, career.QuotaSlots);
+            Sequence(new long[] { 0, 1000, 3000 },
+                career.Ranks.Select(x => x.RequiredXp));
+            Sequence(new[] { 0, 30, 90 },
+                career.Ranks.Select(x => x.RequiredServiceDays));
+            Sequence(new[] { 0, 1, 2 }, career.Ranks.Select(x => x.GrantLevel));
+            Equal(26, SimulationEngine.ScheduledDays(career, new SimDate(2026, 9, 1)));
+        }
 
         Equal(catalog.Careers.Values.Sum(x => x.Scenes.Count),
             catalog.Careers.Values.SelectMany(x => x.Scenes)
