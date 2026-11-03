@@ -104,14 +104,6 @@ namespace StartupLife.Simulation
             if (economicRules == null) throw new NotSupportedException("V3 evaluator not registered.");
             if (target == null || target.Current == null || target.Activation == null ||
                 target.EconomicRecords == null) throw new ArgumentException("Missing v3 replay inputs.");
-            // Identify a known but unsupported economic revision *before*
-            // reconstructing a different candidate graph. Otherwise an old
-            // valid V3 save can be misreported as generic corruption.
-            if (target.EconomicRecords.RulesetRevision.Length > 0 &&
-                !string.Equals(target.EconomicRecords.RulesetRevision,
-                    economicRules.RulesetRevision, StringComparison.Ordinal))
-                throw new ContentCompatibilityException("save.ruleset_revision",
-                    "Persisted economic ruleset does not match this verified replay evaluator.");
             var anchor = target.Activation.ToAnchor();
             var original = Read<GameState>(Convert.FromBase64String(target.OriginalV2PayloadBase64));
             if (!archives.TryResolve(anchor.ArchivedRulesetId, anchor.OriginalContentVersion,
@@ -120,6 +112,14 @@ namespace StartupLife.Simulation
             var state = Read<GameState>(Write(original));
             state.SaveVersion = 3;
             Validate(original, state, anchor, archives);
+            // Never let unsupported current rules mask invalid frozen V2
+            // frontiers. After historical validation, identify a legitimate
+            // old ruleset before reconstructing a different economic graph.
+            if (target.EconomicRecords.RulesetRevision.Length > 0 &&
+                !string.Equals(target.EconomicRecords.RulesetRevision,
+                    economicRules.RulesetRevision, StringComparison.Ordinal))
+                throw new ContentCompatibilityException("save.ruleset_revision",
+                    "Persisted economic ruleset does not match this verified replay evaluator.");
             var financial = EconomicV3Records.Empty();
             if (state.Businesses.Count > 0)
                 V3BusinessPolicyEngine.InitializeFromMigration(state, financial);
