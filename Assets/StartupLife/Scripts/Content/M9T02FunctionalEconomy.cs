@@ -47,6 +47,45 @@ namespace StartupLife.Content
                 segmentDefinitions, pools, profiles);
         }
 
+        // Separate P04 preview. Existing M9T02FunctionalEconomy.Create() and its
+        // archived v1 matrices stay exactly as authored for existing receipts.
+        public static BusinessEconomicCatalog CreateBusinessBatchA()
+        {
+            var baseline = Create();
+            var extraPools = new[]
+            {
+                Pool("p04.market.creative-agency", 9, 1000, 1000, 5500, 2500),
+                Pool("p04.market.small-cafe", 95, 1500, 4000, 2500, 2000),
+                Pool("p04.market.fashion-retail", 35, 2000, 1500, 2500, 4000)
+            };
+            var extraProfiles = new[]
+            {
+                Profile(FirstPlayableContentTemplate.MarketingAgencyId,
+                    BusinessType.MarketingAgency, "p04.market.creative-agency", 180, 4,
+                    new long[] { 420000, 550000, 750000 }, 115000, 60000,
+                    new[] { 7000, 8500, 13500, 11000 },
+                    profileRevision: "p04-biz-a.profile-v1"),
+                // The 110k fixed assistant wage is included in the 250k
+                // mandatory daily cost; there is no second staff invoice.
+                Profile(FirstPlayableContentTemplate.SmallCafeId,
+                    BusinessType.SmallCafe, "p04.market.small-cafe", 480, 36,
+                    new long[] { 28000, 42000, 55000 }, 18000, 250000,
+                    new[] { 8000, 13500, 10500, 11000 },
+                    new FixedBusinessHelperDefinition("cafe-assistant",
+                        "helper.cafe-assistant", 110000, 20, EconomicDefinitionLimits.Scale),
+                    "p04-biz-a.profile-v1"),
+                Profile(FirstPlayableContentTemplate.FashionStoreId,
+                    BusinessType.FashionStore, "p04.market.fashion-retail", 420, 24,
+                    new long[] { 120000, 170000, 250000 }, 80000, 125000,
+                    new[] { 10000, 8500, 10000, 13500 },
+                    profileRevision: "p04-biz-a.profile-v1")
+            };
+            return new BusinessEconomicCatalog("p04.biz-a.preview-v1",
+                "biz-a.v1", "p04-biz-a.rules-v1", baseline.Segments.Values,
+                baseline.Pools.Values.Concat(extraPools),
+                baseline.Profiles.Values.Concat(extraProfiles));
+        }
+
         private static MarketPoolDefinition Pool(string id, int daily, int budget, int convenience, int quality, int trend) =>
             new MarketPoolDefinition(id, "v1", "m9-t02.competition-v1", daily,
                 SegmentFactors(new[]{budget, convenience, quality, trend}));
@@ -60,7 +99,8 @@ namespace StartupLife.Content
 
         private static BusinessEconomicProfile Profile(string id, BusinessType type, string pool, int ownerMinutes,
             int baseCapacity, long[] prices, long variable, long daily, int[] productFit,
-            FixedBusinessHelperDefinition? fixedHelper = null)
+            FixedBusinessHelperDefinition? fixedHelper = null,
+            string profileRevision = "m9-t02.profile-v1")
         {
             var posture = new[] { PricingPosture.Budget, PricingPosture.Standard, PricingPosture.Premium };
             var priceFit = new[] {
@@ -68,7 +108,7 @@ namespace StartupLife.Content
                 new[]{10000,10000,10000,10000},
                 new[]{7200,8500,11500,9500}
             };
-            return new BusinessEconomicProfile(id, "v1", type, "m9-t02.profile-v1", pool,
+            return new BusinessEconomicProfile(id, "v1", type, profileRevision, pool,
                 ownerMinutes, baseCapacity, variable, daily, SegmentFactors(productFit),
                 posture.Select((p,i) => new KeyValuePair<PricingPosture, IEnumerable<KeyValuePair<string,int>>>(
                     p, SegmentFactors(priceFit[i]))),
