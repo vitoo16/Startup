@@ -24,11 +24,15 @@ namespace StartupLife.Presentation
         // V4 gateway/CAS path; never rewrite them during a read.
         // Inspector opt-out is retained for targeted V3 compatibility QA.
         [SerializeField] private bool enableVerifiedEventV4 = true;
+        // Explicit opt-in for *new* saves only; existing saves select their
+        // independently verified old/new ruleset regardless of this toggle.
+        [SerializeField] private bool enableBusinessBatchAForNewRuns = false;
         [SerializeField] private int initialYear = 2026;
         [SerializeField] private int initialMonth = 9;
         [SerializeField] private int initialDay = 1;
 
         private ContentCatalog content;
+        private ContentCatalog initialV2Content;
         private GameSession session;
         private EventV4GameCommands eventCommands;
         private EventV4CommitGateway eventGateway;
@@ -61,7 +65,8 @@ namespace StartupLife.Presentation
 
             try
             {
-                content = contentAsset.BuildCatalog();
+                initialV2Content = contentAsset.BuildCatalog();
+                content = initialV2Content;
                 var historical = new BundledHistoricalV2ContentResolver();
                 var economics = M9T02FunctionalEconomy.Create();
                 var replay = new VersionedReceiptReplay(economics, content);
@@ -69,7 +74,23 @@ namespace StartupLife.Presentation
                 var staged = new StagedV3SaveSerializer(historical, replay);
                 var serializer = new V3SaveCompatibilitySerializer(
                     content, GameSession.CreateRestoreValidator(), migration, staged);
+
+                // Candidate definitions are separate from the archived v1
+                // ScriptableObject. Replay must verify which track the saved
+                // receipts use before assigning content or economic rules.
+                var batchContent = FirstPlayableContentTemplate.BuildBusinessBatchACatalog();
+                var batchEconomics = M9T02FunctionalEconomy.CreateBusinessBatchA();
+                var batchReplay = new VersionedReceiptReplay(batchEconomics, batchContent);
+                var batchMigration = new V2ToV3Migration(historical, batchReplay);
+                var batchSerializer = new V3SaveCompatibilitySerializer(batchContent,
+                    GameSession.CreateRestoreValidator(), batchMigration,
+                    new StagedV3SaveSerializer(historical, batchReplay));
                 var path = SavePath;
+                // Read-only probes: never write or recover a backup until the
+                // authoritative AtomicFileSaveStore has been selected.
+                var primary = File.Exists(path) ? File.ReadAllBytes(path) : null;
+                var backup = File.Exists(path + ".backup")
+                    ? File.ReadAllBytes(path + ".backup") : null;
                 var commandIds = new GuidCommandIdSource();
                 if (enableVerifiedEventV4)
                 {
@@ -78,8 +99,21 @@ namespace StartupLife.Presentation
                     var eventArchive = ReleasedFirstPlayableEventCatalog.CreateArchive(
                         FirstPlayableEventContent.Definitions,
                         FirstPlayableEventContent.Policies);
-                    var eventSerializer = new EventV4CompatibilitySerializer(
+                    var baselineEventSerializer = new EventV4CompatibilitySerializer(
                         new StagedEventV4SaveSerializer(serializer, eventArchive));
+                    var batchEventSerializer = new EventV4CompatibilitySerializer(
+                        new StagedEventV4SaveSerializer(batchSerializer, eventArchive));
+                    var track = VerifiedBusinessContentSelector.Select(primary, backup,
+                        baselineEventSerializer, batchEventSerializer,
+                        enableBusinessBatchAForNewRuns);
+                    var eventSerializer = track == BusinessContentTrack.BusinessBatchA
+                        ? batchEventSerializer : baselineEventSerializer;
+                    if (track == BusinessContentTrack.BusinessBatchA)
+                    {
+                        content = batchContent;
+                        economics = batchEconomics;
+                        serializer = batchSerializer;
+                    }
                     var eventStore = new AtomicFileSaveStore(path, eventSerializer);
                     var loaded = eventStore.Read();
 #if UNITY_EDITOR
@@ -121,6 +155,14 @@ namespace StartupLife.Presentation
                 }
                 else
                 {
+                    var track = VerifiedBusinessContentSelector.Select(primary, backup,
+                        serializer, batchSerializer, enableBusinessBatchAForNewRuns);
+                    if (track == BusinessContentTrack.BusinessBatchA)
+                    {
+                        content = batchContent;
+                        economics = batchEconomics;
+                        serializer = batchSerializer;
+                    }
                     var store = new AtomicFileSaveStore(path, serializer);
                     var restored = GameSession.TryRestore(content, serializer, store,
                         out session, out var load, economicRules: economics,
@@ -207,7 +249,9 @@ namespace StartupLife.Presentation
             var guid = Guid.NewGuid();
             var seed = BitConverter.ToUInt64(guid.ToByteArray(), 0);
             if (seed == 0) seed = 1;
-            return GameSession.NewState(content, "run-" + guid.ToString("N"),
+            // Always originate from the retained V2 baseline at revision 0.
+            // Only later V3/V4 commands use the selected live economic profile.
+            return GameSession.NewState(initialV2Content, "run-" + guid.ToString("N"),
                 seed, new SimDate(initialYear, initialMonth, initialDay));
         }
 
