@@ -51,9 +51,13 @@ review and owner approval.
 - Career choices remain data-driven from the active content catalog.
 - The selected offer now shows its complete salary ladder, shift hours and
   actual working days (not just a count of days per week).
-- Vietnamese career titles and all 18 new work-scene status strings are added
-  through the existing Unity StringTable builder. No localization YAML or
-  generated asset IDs were hand-edited.
+- Career titles and all 24 Developer/Batch A work-scene strings share
+  `DashboardLocalizationCatalog` as their Vietnamese source of truth. The
+  existing Unity StringTable sync writes both table and SharedTableData; no
+  localization YAML or generated asset IDs were hand-edited.
+- The Unity Editor menu `Startup Life/Content/Refresh career catalog and
+  Vietnamese localization` refreshes the ScriptableObject and strings without
+  running the test suites.
 - Career and Course choice buttons continue to use the same reusable list
   renderer.
 
