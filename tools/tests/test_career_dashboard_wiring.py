@@ -59,6 +59,26 @@ class CareerDashboardWiringTests(unittest.TestCase):
         self.assertIn("private const float TouchHeight = 96f;", ui)
         self.assertIn("MobileScrollViewFactory.Create(", ui)
 
+    def test_career_timeline_reads_only_committed_history(self):
+        biography = source("Assets/StartupLife/Scripts/Application/CareerBiographyProjection.cs")
+        policy = source("Assets/StartupLife/Scripts/Application/CareerSelectionPolicy.cs")
+        ui = source("Assets/StartupLife/Scripts/Presentation/LifeDashboardOverlay.cs")
+        sim = source("Assets/StartupLife/Scripts/Simulation/SimulationEngine.cs")
+        self.assertIn("EmploymentPeriodCount", biography)
+        self.assertIn("DistinctProfessionCount", biography)
+        self.assertIn("ProfessionChangeCount", biography)
+        self.assertIn("ElapsedCalendarDays", biography)
+        self.assertIn("new CareerTenureSnapshot(x, content, claims, state.DateIso)", biography)
+        self.assertIn("CareerTransitionContext.ReturningProfession", policy)
+        self.assertIn("CareerTransitionContext.ChangingProfession", policy)
+        self.assertIn("career.PreviousEmployments.Reverse()", ui)
+        self.assertIn("job.UnpaidClaimCount > 0", ui)
+        self.assertIn("job.MonthlySalaryAtRecordedRankVnd.HasValue", ui)
+        self.assertIn("CareerSelectionPolicy.TransitionContext(model, selectedOffer)", ui)
+        self.assertNotIn("state.Employment =", biography)
+        self.assertNotIn("state.Employment =", policy)
+        self.assertIn("state.PreviousEmployment.Add(state.Employment)", sim)
+
     def test_existing_saves_and_frozen_gameplay_are_unchanged(self):
         meta = source("Assets/StartupLife/Scripts/Application/CareerSelectionPolicy.cs.meta")
         self.assertIn("guid: 885ed96afc82416ca2960c382974b429", meta)
