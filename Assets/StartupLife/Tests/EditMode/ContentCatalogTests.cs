@@ -14,7 +14,11 @@ namespace StartupLife.Tests.EditMode
             var catalog = FirstPlayableContentTemplate.BuildCatalog();
             Assert.That(catalog.Version, Is.EqualTo("first-playable.v1"));
             Assert.That(catalog.Skills.Count, Is.EqualTo(6));
+            Assert.That(catalog.Careers.Count, Is.EqualTo(4));
             Assert.That(catalog.Careers.ContainsKey("developer"), Is.True);
+            Assert.That(catalog.Careers.ContainsKey("marketing"), Is.True);
+            Assert.That(catalog.Careers.ContainsKey("sales"), Is.True);
+            Assert.That(catalog.Careers.ContainsKey("office-admin"), Is.True);
             Assert.That(catalog.Courses.ContainsKey("communication-basics"), Is.True);
             Assert.That(catalog.Businesses.Count, Is.EqualTo(4));
             Assert.That(catalog.Businesses[FirstPlayableContentTemplate.FreelanceId].OperatingRequirements.RequiredOwnerMinutes, Is.EqualTo(120));
@@ -27,6 +31,11 @@ namespace StartupLife.Tests.EditMode
             Assert.That(asset, Is.Not.Null);
             var catalog = asset.BuildCatalog();
             Assert.That(catalog.Businesses.Count, Is.EqualTo(4));
+            Assert.That(catalog.Careers.Count, Is.EqualTo(4),
+                "The Unity authoring gate must regenerate the serialized catalog from Batch A source.");
+            Assert.That(catalog.Careers["marketing"].Scenes.Count, Is.EqualTo(6));
+            Assert.That(catalog.Careers["sales"].WorkDays.Count, Is.EqualTo(6));
+            Assert.That(catalog.Careers["office-admin"].Ranks.Count, Is.EqualTo(3));
             var freelance = catalog.Businesses[FirstPlayableContentTemplate.FreelanceId];
             var kiosk = catalog.Businesses[FirstPlayableContentTemplate.CoffeeKioskId];
             Assert.That(freelance.OperationMode, Is.EqualTo(BusinessOperationMode.SideHustleCompatible));
