@@ -51,6 +51,9 @@ class CareerContentBatchBTests(unittest.TestCase):
         builder = src("Assets/StartupLife/Scripts/Editor/FirstPlayableContentBuilder.cs")
         self.assertIn("catalog.Careers.Count != 6", builder)
         self.assertIn("catalog.Courses.Count != 6", builder)
+        self.assertIn("VerifyCourse(", builder)
+        self.assertIn("VerifyAffinityTags(", builder)
+        self.assertIn("BusinessAffinityTags", builder)
         self.assertIn('catalog.Careers["chef"]', builder)
         self.assertIn('catalog.Careers["barista"]', builder)
 
