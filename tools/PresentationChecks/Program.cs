@@ -556,7 +556,8 @@ internal static class Program
              x.Key.StartsWith("course.", StringComparison.Ordinal)) &&
             !string.IsNullOrWhiteSpace(x.Value)));
         foreach (var text in new[] { "Nghề nghiệp", "Kỹ năng", "Tài chính", "Kinh doanh",
-            "Hồ sơ", "Chữ nhỏ hơn", "Chữ lớn hơn", "Đã hiểu", "Xem lại hướng dẫn" })
+            "Hồ sơ", "Chữ nhỏ hơn", "Chữ lớn hơn", "Đã hiểu", "Xem lại hướng dẫn",
+            "Mua khóa học" })
         {
             True(DashboardLocalizationCatalog.TryFindKey(text, out var key));
             True(entries.Any(x => x.Key == key && x.Value == text));
