@@ -42,7 +42,34 @@ namespace StartupLife.Presentation
             new KeyValuePair<string,string>("dashboard.life.home.evening", "Tối nay, bạn muốn làm gì cho mình?"),
             new KeyValuePair<string,string>("dashboard.close", "Đóng"),
             new KeyValuePair<string,string>("dashboard.career.current", "Công việc của bạn"),
-            new KeyValuePair<string,string>("dashboard.career.accept", "Nhận việc lập trình"),
+            new KeyValuePair<string,string>("career.developer", "Lập trình viên"),
+            new KeyValuePair<string,string>("career.marketing", "Chuyên viên Marketing"),
+            new KeyValuePair<string,string>("career.sales", "Nhân viên kinh doanh"),
+            new KeyValuePair<string,string>("career.office-admin", "Nhân viên hành chính"),
+            new KeyValuePair<string,string>("scene.coding", "Tập trung viết mã"),
+            new KeyValuePair<string,string>("scene.meeting", "Họp cùng đội"),
+            new KeyValuePair<string,string>("scene.bug-fixing", "Sửa lỗi"),
+            new KeyValuePair<string,string>("scene.client-discussion", "Trao đổi với khách hàng"),
+            new KeyValuePair<string,string>("scene.demo", "Trình bày bản demo"),
+            new KeyValuePair<string,string>("scene.documentation", "Viết tài liệu"),
+            new KeyValuePair<string,string>("scene.marketing-campaign-planning", "Lên kế hoạch chiến dịch"),
+            new KeyValuePair<string,string>("scene.marketing-content-review", "Duyệt nội dung truyền thông"),
+            new KeyValuePair<string,string>("scene.marketing-analytics", "Phân tích hiệu quả chiến dịch"),
+            new KeyValuePair<string,string>("scene.marketing-team-meeting", "Họp cùng đội ngũ"),
+            new KeyValuePair<string,string>("scene.marketing-client-presentation", "Trình bày với khách hàng"),
+            new KeyValuePair<string,string>("scene.marketing-partner-communication", "Trao đổi với đối tác"),
+            new KeyValuePair<string,string>("scene.sales-prospecting", "Tìm kiếm khách hàng tiềm năng"),
+            new KeyValuePair<string,string>("scene.sales-needs-discovery", "Tìm hiểu nhu cầu khách hàng"),
+            new KeyValuePair<string,string>("scene.sales-product-demo", "Giới thiệu sản phẩm"),
+            new KeyValuePair<string,string>("scene.sales-negotiation", "Đàm phán với khách hàng"),
+            new KeyValuePair<string,string>("scene.sales-follow-up", "Chăm sóc sau tư vấn"),
+            new KeyValuePair<string,string>("scene.sales-sales-report", "Cập nhật báo cáo bán hàng"),
+            new KeyValuePair<string,string>("scene.office-document-processing", "Xử lý hồ sơ, giấy tờ"),
+            new KeyValuePair<string,string>("scene.office-schedule-coordination", "Điều phối lịch làm việc"),
+            new KeyValuePair<string,string>("scene.office-data-review", "Kiểm tra dữ liệu"),
+            new KeyValuePair<string,string>("scene.office-internal-support", "Hỗ trợ các bộ phận"),
+            new KeyValuePair<string,string>("scene.office-record-keeping", "Lưu trữ chứng từ"),
+            new KeyValuePair<string,string>("scene.office-team-briefing", "Họp nhóm công việc"),
             new KeyValuePair<string,string>("dashboard.career.work", "Đi làm"),
             new KeyValuePair<string,string>("dashboard.career.resign", "Nghỉ việc"),
             new KeyValuePair<string,string>("dashboard.career.history", "Lịch sử nghề nghiệp"),
@@ -88,6 +115,21 @@ namespace StartupLife.Presentation
         {
             if (fallback == null) { key = ""; return false; }
             return Reverse.TryGetValue(fallback, out key!);
+        }
+
+        public static bool TryFindValue(string key, out string value)
+        {
+            if (key == null) { value = ""; return false; }
+            foreach (var item in Source)
+            {
+                if (string.Equals(item.Key, key, StringComparison.Ordinal))
+                {
+                    value = item.Value;
+                    return true;
+                }
+            }
+            value = "";
+            return false;
         }
 
         private static Dictionary<string,string> BuildReverse()
