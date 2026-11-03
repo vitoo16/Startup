@@ -190,9 +190,9 @@ internal static class Program
             var historical = new BundledHistoricalV2ContentResolver();
             var replay = new VersionedReceiptReplay(economic, expanded);
             var migration = new V2ToV3Migration(historical, replay);
-            var serializer = new V3SaveCompatibilitySerializer(expanded,
+            var serializer = new V3SaveCompatibilitySerializer(legacy,
                 GameSession.CreateRestoreValidator(), migration,
-                new StagedV3SaveSerializer(historical, replay));
+                new StagedV3SaveSerializer(historical, replay), expanded);
             // Fresh V3 runs still originate from the *frozen* V2 content
             // frontier. The new V3 catalog is never substituted into the
             // archived original receipt rules.
@@ -284,10 +284,10 @@ internal static class Program
             var economics = M9T02FunctionalEconomy.CreateBusinessBatchA();
             var historical = new BundledHistoricalV2ContentResolver();
             var replay = new VersionedReceiptReplay(economics, expanded);
-            var v3 = new V3SaveCompatibilitySerializer(expanded,
+            var v3 = new V3SaveCompatibilitySerializer(legacy,
                 GameSession.CreateRestoreValidator(),
                 new V2ToV3Migration(historical, replay),
-                new StagedV3SaveSerializer(historical, replay));
+                new StagedV3SaveSerializer(historical, replay), expanded);
             var definitions = FirstPlayableEventContent.Definitions;
             var policies = FirstPlayableEventContent.Policies;
             var serializer = new EventV4CompatibilitySerializer(
@@ -381,10 +381,10 @@ internal static class Program
             var p04Content = FirstPlayableContentTemplate.BuildBusinessBatchACatalog();
             var newReplay = new VersionedReceiptReplay(
                 M9T02FunctionalEconomy.CreateBusinessBatchA(), p04Content);
-            var newSerializer = new V3SaveCompatibilitySerializer(p04Content,
+            var newSerializer = new V3SaveCompatibilitySerializer(baseContent,
                 GameSession.CreateRestoreValidator(),
                 new V2ToV3Migration(historical, newReplay),
-                new StagedV3SaveSerializer(historical, newReplay));
+                new StagedV3SaveSerializer(historical, newReplay), p04Content);
             var initial = GameSession.NewState(baseContent, "p04-old-v3", 190431UL,
                 new SimDate(2026, 11, 4));
             var promoted = EconomicV3PayloadCodec.ReadChecked(
