@@ -849,6 +849,7 @@ internal static class Program
             var officeOffer = noCharacter.Careers.Single(x => x.CareerId == "office");
             Equal("career.office", officeOffer.NameKey);
             Equal(7000000L, officeOffer.StartingMonthlySalaryVnd);
+            Sequence(new long[] { 7000000L }, officeOffer.MonthlySalariesVnd);
             Equal(600, officeOffer.StartMinute);
             Equal(1020, officeOffer.EndMinute);
             Equal(5, officeOffer.WorkDays.Count);
