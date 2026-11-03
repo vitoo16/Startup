@@ -853,7 +853,7 @@ internal static class Program
                     dashboard.Courses.Single(x => x.CourseId == "problem-course")));
 
             state.Arrears.Clear();
-            state.Skills.Add(new SkillState { Id = "communication", GrantedLevel = 1 });
+            state.Skills.Single(x => x.Id == "communication").GrantedLevel = 1;
             dashboard = LifeDashboardProjection.FromCommittedState(state, f.Content);
             Equal(CoursePurchaseAvailability.TargetLevelReached,
                 CourseEnrollmentPolicy.Evaluate(dashboard,
@@ -889,7 +889,7 @@ internal static class Program
             Equal("course.prerequisite", f.Send(new GameCommand(
                 CommandKind.PurchaseCourse, advanced.Id)).ReasonKey);
             Bytes(before, f.Session.ExportCheckpoint());
-            state.Skills.Add(new SkillState { Id = "negotiation", GrantedLevel = 1 });
+            state.Skills.Single(x => x.Id == "negotiation").GrantedLevel = 1;
             dashboard = LifeDashboardProjection.FromCommittedState(state, catalog);
             Equal(CoursePurchaseAvailability.Available,
                 CourseEnrollmentPolicy.Evaluate(dashboard,
