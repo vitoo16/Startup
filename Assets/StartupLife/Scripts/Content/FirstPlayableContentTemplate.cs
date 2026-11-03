@@ -85,7 +85,10 @@ namespace StartupLife.Content
                                 GrantLevel = 2
                             }
                         }
-                    }
+                    },
+                    MarketingCareer(),
+                    SalesCareer(),
+                    OfficeAdminCareer()
                 },
                 Courses = new[]
                 {
@@ -142,6 +145,126 @@ namespace StartupLife.Content
         }
 
         public static ContentCatalog BuildCatalog() => Create().Build();
+
+        // Batch A follows the original GDD's MVP profession catalog. New
+        // definitions are additive: the shipped Developer definition above
+        // stays byte-for-byte equivalent in its schedule, scene rewards and ranks.
+        private static CareerContentSource MarketingCareer() => new CareerContentSource
+        {
+            Id = "marketing",
+            Revision = "v1",
+            NameKey = "career.marketing",
+            StartMinute = 540,
+            EndMinute = 1020,
+            ScenesPerShift = 4,
+            QuotaSlots = 20,
+            WorkDays = Weekdays(),
+            Scenes = new[]
+            {
+                ProfessionScene("marketing-campaign-planning", 25, "problem-solving", 1),
+                ProfessionScene("marketing-content-review", 20, "communication", 1),
+                ProfessionScene("marketing-analytics", 20, "problem-solving", 2),
+                ProfessionScene("marketing-team-meeting", 15, "leadership", 1),
+                ProfessionScene("marketing-client-presentation", 10, "communication", 2),
+                ProfessionScene("marketing-partner-communication", 10, "networking", 1)
+            },
+            Ranks = new[]
+            {
+                Rank("junior", 0, 0, 9000000, "networking", 0),
+                Rank("mid", 1000, 30, 13500000, "communication", 1),
+                Rank("senior", 3000, 90, 18000000, "networking", 2)
+            }
+        };
+
+        private static CareerContentSource SalesCareer() => new CareerContentSource
+        {
+            Id = "sales",
+            Revision = "v1",
+            NameKey = "career.sales",
+            StartMinute = 540,
+            EndMinute = 1080,
+            ScenesPerShift = 4,
+            QuotaSlots = 20,
+            WorkDays = MondayToSaturday(),
+            Scenes = new[]
+            {
+                ProfessionScene("sales-prospecting", 20, "networking", 1),
+                ProfessionScene("sales-needs-discovery", 20, "communication", 1),
+                ProfessionScene("sales-product-demo", 15, "communication", 1),
+                ProfessionScene("sales-negotiation", 20, "negotiation", 2),
+                ProfessionScene("sales-follow-up", 15, "networking", 1),
+                ProfessionScene("sales-sales-report", 10, "time-management", 1)
+            },
+            Ranks = new[]
+            {
+                Rank("junior", 0, 0, 8000000, "negotiation", 0),
+                Rank("mid", 1000, 30, 12000000, "communication", 1),
+                Rank("senior", 3000, 90, 16000000, "negotiation", 2)
+            }
+        };
+
+        private static CareerContentSource OfficeAdminCareer() => new CareerContentSource
+        {
+            Id = "office-admin",
+            Revision = "v1",
+            NameKey = "career.office-admin",
+            StartMinute = 510,
+            EndMinute = 1050,
+            ScenesPerShift = 4,
+            QuotaSlots = 20,
+            WorkDays = Weekdays(),
+            Scenes = new[]
+            {
+                ProfessionScene("office-document-processing", 25, "time-management", 1),
+                ProfessionScene("office-schedule-coordination", 20, "communication", 1),
+                ProfessionScene("office-data-review", 20, "problem-solving", 1),
+                ProfessionScene("office-internal-support", 15, "communication", 1),
+                ProfessionScene("office-record-keeping", 10, "time-management", 2),
+                ProfessionScene("office-team-briefing", 10, "leadership", 1)
+            },
+            Ranks = new[]
+            {
+                Rank("junior", 0, 0, 7000000, "time-management", 0),
+                Rank("mid", 1000, 30, 10500000, "problem-solving", 1),
+                Rank("senior", 3000, 90, 14000000, "leadership", 2)
+            }
+        };
+
+        private static DayOfWeek[] Weekdays() => new[]
+        {
+            DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+            DayOfWeek.Thursday, DayOfWeek.Friday
+        };
+
+        private static DayOfWeek[] MondayToSaturday() => new[]
+        {
+            DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+            DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday
+        };
+
+        private static CareerRankContentSource Rank(
+            string id, long requiredXp, int serviceDays, long monthlySalary,
+            string grantSkillId, int grantLevel) => new CareerRankContentSource
+        {
+            Id = id,
+            RequiredXp = requiredXp,
+            RequiredServiceDays = serviceDays,
+            MonthlySalary = monthlySalary,
+            GrantSkillId = grantSkillId,
+            GrantLevel = grantLevel
+        };
+
+        private static CareerSceneContentSource ProfessionScene(
+            string id, int weight, string skillId, long exposure) =>
+            new CareerSceneContentSource
+            {
+                Id = id,
+                NameKey = "scene." + id,
+                Weight = weight,
+                CareerXp = 10,
+                SkillId = skillId,
+                Exposure = exposure
+            };
 
         // Provisional functional content only; capital/pricing are not final economy balance.
         private static BusinessContentSource FunctionalBusiness(string id, BusinessType type, BusinessOperationMode mode,
