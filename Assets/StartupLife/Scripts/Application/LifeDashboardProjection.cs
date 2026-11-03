@@ -35,7 +35,8 @@ namespace StartupLife.Application
     {
         public string CareerId { get; }
         public string NameKey { get; }
-        public long StartingMonthlySalaryVnd { get; }
+        public IReadOnlyList<long> MonthlySalariesVnd { get; }
+        public long StartingMonthlySalaryVnd => MonthlySalariesVnd[0];
         public int StartMinute { get; }
         public int EndMinute { get; }
         public IReadOnlyList<DayOfWeek> WorkDays { get; }
@@ -44,7 +45,7 @@ namespace StartupLife.Application
         {
             CareerId = definition.Id;
             NameKey = definition.NameKey;
-            StartingMonthlySalaryVnd = definition.Ranks[0].MonthlySalary;
+            MonthlySalariesVnd = Array.AsReadOnly(definition.Ranks.Select(x => x.MonthlySalary).ToArray());
             StartMinute = definition.StartMinute;
             EndMinute = definition.EndMinute;
             WorkDays = Array.AsReadOnly(definition.WorkDays.ToArray());
