@@ -319,6 +319,10 @@ namespace StartupLife.Presentation
                 checked((int)definition.MinimumStartupInvestment)).Command, "status.business.launched");
         }
 
+        // Catalog-driven business list routes through the existing minimum-
+        // investment command. Legacy UnityEvent entry points remain intact.
+        public void LaunchBusiness(string definitionId) => LaunchAuthoredBusiness(definitionId);
+
         public void LaunchOnlineStore() => LaunchAuthoredBusiness("online-store");
 
         public void LaunchHomeFoodPreorder() => LaunchAuthoredBusiness("home-food-preorder");
