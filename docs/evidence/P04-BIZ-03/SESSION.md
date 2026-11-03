@@ -96,3 +96,32 @@ Batch A inspector flag and regenerating authoring assets, require:
   `tools/PresentationChecks/Program.cs` (prior test fix),
   this evidence file
 - **Commit:** use final `main` HEAD and exact-head GitHub Actions run
+
+## CI-detected compatibility corrections
+
+The first Engine-free run found a stale static bootstrap validator and a
+career-to-business affinity expected list that omitted Chef's valid shared
+supplier-operations tag. Both tests were repaired to check the exact current
+semantics without altering gameplay. The next run exposed three source-level
+replay fixture issues:
+- The new Agency launch pays both its authored 1.2m capital and the
+  contractual 60k daily opening fee. The test now checks the exact combined
+  1.26m reduction, not only invested capital.
+- Existing V2 source checkpoints must be read under their original
+  `first-playable.v1` catalog while V3/V4 live simulation uses
+  `first-playable.biz-a.v1`. The five-argument compatible
+  `V3SaveCompatibilitySerializer` constructor now supports a separate
+  live catalog without changing old callers.
+- A valid old V3 ruleset supplied to a new evaluator is explicitly
+  unsupported, not generic corruption. The ruleset check runs only
+  **after validating the immutable frozen V2 prefix**, so malformed
+  historical content cannot hide behind an unsupported-revision code.
+
+Additional source files modified during CI diagnosis:
+`Assets/StartupLife/Scripts/Infrastructure/V3SaveCompatibilitySerializer.cs`,
+`Assets/StartupLife/Scripts/Simulation/VersionedReceiptReplay.cs`,
+`scripts/Test-FirstPlayableShellStatic.ps1`,
+`tools/ContentCatalogChecks/Program.cs`.
+
+Final engine-free verdict belongs to the exact final HEAD; no earlier
+red/cancelled run can be described as PASS.
