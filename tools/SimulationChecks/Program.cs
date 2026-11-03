@@ -826,6 +826,75 @@ internal static class Program
             var conflict = f.Session.Execute(new CommandEnvelope(state.RunId, receipt.CommandId, state.Revision, new GameCommand(CommandKind.Resign)));
             Equal("command.id_conflict", conflict.ReasonKey); Bytes(before, f.Session.ExportCheckpoint());
         });
+        Check("course chooser is catalog-driven, keeps selected IDs and mirrors purchase rules", () =>
+        {
+            var f = new Fixture(); f.Create();
+            var state = f.State();
+            var dashboard = LifeDashboardProjection.FromCommittedState(state, f.Content);
+            var communication = dashboard.Courses.Single(x => x.CourseId == "communication-basics");
+            var problem = dashboard.Courses.Single(x => x.CourseId == "problem-course");
+            Equal(CoursePurchaseAvailability.Available, CourseEnrollmentPolicy.Evaluate(dashboard, communication));
+            Equal(CoursePurchaseAvailability.Available, CourseEnrollmentPolicy.Evaluate(dashboard, problem));
+            Equal("communication-basics", CourseEnrollmentPolicy.ChooseCourseId(dashboard, null));
+            Equal("problem-course", CourseEnrollmentPolicy.ChooseCourseId(dashboard, "problem-course"));
+            Equal("communication-basics", CourseEnrollmentPolicy.ChooseCourseId(dashboard, "missing-course"));
+
+            state.Cash = problem.PriceVnd - 1;
+            dashboard = LifeDashboardProjection.FromCommittedState(state, f.Content);
+            Equal(CoursePurchaseAvailability.InsufficientCash,
+                CourseEnrollmentPolicy.Evaluate(dashboard,
+                    dashboard.Courses.Single(x => x.CourseId == "problem-course")));
+
+            state.Cash = problem.PriceVnd;
+            state.Arrears.Add(new ArrearState { Id = "debt", DueIso = state.DateIso, Amount = 1 });
+            dashboard = LifeDashboardProjection.FromCommittedState(state, f.Content);
+            Equal(CoursePurchaseAvailability.OutstandingArrears,
+                CourseEnrollmentPolicy.Evaluate(dashboard,
+                    dashboard.Courses.Single(x => x.CourseId == "problem-course")));
+
+            state.Arrears.Clear();
+            state.Skills.Add(new SkillState { Id = "communication", GrantedLevel = 1 });
+            dashboard = LifeDashboardProjection.FromCommittedState(state, f.Content);
+            Equal(CoursePurchaseAvailability.TargetLevelReached,
+                CourseEnrollmentPolicy.Evaluate(dashboard,
+                    dashboard.Courses.Single(x => x.CourseId == "communication-basics")));
+
+            // This course ID is authored data, not a new economic rule or a
+            // hardcoded choice in the dashboard button handler.
+            var buy = f.SendOk(new GameCommand(CommandKind.PurchaseCourse, "problem-course"));
+            Equal(CommandStatus.Committed, buy.Status);
+            var active = LifeDashboardProjection.FromCommittedState(f.State(), f.Content);
+            Equal("problem-course", CourseEnrollmentPolicy.ChooseCourseId(active, "communication-basics"));
+            Equal(CoursePurchaseAvailability.AnotherCourseActive,
+                CourseEnrollmentPolicy.Evaluate(active,
+                    active.Courses.Single(x => x.CourseId == "communication-basics")));
+            Equal("problem-course", active.Game.ActiveCourse!.DefinitionId);
+        });
+        Check("course chooser honors catalog prerequisites without mutating saves", () =>
+        {
+            var source = Catalog();
+            var advanced = new CourseDefinition("negotiation-advanced", "course.negotiation",
+                "negotiation", 2, 1, 120, 0);
+            var catalog = new ContentCatalog("fixture.course-picker.v1",
+                source.Skills.Values, source.Careers.Values,
+                source.Courses.Values.Concat(new[] { advanced }),
+                source.Starts.Values, source.Economy, source.Schedule);
+            var f = new Fixture(catalog); f.Create();
+            var state = f.State();
+            var dashboard = LifeDashboardProjection.FromCommittedState(state, catalog);
+            Equal(CoursePurchaseAvailability.PrerequisiteNotMet,
+                CourseEnrollmentPolicy.Evaluate(dashboard,
+                    dashboard.Courses.Single(x => x.CourseId == advanced.Id)));
+            var before = f.Session.ExportCheckpoint();
+            Equal("course.prerequisite", f.Send(new GameCommand(
+                CommandKind.PurchaseCourse, advanced.Id)).ReasonKey);
+            Bytes(before, f.Session.ExportCheckpoint());
+            state.Skills.Add(new SkillState { Id = "negotiation", GrantedLevel = 1 });
+            dashboard = LifeDashboardProjection.FromCommittedState(state, catalog);
+            Equal(CoursePurchaseAvailability.Available,
+                CourseEnrollmentPolicy.Evaluate(dashboard,
+                    dashboard.Courses.Single(x => x.CourseId == advanced.Id)));
+        });
         Check("course charge once, study time and completion floor", () =>
         {
             var f = new Fixture(); f.Create(); f.Accept(); var cash = f.Session.Snapshot().Cash; var buy = f.Buy("buy-once");
