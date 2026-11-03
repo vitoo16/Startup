@@ -43,7 +43,7 @@ namespace StartupLife.Tests.EditMode
             var catalog = asset.BuildCatalog();
             Assert.That(catalog.Businesses.Count, Is.EqualTo(4));
             Assert.That(catalog.Careers.Count, Is.EqualTo(6),
-                "The Unity authoring gate must regenerate the serialized catalog from Batch A source.");
+                "The Unity authoring gate must regenerate the serialized catalog from Career Batches A and B.");
             Assert.That(catalog.Careers["marketing"].Scenes.Count, Is.EqualTo(6));
             Assert.That(catalog.Careers["sales"].WorkDays.Count, Is.EqualTo(6));
             Assert.That(catalog.Careers["office-admin"].Ranks.Count, Is.EqualTo(3));
