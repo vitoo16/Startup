@@ -19,7 +19,12 @@ namespace StartupLife.Core
         OnlineStore = 1,
         HomeFoodPreorder = 2,
         FreelanceService = 3,
-        CoffeeKiosk = 4
+        CoffeeKiosk = 4,
+        // Additive production content IDs. Never renumber the first four:
+        // historical receipts and existing saves preserve their ordinals.
+        MarketingAgency = 5,
+        SmallCafe = 6,
+        FashionStore = 7
     }
 
     public enum BusinessOperationMode
