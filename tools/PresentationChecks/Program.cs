@@ -510,22 +510,26 @@ internal static class Program
     private static void ProfessionAffinityAdvisory()
     {
         var skill = new SkillDefinition("communication", "skill.communication", 100, 300, 600, 1000, 1500);
-        CareerDefinition Career(string id) => new CareerDefinition(
+        CareerDefinition Career(string id, params string[] tags) => new CareerDefinition(
             id, "v1", "career." + id, 540, 1020, 4, 20,
             new[] { DayOfWeek.Monday },
             new[] { new CareerSceneDefinition(id + "-scene", "scene." + id, 100, 10, "communication", 1) },
-            new[] { new CareerRankDefinition("junior", 0, 0, 1000, "communication", 0) });
-        BusinessDefinition Business(string id, BusinessType type) => new BusinessDefinition(
-            id, "v1", "business." + id, type,
-            BusinessOperationMode.SideHustleCompatible, 100, 1000,
-            new[] { PricingPosture.Standard }, PricingPosture.Standard, 1, 1000);
+            new[] { new CareerRankDefinition("junior", 0, 0, 1000, "communication", 0) }, tags);
+        BusinessDefinition Business(string id, BusinessType type, params string[] tags) =>
+            new BusinessDefinition(id, "v1", "business." + id, type,
+                BusinessOperationMode.SideHustleCompatible, 100, 1000,
+                new[] { PricingPosture.Standard }, PricingPosture.Standard, 1, 1000,
+                new BusinessOperatingRequirements(
+                    new[] { new BusinessOperatingWindow(DayOfWeek.Monday, 1080, 1320) }, 120),
+                tags);
         var catalog = new ContentCatalog("affinity-read-only.v1", new[] { skill },
-            new[] { Career("chef"), Career("barista"), Career("developer") },
+            new[] { Career("chef", "food"), Career("barista", "food", "customer-experience"),
+                Career("developer", "digital-product") },
             Array.Empty<CourseDefinition>(),
             new[] { new CharacterStartDefinition("fresh", 1000, 10000, "base.female") },
-            new[] { Business("home-food-preorder", BusinessType.HomeFoodPreorder),
-                Business("coffee-kiosk", BusinessType.CoffeeKiosk),
-                Business("online-store", BusinessType.OnlineStore) },
+            new[] { Business("home-food-preorder", BusinessType.HomeFoodPreorder, "food"),
+                Business("coffee-kiosk", BusinessType.CoffeeKiosk, "customer-experience"),
+                Business("online-store", BusinessType.OnlineStore, "digital-product") },
             new EconomyBalanceDefinition(1, 1, 0), new DayScheduleDefinition(480, 1320));
         var chef = CareerBusinessAffinityPolicy.ForCareer("chef", catalog);
         Equal(1, chef.Count);
