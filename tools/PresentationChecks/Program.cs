@@ -511,8 +511,11 @@ internal static class Program
         True(entries.Count >= 45);
         Equal(entries.Count, entries.Select(x => x.Key)
             .Distinct(StringComparer.Ordinal).Count());
-        True(entries.All(x => x.Key.StartsWith("dashboard.", StringComparison.Ordinal)
-            && !string.IsNullOrWhiteSpace(x.Value)));
+        True(entries.All(x =>
+            (x.Key.StartsWith("dashboard.", StringComparison.Ordinal) ||
+             x.Key.StartsWith("career.", StringComparison.Ordinal) ||
+             x.Key.StartsWith("scene.", StringComparison.Ordinal)) &&
+            !string.IsNullOrWhiteSpace(x.Value)));
         foreach (var text in new[] { "Nghề nghiệp", "Kỹ năng", "Tài chính", "Kinh doanh",
             "Hồ sơ", "Chữ nhỏ hơn", "Chữ lớn hơn", "Đã hiểu", "Xem lại hướng dẫn" })
         {
@@ -525,6 +528,14 @@ internal static class Program
             True(entries.Any(x => x.Key == "dashboard.guide." + topic + ".body"));
         }
         True(!DashboardLocalizationCatalog.TryFindKey("never-localized", out _));
+        foreach (var key in new[] { "career.developer", "career.marketing", "career.sales",
+            "career.office-admin", "scene.marketing-campaign-planning", "scene.sales-negotiation",
+            "scene.office-document-processing" })
+        {
+            True(DashboardLocalizationCatalog.TryFindValue(key, out var value));
+            True(entries.Any(x => x.Key == key && x.Value == value));
+        }
+        True(!DashboardLocalizationCatalog.TryFindValue("career.unknown", out _));
         ThrowsNotSupported(() =>
             ((IList<KeyValuePair<string,string>>)entries).Clear());
     }
