@@ -233,10 +233,14 @@ namespace StartupLife.Core
             Segments = Index(segments, x => x.SegmentId);
             Pools = Index(pools, x => x.PoolId);
             Profiles = Index(profiles, x => x.BusinessDefinitionId);
+            // v1 remains the exact four-business archive. The separate P04
+            // preview revision must contain exactly seven pools/profiles:
+            // never accept a partially authored or silently expanded v1.
+            var requiredBusinesses = catalogRevision == "biz-a.v1" ? 7 : 4;
             if (Segments.Count != 6 || Segments.Values.All(x => !x.Enabled) ||
                 (catalogRevision == "v1" && Segments.Values.Count(x => x.Enabled) != 4) ||
-                Pools.Count != 4 || Profiles.Count != 4)
-                throw new ArgumentException("Invalid versioned segment roster or MVP business/pool profile.");
+                Pools.Count != requiredBusinesses || Profiles.Count != requiredBusinesses)
+                throw new ArgumentException("Invalid versioned segment roster or business/pool profiles.");
             foreach (var pool in Pools.Values)
             {
                 if (!pool.SegmentShareById.Keys.SequenceEqual(Segments.Keys, StringComparer.Ordinal) ||
@@ -250,8 +254,8 @@ namespace StartupLife.Core
                     !profile.ProductFitBySegmentId.Keys.SequenceEqual(Segments.Keys, StringComparer.Ordinal))
                     throw new ArgumentException("Unknown profile pool or segment.");
             }
-            if (Profiles.Values.Select(x => x.Type).Distinct().Count() != 4)
-                throw new ArgumentException("A fixture business type cannot appear more than once.");
+            if (Profiles.Values.Select(x => x.Type).Distinct().Count() != requiredBusinesses)
+                throw new ArgumentException("An economic business type cannot appear more than once.");
             FixtureId = fixtureId; CatalogRevision = catalogRevision; RulesetRevision = rulesetRevision;
         }
 
