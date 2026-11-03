@@ -37,6 +37,7 @@ internal static class Program
         Check("M8-T02 business source collection and duplicate id validation", BusinessSourceCollection);
 
         Check("M8-T02 production content evaluates Developer Freelance and kiosk", ProductionBusinessEligibility);
+        Check("P04-BIZ-02 isolated seven-business catalog schedules and affinity", BusinessBatchAPreview);
 
         var reportPath = args.Length > 0
             ? Path.GetFullPath(args[0])
@@ -543,6 +544,89 @@ internal static class Program
         Equal(1080, b.OperatingRequirements!.OperatingWindows[0].StartMinute); Equal(120,b.OperatingRequirements.RequiredOwnerMinutes);
         Equal(PricingPosture.Budget,b.AllowedPricingPostures[0]);
     }
+    private static void BusinessBatchAPreview()
+    {
+        var legacy = FirstPlayableContentTemplate.BuildCatalog();
+        var expanded = FirstPlayableContentTemplate.BuildBusinessBatchACatalog();
+        Equal("first-playable.v1", legacy.Version);
+        Equal(4, legacy.Businesses.Count);
+        Equal("first-playable.biz-a.v1", expanded.Version);
+        Equal(7, expanded.Businesses.Count);
+        Equal(6, expanded.Careers.Count);
+        foreach (var old in legacy.Businesses)
+        {
+            var current = expanded.Businesses[old.Key];
+            Equal(old.Value.Type, current.Type);
+            Equal(old.Value.Revision, current.Revision);
+            Equal(old.Value.MinimumStartupInvestment, current.MinimumStartupInvestment);
+            Equal(old.Value.OperatingRequirements!.RequiredOwnerMinutes,
+                current.OperatingRequirements!.RequiredOwnerMinutes);
+        }
+        var expected = new[]
+        {
+            (FirstPlayableContentTemplate.MarketingAgencyId,
+                BusinessType.MarketingAgency, BusinessOperationMode.SideHustleCompatible,
+                1200000L, 180, 6),
+            (FirstPlayableContentTemplate.SmallCafeId,
+                BusinessType.SmallCafe, BusinessOperationMode.FullTimeRequired,
+                6000000L, 480, 6),
+            (FirstPlayableContentTemplate.FashionStoreId,
+                BusinessType.FashionStore, BusinessOperationMode.FullTimeRequired,
+                4000000L, 420, 6)
+        };
+        foreach (var item in expected)
+        {
+            var def = expanded.Businesses[item.Item1];
+            Equal(item.Item2, def.Type);
+            Equal(item.Item3, def.OperationMode);
+            Equal(item.Item4, def.MinimumStartupInvestment);
+            Equal(item.Item5, def.OperatingRequirements!.RequiredOwnerMinutes);
+            Equal(item.Item6, def.OperatingRequirements.OperatingWindows.Count);
+            Equal("v1", def.Revision);
+            Equal(3, def.AllowedPricingPostures.Count);
+        }
+        Sequence(new[] { BusinessType.MarketingAgency, BusinessType.SmallCafe,
+            BusinessType.FashionStore }, expected.Select(x => x.Item2));
+        Equal(7, expanded.Businesses.Values.Select(x => x.Type).Distinct().Count());
+        var date = new SimDate(2026, 9, 2); // Wednesday: all three are scheduled.
+        var state = new GameState { DateIso = date.ToString(), Minute = 480,
+            Employment = new EmploymentState { CareerId = "developer", DefinitionRevision = "v1",
+                FirstShiftIso = date.ToString() } };
+        var agency = BusinessEligibilityEvaluator.Evaluate(expanded, state,
+            FirstPlayableContentTemplate.MarketingAgencyId, "v1");
+        Equal(BusinessEligibilityStatus.Eligible, agency.Status);
+        Equal<int?>(180, agency.RequiredOwnerMinutes);
+        Equal<int?>(240, agency.AvailableOwnerMinutes);
+        foreach (var id in new[] { FirstPlayableContentTemplate.SmallCafeId,
+            FirstPlayableContentTemplate.FashionStoreId })
+            Equal(BusinessEligibilityStatus.EmploymentIncompatible,
+                BusinessEligibilityEvaluator.Evaluate(expanded, state, id, "v1").Status);
+        state.Employment = null;
+        Equal(BusinessEligibilityStatus.Eligible,
+            BusinessEligibilityEvaluator.Evaluate(expanded, state,
+                FirstPlayableContentTemplate.SmallCafeId, "v1").Status);
+        Equal(BusinessEligibilityStatus.Eligible,
+            BusinessEligibilityEvaluator.Evaluate(expanded, state,
+                FirstPlayableContentTemplate.FashionStoreId, "v1").Status);
+        Equal(true, CareerBusinessAffinityPolicy.IsPreferred("marketing",
+            FirstPlayableContentTemplate.MarketingAgencyId, expanded));
+        Equal(true, CareerBusinessAffinityPolicy.IsPreferred("chef",
+            FirstPlayableContentTemplate.SmallCafeId, expanded));
+        Equal(true, CareerBusinessAffinityPolicy.IsPreferred("sales",
+            FirstPlayableContentTemplate.MarketingAgencyId, expanded));
+        Equal(true, CareerBusinessAffinityPolicy.IsPreferred("barista",
+            FirstPlayableContentTemplate.SmallCafeId, expanded));
+        var authored = FirstPlayableContentTemplate.CreateBusinessBatchA();
+        var detached = authored.Build();
+        authored.Businesses[4].MinimumStartupInvestment = 1;
+        Equal(1200000L, detached.Businesses[FirstPlayableContentTemplate.MarketingAgencyId]
+            .MinimumStartupInvestment);
+        var monday = new GameState { DateIso = "2026-09-07", Minute = 480 };
+        Equal(BusinessEligibilityStatus.InsufficientOwnerTime,
+            BusinessEligibilityEvaluator.Evaluate(expanded, monday,
+                FirstPlayableContentTemplate.SmallCafeId, "v1").Status);
+    }
+
     private static void BusinessSourceCollection()
     {
         var source = FirstPlayableContentTemplate.Create(); source.Businesses = null!; Throws(() => source.Build());
