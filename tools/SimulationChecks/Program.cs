@@ -891,6 +891,7 @@ internal static class Program
         {
             var f = new Fixture(Catalog(speed: 15000));
             f.Create();
+            f.Accept(); // Employed evening has an eligible post-shift study window.
             var before = LifeDashboardProjection.FromCommittedState(f.State(), f.Content);
             True(before.Courses.All(x => !x.StudyMinutesRemaining.HasValue &&
                 !x.Minimum60MinuteSessions.HasValue));
