@@ -46,6 +46,41 @@ class BusinessBatchASourceTests(unittest.TestCase):
         self.assertNotIn('source.Version = "first-playable.biz-a.v1";',
                          source("Assets/StartupLife/Scripts/Content/ContentCatalogSource.cs"))
 
+    def test_bootstrap_uses_verified_rule_selection_without_implicit_upgrade(self):
+        bootstrap = source("Assets/StartupLife/Scripts/Presentation/StartupLifeBootstrapper.cs")
+        selector = source("Assets/StartupLife/Scripts/Infrastructure/VerifiedBusinessContentSelector.cs")
+        self.assertIn("enableBusinessBatchAForNewRuns = false;", bootstrap)
+        self.assertIn("initialV2Content = contentAsset.BuildCatalog();", bootstrap)
+        self.assertIn("GameSession.NewState(initialV2Content,", bootstrap)
+        self.assertIn("VerifiedBusinessContentSelector.Select(primary, backup,", bootstrap)
+        self.assertIn("baselineEventSerializer, batchEventSerializer,", bootstrap)
+        self.assertIn("serializer, batchSerializer, enableBusinessBatchAForNewRuns", bootstrap)
+        self.assertIn("new AtomicFileSaveStore(path, eventSerializer)", bootstrap)
+        self.assertIn("new AtomicFileSaveStore(path, serializer)", bootstrap)
+        self.assertIn("BusinessContentTrack.BusinessBatchA", bootstrap)
+        self.assertIn("if (primary == null && backup == null)", selector)
+        self.assertIn("var chosen = Verify(primary, baseline, batchA) ??", selector)
+        self.assertIn("Verify(backup, baseline, batchA);", selector)
+        self.assertIn("if (oldStatus == LoadStatus.Valid)", selector)
+        self.assertIn("throw new InvalidOperationException(", selector)
+        self.assertNotIn("File.WriteAllBytes", selector)
+        self.assertNotIn("AtomicFileSaveStore", selector)
+
+    def test_v3_v4_content_replay_regression_is_wired(self):
+        economic = source("tools/EconomicChecks/Program.cs")
+        for phrase in (
+            "P04-BIZ-03 new business receipts survive V3 cold replay",
+            "P04-BIZ-03 V4 source replay accepts seven-business fresh frontier",
+            "P04-BIZ-03 old V3 ruleset is not silently reinterpreted",
+            "VerifiedBusinessContentSelector.Select(sourceBytes, null,",
+            "VerifiedBusinessContentSelector.Select(saved, null,",
+            "File.ReadAllBytes(filename).SequenceEqual(saved)",
+        ):
+            self.assertIn(phrase, economic)
+        self.assertIn(
+            "BusinessBatchA = 2",
+            source("Assets/StartupLife/Scripts/Infrastructure/VerifiedBusinessContentSelector.cs"))
+
     def test_new_names_are_unique_in_shared_vietnamese_manifest(self):
         src = source("Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs")
         keys = re.findall(r'new KeyValuePair<string,string>\("([^"]+)"', src)
