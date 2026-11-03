@@ -42,6 +42,8 @@ class CareerContentBatchATests(unittest.TestCase):
         self.assertIn('catalog.Careers["sales"]', builder)
         self.assertIn('catalog.Careers["office-admin"]', builder)
         self.assertIn("VerifyCareer(", builder)
+        self.assertIn("RequiredXp", builder)
+        self.assertIn("RequiredServiceDays", builder)
         self.assertIn("catalog.Businesses[FirstPlayableContentTemplate.OnlineStoreId]", builder)
         self.assertIn("catalog.Businesses[FirstPlayableContentTemplate.HomeFoodPreorderId]", builder)
 
