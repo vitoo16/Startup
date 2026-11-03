@@ -659,9 +659,6 @@ namespace StartupLife.Editor
             Add(table, "life.course_progress", "Tiến độ");
 
             Add(table, "career.none", "Chưa có việc");
-            Add(table, "course.none", "Chưa học khóa nào");
-            Add(table, "course.communication", "Giao tiếp cơ bản");
-            Add(table, "course.problem", "Giải quyết vấn đề");
 
             Add(table, "action.accept_developer", "Nhận việc Lập trình viên");
             Add(table, "action.work", "Đi làm");
