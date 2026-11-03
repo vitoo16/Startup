@@ -141,6 +141,8 @@ jobs:
         run: python3 -m unittest discover -s tools/tests -p 'test_course_dashboard_wiring.py' -v
       - name: Guard catalog-driven job dashboard selection (no Unity Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_career_dashboard_wiring.py' -v
+      - name: Guard business launch catalog UI and shared command path (no Unity Editor)
+        run: python3 -m unittest discover -s tools/tests -p 'test_business_catalog_launch_wiring.py' -v
       - name: Guard production career batch A authoring and localization (no Unity Editor)
         run: python3 -m unittest discover -s tools/tests -p 'test_career_content_batch_a.py' -v
       - name: Guard production career batch B courses and advisory affinity (no Unity Editor)
