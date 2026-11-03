@@ -18,6 +18,8 @@ namespace StartupLife.Content
 
         public const string FreelanceId = "freelance-service";
         public const string CoffeeKioskId = "coffee-kiosk";
+        public const string OnlineStoreId = "online-store";
+        public const string HomeFoodPreorderId = "home-food-preorder";
 
         public static ContentCatalogSource Create()
         {
@@ -127,8 +129,8 @@ namespace StartupLife.Content
                 {
                     FunctionalBusiness(FreelanceId, BusinessType.FreelanceService, BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120),
                     FunctionalBusiness(CoffeeKioskId, BusinessType.CoffeeKiosk, BusinessOperationMode.FullTimeRequired, 540, 1020, 480),
-                    FunctionalBusiness("online-store", BusinessType.OnlineStore, BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120),
-                    FunctionalBusiness("home-food-preorder", BusinessType.HomeFoodPreorder, BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120)
+                    FunctionalBusiness(OnlineStoreId, BusinessType.OnlineStore, BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120),
+                    FunctionalBusiness(HomeFoodPreorderId, BusinessType.HomeFoodPreorder, BusinessOperationMode.SideHustleCompatible, 1080, 1320, 120)
                 },
                 Economy = new EconomyContentSource
                 {
