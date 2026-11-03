@@ -182,6 +182,138 @@ internal static class Program
                 "partial-preview", "biz-a.v1", "p04-biz-a.rules-v1",
                 catalog.Segments.Values, catalog.Pools.Values, catalog.Profiles.Values));
         });
+        Check("P04-BIZ-03 new business receipts survive V3 cold replay without changing frozen V2 frontier", () =>
+        {
+            var legacy = FirstPlayableContentTemplate.BuildCatalog();
+            var expanded = FirstPlayableContentTemplate.BuildBusinessBatchACatalog();
+            var economic = M9T02FunctionalEconomy.CreateBusinessBatchA();
+            var historical = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economic, expanded);
+            var migration = new V2ToV3Migration(historical, replay);
+            var serializer = new V3SaveCompatibilitySerializer(expanded,
+                GameSession.CreateRestoreValidator(), migration,
+                new StagedV3SaveSerializer(historical, replay));
+            // Fresh V3 runs still originate from the *frozen* V2 content
+            // frontier. The new V3 catalog is never substituted into the
+            // archived original receipt rules.
+            var original = GameSession.NewState(legacy, "p04-preview-v3", 130915UL,
+                new SimDate(2026, 11, 4));
+            var promoted = EconomicV3PayloadCodec.ReadChecked(
+                migration.Migrate(JsonSaveSerializer.WriteObject(original)));
+            promoted.Current!.EconomicV3 = promoted;
+            var filename = Path.Combine(Path.GetTempPath(),
+                "p04-preview-v3-" + Guid.NewGuid().ToString("N") + ".save");
+            try
+            {
+                var store = new AtomicFileSaveStore(filename, serializer);
+                var session = new GameSession(promoted.Current, expanded, serializer, store,
+                    economicRules: economic, archivedRules: historical);
+                var create = new GameCommand(CommandKind.CreateCharacter,
+                    "fresh", 22, "Preview Founder", "base.female");
+                var genesis = session.Execute(new CommandEnvelope("p04-preview-v3",
+                    "create", 0, create));
+                Assert(genesis.Status == CommandStatus.Committed,
+                    "P04 V3 character creation must commit against exact preview rules: " + genesis.ReasonKey);
+                var offers = session.ReadBusinessOperations().LaunchOptions;
+                Assert(offers.Count == 7 &&
+                    offers.Single(x => x.DefinitionId ==
+                        FirstPlayableContentTemplate.MarketingAgencyId).CanRequestLaunch,
+                    "seven authored business options must be reachable through authoritative read model");
+                var command = BusinessCommands.Launch(
+                    FirstPlayableContentTemplate.MarketingAgencyId, "v1", 1200000);
+                var launched = session.Execute(new CommandEnvelope("p04-preview-v3",
+                    "launch-agency", 1, command));
+                Assert(launched.Status == CommandStatus.Committed,
+                    "P04 agency launch must be committed with authored capital and rules: " + launched.ReasonKey);
+                var started = session.Snapshot();
+                Assert(started.Cash == 1800000 &&
+                    session.ReadBusinesses().Businesses.Single().DefinitionId ==
+                        FirstPlayableContentTemplate.MarketingAgencyId,
+                    "exact launch investment deducted once, no phantom credit");
+                var saved = File.ReadAllBytes(filename);
+                Assert(serializer.DeserializeAndValidate(saved).Status == LoadStatus.Valid,
+                    "cold V3 source replay must validate new business launch");
+                Assert(GameSession.TryRestore(expanded, serializer, store,
+                    out var cold, out var outcome,
+                    economicRules: economic, archivedRules: historical),
+                    "schema3 preview cold restore must remain valid: " + outcome.Reason);
+                var retry = cold!.Execute(new CommandEnvelope("p04-preview-v3",
+                    "launch-agency", 1, command));
+                Assert(retry.Status == CommandStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(filename).SequenceEqual(saved),
+                    "cold duplicate launch may never charge capital again");
+                var advance = cold.Execute(new CommandEnvelope("p04-preview-v3",
+                    "first-business-day", 2, new GameCommand(CommandKind.AdvanceBoundary)));
+                Assert(advance.Status == CommandStatus.Committed,
+                    "preview company must advance under existing V3 economic simulator: " + advance.ReasonKey);
+                var afterAdvance = File.ReadAllBytes(filename);
+                Assert(serializer.DeserializeAndValidate(afterAdvance).Status == LoadStatus.Valid,
+                    "first committed agency operation/market epoch must cold replay byte exactly");
+                Assert(GameSession.TryRestore(expanded, serializer, store,
+                    out var afterCold, out var laterOutcome,
+                    economicRules: economic, archivedRules: historical) &&
+                    afterCold!.Snapshot().Revision == 3 &&
+                    File.ReadAllBytes(filename).SequenceEqual(afterAdvance),
+                    "post-operation cold restore must not rewrite settled or reserved ledger data");
+            }
+            finally
+            {
+                foreach (var suffix in new[] { "", ".backup", ".lock" })
+                    if (File.Exists(filename + suffix)) File.Delete(filename + suffix);
+            }
+        });
+
+        Check("P04-BIZ-03 old V3 ruleset is not silently reinterpreted as new P04 economy", () =>
+        {
+            var baseContent = FirstPlayableContentTemplate.BuildCatalog();
+            var baseEconomics = M9T02FunctionalEconomy.Create();
+            var historical = new BundledHistoricalV2ContentResolver();
+            var oldReplay = new VersionedReceiptReplay(baseEconomics, baseContent);
+            var migration = new V2ToV3Migration(historical, oldReplay);
+            var oldSerializer = new V3SaveCompatibilitySerializer(baseContent,
+                GameSession.CreateRestoreValidator(), migration,
+                new StagedV3SaveSerializer(historical, oldReplay));
+            var p04Content = FirstPlayableContentTemplate.BuildBusinessBatchACatalog();
+            var newReplay = new VersionedReceiptReplay(
+                M9T02FunctionalEconomy.CreateBusinessBatchA(), p04Content);
+            var newSerializer = new V3SaveCompatibilitySerializer(p04Content,
+                GameSession.CreateRestoreValidator(),
+                new V2ToV3Migration(historical, newReplay),
+                new StagedV3SaveSerializer(historical, newReplay));
+            var initial = GameSession.NewState(baseContent, "p04-old-v3", 190431UL,
+                new SimDate(2026, 11, 4));
+            var promoted = EconomicV3PayloadCodec.ReadChecked(
+                migration.Migrate(JsonSaveSerializer.WriteObject(initial)));
+            promoted.Current!.EconomicV3 = promoted;
+            var path = Path.Combine(Path.GetTempPath(),
+                "p04-old-rules-" + Guid.NewGuid().ToString("N") + ".save");
+            try
+            {
+                var store = new AtomicFileSaveStore(path, oldSerializer);
+                var old = new GameSession(promoted.Current, baseContent, oldSerializer, store,
+                    economicRules: baseEconomics, archivedRules: historical);
+                Assert(old.Execute(new CommandEnvelope("p04-old-v3", "character",
+                    0, new GameCommand(CommandKind.CreateCharacter,
+                        "fresh", 20, "Old Founder", "base.male"))).Status ==
+                    CommandStatus.Committed, "old fixture must create an actual V3 receipt");
+                Assert(old.Execute(new CommandEnvelope("p04-old-v3", "online",
+                    1, BusinessCommands.Launch("online-store", "v1", 100))).Status ==
+                    CommandStatus.Committed, "old fixture must commit a real baseline business receipt");
+                var sourceBytes = File.ReadAllBytes(path);
+                Assert(oldSerializer.DeserializeAndValidate(sourceBytes).Status == LoadStatus.Valid,
+                    "baseline V3 serializer must still accept own old receipt chain");
+                var incompatible = newSerializer.DeserializeAndValidate(sourceBytes);
+                Assert(incompatible.Status == LoadStatus.UnsupportedContent &&
+                    incompatible.Reason == "save.ruleset_revision" &&
+                    File.ReadAllBytes(path).SequenceEqual(sourceBytes),
+                    "incompatible V3 economy must return explicit unsupported content without rewriting source");
+            }
+            finally
+            {
+                foreach (var suffix in new[] { "", ".backup", ".lock" })
+                    if (File.Exists(path + suffix)) File.Delete(path + suffix);
+            }
+        });
         var supply = CustomerDemandCalculator.OpeningSupply("2026-10-09", catalog, "mvp.market.online-retail");
         Check("largest remainder pool supply is exact, tie by segment ID", () =>
         {
