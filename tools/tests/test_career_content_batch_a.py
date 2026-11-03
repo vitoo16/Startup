@@ -53,9 +53,7 @@ class CareerContentBatchATests(unittest.TestCase):
 
     def test_career_ui_and_work_scene_strings_are_authored(self):
         ui = read("Assets/StartupLife/Scripts/Presentation/LifeDashboardOverlay.cs")
-        self.assertIn('"career.marketing" => "Chuyên viên Marketing"', ui)
-        self.assertIn('"career.sales" => "Nhân viên kinh doanh"', ui)
-        self.assertIn('"career.office-admin" => "Nhân viên hành chính"', ui)
+        self.assertIn("DashboardLocalizationCatalog.TryFindValue(key, out var value)", ui)
         table = read("Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs")
         for key in ("career.developer", "career.marketing", "career.sales", "career.office-admin"):
             self.assertIn(f'new KeyValuePair<string,string>("{key}"', table)
