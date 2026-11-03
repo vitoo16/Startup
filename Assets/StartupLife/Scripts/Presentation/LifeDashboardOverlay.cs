@@ -175,6 +175,8 @@ namespace StartupLife.Presentation
                   "\nLương theo bậc: " + string.Join(" → ", selectedOffer.MonthlySalariesVnd.Select(Money)) +
                   "/tháng\nCa: " + Clock(selectedOffer.StartMinute) + "–" + Clock(selectedOffer.EndMinute) +
                   " · " + FormatWorkDays(selectedOffer.WorkDays) +
+                  "\nGợi ý ngành kinh doanh: " +
+                  FormatPreferredBusinesses(selectedOffer.PreferredBusinessIds) +
                   "\n" + CareerAvailabilityHint(careerAvailability);
             foreach (var option in careerButtons.Values)
                 option.interactable = !career.IsEmployed;
@@ -308,6 +310,12 @@ namespace StartupLife.Presentation
             // Session is the sole authority; stale UI cannot force a hire.
             host.AcceptCareer(selectedCareerId);
         }
+
+        private static string FormatPreferredBusinesses(IReadOnlyList<string> ids) =>
+            ids.Count == 0 ? "Không có gợi ý" :
+            string.Join(", ", ids.Select(id =>
+                DashboardLocalizationCatalog.TryFindValue("business." + id, out var value)
+                    ? value : id));
 
         private static string FormatWorkDays(IReadOnlyList<DayOfWeek> days) =>
             string.Join(" · ", days.Select(day => day switch
