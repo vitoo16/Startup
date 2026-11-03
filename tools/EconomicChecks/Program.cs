@@ -103,6 +103,85 @@ internal static class Program
             Throws<ArgumentException>(() => new FixedBusinessHelperDefinition(
                 "invalid-helper", "helper.invalid", 90000, 0, EconomicDefinitionLimits.Scale));
         });
+        Check("P04-BIZ-02 preview economic profiles match scheduled types and preserve v1", () =>
+        {
+            var expanded = M9T02FunctionalEconomy.CreateBusinessBatchA();
+            var authored = FirstPlayableContentTemplate.BuildBusinessBatchACatalog();
+            Assert(catalog.CatalogRevision == "v1" && catalog.Profiles.Count == 4 &&
+                catalog.Pools.Count == 4, "released v1 still has only four business profiles");
+            Assert(expanded.CatalogRevision == "biz-a.v1" &&
+                expanded.Profiles.Count == 7 && expanded.Pools.Count == 7,
+                "separately revisioned preview requires exactly seven business profiles and pools");
+            foreach (var original in catalog.Profiles)
+            {
+                var same = expanded.Profiles[original.Key];
+                Assert(same.BusinessDefinitionRevision == original.Value.BusinessDefinitionRevision &&
+                    same.ProfileRevision == original.Value.ProfileRevision &&
+                    same.MarketPoolId == original.Value.MarketPoolId &&
+                    same.UnitPriceByPosture[PricingPosture.Standard] ==
+                        original.Value.UnitPriceByPosture[PricingPosture.Standard] &&
+                    same.DailyMandatoryChargeVnd == original.Value.DailyMandatoryChargeVnd,
+                    "original v1 business economy profiles must remain unchanged");
+            }
+            var expectations = new[]
+            {
+                (FirstPlayableContentTemplate.MarketingAgencyId, "p04.market.creative-agency",
+                    180, 4, 550000L, 60000L, 9),
+                (FirstPlayableContentTemplate.SmallCafeId, "p04.market.small-cafe",
+                    480, 56, 42000L, 250000L, 95),
+                (FirstPlayableContentTemplate.FashionStoreId, "p04.market.fashion-retail",
+                    420, 24, 170000L, 125000L, 35)
+            };
+            foreach (var item in expectations)
+            {
+                var profile = expanded.Profiles[item.Item1];
+                var definition = authored.Businesses[item.Item1];
+                Assert(profile.Type == definition.Type &&
+                    profile.BusinessDefinitionRevision == definition.Revision &&
+                    profile.RequiredOwnerMinutes == definition.OperatingRequirements!.RequiredOwnerMinutes &&
+                    profile.RequiredOwnerMinutes == item.Item3 &&
+                    profile.FullCapacityUnits == item.Item4 &&
+                    profile.UnitPriceByPosture[PricingPosture.Standard] == item.Item5 &&
+                    profile.DailyMandatoryChargeVnd == item.Item6 &&
+                    profile.MarketPoolId == item.Item2 &&
+                    expanded.Pools[item.Item2].BaseDailyUnits == item.Item7 &&
+                    profile.ProfileRevision == "p04-biz-a.profile-v1",
+                    "business preview content and economy must agree for " + item.Item1);
+                var opening = CustomerDemandCalculator.OpeningSupply("2026-11-04",
+                    expanded, item.Item2);
+                Assert(opening.OriginalUnitsBySegment.Values.Sum() == item.Item7 &&
+                    opening.OriginalUnitsBySegment.Where(x => !expanded.Segments[x.Key].Enabled)
+                        .All(x => x.Value == 0), "market supply must be finite and exclude inactive segments");
+                var customer = new BusinessDemandCandidate("sample-" + item.Item1,
+                    item.Item1, PricingPosture.Standard);
+                var first = CustomerDemandCalculator.AllocateRemaining(expanded, opening,
+                    Array.Empty<MarketFulfillmentUnit>(), new[] { customer });
+                var again = CustomerDemandCalculator.AllocateRemaining(expanded, opening,
+                    Array.Empty<MarketFulfillmentUnit>(), new[] { customer });
+                Assert(first.Sum(x => x.OfferedUnits) <= item.Item7 &&
+                    first.Select(x => x.SegmentId + ":" + x.OfferedUnits)
+                        .SequenceEqual(again.Select(x => x.SegmentId + ":" + x.OfferedUnits)),
+                    "finite supply and deterministic planning for " + item.Item1);
+                var noReach = new BusinessDemandCandidate("zero-" + item.Item1,
+                    item.Item1, PricingPosture.Standard, reach: 0);
+                Assert(CustomerDemandCalculator.AllocateRemaining(expanded, opening,
+                    Array.Empty<MarketFulfillmentUnit>(), new[] { noReach }).Count == 0,
+                    "zero customer reach may not create phantom sales");
+            }
+            var cafeHelper = expanded.Profiles[FirstPlayableContentTemplate.SmallCafeId];
+            Assert(cafeHelper.FixedHelper != null &&
+                cafeHelper.FixedHelper.ContractedDailyWageVnd == 110000L &&
+                cafeHelper.NonHelperDailyFixedChargeVnd == 140000L &&
+                cafeHelper.BaseOwnerCapacityUnits == 36 &&
+                cafeHelper.FixedHelper.EffectiveAdditionalCapacityUnits == 20,
+                "cafe helper wage is included once inside 250k daily charge");
+            Throws<ArgumentException>(() => new BusinessEconomicCatalog(
+                "old-with-seven", "v1", "m9-t02.rules-v1",
+                expanded.Segments.Values, expanded.Pools.Values, expanded.Profiles.Values));
+            Throws<ArgumentException>(() => new BusinessEconomicCatalog(
+                "partial-preview", "biz-a.v1", "p04-biz-a.rules-v1",
+                catalog.Segments.Values, catalog.Pools.Values, catalog.Profiles.Values));
+        });
         var supply = CustomerDemandCalculator.OpeningSupply("2026-10-09", catalog, "mvp.market.online-retail");
         Check("largest remainder pool supply is exact, tie by segment ID", () =>
         {
