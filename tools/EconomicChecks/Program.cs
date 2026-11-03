@@ -812,9 +812,11 @@ internal static class Program
                 BundledHistoricalV2ContentResolver.ContentVersion,out var original) &&
                 original != null, "frozen authored resolver");
             var archived=original!;
-            // The authored v3 template adds two modern businesses; compare only the
-            // immutable v2-authored roster to the pinned historical catalog.
+            // The live template has additive modern careers and businesses.
+            // Compare only the exact immutable v2-authored roster to the pin.
             var historicalAuthoring=FirstPlayableContentTemplate.Create();
+            historicalAuthoring.Careers = historicalAuthoring.Careers.Where(x =>
+                x.Id=="developer").ToArray();
             historicalAuthoring.Businesses = historicalAuthoring.Businesses.Where(x =>
                 x.Id=="freelance-service" || x.Id=="coffee-kiosk").ToArray();
             var template=historicalAuthoring.Build();
