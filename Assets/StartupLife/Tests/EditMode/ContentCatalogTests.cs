@@ -27,7 +27,11 @@ namespace StartupLife.Tests.EditMode
             Assert.That(catalog.Courses.ContainsKey("time-management-basics"), Is.True);
             Assert.That(catalog.Courses.ContainsKey("networking-basics"), Is.True);
             Assert.That(catalog.Courses.ContainsKey("leadership-basics"), Is.True);
+            Assert.That(catalog.Careers["chef"].BusinessAffinityTags, Does.Contain("food"));
+            Assert.That(catalog.Careers["barista"].BusinessAffinityTags, Does.Contain("customer-experience"));
             Assert.That(catalog.Businesses.Count, Is.EqualTo(4));
+            Assert.That(catalog.Businesses["coffee-kiosk"].BusinessAffinityTags, Does.Contain("food"));
+            Assert.That(catalog.Businesses["home-food-preorder"].BusinessAffinityTags, Does.Contain("supplier-operations"));
             Assert.That(catalog.Businesses[FirstPlayableContentTemplate.FreelanceId].OperatingRequirements.RequiredOwnerMinutes, Is.EqualTo(120));
         }
 
@@ -49,6 +53,10 @@ namespace StartupLife.Tests.EditMode
             Assert.That(catalog.Careers["barista"].WorkDays.Count, Is.EqualTo(6));
             Assert.That(catalog.Courses.Count, Is.EqualTo(6),
                 "Unity authoring gate must regenerate the asset with new study offerings.");
+            Assert.That(catalog.Careers["chef"].BusinessAffinityTags, Does.Contain("food"),
+                "Unity authoring gate must regenerate the asset with authored affinity tags.");
+            Assert.That(catalog.Careers["barista"].BusinessAffinityTags, Does.Contain("customer-experience"));
+            Assert.That(catalog.Businesses["coffee-kiosk"].BusinessAffinityTags, Does.Contain("food"));
             var freelance = catalog.Businesses[FirstPlayableContentTemplate.FreelanceId];
             var kiosk = catalog.Businesses[FirstPlayableContentTemplate.CoffeeKioskId];
             Assert.That(freelance.OperationMode, Is.EqualTo(BusinessOperationMode.SideHustleCompatible));
