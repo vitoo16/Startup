@@ -53,6 +53,22 @@ class CourseDashboardWiringTests(unittest.TestCase):
         self.assertNotIn('state.Course =', policy)
         self.assertNotIn('PlayerPrefs', policy)
 
+    def test_study_and_promotion_hints_are_read_only_and_data_driven(self):
+        projection = read("Assets/StartupLife/Scripts/Application/LifeDashboardProjection.cs")
+        ui = read("Assets/StartupLife/Scripts/Presentation/LifeDashboardOverlay.cs")
+        engine = read("Assets/StartupLife/Scripts/Simulation/SimulationEngine.cs")
+        self.assertIn("1 + (unitsRemaining - 1) / learningSpeed", projection)
+        self.assertIn("1 + (StudyMinutesRemaining.Value - 1) / 60", projection)
+        self.assertIn("new CourseDashboardItem(x, game.ActiveCourse, state.LearningSpeed)", projection)
+        self.assertIn("current.DefinitionRevision == currentDefinition.Revision", projection)
+        self.assertIn("next.RequiredServiceDays - Math.Max(0, elapsed)", projection)
+        self.assertIn("model.CareerPromotion.MissingCareerXp", ui)
+        self.assertIn("model.CareerPromotion.MissingCalendarDays", ui)
+        self.assertIn("CourseStudyProgress(selectedCourse)", ui)
+        self.assertIn("SimulationEngine", engine)
+        self.assertNotIn("GameCommand", projection)
+        self.assertNotIn("PlayerPrefs", projection)
+
     def test_new_application_source_tracks_unity_meta(self):
         meta = read("Assets/StartupLife/Scripts/Application/CourseEnrollmentPolicy.cs.meta")
         self.assertIn('fileFormatVersion: 2', meta)
