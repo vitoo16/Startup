@@ -287,6 +287,24 @@ internal static class Program
             catalog.Careers.Values.Sum(x => x.Scenes.Count));
         True(catalog.Careers.Values.SelectMany(x => x.Scenes)
             .All(x => catalog.Skills.ContainsKey(x.SkillId)));
+        foreach (var career in catalog.Careers.Values)
+        {
+            var expected = QuotaScheduler.Apportion(career.Scenes, career.QuotaSlots);
+            uint rng = 987;
+            for (var cycle = 0; cycle < 100; cycle++)
+            {
+                var deck = QuotaScheduler.Order(expected, "", ref rng);
+                Equal(career.QuotaSlots, deck.Count);
+                True(deck.Zip(deck.Skip(1), (a, b) => a != b).All(x => x));
+                foreach (var scene in career.Scenes)
+                    Equal(expected[scene.Id], deck.Count(x => x == scene.Id));
+            }
+            uint firstSeed = 987;
+            uint secondSeed = 987;
+            Sequence(
+                QuotaScheduler.Order(expected, "", ref firstSeed),
+                QuotaScheduler.Order(expected, "", ref secondSeed));
+        }
         Sequence(new[] { "base.female", "base.male" }, catalog.Starts["fresh"].AppearanceIds);
         Equal(480, catalog.Schedule.WakeMinute);
         Equal(1320, catalog.Schedule.SleepMinute);
