@@ -16,12 +16,19 @@ namespace StartupLife.Presentation
             status = statusLabel;
         }
 
-        public CommandResult PurchaseCommunicationCourse()
+        public CommandResult PurchaseCourse(string courseId)
         {
-            var result = flow.PurchaseCourse("communication-basics").Command;
+            if (string.IsNullOrWhiteSpace(courseId))
+                throw new ArgumentException("A catalog course ID is required.", nameof(courseId));
+            var result = flow.PurchaseCourse(courseId).Command;
             Publish(result, "status.course.purchased");
             return result;
         }
+
+        // Legacy UnityEvent buttons in older authored scenes still target
+        // this entry point. The five-tab course picker uses PurchaseCourse.
+        public CommandResult PurchaseCommunicationCourse() =>
+            PurchaseCourse("communication-basics");
 
         public CommandResult Study60Minutes()
         {
