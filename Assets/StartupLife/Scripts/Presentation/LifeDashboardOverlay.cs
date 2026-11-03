@@ -159,12 +159,7 @@ namespace StartupLife.Presentation
                       " XP nghề và " +
                       model.CareerPromotion.MissingCalendarDays.ToString(CultureInfo.InvariantCulture) +
                       " ngày lịch");
-            careerHistory.text = career.PreviousEmployments.Count == 0
-                ? "Chưa có công việc trước đây"
-                : string.Join("\n", career.PreviousEmployments.Select(x =>
-                    DisplayCareer(x.CareerNameKey) + " · " + x.StartedIso + " – " +
-                    (x.EndedIso ?? "hiện tại") + " · bậc " +
-                    (x.RankIndex + 1).ToString(CultureInfo.InvariantCulture)));
+            careerHistory.text = FormatCareerHistory(career);
             salary.text = "Lương chờ nhận: " + Money(career.OutstandingSalary.FloorToInt64());
             selectedCareerId = CareerSelectionPolicy.ChooseCareerId(model, selectedCareerId);
             SyncCareerOptions(model.Careers);
@@ -186,7 +181,8 @@ namespace StartupLife.Presentation
                   " · " + FormatWorkDays(selectedOffer.WorkDays) +
                   "\n" + DisplayCareerAffinityHint() + ": " +
                   FormatPreferredBusinesses(selectedOffer.PreferredBusinessIds) +
-                  "\n" + CareerAvailabilityHint(careerAvailability);
+                  "\n" + CareerAvailabilityHint(careerAvailability) +
+                  "\n" + CareerChangeHint(CareerSelectionPolicy.TransitionContext(model, selectedOffer));
             foreach (var option in careerButtons.Values)
                 option.interactable = !career.IsEmployed;
             work.interactable = career.IsEmployed;
@@ -344,6 +340,64 @@ namespace StartupLife.Presentation
         private static string Clock(int minute) =>
             (minute / 60).ToString("00", CultureInfo.InvariantCulture) + ":" +
             (minute % 60).ToString("00", CultureInfo.InvariantCulture);
+
+        private static string FormatCareerHistory(CareerBiographySnapshot career)
+        {
+            if (career.EmploymentPeriodCount == 0)
+                return "Chưa có công việc nào trong hành trình.";
+            var text = new StringBuilder();
+            text.Append("Đã trải qua ")
+                .Append(career.EmploymentPeriodCount.ToString(CultureInfo.InvariantCulture))
+                .Append(" lượt làm · ")
+                .Append(career.DistinctProfessionCount.ToString(CultureInfo.InvariantCulture))
+                .Append(" nghề · ")
+                .Append(career.ProfessionChangeCount.ToString(CultureInfo.InvariantCulture))
+                .Append(" lần đổi nghề");
+            if (career.PreviousEmployments.Count == 0)
+                return text.Append("\nChưa có công việc trước đây.").ToString();
+            // The most recent completed job is closest to the top of the
+            // timeline. Current employment is already shown above this panel.
+            foreach (var job in career.PreviousEmployments.Reverse())
+            {
+                text.Append("\n\n")
+                    .Append(job.CareerNameKey == null
+                        ? "Nghề cũ (khác phiên bản dữ liệu)"
+                        : DisplayCareer(job.CareerNameKey))
+                    .Append(" · Bậc ")
+                    .Append((job.RankIndex + 1).ToString(CultureInfo.InvariantCulture))
+                    .Append("\n")
+                    .Append(job.StartedIso).Append(" – ")
+                    .Append(job.EndedIso ?? "hiện tại")
+                    .Append(" · ")
+                    .Append(job.CareerXp.ToString("N0", CurrencyCulture))
+                    .Append(" XP nghề");
+                if (job.ElapsedCalendarDays.HasValue)
+                    text.Append(" · ")
+                        .Append(job.ElapsedCalendarDays.Value.ToString(CultureInfo.InvariantCulture))
+                        .Append(" ngày lịch");
+                if (job.MonthlySalaryAtRecordedRankVnd.HasValue)
+                    text.Append("\nLương ở bậc đã đạt: ")
+                        .Append(Money(job.MonthlySalaryAtRecordedRankVnd.Value))
+                        .Append("/tháng");
+                if (job.UnpaidClaimCount > 0)
+                    text.Append("\nLương còn chờ nhận: ")
+                        .Append(Money(job.OutstandingSalary.FloorToInt64()));
+            }
+            return text.ToString();
+        }
+
+        private static string CareerChangeHint(CareerTransitionContext context) => context switch
+        {
+            CareerTransitionContext.FirstEmployment =>
+                "Khi nhận việc, bạn bắt đầu lộ trình nghề nghiệp mới.",
+            CareerTransitionContext.ReturningProfession =>
+                "Quay lại nghề cũ sẽ tạo lượt làm mới từ bậc đầu. XP cũ vẫn nằm trong lịch sử.",
+            CareerTransitionContext.ChangingProfession =>
+                "Đổi nghề bắt đầu lượt làm mới. Kỹ năng, tiền và lịch sử nghề nghiệp được giữ.",
+            CareerTransitionContext.AlreadyEmployed =>
+                "Muốn chuyển nghề, hãy nghỉ việc trước. Không tự động chuyển khi chọn nghề khác.",
+            _ => "Lựa chọn nghề chưa sẵn sàng."
+        };
 
         private static string CareerAvailabilityHint(CareerAcceptanceAvailability availability) =>
             availability switch
