@@ -175,7 +175,7 @@ namespace StartupLife.Presentation
                   "\nLương theo bậc: " + string.Join(" → ", selectedOffer.MonthlySalariesVnd.Select(Money)) +
                   "/tháng\nCa: " + Clock(selectedOffer.StartMinute) + "–" + Clock(selectedOffer.EndMinute) +
                   " · " + FormatWorkDays(selectedOffer.WorkDays) +
-                  "\nGợi ý ngành kinh doanh: " +
+                  "\n" + DisplayCareerAffinityHint() + ": " +
                   FormatPreferredBusinesses(selectedOffer.PreferredBusinessIds) +
                   "\n" + CareerAvailabilityHint(careerAvailability);
             foreach (var option in careerButtons.Values)
@@ -316,6 +316,10 @@ namespace StartupLife.Presentation
             string.Join(", ", ids.Select(id =>
                 DashboardLocalizationCatalog.TryFindValue("business." + id, out var value)
                     ? value : id));
+
+        private static string DisplayCareerAffinityHint() =>
+            DashboardLocalizationCatalog.TryFindValue("career.affinity.hint", out var value)
+                ? value : "Gợi ý ngành kinh doanh (không bắt buộc)";
 
         private static string FormatWorkDays(IReadOnlyList<DayOfWeek> days) =>
             string.Join(" · ", days.Select(day => day switch
