@@ -65,13 +65,27 @@ namespace StartupLife.Core
     }
     public static class ContentAffinityTags
     {
+        private static readonly HashSet<string> Known = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "b2b-conversion",
+            "customer-acquisition",
+            "customer-experience",
+            "digital-product",
+            "food",
+            "professional-services",
+            "supplier-operations"
+        };
+
+        public static IReadOnlyList<string> KnownIds { get; } =
+            Array.AsReadOnly(Known.OrderBy(x => x, StringComparer.Ordinal).ToArray());
+
         public static IReadOnlyList<string> Validate(IEnumerable<string>? values, string parameterName)
         {
             if (values == null) throw new ArgumentNullException(parameterName);
             var tags = values.ToArray();
-            if (tags.Any(x => !ContentId.IsValid(x)) ||
+            if (tags.Any(x => !ContentId.IsValid(x) || !Known.Contains(x)) ||
                 tags.Distinct(StringComparer.Ordinal).Count() != tags.Length)
-                throw new ArgumentException("Affinity tags must be valid, unique content IDs.", parameterName);
+                throw new ArgumentException("Affinity tags must be recognized, valid and unique content IDs.", parameterName);
             Array.Sort(tags, StringComparer.Ordinal);
             return Array.AsReadOnly(tags);
         }
