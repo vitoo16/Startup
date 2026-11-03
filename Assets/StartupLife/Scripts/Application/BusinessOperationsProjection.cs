@@ -28,6 +28,7 @@ namespace StartupLife.Application
         public string DefinitionId { get; }
         public string Revision { get; }
         public string NameKey { get; }
+        public BusinessOperationMode OperationMode { get; }
         public long MinimumInvestmentVnd { get; }
         public long AvailableCashVnd { get; }
         public int? RequiredOwnerMinutes { get; }
@@ -41,6 +42,7 @@ namespace StartupLife.Application
             DefinitionId = definition.Id;
             Revision = definition.Revision;
             NameKey = definition.NameKey;
+            OperationMode = definition.OperationMode;
             MinimumInvestmentVnd = definition.MinimumStartupInvestment;
             AvailableCashVnd = state.Cash;
             var eligibility = BusinessEligibilityEvaluator.Evaluate(
