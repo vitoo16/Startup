@@ -25,6 +25,34 @@ jobs:
         with:
           lfs: true
 
+      - name: Record runner and LFS baseline (diagnostics only)
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/startup-life"
+          python3 - <<'PY'
+          import json, os, platform, subprocess
+          from pathlib import Path
+          def capture(*command):
+              p = subprocess.run(command, capture_output=True, text=True, check=False)
+              return p.stdout.strip() if p.returncode == 0 else f"unavailable (exit {p.returncode})"
+          report = {
+              "report_kind": "runner-baseline-not-unity-evidence",
+              "repository": os.environ.get("GITHUB_REPOSITORY", ""),
+              "commit_sha": os.environ.get("GITHUB_SHA", ""),
+              "runner_os": os.environ.get("RUNNER_OS", ""),
+              "runner_arch": os.environ.get("RUNNER_ARCH", ""),
+              "python": platform.python_version(),
+              "git_version": capture("git", "--version"),
+              "git_lfs_version": capture("git", "lfs", "version"),
+              "git_lfs_tracked_files": len(capture("git", "lfs", "ls-files").splitlines()),
+              "editor_or_device_tested": False,
+              "tests_passed": None,
+          }
+          target = Path(os.environ["RUNNER_TEMP"]) / "startup-life" / "runner-baseline.json"
+          target.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          print(f"Saved diagnostic metadata: {target}")
+          PY
+
       - name: Set up .NET 8
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
