@@ -439,6 +439,156 @@ internal static class Program
                     if (File.Exists(path + suffix)) File.Delete(path + suffix);
             }
         });
+        Check("P04-BIZ-04 overlapping businesses settle without duplicate owner minutes or cold replay drift", () =>
+        {
+            var baseline = FirstPlayableContentTemplate.BuildCatalog();
+            var content = FirstPlayableContentTemplate.BuildBusinessBatchACatalog();
+            var economic = M9T02FunctionalEconomy.CreateBusinessBatchA();
+            var archive = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economic, content);
+            var migration = new V2ToV3Migration(archive, replay);
+            var serializer = new V3SaveCompatibilitySerializer(baseline,
+                GameSession.CreateRestoreValidator(), migration,
+                new StagedV3SaveSerializer(archive, replay), content);
+            const string run = "p04-multi-overlap-v3";
+            var source = GameSession.NewState(baseline, run, 410377UL,
+                new SimDate(2026, 11, 4));
+            var migrated = EconomicV3PayloadCodec.ReadChecked(
+                migration.Migrate(JsonSaveSerializer.WriteObject(source)));
+            migrated.Current!.EconomicV3 = migrated;
+            var path = Path.Combine(Path.GetTempPath(),
+                "p04-multi-overlap-" + Guid.NewGuid().ToString("N") + ".save");
+            try
+            {
+                var store = new AtomicFileSaveStore(path, serializer);
+                var game = new GameSession(migrated.Current, content, serializer, store,
+                    economicRules: economic, archivedRules: archive);
+
+                void Commit(string id, GameCommand command)
+                {
+                    var revision = game.Snapshot().Revision;
+                    var outcome = game.Execute(new CommandEnvelope(run, id, revision, command));
+                    Assert(outcome.Status == CommandStatus.Committed,
+                        id + " rejected by authoritative V3 core: " + outcome.ReasonKey);
+                    var bytes = File.ReadAllBytes(path);
+                    var restored = serializer.DeserializeAndValidate(bytes);
+                    Assert(restored.Status == LoadStatus.Valid &&
+                        restored.State?.Revision == revision + 1 &&
+                        File.ReadAllBytes(path).SequenceEqual(bytes),
+                        id + " must be replayable without mutating persisted bytes: " +
+                        restored.Status + "/" + restored.Reason);
+                }
+
+                Commit("character", new GameCommand(CommandKind.CreateCharacter,
+                    "fresh", 24, "Three Businesses", "base.female"));
+                // All three share the 18:00-22:00 owner window, and together
+                // demand 420 minutes. The engine must not create 420 minutes
+                // of actual owner time inside a 240-minute interval.
+                var ids = new[]
+                {
+                    FirstPlayableContentTemplate.MarketingAgencyId,
+                    FirstPlayableContentTemplate.OnlineStoreId,
+                    FirstPlayableContentTemplate.HomeFoodPreorderId
+                };
+                var amounts = new[] { 1200000, 100, 100 };
+                for (var index = 0; index < ids.Length; index++)
+                    Commit("launch-" + ids[index],
+                        BusinessCommands.Launch(ids[index], "v1", amounts[index]));
+
+                var checkpoint = File.ReadAllBytes(path);
+                var launched = serializer.DeserializeAndValidate(checkpoint);
+                Assert(launched.Status == LoadStatus.Valid &&
+                    launched.State!.Businesses.Count(x => x.IsActive) == 3 &&
+                    launched.State.Revision == 4 &&
+                    launched.State.Businesses.Select(x => x.DefinitionId)
+                        .OrderBy(x => x, StringComparer.Ordinal)
+                        .SequenceEqual(ids.OrderBy(x => x, StringComparer.Ordinal)),
+                    "real saved V3 portfolio must contain all three authored businesses");
+                var finance = launched.State!.EconomicV3!.EconomicRecords!;
+                var due = finance.ObligationTranches.Where(x =>
+                    x.DueDateIso == launched.State.DateIso).ToArray();
+                Assert(due.Length == 3 &&
+                    due.Select(x => x.BusinessInstanceId)
+                        .Distinct(StringComparer.Ordinal).Count() == 3 &&
+                    due.All(x => x.AmountDueVnd == x.PaidVnd),
+                    "opening fixed invoices must charge exactly once for each owned business");
+                var epoch = finance.Provenance.ActiveEpoch;
+                Assert(epoch != null && epoch.DateIso == launched.State.DateIso,
+                    "three-business launch must freeze one verified day epoch");
+                var ownerMinutes = epoch!.Assignments
+                    .SelectMany(x => x.FrozenFutureOwnerMinutes).ToArray();
+                Assert(ownerMinutes.Length == ownerMinutes.Distinct().Count() &&
+                    ownerMinutes.Length <= 240 &&
+                    ownerMinutes.All(x => x >= 1080 && x < 1320),
+                    "no duplicated or out-of-window owner-minute allocation");
+                var launchFees = due.Sum(x => x.AmountDueVnd);
+                Assert(launched.State.Cash == 3000000L - amounts.Sum() - launchFees,
+                    "portfolio startup capital and contractual charges debit once, without revenue projection");
+                Assert(game.ReadBusinessOperations().OwnedBusinesses.Count == 3 &&
+                    File.ReadAllBytes(path).SequenceEqual(checkpoint),
+                    "read-side portfolio may not mutate economic provenance");
+
+                // Cold resume between dates using the same authoritative store.
+                // Unemployed day: 08:00 -> sleep, sleep -> midnight;
+                // next day: wake -> sleep -> midnight. Advance through
+                // two settlement boundaries without fabricating a time jump.
+                for (var index = 0; index < 5; index++)
+                {
+                    Assert(GameSession.TryRestore(content, serializer, store,
+                        out var cold, out var load,
+                        economicRules: economic, archivedRules: archive),
+                        "multi-day cold restore rejected valid receipt chain: " + load.Reason);
+                    game = cold!;
+                    Commit("advance-" + index, new GameCommand(CommandKind.AdvanceBoundary));
+                    var current = serializer.DeserializeAndValidate(File.ReadAllBytes(path));
+                    Assert(current.Status == LoadStatus.Valid,
+                        "every operating/settlement boundary must replay cold");
+                    var core = current.State!;
+                    var records = core.EconomicV3!.EconomicRecords!;
+                    Assert(records.ObligationTranches.GroupBy(x => x.Id)
+                            .All(g => g.Count() == 1) &&
+                        records.ObligationTranches.All(x =>
+                            x.PaidVnd >= 0 && x.PaidVnd <= x.AmountDueVnd),
+                        "no duplicate obligation identity, overpayment or negative due on repeated dates");
+                    foreach (var market in records.Provenance.MarketPools)
+                    {
+                        var authored = economic.Pools[market.PoolId];
+                        var sold = records.Provenance.Fulfillments.Count(x =>
+                            x.DateIso == market.DateIso && x.PoolId == market.PoolId);
+                        Assert(sold <= authored.BaseDailyUnits,
+                            "shared finite market supply may not be oversold: " + market.PoolId);
+                    }
+                    var readOnly = File.ReadAllBytes(path);
+                    _ = game.ReadBusinessOperations();
+                    _ = game.ReadCommittedFinance();
+                    Assert(File.ReadAllBytes(path).SequenceEqual(readOnly),
+                        "multi-business finance projections must not commit hidden side effects");
+                }
+
+                var finalSave = File.ReadAllBytes(path);
+                var finalRead = serializer.DeserializeAndValidate(finalSave);
+                Assert(finalRead.Status == LoadStatus.Valid &&
+                    finalRead.State!.DateIso == "2026-11-06" &&
+                    finalRead.State.Businesses.Count(x => x.IsActive) == 3,
+                    "two dates of operations must retain portfolio and verified cold state");
+                Assert(GameSession.TryRestore(content, serializer, store,
+                    out var finalCold, out var finalResult,
+                    economicRules: economic, archivedRules: archive) &&
+                    finalCold!.Snapshot().Revision == finalRead.State.Revision,
+                    "final multi-day cold restore must not change revision: " + finalResult.Reason);
+                Assert(finalCold!.Execute(new CommandEnvelope(run, "advance-4",
+                    finalRead.State.Revision - 1, new GameCommand(CommandKind.AdvanceBoundary))).Status ==
+                    CommandStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(path).SequenceEqual(finalSave),
+                    "cold retry of second midnight cannot double-pay an invoice or change save bytes");
+            }
+            finally
+            {
+                foreach (var suffix in new[] { "", ".backup", ".lock" })
+                    if (File.Exists(path + suffix)) File.Delete(path + suffix);
+            }
+        });
+
         var supply = CustomerDemandCalculator.OpeningSupply("2026-10-09", catalog, "mvp.market.online-retail");
         Check("largest remainder pool supply is exact, tie by segment ID", () =>
         {
