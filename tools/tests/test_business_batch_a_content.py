@@ -81,6 +81,26 @@ class BusinessBatchASourceTests(unittest.TestCase):
             "BusinessBatchA = 2",
             source("Assets/StartupLife/Scripts/Infrastructure/VerifiedBusinessContentSelector.cs"))
 
+    def test_multi_business_replay_uses_authoritative_v3_cas(self):
+        checks = source("tools/EconomicChecks/Program.cs")
+        self.assertIn(
+            "P04-BIZ-04 overlapping businesses settle without duplicate owner minutes",
+            checks)
+        self.assertIn("FirstPlayableContentTemplate.MarketingAgencyId,",
+                      checks)
+        self.assertIn("FirstPlayableContentTemplate.OnlineStoreId,",
+                      checks)
+        self.assertIn("FirstPlayableContentTemplate.HomeFoodPreorderId", checks)
+        self.assertIn("ownerMinutes.Distinct().Count()", checks)
+        self.assertIn("ownerMinutes.Length <= 240", checks)
+        self.assertIn("due.All(x => x.AmountDueVnd == x.PaidVnd)", checks)
+        self.assertIn("GameSession.TryRestore(content, serializer, store,", checks)
+        self.assertIn("records.Provenance.Fulfillments.Count(", checks)
+        self.assertIn("File.ReadAllBytes(path).SequenceEqual(finalSave)", checks)
+        self.assertNotIn("new SimulationEngine(", checks[
+            checks.index('Check("P04-BIZ-04 overlapping businesses'):
+            checks.index('var supply = CustomerDemandCalculator.OpeningSupply(')])
+
     def test_new_names_are_unique_in_shared_vietnamese_manifest(self):
         src = source("Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs")
         keys = re.findall(r'new KeyValuePair<string,string>\("([^"]+)"', src)
