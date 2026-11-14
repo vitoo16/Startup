@@ -114,6 +114,30 @@ class BusinessBatchASourceTests(unittest.TestCase):
         self.assertIn("stable.Businesses.Reverse();", checks)
         self.assertIn("BusinessEligibilityStatus.EmploymentIncompatible", checks)
 
+    def test_v4_multi_business_cold_replay_contract(self):
+        checks = source("tools/EconomicChecks/Program.cs")
+        start = checks.index('Check("P04-BIZ-06 V4 three-business portfolio')
+        end = checks.index('Check("P04-BIZ-03 old V3 ruleset', start)
+        v4 = checks[start:end]
+        self.assertIn("new EventV4CommitGateway(", v4)
+        self.assertIn("new EventV4CoreCommandRunner(live, v3, economic, archives)", v4)
+        self.assertIn("new V3SaveCompatibilitySerializer(baseline,", v4)
+        self.assertIn("FirstPlayableContentTemplate.MarketingAgencyId", v4)
+        self.assertIn("FirstPlayableContentTemplate.OnlineStoreId", v4)
+        self.assertIn("FirstPlayableContentTemplate.HomeFoodPreorderId", v4)
+        self.assertIn("owner.Length == owner.Distinct().Count()", v4)
+        self.assertIn("owner.Length <= 240", v4)
+        self.assertIn("firstDayInvoices.All(x => x.PaidVnd == x.AmountDueVnd)", v4)
+        self.assertIn("new EventV4GameCommands(Cold(), live, economic)", v4)
+        self.assertIn("v3Records.Provenance.Fulfillments.Count", v4)
+        self.assertIn("economic.Pools[market.PoolId].BaseDailyUnits", v4)
+        self.assertIn("final.State.Revision == 9", v4)
+        self.assertIn("EventCommitStatus.AlreadyCommitted", v4)
+        self.assertIn("File.ReadAllBytes(path).SequenceEqual(finalBytes)", v4)
+        self.assertNotIn("new SimulationEngine(", v4)
+        self.assertNotIn("File.WriteAllBytes(path,", v4[
+            v4.index('for (var step = 0; step < 5; step++)'):])
+
     def test_new_names_are_unique_in_shared_vietnamese_manifest(self):
         src = source("Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs")
         keys = re.findall(r'new KeyValuePair<string,string>\("([^"]+)"', src)
