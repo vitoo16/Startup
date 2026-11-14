@@ -56,7 +56,7 @@ jobs:
 
       # Cache NuGet packages, never compiled outputs or verification receipts.
       - name: Restore NuGet package cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.nuget/packages
           key: startup-nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/NuGet.Config', '**/packages.lock.json') }}
