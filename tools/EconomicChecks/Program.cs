@@ -368,6 +368,156 @@ internal static class Program
             }
         });
 
+        Check("P04-BIZ-06 V4 three-business portfolio cold replay stays idempotent over two dates", () =>
+        {
+            var baseline = FirstPlayableContentTemplate.BuildCatalog();
+            var live = FirstPlayableContentTemplate.BuildBusinessBatchACatalog();
+            var economic = M9T02FunctionalEconomy.CreateBusinessBatchA();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economic, live);
+            var v3 = new V3SaveCompatibilitySerializer(baseline,
+                GameSession.CreateRestoreValidator(),
+                new V2ToV3Migration(archives, replay),
+                new StagedV3SaveSerializer(archives, replay), live);
+            var definitions = FirstPlayableEventContent.Definitions;
+            var policies = FirstPlayableEventContent.Policies;
+            var serializer = new EventV4CompatibilitySerializer(
+                new StagedEventV4SaveSerializer(v3, definitions, policies));
+            var runner = new EventV4CoreCommandRunner(live, v3, economic, archives);
+            var genesis = GameSession.NewState(baseline, "p04-three-v4", 181117UL,
+                new SimDate(2026, 11, 4));
+            var path = Path.Combine(Path.GetTempPath(),
+                "p04-three-v4-" + Guid.NewGuid().ToString("N") + ".save");
+            try
+            {
+                File.WriteAllBytes(path, JsonSaveSerializer.Wrap(
+                    JsonSaveSerializer.WriteObject(genesis), 2, 0));
+                EventV4CommitGateway Cold() => new EventV4CommitGateway(
+                    serializer, new AtomicFileSaveStore(path, serializer),
+                    definitions, policies, runner, automaticDailyChecks: false);
+
+                void Commit(string id, GameCommand command)
+                {
+                    var before = Cold().Read();
+                    Assert(before.Status == LoadStatus.Valid && before.State != null,
+                        id + " requires independently verified V4/V2 source");
+                    var revision = before.State!.Revision;
+                    var result = Cold().ExecuteCore(new CommandEnvelope(
+                        genesis.RunId, id, revision, command));
+                    Assert(result.Status == EventCommitStatus.Committed &&
+                        result.CoreCommand?.Status == CommandStatus.Committed,
+                        id + " must commit through V4 gateway/V3 CAS: " +
+                        result.Status + "/" + result.ReasonKey + "/" +
+                        result.CoreCommand?.ReasonKey);
+                    var persisted = File.ReadAllBytes(path);
+                    var cold = Cold().Read();
+                    Assert(cold.Status == LoadStatus.Valid && cold.State != null &&
+                        cold.State.Revision == revision + 1 &&
+                        cold.State.EventV4?.Journal != null &&
+                        cold.State.EconomicV3?.EconomicRecords != null &&
+                        File.ReadAllBytes(path).SequenceEqual(persisted),
+                        id + " must cold replay both V4 journal and V3 economy");
+                }
+
+                Commit("character", new GameCommand(CommandKind.CreateCharacter,
+                    "fresh", 24, "Portfolio Founder", "base.female"));
+                var definitionsToLaunch = new[]
+                {
+                    FirstPlayableContentTemplate.MarketingAgencyId,
+                    FirstPlayableContentTemplate.OnlineStoreId,
+                    FirstPlayableContentTemplate.HomeFoodPreorderId
+                };
+                var capital = new[] { 1200000, 100, 100 };
+                for (var i = 0; i < definitionsToLaunch.Length; i++)
+                    Commit("launch-" + definitionsToLaunch[i], BusinessCommands.Launch(
+                        definitionsToLaunch[i], "v1", capital[i]));
+                var afterLaunch = Cold().Read();
+                var initial = afterLaunch.State!;
+                Assert(initial.SaveVersion == 4 && initial.Receipts.Count == 4 &&
+                    initial.Businesses.Count(x => x.IsActive) == 3 &&
+                    initial.Businesses.Select(x => x.DefinitionId)
+                        .OrderBy(x => x, StringComparer.Ordinal)
+                        .SequenceEqual(definitionsToLaunch.OrderBy(x => x, StringComparer.Ordinal)),
+                    "all three distinct business identities must survive V4 serialization");
+                var records = initial.EconomicV3!.EconomicRecords!;
+                var firstDayInvoices = records.ObligationTranches
+                    .Where(x => x.DueDateIso == initial.DateIso).ToArray();
+                Assert(firstDayInvoices.Length == 3 &&
+                    firstDayInvoices.Select(x => x.BusinessInstanceId)
+                        .Distinct(StringComparer.Ordinal).Count() == 3 &&
+                    firstDayInvoices.All(x => x.PaidVnd == x.AmountDueVnd) &&
+                    initial.Cash == 3000000L - capital.Sum() -
+                        firstDayInvoices.Sum(x => x.AmountDueVnd),
+                    "V4 startup capital and first-day fixed charges must debit once");
+                var frozen = records.Provenance.ActiveEpoch;
+                Assert(frozen != null && frozen.DateIso == initial.DateIso,
+                    "a single authored epoch must cover the V4 three-business day");
+                var owner = frozen!.Assignments.SelectMany(x => x.FrozenFutureOwnerMinutes)
+                    .ToArray();
+                Assert(owner.Length == owner.Distinct().Count() &&
+                    owner.Length <= 240 &&
+                    owner.All(x => x >= 1080 && x < 1320),
+                    "V4 journal cannot allocate overlapping owner minutes or exceed evening window");
+
+                var originalBytes = File.ReadAllBytes(path);
+                var view = new EventV4GameCommands(Cold(), live, economic);
+                Assert(view.ReadBusinessOperations().OwnedBusinesses.Count == 3 &&
+                    view.ReadBusinesses().Businesses.Count == 3 &&
+                    File.ReadAllBytes(path).SequenceEqual(originalBytes),
+                    "V4 multi-business projection must not secretly write economy receipts");
+                var firstRetry = Cold().ExecuteCore(new CommandEnvelope(genesis.RunId,
+                    "launch-" + definitionsToLaunch[2], 3,
+                    BusinessCommands.Launch(definitionsToLaunch[2], "v1", capital[2])));
+                Assert(firstRetry.Status == EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(path).SequenceEqual(originalBytes),
+                    "duplicate V4 launch cannot charge fixed invoices or capital twice");
+
+                // Advance with fresh, independently validated gateways rather
+                // than a stale in-memory snapshot. Five boundaries cross two
+                // midnight transitions at the authored wake/sleep schedule.
+                for (var step = 0; step < 5; step++)
+                {
+                    Commit("advance-" + step, new GameCommand(CommandKind.AdvanceBoundary));
+                    var cold = Cold().Read();
+                    var state = cold.State!;
+                    var v3Records = state.EconomicV3!.EconomicRecords!;
+                    Assert(v3Records.ObligationTranches.GroupBy(x => x.Id)
+                            .All(x => x.Count() == 1) &&
+                        v3Records.ObligationTranches.All(x =>
+                            x.PaidVnd >= 0 && x.PaidVnd <= x.AmountDueVnd),
+                        "cold V4 receipt must not duplicate or overpay fixed obligations");
+                    foreach (var market in v3Records.Provenance.MarketPools)
+                    {
+                        var sold = v3Records.Provenance.Fulfillments.Count(x =>
+                            x.DateIso == market.DateIso && x.PoolId == market.PoolId);
+                        Assert(sold <= economic.Pools[market.PoolId].BaseDailyUnits,
+                            "V4 settlement cannot sell beyond frozen finite market supply");
+                    }
+                    var bytes = File.ReadAllBytes(path);
+                    _ = new EventV4GameCommands(Cold(), live, economic).ReadCommittedFinance();
+                    Assert(File.ReadAllBytes(path).SequenceEqual(bytes),
+                        "authenticated V4 finance read cannot rewrite persisted state");
+                }
+                var final = Cold().Read();
+                var finalBytes = File.ReadAllBytes(path);
+                Assert(final.Status == LoadStatus.Valid &&
+                    final.State!.DateIso == "2026-11-06" &&
+                    final.State.Revision == 9 &&
+                    final.State.Businesses.Count(x => x.IsActive) == 3,
+                    "V4 two-day portfolio must remain persisted after nine core receipts");
+                Assert(Cold().ExecuteCore(new CommandEnvelope(genesis.RunId,
+                    "advance-4", 8, new GameCommand(CommandKind.AdvanceBoundary))).Status ==
+                    EventCommitStatus.AlreadyCommitted &&
+                    File.ReadAllBytes(path).SequenceEqual(finalBytes),
+                    "retry of second V4 midnight cannot resettle or rewrite the journal");
+            }
+            finally
+            {
+                foreach (var suffix in new[] { "", ".backup", ".lock" })
+                    if (File.Exists(path + suffix)) File.Delete(path + suffix);
+            }
+        });
+
         Check("P04-BIZ-03 old V3 ruleset is not silently reinterpreted as new P04 economy", () =>
         {
             var baseContent = FirstPlayableContentTemplate.BuildCatalog();
