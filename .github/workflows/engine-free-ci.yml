@@ -10,8 +10,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: engine-free-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: engine-free-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Main revisions remain independently verifiable; only superseded PR revisions are cancelled.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   verify:
@@ -52,6 +53,15 @@ jobs:
           target.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
           print(f"Saved diagnostic metadata: {target}")
           PY
+
+      # Cache NuGet packages, never compiled outputs or verification receipts.
+      - name: Restore NuGet package cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: startup-nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/NuGet.Config', '**/packages.lock.json') }}
+          restore-keys: |
+            startup-nuget-${{ runner.os }}-
 
       - name: Set up .NET 8
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
