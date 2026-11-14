@@ -38,6 +38,7 @@ internal static class Program
 
         Check("M8-T02 production content evaluates Developer Freelance and kiosk", ProductionBusinessEligibility);
         Check("P04-BIZ-02 isolated seven-business catalog schedules and affinity", BusinessBatchAPreview);
+        Check("P04-BIZ-05 preview owner scheduling for café fashion and agency", BusinessBatchAOwnerCombinations);
 
         var reportPath = args.Length > 0
             ? Path.GetFullPath(args[0])
@@ -627,6 +628,103 @@ internal static class Program
         Equal(BusinessEligibilityStatus.InsufficientOwnerTime,
             BusinessEligibilityEvaluator.Evaluate(expanded, monday,
                 FirstPlayableContentTemplate.SmallCafeId, "v1").Status);
+    }
+
+    private static void BusinessBatchAOwnerCombinations()
+    {
+        var catalog = FirstPlayableContentTemplate.BuildBusinessBatchACatalog();
+        // A receipt-free 00:00 owner planning fixture represents a pure,
+        // non-settling preview for Wednesday Nov 4, not a manufactured save.
+        GameState Founder(params string[] ids)
+        {
+            var state = new GameState
+            {
+                ContentVersion = catalog.Version, DateIso = "2026-11-04", Minute = 0
+            };
+            for (var i = 0; i < ids.Length; i++)
+            {
+                var definition = catalog.Businesses[ids[i]];
+                state.Businesses.Add(new BusinessState
+                {
+                    InstanceId = "preview/business/" + (i + 1),
+                    DefinitionId = definition.Id, DefinitionRevision = definition.Revision,
+                    OpenedIso = "2026-11-03", OpenedMinute = 480,
+                    PricingPosture = PricingPosture.Standard, InitialInvestment = 100
+                });
+            }
+            return state;
+        }
+
+        void CheckNoOverlap(OwnerDayAllocation plan)
+        {
+            for (var i = 1; i < plan.Allocations.Count; i++)
+                Equal(true, plan.Allocations[i - 1].Interval.EndMinute <=
+                    plan.Allocations[i].Interval.StartMinute);
+            var minutes = plan.Allocations
+                .SelectMany(x => Enumerable.Range(x.Interval.StartMinute,
+                    x.Interval.Duration)).ToArray();
+            Equal(minutes.Length, minutes.Distinct().Count());
+            Equal(true, minutes.All(x => x >= 480 && x < 1320));
+        }
+
+        void AssertSoloFullTimeAndAgency(string fullTimeId, int fullTimeRequired)
+        {
+            var state = Founder(fullTimeId, FirstPlayableContentTemplate.MarketingAgencyId);
+            var plan = OwnerDayAllocator.Plan(state, catalog);
+            Equal(OwnerDayPlanStatus.Ready, plan.Status);
+            Equal(2, plan.Capacities.Count);
+            var full = plan.Capacities.Single(x => x.BusinessInstanceId ==
+                state.Businesses[0].InstanceId);
+            var agency = plan.Capacities.Single(x => x.BusinessInstanceId ==
+                state.Businesses[1].InstanceId);
+            Equal(BusinessPlanStatus.FullyAllocated, full.Status);
+            Equal(BusinessPlanStatus.FullyAllocated, agency.Status);
+            Equal(fullTimeRequired, full.AllocatedOwnerMinutes);
+            Equal(180, agency.AllocatedOwnerMinutes);
+            Equal(fullTimeRequired + 180,
+                plan.Allocations.Sum(x => x.Interval.Duration));
+            CheckNoOverlap(plan);
+        }
+
+        // Café uses 09:00-18:00 (480 min), Fashion 10:00-19:00
+        // (420 min); Agency uses 18:00-22:00 (180 min).
+        // The owner allocator, not the UI, resolves the shared hour.
+        AssertSoloFullTimeAndAgency(FirstPlayableContentTemplate.SmallCafeId, 480);
+        AssertSoloFullTimeAndAgency(FirstPlayableContentTemplate.FashionStoreId, 420);
+
+        var both = Founder(FirstPlayableContentTemplate.SmallCafeId,
+            FirstPlayableContentTemplate.FashionStoreId);
+        var unavailable = OwnerDayAllocator.Plan(both, catalog);
+        Equal(OwnerDayPlanStatus.MultipleFullTimeUnsupported, unavailable.Status);
+        Equal(0, unavailable.Allocations.Count);
+        Equal(true, unavailable.Capacities.All(x =>
+            x.Status == BusinessPlanStatus.MultipleFullTimeUnsupported &&
+            x.AllocatedOwnerMinutes == 0));
+
+        // Changing the order of the authored portfolio cannot change
+        // the deterministic owner allocations for the same two instances.
+        var stable = Founder(FirstPlayableContentTemplate.SmallCafeId,
+            FirstPlayableContentTemplate.MarketingAgencyId);
+        var first = OwnerDayAllocator.Plan(stable, catalog);
+        stable.Businesses.Reverse();
+        var reversed = OwnerDayAllocator.Plan(stable, catalog);
+        Sequence(first.Allocations.Select(x => x.DefinitionId + ":" +
+            x.Interval.StartMinute + ":" + x.Interval.EndMinute),
+            reversed.Allocations.Select(x => x.DefinitionId + ":" +
+            x.Interval.StartMinute + ":" + x.Interval.EndMinute));
+
+        var employed = Founder(FirstPlayableContentTemplate.SmallCafeId);
+        employed.Employment = new EmploymentState
+        {
+            CareerId = "developer", DefinitionRevision = "v1",
+            FirstShiftIso = "2026-11-04"
+        };
+        Equal(BusinessEligibilityStatus.EmploymentIncompatible,
+            BusinessEligibilityEvaluator.Evaluate(catalog, employed,
+                FirstPlayableContentTemplate.SmallCafeId, "v1").Status);
+        Equal(BusinessEligibilityStatus.EmploymentIncompatible,
+            BusinessEligibilityEvaluator.Evaluate(catalog, employed,
+                FirstPlayableContentTemplate.FashionStoreId, "v1").Status);
     }
 
     private static void BusinessSourceCollection()
