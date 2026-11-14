@@ -101,6 +101,19 @@ class BusinessBatchASourceTests(unittest.TestCase):
             checks.index('Check("P04-BIZ-04 overlapping businesses'):
             checks.index('var supply = CustomerDemandCalculator.OpeningSupply(')])
 
+    def test_preview_full_time_owner_schedule_matrix(self):
+        checks = source("tools/ContentCatalogChecks/Program.cs")
+        self.assertIn("BusinessBatchAOwnerCombinations", checks)
+        self.assertIn("OwnerDayAllocator.Plan(state, catalog)", checks)
+        self.assertIn("OwnerDayPlanStatus.MultipleFullTimeUnsupported", checks)
+        self.assertIn("BusinessPlanStatus.FullyAllocated", checks)
+        self.assertIn("FirstPlayableContentTemplate.SmallCafeId, 480", checks)
+        self.assertIn("FirstPlayableContentTemplate.FashionStoreId, 420", checks)
+        self.assertIn("plan.Allocations.Sum(x => x.Interval.Duration)", checks)
+        self.assertIn("minutes.Distinct().Count()", checks)
+        self.assertIn("stable.Businesses.Reverse();", checks)
+        self.assertIn("BusinessEligibilityStatus.EmploymentIncompatible", checks)
+
     def test_new_names_are_unique_in_shared_vietnamese_manifest(self):
         src = source("Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs")
         keys = re.findall(r'new KeyValuePair<string,string>\("([^"]+)"', src)
