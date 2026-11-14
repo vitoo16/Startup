@@ -40,3 +40,11 @@ Same-SHA engine-free CI green with runner metadata artifact, before/after job/ru
 - **Known limitations:** no local Unity Editor, no runner-time metrics, no physical device QA; no measured speed improvement. Do not merge under a claim of completed optimization.
 - **Files changed:** `.github/workflows/engine-free-ci.yml`, `docs/ci/CI_RESOURCE_AUDIT_2026_11_13.md`.
 - **Initial implementation commit:** `d26138b55aa335f7d9288241937ee4faea275f60` on `ci/audit-runtime-20261113`.
+
+## Follow-up implementation — 2026-11-14 (candidate, unverified)
+- **All eight workflows remain present.** Engine-free `run:` commands and the six C03 source/stress/visual review command sequences are unchanged.
+- `engine-free-ci.yml`: only superseded revisions of the same PR are cancelled; pushes to `main` are retained. `~/.nuget/packages` caches downloaded NuGet packages keyed to project/package-lock inputs, **not compiled outputs, saves, or test receipts**. Every .NET invocation still runs.
+- Six C03 workflows: cache the pip download directory for exactly pinned Pillow 11.3.0 while keeping LFS checkout, independent provenance/pose verifications and review artifact uploads.
+- No selective LFS fetching, C03 stage consolidation, or assertion removal was attempted: such changes need measured dependency and provenance evidence.
+- **Acceptance remains NOT MET:** run the full engine-free job and each affected C03 workflow on allocated runners, confirm real files and identical assertions, measure cache hit/miss, runner-minutes and receipts at exact SHA before claiming benefit. Self-hosted Unity and physical Android/iOS evidence remain separately gated.
+- Rollback: revert the caching and PR-concurrency changes; no runtime, art, save schema or test source changes occurred.
