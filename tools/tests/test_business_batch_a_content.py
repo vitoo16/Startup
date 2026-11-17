@@ -138,6 +138,37 @@ class BusinessBatchASourceTests(unittest.TestCase):
         self.assertNotIn("File.WriteAllBytes(path,", v4[
             v4.index('for (var step = 0; step < 5; step++)'):])
 
+    def test_salary_backed_full_time_settlement_contract(self):
+        checks = source("tools/EconomicChecks/Program.cs")
+        start = checks.index('Check("P04-BIZ-07 salary-funded café and fashion')
+        end = checks.index('Check("P04-BIZ-03 old V3 ruleset', start)
+        scenario = checks[start:end]
+        for contract in (
+            "GameSession.NewState(baseline, run",
+            "new GameCommand(CommandKind.AcceptJob, \"developer\")",
+            "worker.AdvanceMonth(new CommandEnvelope(",
+            'monthly.StopReason == "TargetReached"',
+            'x.Category == "salary.accrual"',
+            'x.Category == "salary.payment"',
+            'new GameCommand(CommandKind.Resign)',
+            'new GameCommand(CommandKind.AdvanceBoundary)',
+            "FirstPlayableContentTemplate.SmallCafeId",
+            "FirstPlayableContentTemplate.FashionStoreId",
+            "GameSession.TryRestore(live, serializer, branchStore,",
+            "invoices[0].PaidVnd == invoices[0].AmountDueVnd",
+            "profile.FixedHelper.ContractedDailyWageVnd == 110000",
+            "settlement.GrossVnd == sold.Sum(x => x.UnitPriceVnd)",
+            "settlement.VariablePaidVnd == sold.Sum(x => x.VariablePaidVnd)",
+            "settlement.FixedRecognizedVnd == profile.DailyMandatoryChargeVnd",
+            "sold.Length <= economy.Pools[profile.MarketPoolId].BaseDailyUnits",
+            "CommandStatus.AlreadyCommitted",
+            "File.ReadAllBytes(branchFile).SequenceEqual(finalBytes)",
+        ):
+            self.assertIn(contract, scenario)
+        self.assertNotIn("funded.State.Cash =", scenario)
+        self.assertNotIn("migrated.Current.Cash =", scenario)
+        self.assertNotIn("new SimulationEngine(", scenario)
+
     def test_new_names_are_unique_in_shared_vietnamese_manifest(self):
         src = source("Assets/StartupLife/Scripts/Presentation/DashboardLocalizationCatalog.cs")
         keys = re.findall(r'new KeyValuePair<string,string>\("([^"]+)"', src)
