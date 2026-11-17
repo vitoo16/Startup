@@ -1,15 +1,8 @@
 name: C03 Selected Image 21-Layer Draft
 
+# Local-first: manual fallback only.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - scripts/Stage-C03SelectedOwnerCutout.py
-      - .github/workflows/c03-selected-layer-draft.yml
-      - docs/evidence/production-art/C03-LATEST-MINOR-POLISH-REFERENCE.json
-      - docs/evidence/production-art/C03-ACTIVE-OWNER-FRONT-RIG-CONTRACT.json
-
 permissions:
   contents: read
 

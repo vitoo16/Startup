@@ -1,15 +1,8 @@
 name: C03 Selected Layer Ownership Refinement
 
+# Local-first: manual fallback only.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - scripts/Refine-C03SelectedLayerOwnership.py
-      - scripts/Preview-C03OwnerCutoutArticulation.py
-      - .github/workflows/c03-selected-layer-refinement.yml
-      - docs/evidence/production-art/drafts/c03-owner-selected-layer-study/**
-
 permissions:
   contents: read
 

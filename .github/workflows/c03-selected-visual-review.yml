@@ -1,18 +1,8 @@
 name: C03 Selected Visual vs Existing Rig
 
+# Local-first: manual fallback only.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - scripts/Review-C03SelectedVsExistingRig.py
-      - .github/workflows/c03-selected-visual-review.yml
-      - docs/evidence/production-art/source/c03-authoring/C03-native-front-source.json
-      - docs/evidence/production-art/source/c03-authoring/C03-native-front-pixel-runs.lzma.b64
-      - Assets/StartupLife/Art/Source/Characters/golden-character-c03/references/C03-hand-behind-bag-reference.png
-      - Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-V3-Quarantine/layers/**
-      - Assets/StartupLife/Art/Source/Characters/golden-character-c03/Generated-V3-Quarantine/C03_IDLE_V3_QUARANTINED.prefab
-
 permissions:
   contents: read
 

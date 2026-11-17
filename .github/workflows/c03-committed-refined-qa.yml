@@ -1,19 +1,8 @@
 name: C03 Committed Refined 21-Source Gate
 
+# Local-first: manual fallback only.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - scripts/Verify-C03CommittedRefined.py
-      - scripts/Verify-C03RefinedQaCrop.py
-      - scripts/Verify-C03OverlapPivotGuide.py
-      - scripts/Review-C03OverlapPivots.py
-      - .github/workflows/c03-committed-refined-qa.yml
-      - docs/evidence/production-art/drafts/c03-owner-selected-layer-refined/**
-      - docs/evidence/production-art/drafts/c03-owner-selected-layer-study/**
-      - Assets/StartupLife/Scripts/Editor/GoldenCharacterDraftBuilder.cs
-
 permissions:
   contents: read
 

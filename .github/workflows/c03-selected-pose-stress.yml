@@ -1,15 +1,8 @@
 name: C03 Selected Rig Pose Stress Review
 
+# Local-first: manual fallback only.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - scripts/Preview-C03OwnerCutoutArticulation.py
-      - tools/tests/test_c03_selected_cutout_stress_math.py
-      - .github/workflows/c03-selected-pose-stress.yml
-      - docs/evidence/production-art/drafts/c03-owner-selected-layer-study/**
-
 permissions:
   contents: read
 

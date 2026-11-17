@@ -1,9 +1,7 @@
 name: Engine-free CI
 
+# Local-first: manual fallback only.
 on:
-  pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

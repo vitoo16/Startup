@@ -95,4 +95,4 @@ fastlane/.env*
 *.mobileprovision
 *.cer
 GoogleService-Info.plist
-
+.local-ci/

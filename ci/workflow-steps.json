@@ -1,0 +1,471 @@
+[
+  {
+    "id": "engine-free-ci-01",
+    "title": "Validate authoritative documentation",
+    "shell": "pwsh",
+    "run": "./scripts/validate-documentation.ps1",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-02",
+    "title": "Validate static Unity foundation",
+    "shell": "pwsh",
+    "run": "$reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/unity-foundation-report.json'\n./scripts/Test-UnityFoundationStatic.ps1 -ReportPath $reportPath",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-03",
+    "title": "Validate frozen M1 public API",
+    "shell": "pwsh",
+    "run": "$reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/m1-api-freeze-report.json'\n./scripts/Test-M1ApiContractStatic.ps1 -ReportPath $reportPath",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-04",
+    "title": "Validate Content bridge contract",
+    "shell": "pwsh",
+    "run": "$reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/content-bridge-static-report.json'\n./scripts/Test-ContentBridgeStatic.ps1 -ReportPath $reportPath",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-05",
+    "title": "Validate M7 first playable shell source",
+    "shell": "pwsh",
+    "run": "$reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/m7-first-playable-shell-static-report.json'\n./scripts/Test-FirstPlayableShellStatic.ps1 -ReportPath $reportPath",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-06",
+    "title": "Validate Unity runner contract",
+    "shell": "pwsh",
+    "run": "$reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/unity-runner-contract-report.json'\n./scripts/Test-UnityRunnerContractStatic.ps1 -ReportPath $reportPath",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-07",
+    "title": "Validate Unity result report parser with offline fixtures",
+    "shell": "pwsh",
+    "run": "./tools/UnityReportChecks.ps1",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-08",
+    "title": "Validate repository security and release hygiene",
+    "shell": "pwsh",
+    "run": "$reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/repository-security-report.json'\n./scripts/Test-RepositorySecurityStatic.ps1 -ReportPath $reportPath",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-09",
+    "title": "Validate pixel Golden contract (no Unity runtime)",
+    "shell": "bash",
+    "run": "python3 scripts/Validate-GoldenArt.py\npython3 -m unittest discover -s tools/GoldenArtChecks -p 'test_*.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-10",
+    "title": "Validate quarantined Golden C01 source (no Unity or IP approval)",
+    "shell": "bash",
+    "run": "python3 scripts/Validate-GoldenCharacter.py\npython3 -m unittest discover -s tools/GoldenCharacterChecks -p 'test_*.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-11",
+    "title": "Validate pixel UI palette consistency and contrast (no Unity)",
+    "shell": "bash",
+    "run": "python3 scripts/Validate-PixelUi.py\npython3 -m unittest discover -s tools/PixelUiChecks -p 'test_*.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-12",
+    "title": "Render quarantined Golden C01 preview and silhouette contact sheet",
+    "shell": "bash",
+    "run": "python3 scripts/Render-GoldenCharacterPreview.py --output \"${RUNNER_TEMP}/startup-life/c01-front-draft.png\"\npython3 -m unittest discover -s tools/GoldenCharacterPreviewChecks -p 'test_*.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-13",
+    "title": "Author and inspect quarantined Golden C02 four-view source sheet",
+    "shell": "bash",
+    "run": "python3 scripts/Validate-GoldenCharacterC02.py\npython3 -m unittest discover -s tools/GoldenCharacterC02Checks -p 'test_*.py' -v\npython3 scripts/Render-GoldenCharacterC02.py --output \"${RUNNER_TEMP}/startup-life/c02-nine-candidates-4views-DRAFT.png\" --report \"${RUNNER_TEMP}/startup-life/c02-source-report.json\"",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-14",
+    "title": "Validate native first-party Golden C03 source (DRAFT only)",
+    "shell": "bash",
+    "run": "python3 scripts/Validate-GoldenCharacterC03.py\npython3 -m unittest discover -s tools/GoldenCharacterC03Checks -p 'test_*.py' -v\npython3 scripts/Render-GoldenCharacterC03.py --output \"${RUNNER_TEMP}/startup-life/c03-3-styles-4-views-DRAFT.png\" --fronts \"${RUNNER_TEMP}/startup-life/c03-9-front-variants-DRAFT.png\" --report \"${RUNNER_TEMP}/startup-life/c03-source-report.json\"",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-15",
+    "title": "Validate C03 source migration and Idle V3 Unity staging (no Editor)",
+    "shell": "bash",
+    "run": "python3 -m pip install --disable-pip-version-check --quiet 'Pillow==11.3.0'\npython3 -m unittest discover -s tools/tests -p 'test_c03_authoring_source_migration.py' -v\npython3 -m unittest discover -s tools/tests -p 'test_c03_idle_v3.py' -v\npython3 -m unittest discover -s tools/tests -p 'test_c03_idle_v3_unity_staging.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-16",
+    "title": "Diagnose selected C03 reference presence and isolate Editor preview source",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_c03_player_art_readiness.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-17",
+    "title": "Guard current C03 native rig packet integrity and occlusion",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_c03_owner_rig_handoff.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-18",
+    "title": "Guard C03 selected-image Unity rig staging and authored motion source",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_c03_selected_native_stage.py' -v\npython3 -m unittest discover -s tools/tests -p 'test_c03_selected_native_editor_builder.py' -v\npython3 -m unittest discover -s tools/tests -p 'test_c03_owner_selected_cutout_unity_qa.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-19",
+    "title": "Guard Unity 6.3 sprite import and responsive PlayMode compile contracts (no Editor)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_unity63_local_compile_contract.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-20",
+    "title": "Guard opt-in Editor test-save diagnostics (no Unity Editor)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_editor_save_diagnostics.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-21",
+    "title": "Guard UI motion and Vietnamese copy source joins (no Unity Editor)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_presentation_motion_source.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-22",
+    "title": "Compile actual UiPanelReveal against colliding StartupLife.Application namespace",
+    "shell": "bash",
+    "run": "dotnet run --project tools/UiPanelRevealCompileChecks/UiPanelRevealCompileChecks.csproj -c Release --nologo",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-23",
+    "title": "Guard catalog-driven course dashboard selection (no Unity Editor)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_course_dashboard_wiring.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-24",
+    "title": "Guard catalog-driven job dashboard selection (no Unity Editor)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_career_dashboard_wiring.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-25",
+    "title": "Guard business launch catalog UI and shared command path (no Unity Editor)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_business_catalog_launch_wiring.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-26",
+    "title": "Guard version-isolated P04 business batch A (no Unity Editor)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_business_batch_a_content.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-27",
+    "title": "Guard production career batch A authoring and localization (no Unity Editor)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_career_content_batch_a.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-28",
+    "title": "Guard production career batch B courses and advisory affinity (no Unity Editor)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_career_content_batch_b.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-29",
+    "title": "Guard Life journal composition and approved-art boundary (no Unity Editor)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_life_journal_source.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-30",
+    "title": "Verify player main-menu safety contracts (no Unity Editor)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_main_menu_source.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-31",
+    "title": "Reject missing or mismatched main-menu screenshot evidence (synthetic fixtures only)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_main_menu_evidence_validator.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-32",
+    "title": "Compile and exercise locked save archiver with real temporary files",
+    "shell": "bash",
+    "run": "dotnet run --project tools/SaveArchiveChecks/SaveArchiveChecks.csproj -c Release",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-33",
+    "title": "Triage Unity Console diagnostics without suppressing unknown errors (no Editor)",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_unity_console_triage.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-34",
+    "title": "Validate Unity character assembler source and quarantine (no Editor)",
+    "shell": "bash",
+    "run": "python3 scripts/Validate-CharacterVisualAssembler.py\npython3 -m unittest discover -s tools/CharacterAssemblerChecks -p 'test_*.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-35",
+    "title": "Compile and exercise Unity assembler logic against engine-free API stubs",
+    "shell": "bash",
+    "run": "dotnet run --project tools/CharacterAssemblerCompileChecks/CharacterAssemblerCompileChecks.csproj --configuration Release --nologo",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-36",
+    "title": "Validate data-only Character Creator options",
+    "shell": "bash",
+    "run": "python3 scripts/Validate-CharacterCreatorCatalog.py",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-37",
+    "title": "Validate responsive Character Creator wiring (no Unity Editor)",
+    "shell": "bash",
+    "run": "python3 scripts/Validate-CharacterCreatorUi.py\npython3 -m unittest discover -s tools/CharacterCreatorUiChecks -p 'test_*.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-38",
+    "title": "Verify authored Unity responsive matrix and forced scene reopen gate",
+    "shell": "bash",
+    "run": "python3 scripts/Validate-CharacterCreatorResponsiveMatrix.py\npython3 -m unittest discover -s tools/CharacterCreatorResponsiveChecks -p 'test_*.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-39",
+    "title": "Validate graphical Unity runner and 36 native responsive screenshot gate",
+    "shell": "bash",
+    "run": "python3 scripts/Validate-UnityCreatorGraphicalRunner.py\npython3 -m unittest discover -s tools/UnityCreatorGraphicalChecks -p 'test_*.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-40",
+    "title": "Validate approved-only character preview bridge and quarantine",
+    "shell": "bash",
+    "run": "python3 scripts/Validate-CharacterCreatorPreviewBridge.py\npython3 -m unittest discover -s tools/CharacterPreviewBridgeChecks -p 'test_*.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-41",
+    "title": "Validate asset provenance and approval join (no legal clearance implied)",
+    "shell": "bash",
+    "run": "python3 scripts/Validate-AssetProvenance.py\npython3 -m unittest discover -s tools/AssetProvenanceChecks -p 'test_*.py' -v",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-42",
+    "title": "Run engine-free simulation regression suite",
+    "shell": "pwsh",
+    "run": "$reportPath = Join-Path $env:RUNNER_TEMP 'startup-life/simulation-report.json'\n./scripts/Test-Simulation.ps1 -ReportPath $reportPath",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "engine-free-ci-43",
+    "title": "Verify checks did not mutate the repository",
+    "shell": "pwsh",
+    "run": "$changes = git status --porcelain\nif ($changes) {\n  Write-Error \"Verification changed tracked/worktree files:`n$changes\"\n}",
+    "workflow": "engine-free-ci.yml"
+  },
+  {
+    "id": "c03-committed-refined-qa-01",
+    "title": "Install pinned PNG decoder",
+    "shell": "bash",
+    "run": "python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0",
+    "workflow": "c03-committed-refined-qa.yml"
+  },
+  {
+    "id": "c03-committed-refined-qa-02",
+    "title": "Validate each refined sprite SHA, mask, provenance and exact visible composite",
+    "shell": "bash",
+    "run": "python3 scripts/Verify-C03CommittedRefined.py",
+    "workflow": "c03-committed-refined-qa.yml"
+  },
+  {
+    "id": "c03-committed-refined-qa-03",
+    "title": "Verify trimmed QA sprites reconstruct exact C03 static pose with reduced memory",
+    "shell": "bash",
+    "run": "python3 scripts/Verify-C03RefinedQaCrop.py",
+    "workflow": "c03-committed-refined-qa.yml"
+  },
+  {
+    "id": "c03-committed-refined-qa-04",
+    "title": "Verify ten QA bone pivots exactly match current refined PNG overlap centroids",
+    "shell": "bash",
+    "run": "python3 scripts/Verify-C03OverlapPivotGuide.py",
+    "workflow": "c03-committed-refined-qa.yml"
+  },
+  {
+    "id": "c03-committed-refined-qa-05",
+    "title": "Render old vs calibrated 16-joint C03 pose evidence (not shipping animation)",
+    "shell": "bash",
+    "run": "python3 scripts/Review-C03OverlapPivots.py --output-dir \"$RUNNER_TEMP/c03-overlap-pivot-review\"",
+    "workflow": "c03-committed-refined-qa.yml"
+  },
+  {
+    "id": "c03-hidden-underpaint-study-01",
+    "title": "Install Pillow",
+    "shell": "bash",
+    "run": "python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0",
+    "workflow": "c03-hidden-underpaint-study.yml"
+  },
+  {
+    "id": "c03-hidden-underpaint-study-02",
+    "title": "Verify source-only underpaint invariants",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_c03_hidden_underpaint.py' -v",
+    "workflow": "c03-hidden-underpaint-study.yml"
+  },
+  {
+    "id": "c03-hidden-underpaint-study-03",
+    "title": "Stage source-palette hidden-pixel edits below later occluding layers",
+    "shell": "bash",
+    "run": "python3 scripts/Stage-C03HiddenSeamUnderpaint.py --output-dir \"$RUNNER_TEMP/c03-hidden-underpaint-study\"",
+    "workflow": "c03-hidden-underpaint-study.yml"
+  },
+  {
+    "id": "c03-hidden-underpaint-study-04",
+    "title": "Enforce exact visible pose and no art approval",
+    "shell": "bash",
+    "run": "python3 - <<'PY'\nimport hashlib,json,os\nfrom pathlib import Path\np=Path(os.environ['RUNNER_TEMP'])/'c03-hidden-underpaint-study'\nr=json.loads((p/'C03-hidden-underpaint-candidate.json').read_text(encoding='utf-8'))\nassert r['owner_selected_sha256']=='1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa'\nassert r['status']=='ARTIST_REVIEW_REQUIRED_NOT_ANIMATABLE_OR_APPROVED'\nassert r['semantic_layer_count']==21 and r['joint_topology_count']==16\nassert r['static_composite_exact_rgba'] is True\nassert r['underpaint_motion_eligible'] is False\nassert r['underpaint_motion_gate']=='FAIL_AUTO_UNDERPAINT_EXPOSES_PIXELS'\nassert r['newly_visible_alpha_total']>0\nassert r['lost_visible_alpha_total']==0\nassert r['pivot_source_gate_status']=='PASS_TEN_SOURCE_OVERLAP_PIVOTS_NOT_MOTION_APPROVAL'\nassert len(r['pivot_guide_sha256'])==64\nassert r['pose_names']==['bind_exact','left_arm_bend','right_arm_bend','walk_leg_A','walk_leg_B']\nassert r['pose_deltas']['bind_exact']['changed_rgba_pixels']==0\nassert r['pose_deltas']['walk_leg_B']['changed_rgba_pixels']>=0\nassert all('changed_bbox_source_px' in v for v in r['pose_deltas'].values())\nassert r['pose_deltas']['bind_exact']['changed_rgba_pixels']==0\nassert any(r['pose_deltas'][name]['changed_rgba_pixels']>0 for name in ('left_arm_bend','right_arm_bend','walk_leg_A'))\nassert r['pose_deltas_are_technical_not_artistic_quality_scores'] is True\nassert r['new_face_or_character'] is False and r['native_128x160_art'] is False\nassert r['approved_for_gameplay'] is False\nassert r['rig_and_motion_verified_in_Unity'] is False\nassert len(r['file_sha256'])==22\nassert sum(x['hidden_pixels_extended'] for x in r['underpaint_pairs'].values()) == r['new_hidden_pixel_count']\nfor name,sha in r['file_sha256'].items():\n    assert hashlib.sha256((p/name).read_bytes()).hexdigest()==sha\nassert (p/'C03-underpaint-pose-before-after-REVIEW.png').is_file()\nassert (p/'C03-underpaint-changed-pixel-hotspots-REVIEW.png').is_file()\nprint('PASS exact owner C03 static image + 21 hidden-seam candidate layers; NOT ART APPROVAL')\nPY",
+    "workflow": "c03-hidden-underpaint-study.yml"
+  },
+  {
+    "id": "c03-selected-layer-draft-01",
+    "title": "Install pinned draft authoring dependency",
+    "shell": "bash",
+    "run": "python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0",
+    "workflow": "c03-selected-layer-draft.yml"
+  },
+  {
+    "id": "c03-selected-layer-draft-02",
+    "title": "Validate exact selected source is present",
+    "shell": "bash",
+    "run": "python3 scripts/Verify-C03HandBagReference.py",
+    "workflow": "c03-selected-layer-draft.yml"
+  },
+  {
+    "id": "c03-selected-layer-draft-03",
+    "title": "Export 21 source-pixel layer drafts and bag mask",
+    "shell": "bash",
+    "run": "python3 scripts/Stage-C03SelectedOwnerCutout.py --output-dir \"$RUNNER_TEMP/C03-selected-cutout-draft\"",
+    "workflow": "c03-selected-layer-draft.yml"
+  },
+  {
+    "id": "c03-selected-layer-draft-04",
+    "title": "Validate source-exact draft receipt and 16 joints",
+    "shell": "bash",
+    "run": "python3 - <<'PY'\nimport hashlib, json, os\nfrom pathlib import Path\np=Path(os.environ['RUNNER_TEMP'])/'C03-selected-cutout-draft'\nreceipt=json.loads((p/'C03-selected-cutout-receipt.json').read_text())\nguide=json.loads((p/'C03-selected-16-joint-guide-DRAFT.json').read_text())\nassert receipt['status']=='REVIEW_ONLY_OPAQUE_IMAGE_EXTRACTION_NOT_NATIVE_RIG'\nassert receipt['reference_sha256']=='1999322a19bf99a5954edc3cf4fd87f6c6b9795006781c0c46ee4ff49fdc30fa'\nassert receipt['layer_count']==21\nassert receipt['composite_matches_visible_source_pixels'] is True\nassert receipt['approved_for_gameplay'] is False\nassert receipt['native_pixel_128x160'] is False\nassert guide['joint_count']==16 and guide['motion_clips']==[]\nassert guide['rig_approval'] is False\nassert len(receipt['file_sha256'])==22\nfor name,sha in receipt['file_sha256'].items():\n    assert hashlib.sha256((p/name).read_bytes()).hexdigest()==sha\nassert receipt['unassigned_foreground_fallback_px'] < .05*receipt['foreground_opaque_pixels']\nprint('PASS C03 21 layer+mask, 16 joint study, no game/Unity approval')\nPY",
+    "workflow": "c03-selected-layer-draft.yml"
+  },
+  {
+    "id": "c03-selected-layer-refinement-01",
+    "title": "Set up Pillow",
+    "shell": "bash",
+    "run": "python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0",
+    "workflow": "c03-selected-layer-refinement.yml"
+  },
+  {
+    "id": "c03-selected-layer-refinement-02",
+    "title": "Verify canonical owner C03 image SHA",
+    "shell": "bash",
+    "run": "python3 scripts/Verify-C03HandBagReference.py",
+    "workflow": "c03-selected-layer-refinement.yml"
+  },
+  {
+    "id": "c03-selected-layer-refinement-03",
+    "title": "Reassign source-visible fallback to semantic owner layers",
+    "shell": "bash",
+    "run": "python3 scripts/Refine-C03SelectedLayerOwnership.py --output-dir \"$RUNNER_TEMP/c03-owner-cutout-refined\"",
+    "workflow": "c03-selected-layer-refinement.yml"
+  },
+  {
+    "id": "c03-selected-layer-refinement-04",
+    "title": "Verify no source pixels changed and no false art approval",
+    "shell": "bash",
+    "run": "python3 - <<'PY'\nimport json,hashlib,os\nfrom pathlib import Path\nfolder=Path(os.environ['RUNNER_TEMP'])/'c03-owner-cutout-refined'\nr=json.loads((folder/'C03-refined-layer-ownership-receipt.json').read_text())\nassert r['original_fallback_px']==14025, 'Unexpected original contamination count'\nassert sum(r['fallback_px_assigned_by_semantic_part'].values())==14025\nassert r['torso_bbox_before'][3]>1200\nassert r['torso_bbox_after'][3]<1000\nassert r['composite_identical_to_original_selected_source_cutout'] is True\nassert r['pixel_colors_changed'] is False\nassert r['native_128x160_art'] is False and r['motion_or_unity_verified'] is False\nassert r['approved_for_gameplay'] is False and r['owner_approved'] is False\nassert len(r['per_file_sha256'])==22\nfor name,sha in r['per_file_sha256'].items():\n    assert hashlib.sha256((folder/name).read_bytes()).hexdigest()==sha\nassert (folder/'C03-refined-ownership-before-after-stress.png').is_file()\nprint('PASS C03 selected-source source-visible correction; not native/animated')\nPY",
+    "workflow": "c03-selected-layer-refinement.yml"
+  },
+  {
+    "id": "c03-selected-pose-stress-01",
+    "title": "Install Pillow",
+    "shell": "bash",
+    "run": "python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0",
+    "workflow": "c03-selected-pose-stress.yml"
+  },
+  {
+    "id": "c03-selected-pose-stress-02",
+    "title": "Test joint transforms and sprite-only articulation",
+    "shell": "bash",
+    "run": "python3 -m unittest discover -s tools/tests -p 'test_c03_selected_cutout_stress_math.py' -v",
+    "workflow": "c03-selected-pose-stress.yml"
+  },
+  {
+    "id": "c03-selected-pose-stress-03",
+    "title": "Validate owner source PNG SHA",
+    "shell": "bash",
+    "run": "python3 scripts/Verify-C03HandBagReference.py",
+    "workflow": "c03-selected-pose-stress.yml"
+  },
+  {
+    "id": "c03-selected-pose-stress-04",
+    "title": "Generate pose-stress images and JSON evidence",
+    "shell": "bash",
+    "run": "python3 scripts/Preview-C03OwnerCutoutArticulation.py --output-dir \"$RUNNER_TEMP/c03-selected-pose-stress\"",
+    "workflow": "c03-selected-pose-stress.yml"
+  },
+  {
+    "id": "c03-selected-visual-review-01",
+    "title": "Pillow for visual-only comparison",
+    "shell": "bash",
+    "run": "python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0",
+    "workflow": "c03-selected-visual-review.yml"
+  },
+  {
+    "id": "c03-selected-visual-review-02",
+    "title": "Validate exact selected C03 image",
+    "shell": "bash",
+    "run": "python3 scripts/Verify-C03HandBagReference.py",
+    "workflow": "c03-selected-visual-review.yml"
+  },
+  {
+    "id": "c03-selected-visual-review-03",
+    "title": "Generate side-by-side sheet, layer contact sheet and factual JSON",
+    "shell": "bash",
+    "run": "python3 scripts/Review-C03SelectedVsExistingRig.py --output-dir \"$RUNNER_TEMP/c03-owner-v3-review\"",
+    "workflow": "c03-selected-visual-review.yml"
+  }
+]

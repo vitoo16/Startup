@@ -1,0 +1,479 @@
+{
+  "repository": "vitoo16/Startup",
+  "nodeMajor": 24,
+  "stages": [
+    {
+      "id": "lfs-source",
+      "command": "git lfs pull"
+    },
+    {
+      "id": "pillow",
+      "command": "python -m pip install --disable-pip-version-check --quiet Pillow==11.3.0"
+    },
+    {
+      "id": "engine-free-ci-01",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-01"
+    },
+    {
+      "id": "engine-free-ci-02",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-02"
+    },
+    {
+      "id": "engine-free-ci-03",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-03"
+    },
+    {
+      "id": "engine-free-ci-04",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-04"
+    },
+    {
+      "id": "engine-free-ci-05",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-05"
+    },
+    {
+      "id": "engine-free-ci-06",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-06"
+    },
+    {
+      "id": "engine-free-ci-07",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-07"
+    },
+    {
+      "id": "engine-free-ci-08",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-08"
+    },
+    {
+      "id": "engine-free-ci-09",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-09"
+    },
+    {
+      "id": "engine-free-ci-10",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-10"
+    },
+    {
+      "id": "engine-free-ci-11",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-11"
+    },
+    {
+      "id": "engine-free-ci-12",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-12"
+    },
+    {
+      "id": "engine-free-ci-13",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-13"
+    },
+    {
+      "id": "engine-free-ci-14",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-14"
+    },
+    {
+      "id": "engine-free-ci-15",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-15"
+    },
+    {
+      "id": "engine-free-ci-16",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-16"
+    },
+    {
+      "id": "engine-free-ci-17",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-17"
+    },
+    {
+      "id": "engine-free-ci-18",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-18"
+    },
+    {
+      "id": "engine-free-ci-19",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-19"
+    },
+    {
+      "id": "engine-free-ci-20",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-20"
+    },
+    {
+      "id": "engine-free-ci-21",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-21"
+    },
+    {
+      "id": "engine-free-ci-22",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-22"
+    },
+    {
+      "id": "engine-free-ci-23",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-23"
+    },
+    {
+      "id": "engine-free-ci-24",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-24"
+    },
+    {
+      "id": "engine-free-ci-25",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-25"
+    },
+    {
+      "id": "engine-free-ci-26",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-26"
+    },
+    {
+      "id": "engine-free-ci-27",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-27"
+    },
+    {
+      "id": "engine-free-ci-28",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-28"
+    },
+    {
+      "id": "engine-free-ci-29",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-29"
+    },
+    {
+      "id": "engine-free-ci-30",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-30"
+    },
+    {
+      "id": "engine-free-ci-31",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-31"
+    },
+    {
+      "id": "engine-free-ci-32",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-32"
+    },
+    {
+      "id": "engine-free-ci-33",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-33"
+    },
+    {
+      "id": "engine-free-ci-34",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-34"
+    },
+    {
+      "id": "engine-free-ci-35",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-35"
+    },
+    {
+      "id": "engine-free-ci-36",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-36"
+    },
+    {
+      "id": "engine-free-ci-37",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-37"
+    },
+    {
+      "id": "engine-free-ci-38",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-38"
+    },
+    {
+      "id": "engine-free-ci-39",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-39"
+    },
+    {
+      "id": "engine-free-ci-40",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-40"
+    },
+    {
+      "id": "engine-free-ci-41",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-41"
+    },
+    {
+      "id": "engine-free-ci-42",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-42"
+    },
+    {
+      "id": "engine-free-ci-43",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step engine-free-ci-43"
+    },
+    {
+      "id": "c03-committed-refined-qa-01",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-committed-refined-qa-01"
+    },
+    {
+      "id": "c03-committed-refined-qa-02",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-committed-refined-qa-02"
+    },
+    {
+      "id": "c03-committed-refined-qa-03",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-committed-refined-qa-03"
+    },
+    {
+      "id": "c03-committed-refined-qa-04",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-committed-refined-qa-04"
+    },
+    {
+      "id": "c03-committed-refined-qa-05",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-committed-refined-qa-05"
+    },
+    {
+      "id": "c03-hidden-underpaint-study-01",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-hidden-underpaint-study-01"
+    },
+    {
+      "id": "c03-hidden-underpaint-study-02",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-hidden-underpaint-study-02"
+    },
+    {
+      "id": "c03-hidden-underpaint-study-03",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-hidden-underpaint-study-03"
+    },
+    {
+      "id": "c03-hidden-underpaint-study-04",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-hidden-underpaint-study-04"
+    },
+    {
+      "id": "c03-selected-layer-draft-01",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-layer-draft-01"
+    },
+    {
+      "id": "c03-selected-layer-draft-02",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-layer-draft-02"
+    },
+    {
+      "id": "c03-selected-layer-draft-03",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-layer-draft-03"
+    },
+    {
+      "id": "c03-selected-layer-draft-04",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-layer-draft-04"
+    },
+    {
+      "id": "c03-selected-layer-refinement-01",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-layer-refinement-01"
+    },
+    {
+      "id": "c03-selected-layer-refinement-02",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-layer-refinement-02"
+    },
+    {
+      "id": "c03-selected-layer-refinement-03",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-layer-refinement-03"
+    },
+    {
+      "id": "c03-selected-layer-refinement-04",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-layer-refinement-04"
+    },
+    {
+      "id": "c03-selected-pose-stress-01",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-pose-stress-01"
+    },
+    {
+      "id": "c03-selected-pose-stress-02",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-pose-stress-02"
+    },
+    {
+      "id": "c03-selected-pose-stress-03",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-pose-stress-03"
+    },
+    {
+      "id": "c03-selected-pose-stress-04",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-pose-stress-04"
+    },
+    {
+      "id": "c03-selected-visual-review-01",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-visual-review-01"
+    },
+    {
+      "id": "c03-selected-visual-review-02",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-visual-review-02"
+    },
+    {
+      "id": "c03-selected-visual-review-03",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-WorkflowStep.ps1 -Step c03-selected-visual-review-03"
+    },
+    {
+      "id": "unity-native",
+      "command": "pwsh -NoProfile -NonInteractive -File ci/Run-UnityLocal.ps1"
+    }
+  ],
+  "profiles": {
+    "quick": [
+      "lfs-source",
+      "pillow",
+      "engine-free-ci-01",
+      "engine-free-ci-02",
+      "engine-free-ci-03",
+      "engine-free-ci-04",
+      "engine-free-ci-05",
+      "engine-free-ci-06",
+      "engine-free-ci-07",
+      "engine-free-ci-08",
+      "engine-free-ci-09",
+      "engine-free-ci-10",
+      "engine-free-ci-11",
+      "engine-free-ci-12",
+      "engine-free-ci-13",
+      "engine-free-ci-14",
+      "engine-free-ci-15",
+      "engine-free-ci-16",
+      "engine-free-ci-17",
+      "engine-free-ci-18",
+      "engine-free-ci-19",
+      "engine-free-ci-20",
+      "engine-free-ci-21",
+      "engine-free-ci-22",
+      "engine-free-ci-23",
+      "engine-free-ci-24",
+      "engine-free-ci-25",
+      "engine-free-ci-26",
+      "engine-free-ci-27",
+      "engine-free-ci-28",
+      "engine-free-ci-29",
+      "engine-free-ci-30",
+      "engine-free-ci-31",
+      "engine-free-ci-32",
+      "engine-free-ci-33",
+      "engine-free-ci-34",
+      "engine-free-ci-35",
+      "engine-free-ci-36",
+      "engine-free-ci-37",
+      "engine-free-ci-38",
+      "engine-free-ci-39",
+      "engine-free-ci-40",
+      "engine-free-ci-41",
+      "engine-free-ci-42",
+      "engine-free-ci-43"
+    ],
+    "full": [
+      "lfs-source",
+      "pillow",
+      "engine-free-ci-01",
+      "engine-free-ci-02",
+      "engine-free-ci-03",
+      "engine-free-ci-04",
+      "engine-free-ci-05",
+      "engine-free-ci-06",
+      "engine-free-ci-07",
+      "engine-free-ci-08",
+      "engine-free-ci-09",
+      "engine-free-ci-10",
+      "engine-free-ci-11",
+      "engine-free-ci-12",
+      "engine-free-ci-13",
+      "engine-free-ci-14",
+      "engine-free-ci-15",
+      "engine-free-ci-16",
+      "engine-free-ci-17",
+      "engine-free-ci-18",
+      "engine-free-ci-19",
+      "engine-free-ci-20",
+      "engine-free-ci-21",
+      "engine-free-ci-22",
+      "engine-free-ci-23",
+      "engine-free-ci-24",
+      "engine-free-ci-25",
+      "engine-free-ci-26",
+      "engine-free-ci-27",
+      "engine-free-ci-28",
+      "engine-free-ci-29",
+      "engine-free-ci-30",
+      "engine-free-ci-31",
+      "engine-free-ci-32",
+      "engine-free-ci-33",
+      "engine-free-ci-34",
+      "engine-free-ci-35",
+      "engine-free-ci-36",
+      "engine-free-ci-37",
+      "engine-free-ci-38",
+      "engine-free-ci-39",
+      "engine-free-ci-40",
+      "engine-free-ci-41",
+      "engine-free-ci-42",
+      "engine-free-ci-43",
+      "c03-committed-refined-qa-01",
+      "c03-committed-refined-qa-02",
+      "c03-committed-refined-qa-03",
+      "c03-committed-refined-qa-04",
+      "c03-committed-refined-qa-05",
+      "c03-hidden-underpaint-study-01",
+      "c03-hidden-underpaint-study-02",
+      "c03-hidden-underpaint-study-03",
+      "c03-hidden-underpaint-study-04",
+      "c03-selected-layer-draft-01",
+      "c03-selected-layer-draft-02",
+      "c03-selected-layer-draft-03",
+      "c03-selected-layer-draft-04",
+      "c03-selected-layer-refinement-01",
+      "c03-selected-layer-refinement-02",
+      "c03-selected-layer-refinement-03",
+      "c03-selected-layer-refinement-04",
+      "c03-selected-pose-stress-01",
+      "c03-selected-pose-stress-02",
+      "c03-selected-pose-stress-03",
+      "c03-selected-pose-stress-04",
+      "c03-selected-visual-review-01",
+      "c03-selected-visual-review-02",
+      "c03-selected-visual-review-03"
+    ],
+    "unity": [
+      "lfs-source",
+      "pillow",
+      "engine-free-ci-01",
+      "engine-free-ci-02",
+      "engine-free-ci-03",
+      "engine-free-ci-04",
+      "engine-free-ci-05",
+      "engine-free-ci-06",
+      "engine-free-ci-07",
+      "engine-free-ci-08",
+      "engine-free-ci-09",
+      "engine-free-ci-10",
+      "engine-free-ci-11",
+      "engine-free-ci-12",
+      "engine-free-ci-13",
+      "engine-free-ci-14",
+      "engine-free-ci-15",
+      "engine-free-ci-16",
+      "engine-free-ci-17",
+      "engine-free-ci-18",
+      "engine-free-ci-19",
+      "engine-free-ci-20",
+      "engine-free-ci-21",
+      "engine-free-ci-22",
+      "engine-free-ci-23",
+      "engine-free-ci-24",
+      "engine-free-ci-25",
+      "engine-free-ci-26",
+      "engine-free-ci-27",
+      "engine-free-ci-28",
+      "engine-free-ci-29",
+      "engine-free-ci-30",
+      "engine-free-ci-31",
+      "engine-free-ci-32",
+      "engine-free-ci-33",
+      "engine-free-ci-34",
+      "engine-free-ci-35",
+      "engine-free-ci-36",
+      "engine-free-ci-37",
+      "engine-free-ci-38",
+      "engine-free-ci-39",
+      "engine-free-ci-40",
+      "engine-free-ci-41",
+      "engine-free-ci-42",
+      "engine-free-ci-43",
+      "c03-committed-refined-qa-01",
+      "c03-committed-refined-qa-02",
+      "c03-committed-refined-qa-03",
+      "c03-committed-refined-qa-04",
+      "c03-committed-refined-qa-05",
+      "c03-hidden-underpaint-study-01",
+      "c03-hidden-underpaint-study-02",
+      "c03-hidden-underpaint-study-03",
+      "c03-hidden-underpaint-study-04",
+      "c03-selected-layer-draft-01",
+      "c03-selected-layer-draft-02",
+      "c03-selected-layer-draft-03",
+      "c03-selected-layer-draft-04",
+      "c03-selected-layer-refinement-01",
+      "c03-selected-layer-refinement-02",
+      "c03-selected-layer-refinement-03",
+      "c03-selected-layer-refinement-04",
+      "c03-selected-pose-stress-01",
+      "c03-selected-pose-stress-02",
+      "c03-selected-pose-stress-03",
+      "c03-selected-pose-stress-04",
+      "c03-selected-visual-review-01",
+      "c03-selected-visual-review-02",
+      "c03-selected-visual-review-03",
+      "unity-native"
+    ]
+  },
+  "releaseOutputs": []
+}
