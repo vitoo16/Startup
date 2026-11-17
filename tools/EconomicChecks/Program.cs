@@ -518,6 +518,188 @@ internal static class Program
             }
         });
 
+        Check("P04-BIZ-07 salary-funded café and fashion V3 settlement uses genuine commands", () =>
+        {
+            var baseline = FirstPlayableContentTemplate.BuildCatalog();
+            var live = FirstPlayableContentTemplate.BuildBusinessBatchACatalog();
+            var economy = M9T02FunctionalEconomy.CreateBusinessBatchA();
+            var archives = new BundledHistoricalV2ContentResolver();
+            var replay = new VersionedReceiptReplay(economy, live);
+            var migration = new V2ToV3Migration(archives, replay);
+            var serializer = new V3SaveCompatibilitySerializer(baseline,
+                GameSession.CreateRestoreValidator(), migration,
+                new StagedV3SaveSerializer(archives, replay), live);
+            const string run = "p04-salary-funded-full-time";
+            var source = GameSession.NewState(baseline, run, 171126UL,
+                new SimDate(2026, 10, 1));
+            var migrated = EconomicV3PayloadCodec.ReadChecked(
+                migration.Migrate(JsonSaveSerializer.WriteObject(source)));
+            migrated.Current!.EconomicV3 = migrated;
+            var sourceFile = Path.Combine(Path.GetTempPath(),
+                "p04-earned-capital-" + Guid.NewGuid().ToString("N") + ".save");
+            try
+            {
+                var sourceStore = new AtomicFileSaveStore(sourceFile, serializer);
+                var worker = new GameSession(migrated.Current, live, serializer, sourceStore,
+                    economicRules: economy, archivedRules: archives);
+                void Execute(GameSession session, string id, GameCommand command)
+                {
+                    var revision = session.Snapshot().Revision;
+                    var result = session.Execute(new CommandEnvelope(run, id, revision, command));
+                    Assert(result.Status == CommandStatus.Committed,
+                        id + " must use real authoritative GameSession command: " +
+                        result.Status + "/" + result.ReasonKey);
+                }
+
+                Execute(worker, "create", new GameCommand(CommandKind.CreateCharacter,
+                    "fresh", 24, "Salary Founder", "base.female"));
+                Execute(worker, "take-developer-job",
+                    new GameCommand(CommandKind.AcceptJob, "developer"));
+                // This genuinely plays all October work shifts. It does not
+                // set Cash, invent salary claims, replace archived V2 source,
+                // or weaken the career scene/time rules.
+                var monthly = worker.AdvanceMonth(new CommandEnvelope(run,
+                    "work-entire-october", worker.Snapshot().Revision,
+                    new GameCommand(CommandKind.AdvanceBoundary)));
+                Assert(monthly.StopReason == "TargetReached" &&
+                    worker.Snapshot().Instant.Date.ToString() == "2026-11-01",
+                    "October paid employment must reach its real payday");
+                var paid = serializer.DeserializeAndValidate(File.ReadAllBytes(sourceFile));
+                Assert(paid.Status == LoadStatus.Valid && paid.State != null &&
+                    paid.State.Ledger.Any(x => x.Category == "salary.accrual") &&
+                    paid.State.Ledger.Any(x => x.Category == "salary.payment") &&
+                    paid.State.Cash >= 6250000,
+                    "earned salary must be verified in ledger and wallet before a full-time launch");
+                Execute(worker, "resign", new GameCommand(CommandKind.Resign));
+
+                for (var i = 0; i < 2; i++)
+                {
+                    var moved = worker.AdvanceDay(new CommandEnvelope(run,
+                        "advance-to-tuesday-" + i, worker.Snapshot().Revision,
+                        new GameCommand(CommandKind.AdvanceBoundary)));
+                    Assert(moved.StopReason == "TargetReached",
+                        "unemployed founder advances only by real day-boundary commands");
+                }
+                Execute(worker, "wake-tuesday",
+                    new GameCommand(CommandKind.AdvanceBoundary));
+                var funded = serializer.DeserializeAndValidate(File.ReadAllBytes(sourceFile));
+                Assert(funded.Status == LoadStatus.Valid && funded.State != null &&
+                    funded.State.DateIso == "2026-11-03" && funded.State.Minute == 480 &&
+                    funded.State.Employment == null && funded.State.Arrears.Count == 0 &&
+                    funded.State.Cash >= 6250000,
+                    "fork checkpoint must be an already verified, unemployed, salary-funded Tuesday");
+                var fundedBytes = File.ReadAllBytes(sourceFile);
+                // Two independent test branches from ONE verified receipt
+                // checkpoint. This is not a simultaneous dual-business
+                // operation and does not duplicate money within either run.
+                foreach (var businessId in new[]
+                {
+                    FirstPlayableContentTemplate.SmallCafeId,
+                    FirstPlayableContentTemplate.FashionStoreId
+                })
+                {
+                    var branchFile = Path.Combine(Path.GetTempPath(),
+                        "p04-fulltime-branch-" + Guid.NewGuid().ToString("N") + ".save");
+                    try
+                    {
+                        File.WriteAllBytes(branchFile, fundedBytes);
+                        var branchStore = new AtomicFileSaveStore(branchFile, serializer);
+                        Assert(GameSession.TryRestore(live, serializer, branchStore,
+                            out var founder, out var load,
+                            economicRules: economy, archivedRules: archives),
+                            "salary-funded branch must cold restore without cash mutation: " + load.Reason);
+                        var session = founder!;
+                        var originalCash = session.Snapshot().Cash;
+                        var authored = live.Businesses[businessId];
+                        var profile = economy.Profiles[businessId];
+                        Execute(session, "launch-" + businessId,
+                            BusinessCommands.Launch(businessId, authored.Revision,
+                                checked((int)authored.MinimumStartupInvestment)));
+                        var launched = serializer.DeserializeAndValidate(File.ReadAllBytes(branchFile));
+                        Assert(launched.Status == LoadStatus.Valid && launched.State != null &&
+                            launched.State.Businesses.Count(x => x.IsActive) == 1 &&
+                            launched.State.Businesses.Single().DefinitionId == businessId,
+                            "genuine full-time business launch must cold replay the exact authored definition");
+                        var current = launched.State!;
+                        var instance = current.Businesses.Single().InstanceId;
+                        var invoices = current.EconomicV3!.EconomicRecords!.ObligationTranches
+                            .Where(x => x.BusinessInstanceId == instance &&
+                                x.DueDateIso == "2026-11-03").ToArray();
+                        Assert(invoices.Length == 1 &&
+                            invoices[0].AmountDueVnd == profile.DailyMandatoryChargeVnd &&
+                            invoices[0].PaidVnd == invoices[0].AmountDueVnd &&
+                            current.Cash == originalCash - authored.MinimumStartupInvestment -
+                                invoices[0].AmountDueVnd,
+                            "one salary-funded launch pays exact capital plus one authored daily fixed invoice");
+                        if (businessId == FirstPlayableContentTemplate.SmallCafeId)
+                            Assert(profile.FixedHelper != null &&
+                                profile.FixedHelper.ContractedDailyWageVnd == 110000 &&
+                                invoices[0].AmountDueVnd == 250000,
+                                "café helper wage must be INCLUDED inside one fixed invoice, not paid twice");
+
+                        var epoch = current.EconomicV3.EconomicRecords.Provenance.ActiveEpoch;
+                        Assert(epoch != null && epoch.DateIso == "2026-11-03",
+                            "launch must freeze authoritative founder operation time");
+                        var owner = epoch!.Assignments.SelectMany(x => x.FrozenFutureOwnerMinutes)
+                            .ToArray();
+                        var windowStart = businessId == FirstPlayableContentTemplate.SmallCafeId
+                            ? 540 : 600;
+                        var windowEnd = businessId == FirstPlayableContentTemplate.SmallCafeId
+                            ? 1080 : 1140;
+                        Assert(owner.Length == owner.Distinct().Count() &&
+                            owner.Length <= profile.RequiredOwnerMinutes &&
+                            owner.All(x => x >= windowStart && x < windowEnd),
+                            "full-time owner minutes cannot exceed authored window or overlap");
+
+                        Execute(session, "operate-" + businessId,
+                            new GameCommand(CommandKind.AdvanceBoundary));
+                        var beforeMidnight = session.Snapshot().Revision;
+                        Execute(session, "settle-" + businessId,
+                            new GameCommand(CommandKind.AdvanceBoundary));
+                        var finalBytes = File.ReadAllBytes(branchFile);
+                        var cold = serializer.DeserializeAndValidate(finalBytes);
+                        Assert(cold.Status == LoadStatus.Valid && cold.State != null &&
+                            cold.State.DateIso == "2026-11-04",
+                            "full-time founder must settle the first day through actual midnight");
+                        var graph = cold.State!.EconomicV3!.EconomicRecords!.Provenance;
+                        var settlement = graph.Settlements.Single(x => x.OldDateIso == "2026-11-03");
+                        var sold = graph.Fulfillments.Where(x =>
+                            x.DateIso == "2026-11-03" && x.BusinessInstanceId == instance).ToArray();
+                        Assert(settlement.FulfillmentIds.Count == sold.Length &&
+                            settlement.GrossVnd == sold.Sum(x => x.UnitPriceVnd) &&
+                            settlement.VariablePaidVnd == sold.Sum(x => x.VariablePaidVnd) &&
+                            settlement.FixedRecognizedVnd == profile.DailyMandatoryChargeVnd &&
+                            settlement.ProfitVnd == settlement.GrossVnd -
+                                settlement.VariablePaidVnd - settlement.FixedRecognizedVnd &&
+                            sold.Length <= economy.Pools[profile.MarketPoolId].BaseDailyUnits,
+                            "midnight settlement must reconcile actual finite-market sales and one fixed charge");
+                        Assert(GameSession.TryRestore(live, serializer, branchStore,
+                            out var restored, out var restoredLoad,
+                            economicRules: economy, archivedRules: archives) &&
+                            restored!.Snapshot().Revision == cold.State.Revision,
+                            "post-settlement full-time business must survive real cold restore: " +
+                            restoredLoad.Reason);
+                        Assert(restored!.Execute(new CommandEnvelope(run,
+                            "settle-" + businessId, beforeMidnight,
+                            new GameCommand(CommandKind.AdvanceBoundary))).Status ==
+                            CommandStatus.AlreadyCommitted &&
+                            File.ReadAllBytes(branchFile).SequenceEqual(finalBytes),
+                            "cold duplicate midnight cannot recognize revenue, fees or payroll twice");
+                    }
+                    finally
+                    {
+                        foreach (var suffix in new[] { "", ".backup", ".lock" })
+                            if (File.Exists(branchFile + suffix)) File.Delete(branchFile + suffix);
+                    }
+                }
+            }
+            finally
+            {
+                foreach (var suffix in new[] { "", ".backup", ".lock" })
+                    if (File.Exists(sourceFile + suffix)) File.Delete(sourceFile + suffix);
+            }
+        });
+
         Check("P04-BIZ-03 old V3 ruleset is not silently reinterpreted as new P04 economy", () =>
         {
             var baseContent = FirstPlayableContentTemplate.BuildCatalog();
