@@ -62,7 +62,8 @@ class BusinessBatchASourceTests(unittest.TestCase):
         self.assertIn("var chosen = Verify(primary, baseline, batchA) ??", selector)
         self.assertIn("Verify(backup, baseline, batchA);", selector)
         self.assertIn("if (oldStatus == LoadStatus.Valid)", selector)
-        self.assertIn("throw new InvalidOperationException(", selector)
+        self.assertIn("throw new UnverifiedBusinessContentException();", selector)
+        self.assertIn("UnverifiedBusinessContentException : InvalidOperationException", selector)
         self.assertNotIn("File.WriteAllBytes", selector)
         self.assertNotIn("AtomicFileSaveStore", selector)
 
