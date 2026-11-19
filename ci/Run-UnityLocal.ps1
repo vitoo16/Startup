@@ -10,6 +10,10 @@ foreach ($dir in @($creatorDir, $mainMenuDir)) {
     New-Item -ItemType Directory -Force -Path $dir | Out-Null
 }
 
+# Source joins are a fast preflight, not a substitute for native PlayMode.
+& python -m unittest discover -s tools/tests -p 'test_unity_playmode_recovery_wiring.py' -v
+if ($LASTEXITCODE -ne 0) { throw 'Unity PlayMode recovery source contract failed' }
+
 $previousCreator = $env:STARTUP_LIFE_CREATOR_RESPONSIVE_EVIDENCE
 $previousMenu = $env:STARTUP_LIFE_MAIN_MENU_RESPONSIVE_EVIDENCE
 try {
