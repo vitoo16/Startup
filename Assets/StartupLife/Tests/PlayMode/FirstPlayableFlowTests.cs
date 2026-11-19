@@ -450,7 +450,7 @@ namespace StartupLife.Tests.PlayMode
             FirstPlayableVisualEvidence.Capture("recording/frame-" + (recordingFrame++).ToString("D4"));
 
             var beforeDate = bootstrap.Snapshot.Instant.Date;
-            GameObject.Find("AdvanceDayButton").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            yield return PlayModeEventAdvanceHarness.ThroughView(bootstrap);
             yield return null;
             Assert.That(bootstrap.Snapshot.Instant.Date, Is.EqualTo(beforeDate.AddDays(1)));
             Assert.That(bootstrap.Snapshot.Instant.Minute, Is.EqualTo(0));
