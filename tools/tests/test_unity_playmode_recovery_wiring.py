@@ -55,6 +55,15 @@ class UnityPlayModeRecoveryWiringTests(unittest.TestCase):
         self.assertIn("PlayModeEventAdvanceHarness.ThroughView(bootstrap)", flow)
         self.assertNotIn("automaticDailyChecks: false", harness)
 
+    def test_local_runner_requires_two_native_screenshot_manifests(self):
+        runner = read("ci/Run-UnityLocal.ps1")
+        self.assertIn("-Mode All -EnableGraphics -PrepareFirstPlayableScene", runner)
+        self.assertIn("$env:STARTUP_LIFE_CREATOR_RESPONSIVE_EVIDENCE = $creatorDir", runner)
+        self.assertIn("$env:STARTUP_LIFE_MAIN_MENU_RESPONSIVE_EVIDENCE = $mainMenuDir", runner)
+        self.assertIn("Verify-CreatorResponsiveEvidence.ps1", runner)
+        self.assertIn("Verify-MainMenuResponsiveEvidence.ps1", runner)
+        self.assertIn("Remove-Item -LiteralPath $dir -Recurse -Force", runner)
+
     def test_localization_and_physical_resolution_gates_remain_strict(self):
         runtime = read("Assets/StartupLife/Scripts/Presentation/LifeDashboardOverlay.cs")
         flow = read("Assets/StartupLife/Tests/PlayMode/FirstPlayableFlowTests.cs")
