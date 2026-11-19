@@ -221,6 +221,14 @@ namespace StartupLife.Presentation
                 mainMenu = FirstPlayableMainMenu.Install(this, lifeScreen.transform.parent,
                     lifeScreen.UiTheme, menuFont ? menuFont.font : null);
             }
+            catch (UnverifiedBusinessContentException)
+            {
+                // Both checkpoints exist but neither can be validated against
+                // a known historical/live ruleset. This is a normal recovery
+                // failure, not a bootstrap crash. Keep both files untouched
+                // and show the localized error without emitting an exception.
+                Fail("reason.save.unrecoverable");
+            }
             catch (Exception error)
             {
                 Debug.LogException(error);
