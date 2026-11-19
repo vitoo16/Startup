@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
 using StartupLife.Core;
 using StartupLife.Presentation;
@@ -83,7 +82,7 @@ namespace StartupLife.Tests.PlayMode
             Assert.That(playback.IsRunning, Is.False);
             AssertSnapshotIdentity(committed, bootstrap.Snapshot);
 
-            ExpectSaveBootLog();
+            SaveBootLogExpectations.ExpectVerifiedRead();
             var reload = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             while (!reload.isDone) yield return null;
 
@@ -125,7 +124,7 @@ namespace StartupLife.Tests.PlayMode
             Assert.That(acknowledged.PlaybackCursor, Is.EqualTo(1));
 
             bootstrap.HandleApplicationPause(true);
-            ExpectSaveBootLog();
+            SaveBootLogExpectations.ExpectVerifiedRead();
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             yield return new WaitForSecondsRealtime(0.35f);
 
@@ -163,7 +162,7 @@ namespace StartupLife.Tests.PlayMode
             FirstPlayableVisualEvidence.Capture("M7-T02/03-course-before-restart");
 
             bootstrap.HandleApplicationPause(true);
-            ExpectSaveBootLog();
+            SaveBootLogExpectations.ExpectVerifiedRead();
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             yield return null;
 
@@ -234,7 +233,7 @@ namespace StartupLife.Tests.PlayMode
                 Is.EqualTo("00:00"), "Capture must show the committed minute.");
             FirstPlayableVisualEvidence.Capture("M7-T02/05-next-day-before-restart");
 
-            ExpectSaveBootLog();
+            SaveBootLogExpectations.ExpectVerifiedRead();
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             yield return new WaitForSecondsRealtime(0.1f);
 
@@ -259,7 +258,7 @@ namespace StartupLife.Tests.PlayMode
             File.Copy(primary, backup, true);
             File.WriteAllText(primary, "{corrupt-primary");
 
-            ExpectSaveBootLog();
+            SaveBootLogExpectations.ExpectVerifiedRead();
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             yield return null;
 
@@ -272,7 +271,7 @@ namespace StartupLife.Tests.PlayMode
             Assert.That(recovered.Snapshot.CareerId, Is.Empty);
 
             var afterRecoveryWrite = recovered.Snapshot;
-            ExpectSaveBootLog();
+            SaveBootLogExpectations.ExpectVerifiedRead();
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             yield return null;
             var reloaded = CurrentBootstrap();
@@ -350,24 +349,11 @@ namespace StartupLife.Tests.PlayMode
 
         private static IEnumerator LoadFirstPlayable()
         {
-            ExpectSaveBootLog();
+            SaveBootLogExpectations.ExpectVerifiedRead();
             var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             while (!load.isDone) yield return null;
             yield return LocalizationSettings.InitializationOperation;
             yield return null;
-        }
-
-        // Editor-only save-read diagnostics are part of the runtime's recovery
-        // evidence. Match one benign record for each real scene load; do not
-        // suppress unrelated warnings, errors, exceptions or missing logs.
-        private static void ExpectSaveBootLog()
-        {
-#if UNITY_EDITOR
-            LogAssert.Expect(LogType.Log, new Regex(
-                @"^\[StartupLife\]\[SaveBoot\] path=.+ status=(Missing|Valid|RecoveredBackup) " +
-                @"primaryExists=(True|False) backupExists=(True|False) " +
-                @"revision=(none|[0-9]+) characterPresent=(True|False)$"));
-#endif
         }
 
         private static StartupLifeBootstrapper CurrentBootstrap()
