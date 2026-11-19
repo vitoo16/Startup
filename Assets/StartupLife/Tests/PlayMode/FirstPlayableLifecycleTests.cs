@@ -186,7 +186,10 @@ namespace StartupLife.Tests.PlayMode
             Assert.That(restored.Snapshot.ActiveCourse!.ProgressUnits, Is.EqualTo(3000000));
             Assert.That(restored.Snapshot.Instant.Minute, Is.EqualTo(1320));
 
-            var nextDay = restored.Flow.AdvanceDay().Advance;
+            AdvanceResult nextDay = null;
+            yield return PlayModeEventAdvanceHarness.ThroughFlow(
+                restored, result => nextDay = result);
+            Assert.That(nextDay, Is.Not.Null);
             Assert.That(nextDay.StopReason, Is.EqualTo("TargetReached"));
             Assert.That(restored.Snapshot.Instant.Minute, Is.Zero);
 
@@ -220,7 +223,10 @@ namespace StartupLife.Tests.PlayMode
             yield return null;
 
             var priorDate = bootstrap.Snapshot.Instant.Date;
-            var advance = bootstrap.Flow.AdvanceDay().Advance;
+            AdvanceResult advance = null;
+            yield return PlayModeEventAdvanceHarness.ThroughFlow(
+                bootstrap, result => advance = result);
+            Assert.That(advance, Is.Not.Null);
             Assert.That(advance.StopReason, Is.EqualTo("TargetReached"));
             var committedNextDay = bootstrap.Snapshot;
             Assert.That(committedNextDay.Instant.Date, Is.EqualTo(priorDate.AddDays(1)));
