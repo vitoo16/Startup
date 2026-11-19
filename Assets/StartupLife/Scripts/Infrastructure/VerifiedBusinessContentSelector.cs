@@ -12,6 +12,16 @@ namespace StartupLife.Infrastructure
         BusinessBatchA = 2
     }
 
+    // Expected, fail-closed recovery outcome. Distinguish an incompatible or
+    // invalid existing checkpoint from an unrelated bootstrap programming bug.
+    public sealed class UnverifiedBusinessContentException : InvalidOperationException
+    {
+        public UnverifiedBusinessContentException() : base(
+            "No verified business content ruleset can read the existing primary or backup.")
+        {
+        }
+    }
+
     public static class VerifiedBusinessContentSelector
     {
         public static BusinessContentTrack Select(byte[]? primary, byte[]? backup,
@@ -32,8 +42,7 @@ namespace StartupLife.Infrastructure
 
             // An invalid or unsupported existing save is never a new game.
             // The caller must show the recovery error and preserve both files.
-            throw new InvalidOperationException(
-                "No verified business content ruleset can read the existing primary or backup.");
+            throw new UnverifiedBusinessContentException();
         }
 
         private static BusinessContentTrack? Verify(byte[]? bytes,
