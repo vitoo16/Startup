@@ -299,6 +299,7 @@ namespace StartupLife.Tests.PlayMode
             File.Delete(primary);
             Directory.CreateDirectory(primary);
 
+            SaveBootLogExpectations.ExpectUnreadablePrimary();
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             yield return null;
 
