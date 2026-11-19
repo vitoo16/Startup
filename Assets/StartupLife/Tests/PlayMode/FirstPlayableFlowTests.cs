@@ -61,6 +61,7 @@ namespace StartupLife.Tests.PlayMode
         {
             PlayerPrefs.SetFloat(FontScaleKey, 1f);
             PlayerPrefs.Save();
+            SaveBootLogExpectations.ExpectVerifiedRead();
             var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             while (!load.isDone) yield return null;
             yield return LocalizationSettings.InitializationOperation;
@@ -118,6 +119,7 @@ namespace StartupLife.Tests.PlayMode
         [UnityTest]
         public IEnumerator FiveTabDashboardKeepsRevisionAndLinksExistingBusinessCommands()
         {
+            SaveBootLogExpectations.ExpectVerifiedRead();
             var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             while (!load.isDone) yield return null;
             yield return LocalizationSettings.InitializationOperation;
@@ -195,6 +197,7 @@ namespace StartupLife.Tests.PlayMode
         [UnityTest]
         public IEnumerator BusinessManagementOverlayCreatesControlsAndBindsCommittedReadouts()
         {
+            SaveBootLogExpectations.ExpectVerifiedRead();
             var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             while (!load.isDone) yield return null;
             yield return LocalizationSettings.InitializationOperation;
@@ -297,6 +300,7 @@ namespace StartupLife.Tests.PlayMode
         [UnityTest]
         public IEnumerator V3BusinessLifecycleUsesCommittedFlowWithoutImmediatePriceSwitch()
         {
+            SaveBootLogExpectations.ExpectVerifiedRead();
             var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             while (!load.isDone) yield return null;
             yield return LocalizationSettings.InitializationOperation;
@@ -342,6 +346,7 @@ namespace StartupLife.Tests.PlayMode
         [UnityTest]
         public IEnumerator AppearanceSelectionUsesLocalizedLabelsWithoutRawGenderGlyphs()
         {
+            SaveBootLogExpectations.ExpectVerifiedRead();
             var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             while (!load.isDone) yield return null;
             yield return LocalizationSettings.InitializationOperation;
@@ -372,6 +377,7 @@ namespace StartupLife.Tests.PlayMode
         [UnityTest]
         public IEnumerator CreateWorkStudyAndAdvanceDayThroughViews()
         {
+            SaveBootLogExpectations.ExpectVerifiedRead();
             var load = SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             while (!load.isDone) yield return null;
             yield return null;
@@ -464,6 +470,7 @@ namespace StartupLife.Tests.PlayMode
             var evidenceDirectory = System.Environment.GetEnvironmentVariable("STARTUP_LIFE_M7_EVIDENCE");
             if (!string.IsNullOrEmpty(evidenceDirectory))
                 File.Copy(savePath, Path.Combine(evidenceDirectory, "normal-save.json"), true);
+            SaveBootLogExpectations.ExpectVerifiedRead();
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             yield return null;
             var reloaded = Object.FindAnyObjectByType<StartupLifeBootstrapper>();
