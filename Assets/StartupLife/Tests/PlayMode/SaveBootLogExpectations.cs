@@ -24,5 +24,16 @@ namespace StartupLife.Tests.PlayMode
             LogAssert.Expect(LogType.Log, VerifiedRead);
 #endif
         }
+
+        internal static void ExpectUnreadablePrimary()
+        {
+#if UNITY_EDITOR
+            LogAssert.Expect(LogType.Log, new Regex(
+                @"^\[StartupLife\]\[SaveBoot\] path=.+ status=Unreadable " +
+                @"primaryExists=False backupExists=True " +
+                @"revision=none characterPresent=False$",
+                RegexOptions.CultureInvariant));
+#endif
+        }
     }
 }
