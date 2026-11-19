@@ -755,9 +755,9 @@ internal static class Program
                     _ = VerifiedBusinessContentSelector.Select(new byte[] { 99 },
                         new byte[] { 88 }, oldSerializer, newSerializer, true);
                 }
-                catch (InvalidOperationException) { refused = true; }
+                catch (UnverifiedBusinessContentException) { refused = true; }
                 Assert(refused && File.ReadAllBytes(path).SequenceEqual(sourceBytes),
-                    "invalid primary and backup must fail closed without rewriting old save");
+                    "invalid primary and backup must produce the expected recovery class without rewriting old save");
                 var incompatible = newSerializer.DeserializeAndValidate(sourceBytes);
                 Assert(incompatible.Status == LoadStatus.UnsupportedContent &&
                     incompatible.Reason == "save.ruleset_revision" &&
