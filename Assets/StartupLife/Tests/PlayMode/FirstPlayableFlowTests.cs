@@ -174,7 +174,7 @@ namespace StartupLife.Tests.PlayMode
                 .onClick.Invoke();
             yield return null;
             Assert.That(GameObject.Find("LifeFinanceValue").GetComponent<TMP_Text>().text,
-                Does.Contain("Tiền mặt").And.Contain("Tổng nợ"));
+                Does.Contain("Tiền mặt").And.Contain("Nợ cần trả"));
             GameObject.Find("LifeTabBusinessButton").GetComponent<UnityEngine.UI.Button>()
                 .onClick.Invoke();
             yield return null;
