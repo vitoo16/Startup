@@ -1,0 +1,60 @@
+# Startup Life — CI reliability and resource audit (2026-11-13)
+
+**State: FIRST INSTRUMENTATION ONLY — NOT OPTIMIZED / NOT ACCEPTED.**
+**Base commit:** `a3684e0e400a97fbff6652d3e590faa2cfea7aa2`. **PR branch:** `ci/audit-runtime-20261113`.
+
+## Source and requirements checked
+
+- Unity project 6000.3.25f1 with separate Core, Simulation, Application, Content, Infrastructure, Integration, Presentation, Editor and Unity tests.
+- Engine-free test tooling in `tools/*Checks`, PowerShell scripts and static Python validators. Git LFS tracks PNG and other source assets.
+- Production roadmap and `AGENTS.md`: engine-free checks must stay on code revisions and cannot certify Unity import, PlayMode, EditMode, IL2CPP, physical devices or artistic approval.
+- `engine-free-ci.yml`: runs on all PRs and pushes to main, with existing cancellation for obsolete revisions; `unity-runtime-smoke.yml`: explicitly manual self-hosted Unity platform testing; six C03 source/pose/audit workflows have selective triggers and retained artifacts.
+- Recent Actions allocation failures occur before executable steps and currently prevent fresh runner timing or same-SHA validation. The old successful run is historical only.
+
+## Implemented (low-risk)
+
+Added one diagnostic-only step immediately after checkout in engine-free CI. It records current commit, runner OS/architecture, Python, Git, Git LFS version and tracked LFS file count in `$RUNNER_TEMP/startup-life/runner-baseline.json`. The already-existing final artifact upload captures `$RUNNER_TEMP/startup-life/*.json`. This step does **not** alter simulation inputs, art assets, test commands, Unity setup, save format, security/approval gates or the existing runner timeout. It does not claim to measure job-runtime costs; the Actions jobs API must supply those once allocation recovers.
+
+## Planned work and guardrails
+
+- [x] Classify the current tree, Unity asmdefs, simulation tests, C03 workflows and manual Unity runner contract.
+- [x] Add reproducible runner/source metadata artifact without changing the test matrix.
+- [ ] Capture per-job and per-step elapsed time, CPU/memory and Git LFS checkout time on a successfully allocated GitHub-hosted runner. Record run IDs, exact SHAs, cancelled attempts and actual billable runner-minutes separately.
+- [ ] Measure and compare selective LFS fetch, restored .NET/NuGet outputs and Python package caching only using exact same-sha test outcomes. Do not fetch partial asset sets without fixture validation.
+- [ ] Create source-to-test traceability for deterministic simulation, save/replay/migrations, economic results, rendering source, sprite/rig and provenance. Shared or unknown paths must fall back to full engine-free tests.
+- [ ] Preserve Unity EditMode/PlayMode, graphical screenshot, platform Build Profile and physical-device gates as separate evidence classes; no static PASS may imply any of them ran.
+- [ ] Benchmark candidate workflow changes and keep only improvements with no lost assertions, passing clean checkout and rollback proof.
+
+## Acceptance
+
+Same-SHA engine-free CI green with runner metadata artifact, before/after job/runtime evidence, no missing test/asset files or altered test assertions, C03 source provenance preserved, and the Unity-runtime/device evidences clearly marked as separately verified or BLOCKED. Until Actions runner allocation is restored, all new tests remain NOT RUN and acceptance stays open.
+
+## Session closeout
+
+- **Owner model:** GPT-6, CI/release audit scope only.
+- **Skills reviewed:** `startup-life-session-orchestrator`, `unity-cli`, `project-auditor-fixes` (repository skill instructions inspected during this session; this was a CI metadata change, not a Unity Editor audit).
+- **Acceptance criteria:** complete same-SHA engine-free green run, artifact verification, and separately tracked runtime/device gates — **NOT MET** due GitHub Actions runner allocation issue.
+- **Tests:** NOT RUN. Historical successful checks apply only to earlier SHAs, not this change.
+- **Visual evidence:** NONE; no Unity visual files changed.
+- **Save impact:** NONE; no serialization or replay files modified.
+- **Known limitations:** no local Unity Editor, no runner-time metrics, no physical device QA; no measured speed improvement. Do not merge under a claim of completed optimization.
+- **Files changed:** `.github/workflows/engine-free-ci.yml`, `docs/ci/CI_RESOURCE_AUDIT_2026_11_13.md`.
+- **Initial implementation commit:** `d26138b55aa335f7d9288241937ee4faea275f60` on `ci/audit-runtime-20261113`.
+
+## Follow-up implementation — 2026-11-14 (candidate, unverified)
+- **All eight workflows remain present.** Engine-free `run:` commands and the six C03 source/stress/visual review command sequences are unchanged.
+- `engine-free-ci.yml`: only superseded revisions of the same PR are cancelled; pushes to `main` are retained. `~/.nuget/packages` caches downloaded NuGet packages keyed to project/package-lock inputs, **not compiled outputs, saves, or test receipts**. Every .NET invocation still runs.
+- Six C03 workflows: cache the pip download directory for exactly pinned Pillow 11.3.0 while keeping LFS checkout, independent provenance/pose verifications and review artifact uploads.
+- No selective LFS fetching, C03 stage consolidation, or assertion removal was attempted: such changes need measured dependency and provenance evidence.
+- **Acceptance remains NOT MET:** run the full engine-free job and each affected C03 workflow on allocated runners, confirm real files and identical assertions, measure cache hit/miss, runner-minutes and receipts at exact SHA before claiming benefit. Self-hosted Unity and physical Android/iOS evidence remain separately gated.
+- Rollback: revert the caching and PR-concurrency changes; no runtime, art, save schema or test source changes occurred.
+
+## DevOps session closeout — 2026-11-14
+- **Owner model:** GPT-6; scope limited to CI/cache/concurrency and operational audit.
+- **Skills used:** `startup-life-session-orchestrator` and `unity-cli` (build/test contracts reviewed; Unity Editor was not controlled).
+- **Acceptance criteria:** eight workflows preserved; no original run command, asset/source contract, C03 provenance gate or artifact upload removed; all added first-party actions pinned by full SHA; same-SHA runner success and comparative timings still REQUIRED.
+- **Tests:** static PR patch inspection only; live workflow runs on this SHA return failure with zero executable steps (NOT TESTED). Security gate's full-SHA policy reviewed and new caches pinned to `actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830`.
+- **Visual evidence:** none; no art, sprite, rig or UI change.
+- **Save impact:** none; no schema, serialization, migration or replay change.
+- **Known limitations:** hosted runner not assigned; Unity Editor/device and visual/human art reviews NOT RUN; actual cache hit rate and speed savings UNKNOWN.
+- **Files changed:** seven workflow YAMLs and this audit file; all on `ci/audit-runtime-20261113`, PR #60. No merge.

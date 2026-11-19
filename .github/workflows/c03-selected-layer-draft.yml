@@ -20,6 +20,13 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           lfs: true
+      # Reuse only downloaded pinned Pillow distributions; no art outputs are cached.
+      - name: Restore pinned Pillow download cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/pip
+          key: startup-c03-pip-${{ runner.os }}-pillow-11.3.0
+
       - name: Install pinned draft authoring dependency
         run: python3 -m pip install --disable-pip-version-check --quiet Pillow==11.3.0
       - name: Validate exact selected source is present
